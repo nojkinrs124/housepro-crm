@@ -1,0 +1,195 @@
+export type UserRole = 'admin' | 'manager' | 'agent' | 'accountant'
+
+export type ClientStatus = 'new' | 'in_progress' | 'active' | 'closed' | 'vip' | 'blacklist'
+
+export type PropertyType = 'apartment' | 'house' | 'commercial' | 'office' | 'warehouse' | 'land'
+
+export type DealType = 'rent' | 'sale' | 'management' | 'subrent'
+
+export type PropertyStatus = 'available' | 'reserved' | 'rented' | 'sold' | 'inactive'
+
+export type ContractType =
+  | 'rent_apartment'
+  | 'rent_commercial'
+  | 'sale_apartment'
+  | 'sale_house'
+  | 'property_management'
+  | 'sublease'
+  | 'agency_contract'
+
+export type ContractStatus = 'draft' | 'generated' | 'signed' | 'completed' | 'cancelled'
+
+export type TaskStatus = 'todo' | 'in_progress' | 'done' | 'cancelled'
+
+export type TaskPriority = 'low' | 'medium' | 'high'
+
+export interface User {
+  id: string
+  email: string
+  full_name: string
+  role: UserRole
+  phone?: string
+  avatar_url?: string
+  is_active: boolean
+  created_at: string
+}
+
+export interface Client {
+  id: string
+  full_name: string
+  phone?: string
+  telegram?: string
+  whatsapp?: string
+  passport?: string
+  birth_date?: string
+  comment?: string
+  source?: string
+  status: ClientStatus
+  manager_id?: string
+  created_at: string
+  manager?: User
+}
+
+export interface Owner {
+  id: string
+  full_name: string
+  phone?: string
+  passport?: string
+  comment?: string
+  created_at: string
+}
+
+export interface Property {
+  id: string
+  title: string
+  property_type: PropertyType
+  deal_type: DealType
+  address: string
+  district?: string
+  price?: number
+  deposit?: number
+  area?: number
+  rooms?: number
+  floor?: number
+  description?: string
+  owner_id?: string
+  manager_id?: string
+  status: PropertyStatus
+  created_at: string
+  owner?: Owner
+  manager?: User
+}
+
+export interface Contract {
+  id: string
+  contract_number?: string
+  contract_type: ContractType
+  client_id?: string
+  property_id?: string
+  manager_id?: string
+  start_date?: string
+  end_date?: string
+  amount?: number
+  deposit?: number
+  status: ContractStatus
+  generated_docx_url?: string
+  generated_pdf_url?: string
+  created_at: string
+  client?: Client
+  property?: Property
+  manager?: User
+}
+
+export interface FileRecord {
+  id: string
+  file_name?: string
+  file_url?: string
+  file_type?: string
+  contract_id?: string
+  client_id?: string
+  property_id?: string
+  uploaded_by?: string
+  created_at: string
+}
+
+export interface Task {
+  id: string
+  title: string
+  description?: string
+  assigned_to?: string
+  created_by?: string
+  status: TaskStatus
+  priority: TaskPriority
+  deadline?: string
+  created_at: string
+  assignee?: User
+}
+
+export interface Log {
+  id: string
+  user_id?: string
+  action: string
+  entity_type?: string
+  entity_id?: string
+  old_data?: Record<string, unknown>
+  new_data?: Record<string, unknown>
+  created_at: string
+  user?: User
+}
+
+export interface DocumentTemplate {
+  id: string
+  name: string
+  template_type: ContractType
+  file_url: string
+  created_by?: string
+  created_at: string
+}
+
+// Supabase Database type (simplified)
+export type Database = {
+  public: {
+    Tables: {
+      users: {
+        Row: User
+        Insert: Omit<User, 'created_at'>
+        Update: Partial<Omit<User, 'id' | 'created_at'>>
+      }
+      clients: {
+        Row: Client
+        Insert: Omit<Client, 'id' | 'created_at'>
+        Update: Partial<Omit<Client, 'id' | 'created_at'>>
+      }
+      owners: {
+        Row: Owner
+        Insert: Omit<Owner, 'id' | 'created_at'>
+        Update: Partial<Omit<Owner, 'id' | 'created_at'>>
+      }
+      properties: {
+        Row: Property
+        Insert: Omit<Property, 'id' | 'created_at'>
+        Update: Partial<Omit<Property, 'id' | 'created_at'>>
+      }
+      contracts: {
+        Row: Contract
+        Insert: Omit<Contract, 'id' | 'created_at'>
+        Update: Partial<Omit<Contract, 'id' | 'created_at'>>
+      }
+      files: {
+        Row: FileRecord
+        Insert: Omit<FileRecord, 'id' | 'created_at'>
+        Update: Partial<Omit<FileRecord, 'id' | 'created_at'>>
+      }
+      tasks: {
+        Row: Task
+        Insert: Omit<Task, 'id' | 'created_at'>
+        Update: Partial<Omit<Task, 'id' | 'created_at'>>
+      }
+      logs: {
+        Row: Log
+        Insert: Omit<Log, 'id' | 'created_at'>
+        Update: Partial<Omit<Log, 'id' | 'created_at'>>
+      }
+    }
+  }
+}
