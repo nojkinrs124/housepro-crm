@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import {
   Building2, LayoutDashboard, Users, Home, FileText,
   CheckSquare, Settings, LogOut, ChevronLeft, ChevronRight,
-  Zap, TrendingUp,
+  Zap, TrendingUp, UserCog,
 } from 'lucide-react'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
@@ -13,21 +13,21 @@ import { logout } from '@/features/auth/actions/auth.actions'
 import type { User } from '@/types/database'
 
 const navigation = [
-  { name: 'Дашборд',  href: '/dashboard',  icon: LayoutDashboard },
-  { name: 'Лиды',     href: '/leads',      icon: Zap },
-  { name: 'Сделки',   href: '/deals',      icon: TrendingUp },
-  { name: 'Клиенты',  href: '/clients',    icon: Users },
-  { name: 'Объекты',  href: '/properties', icon: Home },
-  { name: 'Договоры', href: '/contracts',  icon: FileText },
-  { name: 'Задачи',   href: '/tasks',      icon: CheckSquare },
-  { name: 'Настройки',href: '/settings',   icon: Settings },
+  { name: 'Дашборд',     href: '/dashboard',  icon: LayoutDashboard },
+  { name: 'Лиды',        href: '/leads',      icon: Zap },
+  { name: 'Сделки',      href: '/deals',      icon: TrendingUp },
+  { name: 'Клиенты',     href: '/clients',    icon: Users },
+  { name: 'Объекты',     href: '/properties', icon: Home },
+  { name: 'Договоры',    href: '/contracts',  icon: FileText },
+  { name: 'Задачи',      href: '/tasks',      icon: CheckSquare },
+  { name: 'Сотрудники',  href: '/employees',  icon: UserCog },
+  { name: 'Настройки',   href: '/settings',   icon: Settings },
 ]
 
 const roleLabels: Record<string, string> = {
   admin: 'Администратор', manager: 'Менеджер',
   agent: 'Риелтор', accountant: 'Бухгалтер',
 }
-
 const roleBadgeColors: Record<string, string> = {
   admin:      'bg-red-100 text-red-700',
   manager:    'bg-blue-100 text-blue-700',
@@ -58,7 +58,7 @@ export function Sidebar({ user }: { user: User | null }) {
       <nav className="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto">
         {navigation.map((item) => {
           const Icon = item.icon
-          const isActive = pathname.startsWith(item.href)
+          const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
           return (
             <Link key={item.href} href={item.href}
               className={cn(
@@ -101,8 +101,7 @@ export function Sidebar({ user }: { user: User | null }) {
             <form action={logout}>
               <button type="submit"
                 className="w-full flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all">
-                <LogOut className="w-4 h-4" />
-                <span>Выйти</span>
+                <LogOut className="w-4 h-4" /><span>Выйти</span>
               </button>
             </form>
           </div>
@@ -119,9 +118,7 @@ export function Sidebar({ user }: { user: User | null }) {
       {/* Collapse toggle */}
       <button onClick={() => setCollapsed(!collapsed)}
         className="absolute -right-3 top-20 w-6 h-6 bg-card border border-border rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-all shadow-sm z-10">
-        {collapsed
-          ? <ChevronRight className="w-3 h-3" />
-          : <ChevronLeft className="w-3 h-3" />}
+        {collapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
       </button>
     </aside>
   )
