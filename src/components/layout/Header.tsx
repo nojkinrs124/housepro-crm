@@ -63,12 +63,21 @@ export function Header({ user }: { user: User | null }) {
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full" />
         </button>
 
-        {/* Avatar */}
-        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-all">
-          <span className="text-primary text-sm font-semibold">
-            {user?.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
-          </span>
-        </div>
+        {/* Avatar → Profile */}
+        <a
+          href="/settings/profile"
+          className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-all overflow-hidden shrink-0"
+          title={user?.full_name ?? 'Профиль'}
+        >
+          {user?.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={user.avatar_url} alt="avatar" className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-primary text-sm font-semibold">
+              {user?.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
+            </span>
+          )}
+        </a>
       </div>
     </header>
   )
