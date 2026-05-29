@@ -31,15 +31,19 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
   const { id } = await params
   const supabase = await createClient()
 
-  const { data: contract } = await supabase
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: rawContract } = await supabase
     .from('contracts')
-    .select(`*, client:clients(full_name, phone), property:properties(title, address), manager:users(full_name)`)
+    .select(`*, client:clients(full_name, phone), owner:owners(full_name, phone), property:properties(title, address), manager:users(full_name)`)
     .eq('id', id)
     .single()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const contract = rawContract as any
 
   if (!contract) notFound()
 
   const client = contract.client as { full_name?: string; phone?: string } | null
+  const owner  = (contract as any).owner  as { full_name?: string; phone?: string } | null
   const property = contract.property as { title?: string; address?: string } | null
   const manager = contract.manager as { full_name?: string } | null
 

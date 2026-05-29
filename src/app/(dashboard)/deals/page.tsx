@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { Plus, Home, User, DollarSign, TrendingUp } from 'lucide-react'
+import { Plus, Home, User, Building2, DollarSign, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 import { updateDealStatusAction } from '@/features/deals/actions/deals.actions'
 
@@ -33,10 +33,13 @@ const nextStatus: Record<string, string> = {
 export default async function DealsPage() {
   const supabase = await createClient()
 
-  const { data: deals } = await supabase
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: rawDeals } = await supabase
     .from('deals')
-    .select('*, client:clients(full_name), property:properties(title, address)')
+    .select('*, client:clients(full_name, phone), owner:owners(full_name, phone), property:properties(title, address)')
     .order('created_at', { ascending: false })
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const deals = rawDeals as any[] | null
 
   const byStatus = (status: string) =>
     (deals ?? []).filter(d => d.status === status)
@@ -108,7 +111,8 @@ export default async function DealsPage() {
                     <div className="text-center py-8 text-muted-foreground text-xs">Нет сделок</div>
                   ) : (
                     colDeals.map(deal => {
-                      const client = deal.client as { full_name?: string } | null
+                      const client   = deal.client   as { full_name?: string } | null
+                      const owner    = deal.owner    as { full_name?: string } | null
                       const property = deal.property as { title?: string; address?: string } | null
                       return (
                         <div key={deal.id}
@@ -118,10 +122,18 @@ export default async function DealsPage() {
                             {dealTypeLabels[deal.deal_type] ?? deal.deal_type}
                           </span>
 
+                          {/* Owner */}
+                          {owner?.full_name && (
+                            <div className="flex items-center gap-1.5 text-xs text-foreground">
+                              <Building2 className="w-3 h-3 text-orange-400 shrink-0" />
+                              <span className="truncate text-muted-foreground">{owner.full_name}</span>
+                            </div>
+                          )}
+
                           {/* Client */}
                           {client?.full_name && (
                             <div className="flex items-center gap-1.5 text-xs text-foreground">
-                              <User className="w-3 h-3 text-muted-foreground shrink-0" />
+                              <User className="w-3 h-3 text-blue-400 shrink-0" />
                               <span className="font-medium truncate">{client.full_name}</span>
                             </div>
                           )}
@@ -155,7 +167,7 @@ export default async function DealsPage() {
                           {/* Create contract */}
                           {col.status === 'contract' && (
                             <Link
-                              href={`/contracts/new?client_id=${deal.client_id}&property_id=${deal.property_id}`}
+                              href={`/contracts/new?client_id=${deal.client_id ?? ''}&property_id=${deal.property_id ?? ''}&owner_id=${deal.owner_id ?? ''}`}
                               className="block w-full text-center text-xs py-1.5 bg-violet-100 text-violet-700 rounded-lg hover:bg-violet-200 transition-all font-medium">
                               + Создать договор
                             </Link>
