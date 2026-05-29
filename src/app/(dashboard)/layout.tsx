@@ -1,5 +1,6 @@
 import { Sidebar } from '@/components/layout/Sidebar'
 import { Header } from '@/components/layout/Header'
+import { GlobalSearch } from '@/components/search/GlobalSearch'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
@@ -28,6 +29,7 @@ export default async function DashboardLayout({
           {children}
         </main>
       </div>
+      <GlobalSearch />
     </div>
   )
 }

@@ -1,35 +1,38 @@
 'use client'
 
 import { Bell, Search, Plus } from 'lucide-react'
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import type { User } from '@/types/database'
 
-export function Header({ user }: { user: User | null }) {
-  const [search, setSearch] = useState('')
-  const router = useRouter()
+function isMac() {
+  return typeof navigator !== 'undefined' && navigator.platform.toLowerCase().includes('mac')
+}
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (search.trim()) {
-      router.push(`/clients?search=${encodeURIComponent(search.trim())}`)
-    }
+export function Header({ user }: { user: User | null }) {
+  const [, setMac] = useState(false)
+
+  useEffect(() => { setMac(isMac()) }, [])
+
+  function openSearch() {
+    // Dispatch synthetic Ctrl+K to trigger GlobalSearch
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, metaKey: true, bubbles: true })
+    )
   }
 
   return (
     <header className="h-16 border-b border-border bg-card/50 backdrop-blur-sm flex items-center px-6 gap-4 shrink-0">
-      {/* Search */}
-      <form onSubmit={handleSearch} className="flex-1 max-w-md">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Поиск клиентов, объектов, договоров..."
-            className="w-full h-9 pl-9 pr-4 rounded-lg border border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
-          />
-        </div>
-      </form>
+      {/* Search trigger */}
+      <button
+        onClick={openSearch}
+        className="flex-1 max-w-md flex items-center gap-2 h-9 px-3 rounded-lg border border-input bg-background text-sm text-muted-foreground hover:border-primary/50 hover:bg-accent/50 transition-all text-left"
+      >
+        <Search className="w-4 h-4 shrink-0" />
+        <span className="flex-1">Поиск по CRM...</span>
+        <kbd className="hidden sm:flex items-center gap-0.5 px-1.5 py-0.5 text-xs border border-border rounded-md font-mono bg-muted/50">
+          Ctrl K
+        </kbd>
+      </button>
 
       <div className="flex items-center gap-2 ml-auto">
         {/* Quick create */}
@@ -38,13 +41,12 @@ export function Header({ user }: { user: User | null }) {
             <Plus className="w-4 h-4" />
             <span className="hidden sm:block">Создать</span>
           </button>
-          {/* Dropdown */}
           <div className="absolute right-0 top-full mt-1 w-44 bg-card border border-border rounded-xl shadow-lg p-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
             {[
-              { label: 'Клиент', href: '/clients?new=true' },
-              { label: 'Объект', href: '/properties?new=true' },
-              { label: 'Договор', href: '/contracts?new=true' },
-              { label: 'Задача', href: '/tasks?new=true' },
+              { label: 'Клиент',  href: '/clients/new' },
+              { label: 'Объект',  href: '/properties/new' },
+              { label: 'Договор', href: '/contracts/new' },
+              { label: 'Задача',  href: '/tasks/new' },
             ].map((item) => (
               <a
                 key={item.href}
