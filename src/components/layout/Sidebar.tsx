@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  Building2, LayoutDashboard, Users, Home, FileText,
+  Building2, LayoutDashboard, Users, Home, FileText, CreditCard,
   CheckSquare, Settings, LogOut, ChevronLeft, ChevronRight,
   Zap, TrendingUp, UserCog,
 } from 'lucide-react'
@@ -20,6 +20,7 @@ const navigation = [
   { name: 'Объекты',     href: '/properties', icon: Home },
   { name: 'Договоры',    href: '/contracts',  icon: FileText },
   { name: 'Задачи',      href: '/tasks',      icon: CheckSquare },
+  { name: 'Платежи',    href: '/payments',   icon: CreditCard },
   { name: 'Сотрудники',  href: '/employees',  icon: UserCog },
   { name: 'Настройки',   href: '/settings',   icon: Settings },
 ]

@@ -193,3 +193,21 @@ export type Database = {
     }
   }
 }
+
+export type PaymentStatus = 'pending' | 'paid' | 'overdue' | 'cancelled'
+export type PaymentType = 'rent' | 'deposit' | 'commission' | 'penalty' | 'other'
+
+export interface Payment {
+  id: string
+  contract_id?: string
+  amount: number
+  payment_type?: PaymentType
+  payment_status?: PaymentStatus
+  payment_date?: string
+  due_date?: string
+  notes?: string
+  created_by?: string
+  created_at: string
+  contract?: Contract
+  created_by_user?: User
+}

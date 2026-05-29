@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { ArrowLeft, FileText, User, Home, Calendar, DollarSign, Edit } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { PaymentsSection } from '@/features/payments/components/PaymentsSection'
 
 const contractTypeLabels: Record<string, string> = {
   rent_apartment: 'Аренда квартиры',
@@ -164,6 +165,8 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
               <p className="text-sm text-foreground leading-relaxed">{contract.notes}</p>
             </div>
           )}
+          {/* Payments */}
+          <PaymentsSection contractId={id} />
         </div>
 
         {/* Right sidebar */}
