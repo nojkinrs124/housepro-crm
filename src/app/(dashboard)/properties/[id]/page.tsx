@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { ArrowLeft, Home, MapPin, DollarSign, Ruler, Building } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { FilesSection } from '@/features/files/components/FilesSection'
 
 const typeLabels: Record<string, string> = {
   apartment: 'Квартира', house: 'Дом', commercial: 'Коммерция',
@@ -152,6 +153,8 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
               </div>
             )}
           </div>
+          {/* Files */}
+          <FilesSection propertyId={id} title="Фото и документы объекта" />
         </div>
 
         {/* Right */}

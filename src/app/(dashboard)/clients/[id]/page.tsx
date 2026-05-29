@@ -3,6 +3,7 @@ import { ArrowLeft, Phone, MessageCircle, FileText, Edit, Trash2 } from 'lucide-
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { deleteClientAction } from '@/features/clients/actions/clients.actions'
+import { FilesSection } from '@/features/files/components/FilesSection'
 
 const statusColors: Record<string, string> = {
   new: 'bg-blue-100 text-blue-700',
@@ -174,6 +175,8 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
               </div>
             )}
           </div>
+          {/* Files */}
+          <FilesSection clientId={id} title="Документы клиента" />
         </div>
 
         {/* Right — meta */}
