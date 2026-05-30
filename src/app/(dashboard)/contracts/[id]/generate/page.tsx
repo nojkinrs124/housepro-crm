@@ -154,6 +154,7 @@ export default async function GenerateContractPage({
                     <p className="text-xs text-muted-foreground">
                       {new Date(v.created_at).toLocaleDateString('ru-RU', {
                         day: '2-digit', month: 'long', year: 'numeric',
+                      })} {new Date(v.created_at).toLocaleTimeString('ru-RU', {
                         hour: '2-digit', minute: '2-digit',
                       })}
                     </p>

@@ -2,13 +2,19 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import type { FileRecord } from '@/types/database'
 
-const BUCKET = 'files'
+const BUCKET = 'documents'
+const BLOCKED_EXTENSIONS = ['exe', 'bat', 'cmd', 'com', 'msi', 'scr', 'vbs', 'js', 'jar', 'zip']
+const MAX_FILE_SIZE = 20 * 1024 * 1024 // 20 МБ
 
 export async function uploadFileAction(formData: FormData) {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return { error: 'Не авторизован' }
+  }
 
   const file = formData.get('file') as File | null
   const clientId = (formData.get('client_id') as string) || null
@@ -19,12 +25,21 @@ export async function uploadFileAction(formData: FormData) {
     return { error: 'Файл не выбран' }
   }
 
-  if (file.size > 20 * 1024 * 1024) {
+  if (file.size > MAX_FILE_SIZE) {
     return { error: 'Файл слишком большой (максимум 20 МБ)' }
   }
 
+  // Валидация расширения файла
+  const ext = file.name.split('.').pop()?.toLowerCase()
+  if (ext && BLOCKED_EXTENSIONS.includes(ext)) {
+    return { error: `Недопустимый тип файла: .${ext}` }
+  }
+
   const entityId = clientId || propertyId || contractId
-  const ext = file.name.split('.').pop()
+  if (!entityId) {
+    return { error: 'Необходимо указать связанный объект (клиент, объект или договор)' }
+  }
+
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
   const storagePath = `${entityId}/${Date.now()}-${safeName}`
 
@@ -39,21 +54,19 @@ export async function uploadFileAction(formData: FormData) {
     return { error: `Ошибка загрузки: ${uploadError.message}` }
   }
 
-  const { data: { publicUrl } } = supabase.storage
+  const { data } = supabase.storage
     .from(BUCKET)
     .getPublicUrl(storagePath)
 
-  // Build insert payload without null fields to satisfy strict TS types
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const payload: any = {
+  const payload = {
     file_name: file.name,
-    file_url: publicUrl,
+    file_url: data.publicUrl,
     file_type: file.type || `application/${ext}`,
-    uploaded_by: user?.id ?? undefined,
+    uploaded_by: user.id,
+    ...(clientId && { client_id: clientId }),
+    ...(propertyId && { property_id: propertyId }),
+    ...(contractId && { contract_id: contractId }),
   }
-  if (clientId) payload.client_id = clientId
-  if (propertyId) payload.property_id = propertyId
-  if (contractId) payload.contract_id = contractId
 
   const { error: dbError } = await supabase.from('files').insert(payload)
 
@@ -71,18 +84,33 @@ export async function uploadFileAction(formData: FormData) {
 
 export async function deleteFileAction(fileId: string) {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (!user) {
+    return { error: 'Не авторизован' }
+  }
+
+  // Проверяем права доступа
+  const { data: userRole } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (!userRole || !['admin', 'manager'].includes(userRole.role)) {
+    return { error: 'Недостаточно прав для удаления файла' }
+  }
+
   const { data: file } = await supabase
     .from('files')
     .select('*')
     .eq('id', fileId)
-    .single() as { data: any }
+    .single() as { data: FileRecord | null }
 
   if (!file) return { error: 'Файл не найден' }
 
   // Extract storage path from public URL
-  // Pattern: .../storage/v1/object/public/files/[path]
+  // Pattern: .../storage/v1/object/public/[bucket]/[path]
   if (file.file_url) {
     const marker = `/storage/v1/object/public/${BUCKET}/`
     const parts = file.file_url.split(marker)

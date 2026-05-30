@@ -45,15 +45,20 @@ export async function resetPassword(formData: FormData) {
 
 export async function getUser() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-  if (!user) return null
+  if (authError || !user) return null
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('users')
     .select('*')
     .eq('id', user.id)
     .single()
+
+  if (profileError) {
+    console.error('Error fetching user profile:', profileError)
+    return null
+  }
 
   return profile
 }

@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 const AVATAR_BUCKET = 'avatars'
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+const ALLOWED_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif']
 
 export async function updateProfileAction(formData: FormData) {
   const supabase = await createClient()
@@ -14,14 +16,17 @@ export async function updateProfileAction(formData: FormData) {
   const phone = (formData.get('phone') as string)?.trim() || null
 
   if (!full_name) return { error: 'Имя обязательно' }
+  if (full_name.length > 255) return { error: 'Имя не должно быть длиннее 255 символов' }
+  if (phone && phone.length > 20) return { error: 'Номер телефона не должен быть длиннее 20 символов' }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const updateData: any = { full_name }
-  if (phone !== null) updateData.phone = phone
+  const updateData = {
+    full_name,
+    ...(phone !== null && { phone }),
+  }
 
   const { error } = await supabase
     .from('users')
-    .update(updateData as never)
+    .update(updateData)
     .eq('id', user.id)
 
   if (error) return { error: error.message }
@@ -34,13 +39,25 @@ export async function updateProfileAction(formData: FormData) {
 
 export async function updatePasswordAction(formData: FormData) {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Не авторизован' }
 
   const password = formData.get('password') as string
   const confirm = formData.get('confirm') as string
 
-  if (!password || password.length < 6) {
-    return { error: 'Пароль должен быть не менее 6 символов' }
+  // Более строгая проверка пароля
+  if (!password || password.length < 8) {
+    return { error: 'Пароль должен быть не менее 8 символов' }
   }
+
+  if (!/[A-Z]/.test(password)) {
+    return { error: 'Пароль должен содержать хотя бы одну заглавную букву' }
+  }
+
+  if (!/[0-9]/.test(password)) {
+    return { error: 'Пароль должен содержать хотя бы одну цифру' }
+  }
+
   if (password !== confirm) {
     return { error: 'Пароли не совпадают' }
   }
@@ -58,10 +75,19 @@ export async function uploadAvatarAction(formData: FormData) {
 
   const file = formData.get('avatar') as File | null
   if (!file || file.size === 0) return { error: 'Файл не выбран' }
-  if (file.size > 5 * 1024 * 1024) return { error: 'Максимум 5 МБ' }
-  if (!file.type.startsWith('image/')) return { error: 'Только изображения' }
 
-  const ext = file.name.split('.').pop()
+  const MAX_SIZE = 5 * 1024 * 1024 // 5 МБ
+  if (file.size > MAX_SIZE) return { error: 'Максимум 5 МБ' }
+
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    return { error: 'Только изображения (JPEG, PNG, WebP, GIF)' }
+  }
+
+  const ext = file.name.split('.').pop()?.toLowerCase()
+  if (!ext || !ALLOWED_IMAGE_EXTENSIONS.includes(ext)) {
+    return { error: 'Недопустимое расширение файла' }
+  }
+
   const path = `${user.id}/avatar.${ext}`
 
   const arrayBuffer = await file.arrayBuffer()
@@ -73,16 +99,16 @@ export async function uploadAvatarAction(formData: FormData) {
 
   if (uploadError) return { error: uploadError.message }
 
-  const { data: { publicUrl } } = supabase.storage
+  const { data } = supabase.storage
     .from(AVATAR_BUCKET)
     .getPublicUrl(path)
 
   // Add cache-bust so browser reloads the image
-  const avatarUrl = `${publicUrl}?t=${Date.now()}`
+  const avatarUrl = `${data.publicUrl}?t=${Date.now()}`
 
   const { error: dbError } = await supabase
     .from('users')
-    .update({ avatar_url: avatarUrl } as never)
+    .update({ avatar_url: avatarUrl })
     .eq('id', user.id)
 
   if (dbError) return { error: dbError.message }
