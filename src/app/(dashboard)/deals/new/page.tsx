@@ -2,6 +2,7 @@ import { createDealAction } from '@/features/deals/actions/deals.actions'
 import { createClient } from '@/lib/supabase/server'
 import { ArrowLeft, TrendingUp, User, Building2 } from 'lucide-react'
 import Link from 'next/link'
+import { PropertySelectWithCreate } from '@/features/deals/components/PropertySelectWithCreate'
 
 export default async function NewDealPage({
   searchParams,
@@ -114,17 +115,29 @@ export default async function NewDealPage({
 
           {/* Объект */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">Объект</label>
-            <select
-              name="property_id"
-              defaultValue={params.property_id ?? ''}
-              className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer"
-            >
-              <option value="">Выберите объект</option>
-              {properties?.map(p => (
-                <option key={p.id} value={p.id}>{p.title}{p.address ? ` — ${p.address}` : ''}</option>
-              ))}
-            </select>
+            <div className="flex items-end gap-2">
+              <div className="flex-1">
+                <label className="text-sm font-medium text-foreground">Объект</label>
+                <select
+                  name="property_id"
+                  defaultValue={params.property_id ?? ''}
+                  className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer"
+                >
+                  <option value="">Выберите объект</option>
+                  {properties?.map(p => (
+                    <option key={p.id} value={p.id}>{p.title}{p.address ? ` — ${p.address}` : ''}</option>
+                  ))}
+                </select>
+              </div>
+              <Link
+                href="/properties/new"
+                target="_blank"
+                className="h-10 px-4 rounded-xl border border-primary/30 text-primary text-sm font-medium hover:bg-primary/10 transition flex items-center gap-2 whitespace-nowrap"
+              >
+                <Building2 className="w-4 h-4" />
+                +
+              </Link>
+            </div>
           </div>
         </div>
 
