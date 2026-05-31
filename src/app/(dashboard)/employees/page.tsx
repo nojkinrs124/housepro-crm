@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { Users, Shield, UserCheck, User } from 'lucide-react'
+import { Users, Shield, UserCheck, User, Plus } from 'lucide-react'
+import Link from 'next/link'
 
 const roleLabels: Record<string, string> = {
   admin: 'Администратор', manager: 'Менеджер',
@@ -39,6 +40,13 @@ export default async function EmployeesPage() {
           <h1 className="text-2xl font-bold text-foreground">Сотрудники</h1>
           <p className="text-muted-foreground mt-1">{employees?.length ?? 0} сотрудников</p>
         </div>
+        <Link
+          href="/employees/new"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition"
+        >
+          <Plus className="w-4 h-4" />
+          Добавить
+        </Link>
       </div>
 
       {/* Stats */}

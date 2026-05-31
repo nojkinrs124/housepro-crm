@@ -1,0 +1,167 @@
+'use server'
+
+import { createClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
+import type { UserRole } from '@/types/database'
+
+const VALID_ROLES: UserRole[] = ['admin', 'manager', 'agent', 'accountant']
+
+export async function createEmployeeAction(formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { error: 'Не авторизован' }
+  }
+
+  // Check admin role
+  const { data: profile } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.role !== 'admin') {
+    return { error: 'Только администратор может создавать сотрудников' }
+  }
+
+  const email = (formData.get('email') as string)?.trim()
+  const full_name = (formData.get('full_name') as string)?.trim()
+  const role = formData.get('role') as string
+  const phone = (formData.get('phone') as string)?.trim() || null
+
+  if (!email || !full_name || !role) {
+    return { error: 'Заполните все обязательные поля' }
+  }
+
+  if (!VALID_ROLES.includes(role as UserRole)) {
+    return { error: 'Неверная роль' }
+  }
+
+  const payload = {
+    email,
+    full_name,
+    role: role as UserRole,
+    phone,
+    is_active: true,
+  }
+
+  const { error } = await supabase.from('users').insert(payload)
+  if (error) return { error: error.message }
+
+  revalidatePath('/employees')
+  return { success: true }
+}
+
+export async function updateEmployeeAction(employeeId: string, formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { error: 'Не авторизован' }
+  }
+
+  // Check admin role
+  const { data: profile } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.role !== 'admin') {
+    return { error: 'Только администратор может редактировать сотрудников' }
+  }
+
+  const full_name = (formData.get('full_name') as string)?.trim()
+  const role = formData.get('role') as string
+  const phone = (formData.get('phone') as string)?.trim() || null
+
+  if (!full_name || !role) {
+    return { error: 'Заполните все обязательные поля' }
+  }
+
+  if (!VALID_ROLES.includes(role as UserRole)) {
+    return { error: 'Неверная роль' }
+  }
+
+  const payload = {
+    full_name,
+    role: role as UserRole,
+    phone,
+  }
+
+  const { error } = await supabase
+    .from('users')
+    .update(payload)
+    .eq('id', employeeId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/employees')
+  return { success: true }
+}
+
+export async function deactivateEmployeeAction(employeeId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { error: 'Не авторизован' }
+  }
+
+  // Check admin role
+  const { data: profile } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.role !== 'admin') {
+    return { error: 'Только администратор может деактивировать сотрудников' }
+  }
+
+  // Don't allow deactivating yourself
+  if (employeeId === user.id) {
+    return { error: 'Нельзя деактивировать себя' }
+  }
+
+  const { error } = await supabase
+    .from('users')
+    .update({ is_active: false })
+    .eq('id', employeeId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/employees')
+  return { success: true }
+}
+
+export async function activateEmployeeAction(employeeId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { error: 'Не авторизован' }
+  }
+
+  // Check admin role
+  const { data: profile } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.role !== 'admin') {
+    return { error: 'Только администратор может активировать сотрудников' }
+  }
+
+  const { error } = await supabase
+    .from('users')
+    .update({ is_active: true })
+    .eq('id', employeeId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/employees')
+  return { success: true }
+}
