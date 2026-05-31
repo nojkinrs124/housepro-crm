@@ -96,13 +96,22 @@ export default async function NewContractPage({
 
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-foreground">Объект</label>
-            <select name="property_id" defaultValue={params.property_id ?? ''}
-              className="w-full h-10 px-4 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer">
-              <option value="">Выберите объект</option>
-              {properties?.map(p => (
-                <option key={p.id} value={p.id}>{p.title} — {p.address}</option>
-              ))}
-            </select>
+            <div className="flex items-center gap-2">
+              <select name="property_id" defaultValue={params.property_id ?? ''}
+                className="flex-1 h-10 px-4 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer">
+                <option value="">Выберите объект</option>
+                {properties?.map(p => (
+                  <option key={p.id} value={p.id}>{p.title} — {p.address}</option>
+                ))}
+              </select>
+              <Link
+                href="/properties/new"
+                target="_blank"
+                className="h-10 px-4 rounded-xl border border-primary/30 text-primary text-sm font-medium hover:bg-primary/10 transition flex items-center gap-1 whitespace-nowrap"
+              >
+                <span>+</span>
+              </Link>
+            </div>
           </div>
         </div>
 
