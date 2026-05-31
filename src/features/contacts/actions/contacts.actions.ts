@@ -60,8 +60,20 @@ export async function updateContactAction(contactId: string, formData: FormData)
   const full_name = (formData.get('full_name') as string)?.trim()
   const phone = (formData.get('phone') as string)?.trim() || null
   const email = (formData.get('email') as string)?.trim() || null
+  const telegram = (formData.get('telegram') as string)?.trim() || null
+  const whatsapp = (formData.get('whatsapp') as string)?.trim() || null
+  const passport = (formData.get('passport') as string)?.trim() || null
+  const birth_date = (formData.get('birth_date') as string) || null
   const role = formData.get('role') as string
+  const status = formData.get('status') as string || 'new'
   const comment = (formData.get('comment') as string)?.trim() || null
+  const country = (formData.get('country') as string)?.trim() || null
+  const region = (formData.get('region') as string)?.trim() || null
+  const city = (formData.get('city') as string)?.trim() || null
+  const street = (formData.get('street') as string)?.trim() || null
+  const house_number = (formData.get('house_number') as string)?.trim() || null
+  const building = (formData.get('building') as string)?.trim() || null
+  const apartment = (formData.get('apartment') as string)?.trim() || null
 
   if (!full_name || !role) {
     return { error: 'Заполните обязательные поля' }
@@ -77,8 +89,20 @@ export async function updateContactAction(contactId: string, formData: FormData)
       full_name,
       phone,
       email,
+      telegram,
+      whatsapp,
+      passport,
+      birth_date,
       role: role as ContactRole,
+      status: status as any,
       comment,
+      country,
+      region,
+      city,
+      street,
+      house_number,
+      building,
+      apartment,
       updated_at: new Date().toISOString(),
     })
     .eq('id', contactId)
