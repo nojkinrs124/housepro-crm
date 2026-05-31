@@ -184,6 +184,14 @@ create table if not exists public.tasks (
     priority in ('low', 'medium', 'high')
   ),
   deadline timestamp with time zone,
+  -- Relationship fields
+  lead_id uuid references public.leads(id) on delete set null,
+  client_id uuid references public.clients(id) on delete set null,
+  owner_id uuid references public.owners(id) on delete set null,
+  deal_id uuid references public.deals(id) on delete set null,
+  property_id uuid references public.properties(id) on delete set null,
+  contract_id uuid references public.contracts(id) on delete set null,
+  payment_id uuid references public.payments(id) on delete set null,
   created_at timestamp with time zone default timezone('utc', now())
 );
 

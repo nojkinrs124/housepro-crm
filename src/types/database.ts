@@ -123,6 +123,14 @@ export interface Task {
   deadline?: string
   created_at: string
   assignee?: User
+  // Relationships
+  lead_id?: string
+  client_id?: string
+  owner_id?: string
+  deal_id?: string
+  property_id?: string
+  contract_id?: string
+  payment_id?: string
 }
 
 export interface Log {
