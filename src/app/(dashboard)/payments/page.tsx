@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getPaymentStats } from '@/features/payments/actions/payments.actions'
 import { MarkPaidButton } from '@/features/payments/components/MarkPaidButton'
 import { DeletePaymentButton } from '@/features/payments/components/DeletePaymentButton'
+import { PaymentStatusEditor } from '@/features/payments/components/PaymentStatusEditor'
 import { Plus, TrendingUp, Clock, AlertTriangle, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
 
@@ -213,9 +214,7 @@ export default async function PaymentsPage({
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium ${sc.className}`}>
-                          {sc.label}
-                        </span>
+                        <PaymentStatusEditor paymentId={p.id} currentStatus={(p.payment_status ?? 'pending') as any} />
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1 justify-end">
