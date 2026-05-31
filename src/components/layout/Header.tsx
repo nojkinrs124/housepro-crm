@@ -43,7 +43,7 @@ export function Header({ user }: { user: User | null }) {
           </button>
           <div className="absolute right-0 top-full mt-1 w-44 bg-card border border-border rounded-xl shadow-lg p-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
             {[
-              { label: 'Клиент',  href: '/clients/new' },
+              { label: 'Контакт', href: '/contacts/new' },
               { label: 'Объект',  href: '/properties/new' },
               { label: 'Договор', href: '/contracts/new' },
               { label: 'Задача',  href: '/tasks/new' },

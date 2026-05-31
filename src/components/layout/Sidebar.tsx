@@ -16,7 +16,7 @@ const navigation = [
   { name: 'Дашборд',     href: '/dashboard',  icon: LayoutDashboard },
   { name: 'Лиды',        href: '/leads',      icon: Zap },
   { name: 'Сделки',      href: '/deals',      icon: TrendingUp },
-  { name: 'Клиенты',     href: '/clients',    icon: Users },
+  { name: 'Контакты',    href: '/contacts',   icon: Users },
   { name: 'Объекты',     href: '/properties', icon: Home },
   { name: 'Договоры',    href: '/contracts',  icon: FileText },
   { name: 'Задачи',      href: '/tasks',      icon: CheckSquare },

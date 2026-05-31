@@ -35,8 +35,46 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
--- 2. OWNERS TABLE
--- Собственники объектов (отдельно от клиентов)
+-- 2. CONTACTS TABLE (unified Clients + Owners)
+-- Единая таблица контактов для клиентов и собственников
+create table if not exists public.contacts (
+  id uuid primary key default gen_random_uuid(),
+  full_name text not null,
+  phone text,
+  telegram text,
+  whatsapp text,
+  email text,
+  passport text,
+  birth_date date,
+  -- Role can be: client, owner, or both
+  role text not null default 'client' check (
+    role in ('client', 'owner', 'both')
+  ),
+  -- Address fields for clients
+  country text,
+  region text,
+  city text,
+  street text,
+  house_number text,
+  building text,
+  apartment text,
+  -- Additional info
+  comment text,
+  source text,
+  status text default 'new' check (
+    status in ('new', 'active', 'vip', 'inactive')
+  ),
+  created_at timestamp with time zone default timezone('utc', now()),
+  updated_at timestamp with time zone default timezone('utc', now())
+);
+
+-- Create indexes for faster queries
+create index if not exists idx_contacts_phone on public.contacts(phone);
+create index if not exists idx_contacts_role on public.contacts(role);
+create index if not exists idx_contacts_status on public.contacts(status);
+
+-- 2.1 OWNERS TABLE (legacy - keeping for backward compatibility)
+-- Таблица собственников (для совместимости)
 create table if not exists public.owners (
   id uuid primary key default gen_random_uuid(),
   full_name text not null,

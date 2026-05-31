@@ -34,6 +34,33 @@ export interface User {
   created_at: string
 }
 
+export type ContactRole = 'client' | 'owner' | 'both'
+export type ContactStatus = 'new' | 'active' | 'vip' | 'inactive'
+
+export interface Contact {
+  id: string
+  full_name: string
+  phone?: string
+  telegram?: string
+  whatsapp?: string
+  email?: string
+  passport?: string
+  birth_date?: string
+  role: ContactRole
+  country?: string
+  region?: string
+  city?: string
+  street?: string
+  house_number?: string
+  building?: string
+  apartment?: string
+  comment?: string
+  source?: string
+  status: ContactStatus
+  created_at: string
+  updated_at: string
+}
+
 export interface Client {
   id: string
   full_name: string
