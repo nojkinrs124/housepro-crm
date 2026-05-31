@@ -3,6 +3,7 @@ import { ArrowLeft, Phone, MessageCircle, FileText, Edit, Trash2 } from 'lucide-
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { deleteClientAction } from '@/features/clients/actions/clients.actions'
+import { DeleteClientButton } from '@/features/clients/components/DeleteClientButton'
 import { FilesSection } from '@/features/files/components/FilesSection'
 
 const statusColors: Record<string, string> = {
@@ -78,18 +79,7 @@ export default async function ClientPage({ params }: { params: Promise<{ id: str
             <Edit className="w-4 h-4" />
             Редактировать
           </Link>
-          <form action={deleteClientAction.bind(null, id)}>
-            <button
-              type="submit"
-              className="flex items-center gap-2 px-4 py-2 border border-destructive/30 text-destructive rounded-xl text-sm font-medium hover:bg-destructive/10 transition-all"
-              onClick={(e) => {
-                if (!confirm('Удалить клиента?')) e.preventDefault()
-              }}
-            >
-              <Trash2 className="w-4 h-4" />
-              Удалить
-            </button>
-          </form>
+          <DeleteClientButton clientId={id} />
         </div>
       </div>
 
