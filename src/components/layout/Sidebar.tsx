@@ -82,11 +82,19 @@ export function Sidebar({ user }: { user: User | null }) {
         {!collapsed ? (
           <div className="space-y-2">
             <div className="flex items-center gap-2.5 px-1">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                <span className="text-primary text-xs font-semibold">
-                  {user?.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
-                </span>
-              </div>
+              {user?.avatar_url ? (
+                <img 
+                  src={user.avatar_url}
+                  alt={user.full_name || 'User'}
+                  className="w-8 h-8 rounded-full object-cover shrink-0"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <span className="text-primary text-xs font-semibold">
+                    {user?.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
+                  </span>
+                </div>
+              )}
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-foreground truncate">
                   {user?.full_name ?? 'Сотрудник'}

@@ -61,21 +61,21 @@ export default async function SettingsPage() {
             title: 'Компания',
             desc: 'Название, логотип, реквизиты',
             color: 'bg-blue-50 text-blue-600',
-            href: null,
+            href: '/settings/company',
           },
           {
             icon: Bell,
             title: 'Уведомления',
             desc: 'Email и push-уведомления',
             color: 'bg-yellow-50 text-yellow-600',
-            href: null,
+            href: '/settings/notifications',
           },
           {
             icon: Shield,
             title: 'Безопасность',
             desc: 'Роли, доступы, пароли',
             color: 'bg-green-50 text-green-600',
-            href: null,
+            href: '/settings/security',
           },
           {
             icon: Database,
@@ -89,7 +89,7 @@ export default async function SettingsPage() {
             title: 'Общие настройки',
             desc: 'Язык, валюта, временная зона',
             color: 'bg-gray-50 text-gray-600',
-            href: null,
+            href: '/settings/general',
           },
         ].map((item) => {
           const Icon = item.icon
