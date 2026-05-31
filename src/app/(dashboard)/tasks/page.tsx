@@ -18,13 +18,14 @@ const columns = [
   { status: 'todo', label: 'К выполнению', color: 'border-t-gray-300' },
   { status: 'in_progress', label: 'В работе', color: 'border-t-blue-400' },
   { status: 'done', label: 'Выполнено', color: 'border-t-green-400' },
+  { status: 'cancelled', label: 'Отменено', color: 'border-t-red-300' },
 ]
 
 export default async function TasksPage() {
   const supabase = await createClient()
   const { data: tasks } = await supabase
     .from('tasks')
-    .select('*, assignee:users(full_name)')
+    .select('*')
     .order('created_at', { ascending: false })
 
   const tasksByStatus = (status: string) =>
@@ -90,14 +91,12 @@ export default async function TasksPage() {
                             {new Date(task.deadline).toLocaleDateString('ru-RU')}
                           </div>
                         )}
-                        {(task.assignee as { full_name?: string } | null)?.full_name && (
+                        {task.assigned_to && (
                           <div className="flex items-center gap-1 text-xs text-muted-foreground ml-auto">
                             <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center">
-                              <span className="text-primary text-xs">
-                                {(task.assignee as { full_name: string }).full_name.charAt(0)}
-                              </span>
+                              <span className="text-primary text-xs">👤</span>
                             </div>
-                            {(task.assignee as { full_name: string }).full_name}
+                            Назначена
                           </div>
                         )}
                       </div>
