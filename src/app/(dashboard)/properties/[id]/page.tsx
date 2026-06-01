@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { ArrowLeft, Home, MapPin, DollarSign, Ruler, Building } from 'lucide-react'
+import { ArrowLeft, Home, MapPin, DollarSign, Ruler, Building, Edit } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { FilesSection } from '@/features/files/components/FilesSection'
@@ -74,10 +74,17 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
             </div>
           </div>
         </div>
-        <Link href={`/contracts/new?property_id=${id}`}
-          className="px-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition-all">
-          + Договор
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href={`/properties/${id}/edit`}
+            className="flex items-center gap-2 px-4 py-2.5 bg-muted text-foreground rounded-xl text-sm font-medium hover:bg-muted/80 transition-all">
+            <Edit className="w-4 h-4" />
+            Редактировать
+          </Link>
+          <Link href={`/contracts/new?property_id=${id}`}
+            className="px-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition-all">
+            + Договор
+          </Link>
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">

@@ -119,15 +119,43 @@ create table if not exists public.properties (
   price numeric,
   deposit numeric,
   area numeric,
+  living_area numeric,
+  kitchen_area numeric,
   rooms integer,
   floor integer,
+  total_floors integer,
+  ceiling_height numeric,
+  
+  -- House/Building info
+  house_type text,
+  wall_material text,
+  year_built integer,
+  has_elevator boolean,
+  has_parking boolean,
+  
+  -- Communications
+  has_internet boolean,
+  has_tv boolean,
+  heating_type text,
+  water_supply_type text,
+  
+  -- Financial details
+  management_fee numeric,
+  utilities_included text,
+  
   description text,
   owner_id uuid references public.owners(id) on delete set null,
   manager_id uuid references public.users(id) on delete set null,
   status text not null default 'available' check (
     status in ('available', 'reserved', 'rented', 'sold', 'inactive')
   ),
-  created_at timestamp with time zone default timezone('utc', now())
+  
+  -- Content
+  photo_urls text[],
+  video_url text,
+  
+  created_at timestamp with time zone default timezone('utc', now()),
+  updated_at timestamp with time zone default timezone('utc', now())
 );
 
 -- 5. CONTRACTS TABLE

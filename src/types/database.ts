@@ -96,13 +96,36 @@ export interface Property {
   price?: number
   deposit?: number
   area?: number
+  living_area?: number
+  kitchen_area?: number
   rooms?: number
   floor?: number
+  total_floors?: number
+  ceiling_height?: number
+  // House/Building
+  house_type?: string
+  wall_material?: string
+  year_built?: number
+  has_elevator?: boolean
+  has_parking?: boolean
+  // Communications
+  has_internet?: boolean
+  has_tv?: boolean
+  heating_type?: string
+  water_supply_type?: string
+  // Financial
+  management_fee?: number
+  utilities_included?: string
+  // Content
   description?: string
+  photo_urls?: string[]
+  video_url?: string
+  // Relations
   owner_id?: string
   manager_id?: string
   status: PropertyStatus
   created_at: string
+  updated_at?: string
   owner?: Owner
   manager?: User
 }
