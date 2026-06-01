@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { DealsKanbanBoard } from '@/features/deals/components/DealsKanban'
 import { Plus, Home, User, Building2, DollarSign, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 import { updateDealStatusAction } from '@/features/deals/actions/deals.actions'
@@ -92,96 +92,7 @@ export default async function DealsPage() {
       </div>
 
       {/* Kanban */}
-      <div className="overflow-x-auto pb-4">
-        <div className="flex gap-4 min-w-max">
-          {columns.map(col => {
-            const colDeals = byStatus(col.status)
-            return (
-              <div key={col.status}
-                className={`w-64 bg-card border-t-2 ${col.color} border border-border rounded-2xl flex flex-col`}>
-                <div className="p-4 border-b border-border flex items-center justify-between">
-                  <span className="font-semibold text-foreground text-sm">{col.label}</span>
-                  <span className="bg-muted text-muted-foreground text-xs px-2 py-0.5 rounded-full font-medium">
-                    {colDeals.length}
-                  </span>
-                </div>
-
-                <div className="p-3 space-y-2 min-h-48 flex-1">
-                  {colDeals.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground text-xs">Нет сделок</div>
-                  ) : (
-                    colDeals.map(deal => {
-                      const client   = deal.client   as { full_name?: string } | null
-                      const owner    = deal.owner    as { full_name?: string } | null
-                      const property = deal.property as { title?: string; address?: string } | null
-                      return (
-                        <div key={deal.id}
-                          className="bg-background border border-border rounded-xl p-3 space-y-2 hover:shadow-sm transition-all">
-                          {/* Type badge */}
-                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${dealTypeColors[deal.deal_type] ?? 'bg-gray-100 text-gray-600'}`}>
-                            {dealTypeLabels[deal.deal_type] ?? deal.deal_type}
-                          </span>
-
-                          {/* Owner */}
-                          {owner?.full_name && (
-                            <div className="flex items-center gap-1.5 text-xs text-foreground">
-                              <Building2 className="w-3 h-3 text-orange-400 shrink-0" />
-                              <span className="truncate text-muted-foreground">{owner.full_name}</span>
-                            </div>
-                          )}
-
-                          {/* Client */}
-                          {client?.full_name && (
-                            <div className="flex items-center gap-1.5 text-xs text-foreground">
-                              <User className="w-3 h-3 text-blue-400 shrink-0" />
-                              <span className="font-medium truncate">{client.full_name}</span>
-                            </div>
-                          )}
-
-                          {/* Property */}
-                          {property && (
-                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                              <Home className="w-3 h-3 shrink-0" />
-                              <span className="truncate">{property.title ?? property.address}</span>
-                            </div>
-                          )}
-
-                          {/* Amount */}
-                          {deal.amount && (
-                            <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
-                              <DollarSign className="w-3 h-3 text-emerald-500" />
-                              {Number(deal.amount).toLocaleString('ru-RU')} ₽
-                            </div>
-                          )}
-
-                          {/* Move forward */}
-                          {nextStatus[col.status] && (
-                            <form action={updateDealStatusAction.bind(null, deal.id, nextStatus[col.status])}>
-                              <button type="submit"
-                                className="w-full text-xs py-1.5 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-all font-medium">
-                                Следующий этап →
-                              </button>
-                            </form>
-                          )}
-
-                          {/* Create contract */}
-                          {col.status === 'contract' && (
-                            <Link
-                              href={`/contracts/new?client_id=${deal.client_id ?? ''}&property_id=${deal.property_id ?? ''}&owner_id=${deal.owner_id ?? ''}`}
-                              className="block w-full text-center text-xs py-1.5 bg-violet-100 text-violet-700 rounded-lg hover:bg-violet-200 transition-all font-medium">
-                              + Создать договор
-                            </Link>
-                          )}
-                        </div>
-                      )
-                    })
-                  )}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
+      <DealsKanbanBoard deals={deals ?? []} />
     </div>
   )
 }
