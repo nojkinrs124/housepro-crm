@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { PaymentStatus } from '@/types/database'
 
-const VALID_PAYMENT_STATUSES: PaymentStatus[] = ['pending', 'paid', 'overdue', 'cancelled']
+const VALID_PAYMENT_STATUSES: PaymentStatus[] = ['pending', 'paid', 'partial', 'overdue', 'cancelled']
 
 export async function createPaymentAction(formData: FormData) {
   const supabase = await createClient()
@@ -43,6 +43,40 @@ export async function createPaymentAction(formData: FormData) {
   revalidatePath('/payments')
   if (contract_id) revalidatePath(`/contracts/${contract_id}`)
 
+  return { success: true }
+}
+
+export async function updatePaymentAction(paymentId: string, formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Не авторизован' }
+
+  const amountRaw = formData.get('amount') as string
+  const amount = parseFloat(amountRaw)
+  if (!amountRaw || isNaN(amount) || amount <= 0) {
+    return { error: 'Укажите корректную сумму' }
+  }
+
+  const status = formData.get('payment_status') as string
+  if (!VALID_PAYMENT_STATUSES.includes(status as PaymentStatus)) {
+    return { error: `Недопустимый статус: ${status}` }
+  }
+
+  const payload: Record<string, unknown> = {
+    amount,
+    payment_type:   formData.get('payment_type') as string,
+    payment_status: status as PaymentStatus,
+    due_date:       (formData.get('due_date') as string) || null,
+    notes:          (formData.get('notes') as string)?.trim() || null,
+  }
+  if (status === 'paid') {
+    payload.payment_date = new Date().toISOString()
+  }
+
+  const { error } = await supabase.from('payments').update(payload).eq('id', paymentId)
+  if (error) return { error: error.message }
+
+  revalidatePath('/payments')
   return { success: true }
 }
 

@@ -6,15 +6,8 @@ import { deleteClientAction } from '@/features/clients/actions/clients.actions'
 export function DeleteClientButton({ clientId }: { clientId: string }) {
   const handleDelete = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    
-    if (!confirm('Удалить клиента?')) {
-      return
-    }
-    
-    const formData = new FormData()
-    formData.append('client_id', clientId)
-    
-    await deleteClientAction(formData)
+    if (!confirm('Удалить клиента?')) return
+    await deleteClientAction(clientId)
   }
 
   return (

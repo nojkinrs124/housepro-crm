@@ -1,43 +1,22 @@
 import { DealsKanbanBoard } from '@/features/deals/components/DealsKanban'
-import { Plus, Home, User, Building2, DollarSign, TrendingUp } from 'lucide-react'
+import { Plus, DollarSign, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
-import { updateDealStatusAction } from '@/features/deals/actions/deals.actions'
-
-const columns = [
-  { status: 'new', label: 'Новые', color: 'border-t-blue-400' },
-  { status: 'showing', label: 'Показы', color: 'border-t-yellow-400' },
-  { status: 'negotiation', label: 'Переговоры', color: 'border-t-orange-400' },
-  { status: 'contract', label: 'Договор', color: 'border-t-purple-400' },
-  { status: 'payment', label: 'Оплата', color: 'border-t-cyan-400' },
-  { status: 'completed', label: 'Завершено', color: 'border-t-green-400' },
-]
-
-const dealTypeLabels: Record<string, string> = {
-  rent: 'Аренда', sale: 'Продажа',
-  management: 'Управление', commercial: 'Коммерция', subrent: 'Субаренда',
-}
-
-const dealTypeColors: Record<string, string> = {
-  rent: 'bg-blue-100 text-blue-700',
-  sale: 'bg-emerald-100 text-emerald-700',
-  management: 'bg-purple-100 text-purple-700',
-  commercial: 'bg-orange-100 text-orange-700',
-  subrent: 'bg-cyan-100 text-cyan-700',
-}
-
-const nextStatus: Record<string, string> = {
-  new: 'showing', showing: 'negotiation', negotiation: 'contract',
-  contract: 'payment', payment: 'completed',
-}
+import { createClient } from '@/lib/supabase/server'
 
 export default async function DealsPage() {
   const supabase = await createClient()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: rawDeals } = await supabase
     .from('deals')
-    .select('*, client:clients(full_name, phone), owner:owners(full_name, phone), property:properties(title, address)')
+    .select(`
+      *,
+      client:clients(full_name, phone),
+      property:properties(title, address),
+      owner_contact:contacts!deals_owner_contact_id_fkey(full_name, phone),
+      client_contact:contacts!deals_client_contact_id_fkey(full_name, phone)
+    `)
     .order('created_at', { ascending: false })
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const deals = rawDeals as any[] | null
 
@@ -71,10 +50,10 @@ export default async function DealsPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Всего сделок', value: deals?.length ?? 0, icon: TrendingUp, color: 'bg-blue-50 text-blue-600' },
-          { label: 'Активных', value: activeDealCount, icon: DollarSign, color: 'bg-green-50 text-green-600' },
-          { label: 'Завершено', value: byStatus('completed').length, icon: TrendingUp, color: 'bg-emerald-50 text-emerald-600' },
-          { label: 'Отменено', value: byStatus('cancelled').length, icon: TrendingUp, color: 'bg-red-50 text-red-600' },
+          { label: 'Всего сделок',  value: deals?.length ?? 0,         icon: TrendingUp, color: 'bg-blue-50 text-blue-600' },
+          { label: 'Активных',      value: activeDealCount,             icon: DollarSign, color: 'bg-green-50 text-green-600' },
+          { label: 'Завершено',     value: byStatus('completed').length, icon: TrendingUp, color: 'bg-emerald-50 text-emerald-600' },
+          { label: 'Отменено',      value: byStatus('cancelled').length, icon: TrendingUp, color: 'bg-red-50 text-red-600' },
         ].map(stat => {
           const Icon = stat.icon
           return (

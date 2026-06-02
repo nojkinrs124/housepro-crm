@@ -4,7 +4,7 @@ export type ClientStatus = 'new' | 'in_progress' | 'active' | 'closed' | 'vip' |
 
 export type PropertyType = 'apartment' | 'house' | 'commercial' | 'office' | 'warehouse' | 'land'
 
-export type DealType = 'rent' | 'sale' | 'management' | 'subrent'
+export type DealType = 'rent' | 'sale' | 'management' | 'subrent' | 'commercial'
 
 export type PropertyStatus = 'available' | 'reserved' | 'rented' | 'sold' | 'inactive'
 
@@ -44,9 +44,17 @@ export interface Contact {
   telegram?: string
   whatsapp?: string
   email?: string
+  // Legacy field
   passport?: string
+  // Structured passport fields
+  passport_series?: string
+  passport_number?: string
+  passport_issued_date?: string
+  passport_issued_by?: string
+  passport_department_code?: string
   birth_date?: string
   role: ContactRole
+  // Address
   country?: string
   region?: string
   city?: string
@@ -204,55 +212,39 @@ export interface DocumentTemplate {
   created_at: string
 }
 
-// Supabase Database type (simplified)
-export type Database = {
-  public: {
-    Tables: {
-      users: {
-        Row: User
-        Insert: Omit<User, 'created_at'>
-        Update: Partial<Omit<User, 'id' | 'created_at'>>
-      }
-      clients: {
-        Row: Client
-        Insert: Omit<Client, 'id' | 'created_at'>
-        Update: Partial<Omit<Client, 'id' | 'created_at'>>
-      }
-      owners: {
-        Row: Owner
-        Insert: Omit<Owner, 'id' | 'created_at'>
-        Update: Partial<Omit<Owner, 'id' | 'created_at'>>
-      }
-      properties: {
-        Row: Property
-        Insert: Omit<Property, 'id' | 'created_at'>
-        Update: Partial<Omit<Property, 'id' | 'created_at'>>
-      }
-      contracts: {
-        Row: Contract
-        Insert: Omit<Contract, 'id' | 'created_at'>
-        Update: Partial<Omit<Contract, 'id' | 'created_at'>>
-      }
-      files: {
-        Row: FileRecord
-        Insert: Omit<FileRecord, 'id' | 'created_at'>
-        Update: Partial<Omit<FileRecord, 'id' | 'created_at'>>
-      }
-      tasks: {
-        Row: Task
-        Insert: Omit<Task, 'id' | 'created_at'>
-        Update: Partial<Omit<Task, 'id' | 'created_at'>>
-      }
-      logs: {
-        Row: Log
-        Insert: Omit<Log, 'id' | 'created_at'>
-        Update: Partial<Omit<Log, 'id' | 'created_at'>>
-      }
-    }
-  }
+export interface Deal {
+  id: string
+  deal_type: DealType
+  status: string
+  client_id?: string
+  property_id?: string
+  owner_contact_id?: string
+  client_contact_id?: string
+  amount?: number
+  commission?: number
+  notes?: string
+  manager_id?: string
+  created_at: string
 }
 
-export type PaymentStatus = 'pending' | 'paid' | 'overdue' | 'cancelled'
+export interface CompanySettings {
+  id: string
+  name?: string
+  inn?: string
+  ogrn?: string
+  address?: string
+  phone?: string
+  email?: string
+  logo_url?: string
+  created_at: string
+  updated_at: string
+}
+
+// Supabase Database type (simplified)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Database = any
+
+export type PaymentStatus = 'pending' | 'paid' | 'partial' | 'overdue' | 'cancelled'
 export type PaymentType = 'rent' | 'deposit' | 'commission' | 'penalty' | 'other'
 
 export interface Payment {

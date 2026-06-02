@@ -2,7 +2,6 @@ import { createDealAction } from '@/features/deals/actions/deals.actions'
 import { createClient } from '@/lib/supabase/server'
 import { ArrowLeft, TrendingUp, User, Building2 } from 'lucide-react'
 import Link from 'next/link'
-import { PropertySelectWithCreate } from '@/features/deals/components/PropertySelectWithCreate'
 
 export default async function NewDealPage({
   searchParams,
@@ -12,16 +11,18 @@ export default async function NewDealPage({
   const params = await searchParams
   const supabase = await createClient()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [{ data: rawClients }, { data: rawOwners }, { data: rawProperties }] = await Promise.all([
-    supabase.from('clients').select('id, full_name, phone').order('full_name'),
-    supabase.from('owners').select('id, full_name, phone').order('full_name'),
+  // Загружаем контакты — единая база (owners + clients)
+  const [{ data: rawContacts }, { data: rawProperties }] = await Promise.all([
+    supabase.from('contacts').select('id, full_name, phone, role').order('full_name'),
     supabase.from('properties').select('id, title, address').order('title'),
   ])
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const clients = rawClients as any[] | null
-  const owners = rawOwners as any[] | null
-  const properties = rawProperties as any[] | null
+
+  const contacts = rawContacts ?? []
+  const properties = rawProperties ?? []
+
+  // Фильтруем по ролям
+  const owners = contacts.filter(c => c.role === 'owner' || c.role === 'both')
+  const clients = contacts.filter(c => c.role === 'client' || c.role === 'both')
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -40,7 +41,7 @@ export default async function NewDealPage({
         </div>
       </div>
 
-      <form action={async (fd: FormData) => { 'use server'; await createDealAction(fd) }} className="space-y-4">
+      <form action={createDealAction} className="space-y-4">
 
         {/* Тип сделки */}
         <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
@@ -66,18 +67,18 @@ export default async function NewDealPage({
         <div className="bg-card border border-border rounded-2xl p-6 space-y-5">
           <h2 className="font-semibold text-foreground">Стороны сделки</h2>
 
-          {/* Собственник */}
+          {/* Собственник — Сторона 1 */}
           <div className="space-y-1.5">
             <label className="flex items-center gap-2 text-sm font-medium text-foreground">
               <Building2 className="w-4 h-4 text-orange-500" />
               Собственник (Сторона 1)
             </label>
             <select
-              name="owner_id"
+              name="owner_contact_id"
               className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer"
             >
               <option value="">Выберите собственника</option>
-              {owners?.map(o => (
+              {owners.map(o => (
                 <option key={o.id} value={o.id}>
                   {o.full_name}{o.phone ? ` · ${o.phone}` : ''}
                 </option>
@@ -85,23 +86,23 @@ export default async function NewDealPage({
             </select>
             <p className="text-xs text-muted-foreground">
               Нет нужного?{' '}
-              <Link href="/owners/new" className="text-primary hover:underline">Добавить собственника →</Link>
+              <Link href="/contacts/new" className="text-primary hover:underline">Добавить контакт →</Link>
             </p>
           </div>
 
-          {/* Клиент */}
+          {/* Клиент — Сторона 2 */}
           <div className="space-y-1.5">
             <label className="flex items-center gap-2 text-sm font-medium text-foreground">
               <User className="w-4 h-4 text-blue-500" />
               Клиент (Сторона 2)
             </label>
             <select
-              name="client_id"
+              name="client_contact_id"
               defaultValue={params.client_id ?? ''}
               className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer"
             >
               <option value="">Выберите клиента</option>
-              {clients?.map(c => (
+              {clients.map(c => (
                 <option key={c.id} value={c.id}>
                   {c.full_name}{c.phone ? ` · ${c.phone}` : ''}
                 </option>
@@ -109,33 +110,31 @@ export default async function NewDealPage({
             </select>
             <p className="text-xs text-muted-foreground">
               Нет нужного?{' '}
-              <Link href="/clients/new" className="text-primary hover:underline">Добавить клиента →</Link>
+              <Link href="/contacts/new" className="text-primary hover:underline">Добавить контакт →</Link>
             </p>
           </div>
 
           {/* Объект */}
           <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground">Объект</label>
             <div className="flex items-end gap-2">
-              <div className="flex-1">
-                <label className="text-sm font-medium text-foreground">Объект</label>
-                <select
-                  name="property_id"
-                  defaultValue={params.property_id ?? ''}
-                  className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer"
-                >
-                  <option value="">Выберите объект</option>
-                  {properties?.map(p => (
-                    <option key={p.id} value={p.id}>{p.title}{p.address ? ` — ${p.address}` : ''}</option>
-                  ))}
-                </select>
-              </div>
+              <select
+                name="property_id"
+                defaultValue={params.property_id ?? ''}
+                className="flex-1 h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer"
+              >
+                <option value="">Выберите объект</option>
+                {properties.map(p => (
+                  <option key={p.id} value={p.id}>{p.title}{p.address ? ` — ${p.address}` : ''}</option>
+                ))}
+              </select>
               <Link
                 href="/properties/new"
                 target="_blank"
                 className="h-10 px-4 rounded-xl border border-primary/30 text-primary text-sm font-medium hover:bg-primary/10 transition flex items-center gap-2 whitespace-nowrap"
               >
                 <Building2 className="w-4 h-4" />
-                +
+                Создать
               </Link>
             </div>
           </div>

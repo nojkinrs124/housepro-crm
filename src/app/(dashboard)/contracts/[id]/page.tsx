@@ -108,7 +108,19 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
                     </Link>
                     {property.address && <p className="text-xs text-muted-foreground mt-0.5">{property.address}</p>}
                   </div>
-                ) : <p className="text-sm text-muted-foreground">Не указан</p>}
+                ) : (
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">Не указан</p>
+                    <Link
+                      href={`/properties/new`}
+                      target="_blank"
+                      className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition font-medium"
+                    >
+                      <Home className="w-3 h-3" />
+                      Создать объект
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
           </div>

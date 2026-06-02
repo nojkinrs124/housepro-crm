@@ -3,27 +3,26 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Building2, Home, User } from 'lucide-react'
-import type { Deal } from '@/types/database'
 
-export function DealsKanbanBoard({ deals: initialDeals }: { deals: Deal[] }) {
-  const [deals, setDeals] = useState(initialDeals)
-  const [draggedDeal, setDraggedDeal] = useState<Deal | null>(null)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function DealsKanbanBoard({ deals: initialDeals }: { deals: any[] }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [deals, setDeals] = useState<any[]>(initialDeals)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [draggedDeal, setDraggedDeal] = useState<any | null>(null)
 
   const columns = [
-    { status: 'new', label: 'Новые', color: 'border-t-blue-400' },
-    { status: 'showing', label: 'Показы', color: 'border-t-yellow-400' },
-    { status: 'negotiation', label: 'Переговоры', color: 'border-t-orange-400' },
-    { status: 'contract', label: 'Договор', color: 'border-t-purple-400' },
-    { status: 'payment', label: 'Оплата', color: 'border-t-cyan-400' },
-    { status: 'completed', label: 'Завершено', color: 'border-t-green-400' },
+    { status: 'new',         label: 'Новые',       color: 'border-t-blue-400' },
+    { status: 'showing',     label: 'Показы',      color: 'border-t-yellow-400' },
+    { status: 'negotiation', label: 'Переговоры',  color: 'border-t-orange-400' },
+    { status: 'contract',    label: 'Договор',     color: 'border-t-purple-400' },
+    { status: 'payment',     label: 'Оплата',      color: 'border-t-cyan-400' },
+    { status: 'completed',   label: 'Завершено',   color: 'border-t-green-400' },
   ]
 
   const dealTypeLabels: Record<string, string> = {
-    rent: 'Аренда',
-    sale: 'Продажа',
-    management: 'Управление',
-    commercial: 'Коммерция',
-    subrent: 'Субаренда',
+    rent: 'Аренда', sale: 'Продажа',
+    management: 'Управление', commercial: 'Коммерция', subrent: 'Субаренда',
   }
 
   const dealTypeColors: Record<string, string> = {
@@ -34,9 +33,11 @@ export function DealsKanbanBoard({ deals: initialDeals }: { deals: Deal[] }) {
     subrent: 'bg-pink-100 text-pink-700',
   }
 
-  const byStatus = (status: string) => deals.filter(d => d.status === status)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const byStatus = (status: string) => deals.filter((d: any) => d.status === status)
 
-  const handleDragStart = (e: React.DragEvent, deal: Deal) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleDragStart = (e: React.DragEvent, deal: any) => {
     setDraggedDeal(deal)
     e.dataTransfer.effectAllowed = 'move'
   }
@@ -55,18 +56,24 @@ export function DealsKanbanBoard({ deals: initialDeals }: { deals: Deal[] }) {
       return
     }
 
-    // Update in DB
+    // Optimistic update
+    setDeals(prev => prev.map(d => d.id === draggedDeal.id ? { ...d, status: newStatus } : d))
+
     const supabase = createClient()
     const { error } = await supabase
       .from('deals')
       .update({ status: newStatus })
       .eq('id', draggedDeal.id)
 
-    if (!error) {
-      // Update local state
-      setDeals(deals.map(d => (d.id === draggedDeal.id ? { ...d, status: newStatus } : d)))
+    if (error) {
+      // Rollback on error
+      setDeals(prev => prev.map(d => d.id === draggedDeal.id ? { ...d, status: draggedDeal.status } : d))
     }
 
+    setDraggedDeal(null)
+  }
+
+  const handleDragEnd = () => {
     setDraggedDeal(null)
   }
 
@@ -94,41 +101,50 @@ export function DealsKanbanBoard({ deals: initialDeals }: { deals: Deal[] }) {
                   <div className="text-center py-8 text-muted-foreground text-xs">Нет сделок</div>
                 ) : (
                   colDeals.map(deal => {
-                    const client = deal.client as { full_name?: string } | null
-                    const owner = deal.owner as { full_name?: string } | null
+                    // Поддерживаем как старый формат (client/owner), так и новый (contact)
+                    const ownerContact = deal.owner_contact as { full_name?: string } | null
+                    const clientContact = deal.client_contact as { full_name?: string } | null
+                    const legacyClient = deal.client as { full_name?: string } | null
+                    const legacyOwner = deal.owner as { full_name?: string } | null
                     const property = deal.property as { title?: string; address?: string } | null
 
+                    const ownerName = ownerContact?.full_name || legacyOwner?.full_name
+                    const clientName = clientContact?.full_name || legacyClient?.full_name
+
                     return (
-                      <div
+                      <a
                         key={deal.id}
+                        href={`/deals/${deal.id}`}
                         draggable
-                        onDragStart={(e) => handleDragStart(e, deal)}
-                        className="bg-background border border-border rounded-xl p-3 space-y-2 hover:shadow-sm transition-all cursor-move"
+                        onDragStart={(e) => { e.stopPropagation(); handleDragStart(e, deal) }}
+                        onDragEnd={handleDragEnd}
+                        onClick={(e) => { if (draggedDeal) e.preventDefault() }}
+                        className={`block bg-background border border-border rounded-xl p-3 space-y-2 hover:shadow-sm transition-all cursor-move ${
+                          draggedDeal?.id === deal.id ? 'opacity-50' : ''
+                        }`}
                       >
-                        {/* Type badge */}
-                        <span
-                          className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium ${dealTypeColors[deal.deal_type] ?? 'bg-gray-100 text-gray-600'}`}
-                        >
+                        {/* Тип */}
+                        <span className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium ${dealTypeColors[deal.deal_type] ?? 'bg-gray-100 text-gray-600'}`}>
                           {dealTypeLabels[deal.deal_type] ?? deal.deal_type}
                         </span>
 
-                        {/* Owner */}
-                        {owner?.full_name && (
-                          <div className="flex items-center gap-1.5 text-xs text-foreground">
+                        {/* Собственник */}
+                        {ownerName && (
+                          <div className="flex items-center gap-1.5 text-xs">
                             <Building2 className="w-3 h-3 text-orange-400 shrink-0" />
-                            <span className="truncate text-muted-foreground">{owner.full_name}</span>
+                            <span className="truncate text-muted-foreground">{ownerName}</span>
                           </div>
                         )}
 
-                        {/* Client */}
-                        {client?.full_name && (
-                          <div className="flex items-center gap-1.5 text-xs text-foreground">
+                        {/* Клиент */}
+                        {clientName && (
+                          <div className="flex items-center gap-1.5 text-xs">
                             <User className="w-3 h-3 text-blue-400 shrink-0" />
-                            <span className="font-medium truncate">{client.full_name}</span>
+                            <span className="font-medium truncate text-foreground">{clientName}</span>
                           </div>
                         )}
 
-                        {/* Property */}
+                        {/* Объект */}
                         {property && (
                           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                             <Home className="w-3 h-3 shrink-0" />
@@ -136,13 +152,13 @@ export function DealsKanbanBoard({ deals: initialDeals }: { deals: Deal[] }) {
                           </div>
                         )}
 
-                        {/* Amount */}
+                        {/* Сумма */}
                         {deal.amount && (
                           <div className="text-xs font-medium text-foreground">
-                            💰 {deal.amount.toLocaleString('ru-RU')} ₽
+                            💰 {Number(deal.amount).toLocaleString('ru-RU')} ₽
                           </div>
                         )}
-                      </div>
+                      </a>
                     )
                   })
                 )}

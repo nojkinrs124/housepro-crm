@@ -4,8 +4,8 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
-const VALID_DEAL_STATUSES = ['new', 'in_progress', 'completed', 'cancelled']
-const VALID_DEAL_TYPES = ['rent', 'sale', 'management', 'subrent']
+const VALID_DEAL_STATUSES = ['new', 'showing', 'negotiation', 'contract', 'payment', 'completed', 'cancelled']
+const VALID_DEAL_TYPES = ['rent', 'sale', 'management', 'commercial', 'subrent']
 
 export async function createDealAction(formData: FormData) {
   const supabase = await createClient()
@@ -18,8 +18,8 @@ export async function createDealAction(formData: FormData) {
   }
 
   const values = {
-    client_id: formData.get('client_id') as string || null,
-    owner_id: formData.get('owner_id') as string || null,
+    owner_contact_id: formData.get('owner_contact_id') as string || null,
+    client_contact_id: formData.get('client_contact_id') as string || null,
     property_id: formData.get('property_id') as string || null,
     deal_type,
     amount: formData.get('amount') ? Number(formData.get('amount')) : null,

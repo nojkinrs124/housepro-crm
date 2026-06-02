@@ -6,10 +6,11 @@ import { updatePaymentStatusAction } from '@/features/payments/actions/payments.
 import type { PaymentStatus } from '@/types/database'
 
 const STATUS_OPTIONS: { value: PaymentStatus; label: string; color: string }[] = [
-  { value: 'pending', label: 'Ожидает оплату', color: 'text-yellow-600 bg-yellow-50' },
-  { value: 'paid', label: 'Оплачен', color: 'text-green-600 bg-green-50' },
-  { value: 'overdue', label: 'Просрочен', color: 'text-red-600 bg-red-50' },
-  { value: 'cancelled', label: 'Отменен', color: 'text-gray-600 bg-gray-50' },
+  { value: 'pending',   label: 'Ожидает оплату',    color: 'text-yellow-600 bg-yellow-50' },
+  { value: 'paid',      label: 'Оплачен',            color: 'text-green-600 bg-green-50' },
+  { value: 'partial',   label: 'Частично оплачен',   color: 'text-blue-600 bg-blue-50' },
+  { value: 'overdue',   label: 'Просрочен',          color: 'text-red-600 bg-red-50' },
+  { value: 'cancelled', label: 'Отменен',            color: 'text-gray-600 bg-gray-50' },
 ]
 
 export function PaymentStatusEditor({

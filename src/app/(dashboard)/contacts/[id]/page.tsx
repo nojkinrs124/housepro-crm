@@ -17,12 +17,13 @@ const statusLabels = {
   inactive: { label: 'Неактивный', color: 'bg-red-100 text-red-700' },
 }
 
-export default async function ContactPage({ params }: { params: { id: string } }) {
+export default async function ContactPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = await createClient()
   const { data: contact } = await supabase
     .from('contacts')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!contact) notFound()
@@ -50,7 +51,7 @@ export default async function ContactPage({ params }: { params: { id: string } }
         </div>
         <div className="flex items-center gap-2">
           <Link
-            href={`/contacts/${params.id}/edit`}
+            href={`/contacts/${id}/edit`}
             className="flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-sm font-medium hover:bg-accent transition"
           >
             <Edit className="w-4 h-4" />
