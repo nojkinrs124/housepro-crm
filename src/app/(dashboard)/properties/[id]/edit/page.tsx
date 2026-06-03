@@ -3,24 +3,27 @@ import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { updatePropertyAction } from '@/features/properties/actions/properties.actions'
-import type { Property } from '@/types/database'
 
-export default async function EditPropertyPage({ params }: { params: { id: string } }) {
+export default async function EditPropertyPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = await createClient()
-  const { data: property } = await supabase
-    .from('properties')
-    .select('*')
-    .eq('id', params.id)
-    .single()
 
-  if (!property) notFound()
+  const { data: rawProperty } = await supabase
+    .from('properties').select('*').eq('id', id).single()
 
-  const p = property as Property
-  const boundAction = updatePropertyAction.bind(null, params.id)
+  if (!rawProperty) notFound()
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const p = rawProperty as any
+  const boundAction = updatePropertyAction.bind(null, id)
+
+  const inp = 'w-full h-10 px-4 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all'
+  const sel = 'w-full h-10 px-4 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer'
+  const lbl = 'block text-sm font-medium text-foreground mb-1.5'
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <Link href={`/properties/${params.id}`} className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition">
+    <div className="max-w-3xl mx-auto space-y-6">
+      <Link href={`/properties/${id}`} className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition">
         <ArrowLeft className="w-4 h-4" />
         Вернуться к объекту
       </Link>
@@ -30,42 +33,46 @@ export default async function EditPropertyPage({ params }: { params: { id: strin
         <p className="text-muted-foreground mt-1">{p.title}</p>
       </div>
 
-      <form action={boundAction} className="space-y-8">
-        {/* BASIC INFO */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-5">
-          <h2 className="font-semibold text-foreground text-lg">Основная информация</h2>
+      <form action={boundAction} className="space-y-4">
+
+        {/* Основное */}
+        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+          <h2 className="font-semibold text-foreground">Основные данные</h2>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Название *</label>
-            <input type="text" name="title" required defaultValue={p.title} className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary" />
+            <label className={lbl}>Название *</label>
+            <input name="title" required defaultValue={p.title ?? ''} className={inp} />
+          </div>
+
+          <div>
+            <label className={lbl}>Адрес *</label>
+            <input name="address" required defaultValue={p.address ?? ''} className={inp} />
           </div>
 
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Тип объекта *</label>
-              <select name="property_type" required defaultValue={p.property_type} className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary">
+              <label className={lbl}>Тип объекта</label>
+              <select name="property_type" defaultValue={p.property_type ?? 'apartment'} className={sel}>
                 <option value="apartment">Квартира</option>
                 <option value="house">Дом</option>
-                <option value="commercial">Коммерческое</option>
+                <option value="commercial">Коммерция</option>
                 <option value="office">Офис</option>
                 <option value="warehouse">Склад</option>
-                <option value="land">Земельный участок</option>
+                <option value="land">Участок</option>
               </select>
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Тип сделки *</label>
-              <select name="deal_type" required defaultValue={p.deal_type} className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary">
+              <label className={lbl}>Тип сделки</label>
+              <select name="deal_type" defaultValue={p.deal_type ?? 'rent'} className={sel}>
                 <option value="rent">Аренда</option>
                 <option value="sale">Продажа</option>
                 <option value="management">Управление</option>
                 <option value="subrent">Субаренда</option>
               </select>
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Статус</label>
-              <select name="status" defaultValue={p.status} className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary">
+              <label className={lbl}>Статус</label>
+              <select name="status" defaultValue={p.status ?? 'available'} className={sel}>
                 <option value="available">Доступно</option>
                 <option value="reserved">Зарезервировано</option>
                 <option value="rented">Сдано</option>
@@ -74,186 +81,149 @@ export default async function EditPropertyPage({ params }: { params: { id: strin
               </select>
             </div>
           </div>
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Адрес *</label>
-            <input type="text" name="address" required defaultValue={p.address} className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary" />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Район</label>
-            <input type="text" name="district" defaultValue={p.district || ''} className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary" />
+        {/* Параметры */}
+        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+          <h2 className="font-semibold text-foreground">Параметры</h2>
+          <div className="grid grid-cols-3 gap-4">
+            {[
+              { label: 'Площадь общая (м²)', name: 'area',           step: '0.1' },
+              { label: 'Площадь жилая (м²)', name: 'living_area',    step: '0.1' },
+              { label: 'Площадь кухни (м²)', name: 'kitchen_area',   step: '0.1' },
+              { label: 'Комнат',             name: 'rooms',          step: '1'   },
+              { label: 'Этаж',               name: 'floor',          step: '1'   },
+              { label: 'Этажность дома',     name: 'total_floors',   step: '1'   },
+              { label: 'Высота потолков (м)', name: 'ceiling_height', step: '0.1' },
+            ].map(f => (
+              <div key={f.name}>
+                <label className={lbl}>{f.label}</label>
+                <input type="number" name={f.name} step={f.step} defaultValue={p[f.name] ?? ''} className={inp} />
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* PARAMETERS */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-5">
-          <h2 className="font-semibold text-foreground text-lg">Параметры</h2>
-
+        {/* Дом */}
+        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+          <h2 className="font-semibold text-foreground">Характеристики дома</h2>
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Общая площадь (м²)</label>
-              <input type="number" name="area" step="0.01" defaultValue={p.area || ''} className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary" />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Жилая площадь (м²)</label>
-              <input type="number" name="living_area" step="0.01" defaultValue={p.living_area || ''} className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary" />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Площадь кухни (м²)</label>
-              <input type="number" name="kitchen_area" step="0.01" defaultValue={p.kitchen_area || ''} className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary" />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Комнаты</label>
-              <input type="number" name="rooms" defaultValue={p.rooms || ''} className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary" />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Этаж</label>
-              <input type="number" name="floor" defaultValue={p.floor || ''} className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary" />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Этажность дома</label>
-              <input type="number" name="total_floors" defaultValue={p.total_floors || ''} className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary" />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">Высота потолков (м)</label>
-            <input type="number" name="ceiling_height" step="0.1" defaultValue={p.ceiling_height || ''} className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary" />
-          </div>
-        </div>
-
-        {/* HOUSE INFO */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-5">
-          <h2 className="font-semibold text-foreground text-lg">Дом</h2>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Тип дома</label>
-              <select name="house_type" defaultValue={p.house_type || ''} className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary">
-                <option value="">Выберите...</option>
+              <label className={lbl}>Тип дома</label>
+              <select name="house_type" defaultValue={p.house_type ?? ''} className={sel}>
+                <option value="">— выберите —</option>
                 <option value="panel">Панельный</option>
                 <option value="brick">Кирпичный</option>
-                <option value="monolith">Монолитный</option>
+                <option value="monolith">Монолит</option>
+                <option value="monolith_brick">Монолит-кирпич</option>
                 <option value="wood">Деревянный</option>
-                <option value="mixed">Смешанный</option>
               </select>
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Материал стен</label>
-              <input type="text" name="wall_material" defaultValue={p.wall_material || ''} className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary" />
+              <label className={lbl}>Материал стен</label>
+              <select name="wall_material" defaultValue={p.wall_material ?? ''} className={sel}>
+                <option value="">— выберите —</option>
+                <option value="brick">Кирпич</option>
+                <option value="panel">Панель</option>
+                <option value="concrete">Бетон</option>
+                <option value="wood">Дерево</option>
+                <option value="gas_block">Газоблок</option>
+              </select>
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Год постройки</label>
-              <input type="number" name="year_built" defaultValue={p.year_built || ''} className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary" />
+              <label className={lbl}>Год постройки</label>
+              <input type="number" name="year_built" defaultValue={p.year_built ?? ''} placeholder="2005" min="1900" max="2030" className={inp} />
             </div>
-
-            <div className="flex items-end gap-2">
-              <label className="flex items-center gap-2 text-sm font-medium text-foreground">
-                <input type="checkbox" name="has_elevator" defaultChecked={p.has_elevator} className="rounded" />
-                Лифт
-              </label>
-              <label className="flex items-center gap-2 text-sm font-medium text-foreground">
-                <input type="checkbox" name="has_parking" defaultChecked={p.has_parking} className="rounded" />
-                Парковка
-              </label>
-            </div>
+          </div>
+          <div className="flex items-center gap-6">
+            <label className="flex items-center gap-2 cursor-pointer text-sm">
+              <input type="checkbox" name="has_elevator" defaultChecked={!!p.has_elevator} className="w-4 h-4 accent-primary" />
+              Лифт
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer text-sm">
+              <input type="checkbox" name="has_parking" defaultChecked={!!p.has_parking} className="w-4 h-4 accent-primary" />
+              Парковка
+            </label>
           </div>
         </div>
 
-        {/* COMMUNICATIONS */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-5">
-          <h2 className="font-semibold text-foreground text-lg">Коммуникации</h2>
-
+        {/* Коммуникации */}
+        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+          <h2 className="font-semibold text-foreground">Коммуникации</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Отопление</label>
-              <select name="heating_type" defaultValue={p.heating_type || ''} className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary">
-                <option value="">Выберите...</option>
+              <label className={lbl}>Отопление</label>
+              <select name="heating_type" defaultValue={p.heating_type ?? ''} className={sel}>
+                <option value="">— выберите —</option>
                 <option value="central">Центральное</option>
-                <option value="individual">Индивидуальное</option>
-                <option value="none">Нет отопления</option>
+                <option value="gas">Газовое</option>
+                <option value="electric">Электрическое</option>
+                <option value="autonomous">Автономное</option>
               </select>
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Водоснабжение</label>
-              <select name="water_supply_type" defaultValue={p.water_supply_type || ''} className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary">
-                <option value="">Выберите...</option>
+              <label className={lbl}>Водоснабжение</label>
+              <select name="water_supply_type" defaultValue={p.water_supply_type ?? ''} className={sel}>
+                <option value="">— выберите —</option>
                 <option value="central">Центральное</option>
-                <option value="well">Скважина</option>
-                <option value="none">Нет водоснабжения</option>
+                <option value="well">Скважина/колодец</option>
+                <option value="none">Нет</option>
               </select>
             </div>
           </div>
-
-          <div className="flex items-center gap-4">
-            <label className="flex items-center gap-2 text-sm font-medium text-foreground">
-              <input type="checkbox" name="has_internet" defaultChecked={p.has_internet} className="rounded" />
+          <div className="flex items-center gap-6">
+            <label className="flex items-center gap-2 cursor-pointer text-sm">
+              <input type="checkbox" name="has_internet" defaultChecked={!!p.has_internet} className="w-4 h-4 accent-primary" />
               Интернет
             </label>
-            <label className="flex items-center gap-2 text-sm font-medium text-foreground">
-              <input type="checkbox" name="has_tv" defaultChecked={p.has_tv} className="rounded" />
+            <label className="flex items-center gap-2 cursor-pointer text-sm">
+              <input type="checkbox" name="has_tv" defaultChecked={!!p.has_tv} className="w-4 h-4 accent-primary" />
               Телевидение
             </label>
           </div>
         </div>
 
-        {/* FINANCIAL */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-5">
-          <h2 className="font-semibold text-foreground text-lg">Финансовые условия</h2>
-
-          <div className="grid grid-cols-2 gap-4">
+        {/* Финансы */}
+        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+          <h2 className="font-semibold text-foreground">Финансы</h2>
+          <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Цена</label>
-              <input type="number" name="price" step="0.01" defaultValue={p.price || ''} className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary" />
+              <label className={lbl}>Цена (₽)</label>
+              <input type="number" name="price" defaultValue={p.price ?? ''} className={inp} />
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Залог</label>
-              <input type="number" name="deposit" step="0.01" defaultValue={p.deposit || ''} className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary" />
+              <label className={lbl}>Депозит (₽)</label>
+              <input type="number" name="deposit" defaultValue={p.deposit ?? ''} className={inp} />
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Управление</label>
-              <input type="number" name="management_fee" step="0.01" defaultValue={p.management_fee || ''} className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary" />
+              <label className={lbl}>Комиссия управления (₽)</label>
+              <input type="number" name="management_fee" defaultValue={p.management_fee ?? ''} className={inp} />
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Включено в коммунальные</label>
-              <input type="text" name="utilities_included" defaultValue={p.utilities_included || ''} className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary" placeholder="напр. вода, газ" />
-            </div>
+          </div>
+          <div>
+            <label className={lbl}>Что включено в коммунальные</label>
+            <input type="text" name="utilities_included" defaultValue={p.utilities_included ?? ''} placeholder="вода, газ, электричество" className={inp} />
           </div>
         </div>
 
-        {/* DESCRIPTION */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-5">
-          <h2 className="font-semibold text-foreground text-lg">Описание</h2>
-
-          <textarea
-            name="description"
-            rows={6}
-            defaultValue={p.description || ''}
-            className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary"
-            placeholder="Подробное описание объекта для публикации на площадках..."
-          />
+        {/* Описание */}
+        <div className="bg-card border border-border rounded-2xl p-6 space-y-3">
+          <h2 className="font-semibold text-foreground">Описание</h2>
+          <textarea name="description" rows={4} defaultValue={p.description ?? ''}
+            placeholder="Описание для публикации на Авито, ЦИАН, Домклик..."
+            className="w-full px-4 py-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none" />
         </div>
 
-        <button
-          type="submit"
-          className="w-full px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition"
-        >
-          Сохранить изменения
-        </button>
+        <div className="flex gap-3">
+          <button type="submit"
+            className="flex-1 h-10 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition">
+            Сохранить изменения
+          </button>
+          <Link href={`/properties/${id}`}
+            className="flex-1 h-10 flex items-center justify-center border border-border rounded-xl text-sm font-medium hover:bg-accent transition">
+            Отмена
+          </Link>
+        </div>
       </form>
     </div>
   )

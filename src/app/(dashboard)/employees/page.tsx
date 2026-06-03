@@ -82,7 +82,7 @@ export default async function EmployeesPage() {
               const deals = countBy(dealStats as { manager_id: string }[], emp.id)
 
               return (
-                <div key={emp.id} className="p-5 flex items-center gap-4 hover:bg-accent/30 transition-colors">
+                <Link key={emp.id} href={`/employees/${emp.id}`} className="p-5 flex items-center gap-4 hover:bg-accent/30 transition-colors">
                   {/* Avatar */}
                   <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
                     <span className="text-primary text-lg font-bold">
@@ -125,7 +125,7 @@ export default async function EmployeesPage() {
                       <p>с {new Date(emp.created_at).toLocaleDateString('ru-RU', { month: 'short', year: 'numeric' })}</p>
                     </div>
                   </div>
-                </div>
+                </Link>
               )
             })}
           </div>

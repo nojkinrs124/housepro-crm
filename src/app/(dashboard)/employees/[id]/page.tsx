@@ -1,0 +1,170 @@
+import { createClient } from '@/lib/supabase/server'
+import { ArrowLeft, Shield, UserCheck, User, Mail, Phone, CheckCircle, XCircle } from 'lucide-react'
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import { updateEmployeeAction, deactivateEmployeeAction, activateEmployeeAction } from '@/features/users/actions/users.actions'
+
+const roleLabels: Record<string, string> = {
+  admin: 'Администратор', manager: 'Менеджер',
+  agent: 'Риелтор',       accountant: 'Бухгалтер',
+}
+const roleColors: Record<string, string> = {
+  admin: 'bg-red-100 text-red-700', manager: 'bg-blue-100 text-blue-700',
+  agent: 'bg-green-100 text-green-700', accountant: 'bg-purple-100 text-purple-700',
+}
+
+export default async function EmployeePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const supabase = await createClient()
+
+  const [{ data: emp }, { data: authUser }] = await Promise.all([
+    supabase.from('users').select('*').eq('id', id).single(),
+    supabase.auth.getUser(),
+  ])
+
+  if (!emp) notFound()
+
+  // Статистика
+  const [{ data: clientStats }, { data: dealStats }, { data: contractStats }, { data: taskStats }] = await Promise.all([
+    supabase.from('clients').select('id', { count: 'exact', head: true }).eq('manager_id', id),
+    supabase.from('deals').select('id', { count: 'exact', head: true }).eq('manager_id', id),
+    supabase.from('contracts').select('id', { count: 'exact', head: true }).eq('manager_id', id),
+    supabase.from('tasks').select('id', { count: 'exact', head: true }).eq('assigned_to', id),
+  ])
+
+  // Текущий пользователь — для проверки прав
+  const { data: currentUserProfile } = await supabase
+    .from('users').select('role').eq('id', authUser.user?.id ?? '').single()
+  const isAdmin = currentUserProfile?.role === 'admin'
+  const isSelf = authUser.user?.id === id
+
+  const boundUpdate = updateEmployeeAction.bind(null, id)
+
+  const inp = 'w-full h-10 px-4 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30'
+  const lbl = 'block text-sm font-medium text-foreground mb-1.5'
+
+  return (
+    <div className="max-w-3xl mx-auto space-y-6">
+      <Link href="/employees" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition">
+        <ArrowLeft className="w-4 h-4" />
+        Все сотрудники
+      </Link>
+
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+          <span className="text-primary text-2xl font-bold">
+            {emp.full_name?.charAt(0)?.toUpperCase() ?? '?'}
+          </span>
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-2xl font-bold text-foreground">{emp.full_name}</h1>
+            <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${roleColors[emp.role] ?? 'bg-gray-100'}`}>
+              {roleLabels[emp.role] ?? emp.role}
+            </span>
+            {emp.is_active ? (
+              <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium bg-green-100 text-green-700">
+                <CheckCircle className="w-3 h-3" /> Активен
+              </span>
+            ) : (
+              <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium bg-red-100 text-red-600">
+                <XCircle className="w-3 h-3" /> Неактивен
+              </span>
+            )}
+          </div>
+          <p className="text-muted-foreground text-sm mt-1">
+            В системе с {new Date(emp.created_at).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })}
+          </p>
+        </div>
+      </div>
+
+      {/* Статистика */}
+      <div className="grid grid-cols-4 gap-4">
+        {[
+          { label: 'Клиентов',  value: clientStats?.length ?? 0 },
+          { label: 'Сделок',    value: dealStats?.length ?? 0 },
+          { label: 'Договоров', value: contractStats?.length ?? 0 },
+          { label: 'Задач',     value: taskStats?.length ?? 0 },
+        ].map(s => (
+          <div key={s.label} className="bg-card border border-border rounded-2xl p-4 text-center">
+            <p className="text-2xl font-bold text-foreground">{s.value}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Контакты */}
+      <div className="bg-card border border-border rounded-2xl p-5 space-y-3">
+        <h2 className="font-semibold text-foreground">Контакты</h2>
+        {emp.email && (
+          <div className="flex items-center gap-3 text-sm">
+            <Mail className="w-4 h-4 text-muted-foreground" />
+            <a href={`mailto:${emp.email}`} className="text-foreground hover:text-primary transition">{emp.email}</a>
+          </div>
+        )}
+        {emp.phone && (
+          <div className="flex items-center gap-3 text-sm">
+            <Phone className="w-4 h-4 text-muted-foreground" />
+            <a href={`tel:${emp.phone}`} className="text-foreground hover:text-primary transition">{emp.phone}</a>
+          </div>
+        )}
+      </div>
+
+      {/* Редактирование — только для admin */}
+      {isAdmin && (
+        <div className="bg-card border border-border rounded-2xl p-6 space-y-5">
+          <h2 className="font-semibold text-foreground">Редактировать</h2>
+
+          <form action={boundUpdate} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className={lbl}>Полное имя</label>
+                <input name="full_name" required defaultValue={emp.full_name ?? ''} className={inp} />
+              </div>
+              <div>
+                <label className={lbl}>Телефон</label>
+                <input name="phone" type="tel" defaultValue={emp.phone ?? ''} placeholder="+7 (999) 000-00-00" className={inp} />
+              </div>
+            </div>
+            <div>
+              <label className={lbl}>Роль</label>
+              <select name="role" defaultValue={emp.role}
+                className="w-full h-10 px-4 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer">
+                <option value="admin">Администратор</option>
+                <option value="manager">Менеджер</option>
+                <option value="agent">Риелтор</option>
+                <option value="accountant">Бухгалтер</option>
+              </select>
+            </div>
+            <button type="submit"
+              className="w-full h-10 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition">
+              Сохранить изменения
+            </button>
+          </form>
+
+          {/* Деактивация */}
+          {!isSelf && (
+            <div className="pt-4 border-t border-border">
+              {emp.is_active ? (
+                <form action={deactivateEmployeeAction.bind(null, id)}>
+                  <button type="submit"
+                    className="w-full h-10 border border-destructive/30 text-destructive rounded-xl text-sm font-medium hover:bg-destructive/10 transition">
+                    Деактивировать сотрудника
+                  </button>
+                </form>
+              ) : (
+                <form action={activateEmployeeAction.bind(null, id)}>
+                  <button type="submit"
+                    className="w-full h-10 border border-green-300 text-green-700 rounded-xl text-sm font-medium hover:bg-green-50 transition">
+                    Восстановить доступ
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}

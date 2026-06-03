@@ -3,12 +3,13 @@ import { getPaymentStats } from '@/features/payments/actions/payments.actions'
 import { MarkPaidButton } from '@/features/payments/components/MarkPaidButton'
 import { DeletePaymentButton } from '@/features/payments/components/DeletePaymentButton'
 import { PaymentStatusEditor } from '@/features/payments/components/PaymentStatusEditor'
-import { Plus, TrendingUp, Clock, AlertTriangle, CheckCircle } from 'lucide-react'
+import { Plus, TrendingUp, Clock, AlertTriangle, CheckCircle, Pencil } from 'lucide-react'
 import Link from 'next/link'
 
 const statusConfig: Record<string, { label: string; className: string }> = {
   pending:   { label: 'Ожидает',   className: 'bg-yellow-100 text-yellow-700' },
   paid:      { label: 'Оплачен',   className: 'bg-green-100 text-green-700' },
+  partial:   { label: 'Частично',  className: 'bg-blue-100 text-blue-700' },
   overdue:   { label: 'Просрочен', className: 'bg-red-100 text-red-700' },
   cancelled: { label: 'Отменён',   className: 'bg-gray-100 text-gray-500' },
 }
@@ -218,6 +219,13 @@ export default async function PaymentsPage({
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1 justify-end">
+                          <Link
+                            href={`/payments/${p.id}/edit`}
+                            className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition"
+                            title="Редактировать"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Link>
                           <MarkPaidButton paymentId={p.id} status={p.payment_status ?? 'pending'} />
                           <DeletePaymentButton paymentId={p.id} />
                         </div>
