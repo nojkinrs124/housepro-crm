@@ -29,7 +29,7 @@ export default async function ContractsPage({
   // Простой запрос без сложных JOIN
   let query = supabase
     .from('contracts')
-    .select('id, contract_number, contract_type, status, amount, client_id, property_id, created_at')
+    .select('id, contract_number, contract_type, status, amount, client_id, client_contact_id, property_id, created_at')
     .order('created_at', { ascending: false })
 
   if (params.search) query = query.ilike('contract_number', `%${params.search}%`)
@@ -37,20 +37,36 @@ export default async function ContractsPage({
 
   const { data: contracts, error } = await query.limit(50)
 
-  // Загружаем клиентов и объекты отдельно
-  const clientIds = [...new Set(contracts?.map(c => c.client_id).filter(Boolean) ?? [])]
+  // Загружаем контакты и объекты отдельно (поддержка и старого client_id и нового client_contact_id)
+  const contactIds = [...new Set([
+    ...(contracts?.map(c => c.client_contact_id).filter(Boolean) ?? []),
+    ...(contracts?.map(c => c.client_id).filter(Boolean) ?? []),
+  ])]
   const propertyIds = [...new Set(contracts?.map(c => c.property_id).filter(Boolean) ?? [])]
 
-  const [{ data: clientsData }, { data: propertiesData }] = await Promise.all([
-    clientIds.length > 0
-      ? supabase.from('clients').select('id, full_name').in('id', clientIds)
+  const [{ data: contactsData }, { data: propertiesData }] = await Promise.all([
+    contactIds.length > 0
+      ? supabase.from('contacts').select('id, full_name').in('id', contactIds)
       : Promise.resolve({ data: [] }),
     propertyIds.length > 0
       ? supabase.from('properties').select('id, address, title').in('id', propertyIds)
       : Promise.resolve({ data: [] }),
   ])
 
-  const clientMap = Object.fromEntries((clientsData ?? []).map(c => [c.id, c]))
+  // Фоллбэк на clients для старых записей
+  const legacyClientIds = (contracts ?? [])
+    .filter(c => !c.client_contact_id && c.client_id)
+    .map(c => c.client_id)
+    .filter((id): id is string => !!id && !contactIds.includes(id))
+
+  const { data: legacyClientsData } = legacyClientIds.length > 0
+    ? await supabase.from('clients').select('id, full_name').in('id', legacyClientIds)
+    : { data: [] }
+
+  const clientMap = Object.fromEntries([
+    ...(contactsData ?? []).map(c => [c.id, c]),
+    ...(legacyClientsData ?? []).map(c => [c.id, c]),
+  ])
   const propertyMap = Object.fromEntries((propertiesData ?? []).map(p => [p.id, p]))
 
   if (error) console.error('Contracts error:', error.message)
@@ -117,7 +133,8 @@ export default async function ContractsPage({
               </thead>
               <tbody className="divide-y divide-border">
                 {contracts.map(contract => {
-                  const client = contract.client_id ? clientMap[contract.client_id] : null
+                  const clientId = contract.client_contact_id || contract.client_id
+                  const client = clientId ? clientMap[clientId] : null
                   const property = contract.property_id ? propertyMap[contract.property_id] : null
                   return (
                     <tr key={contract.id} className="hover:bg-accent/50 transition-colors">

@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { ArrowLeft, FileText, User, Home, Calendar, DollarSign, Edit } from 'lucide-react'
+import { ArrowLeft, FileText, User, Home, Building2, Calendar, DollarSign, Edit } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { PaymentsSection } from '@/features/payments/components/PaymentsSection'
@@ -34,7 +34,13 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: rawContract } = await supabase
     .from('contracts')
-    .select(`*, client:clients(full_name, phone), owner:owners(full_name, phone), property:properties(title, address), manager:users(full_name)`)
+    .select(`*,
+      client:clients(full_name, phone),
+      owner_contact:contacts!contracts_owner_contact_id_fkey(id, full_name, phone),
+      client_contact:contacts!contracts_client_contact_id_fkey(id, full_name, phone),
+      property:properties(id, title, address),
+      manager:users(full_name)
+    `)
     .eq('id', id)
     .single()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -42,10 +48,15 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
 
   if (!contract) notFound()
 
-  const client = contract.client as { full_name?: string; phone?: string } | null
-  const owner  = (contract as any).owner  as { full_name?: string; phone?: string } | null
-  const property = contract.property as { title?: string; address?: string } | null
-  const manager = contract.manager as { full_name?: string } | null
+  // Поддержка старого и нового формата
+  const ownerContact  = contract.owner_contact  as { id?: string; full_name?: string; phone?: string } | null
+  const clientContact = contract.client_contact as { id?: string; full_name?: string; phone?: string } | null
+  const legacyClient  = contract.client         as { full_name?: string; phone?: string } | null
+
+  const client   = clientContact  ?? legacyClient
+  const owner    = ownerContact
+  const property = contract.property as { id?: string; title?: string; address?: string } | null
+  const manager  = contract.manager  as { full_name?: string } | null
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -81,48 +92,73 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
           <div className="bg-card border border-border rounded-2xl p-5">
             <h2 className="font-semibold text-foreground mb-4">Стороны договора</h2>
             <div className="grid grid-cols-2 gap-4">
+              {/* Собственник */}
               <div className="p-4 bg-muted/30 rounded-xl">
                 <div className="flex items-center gap-2 mb-2">
-                  <User className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Клиент</span>
+                  <Building2 className="w-4 h-4 text-orange-500" />
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Собственник</span>
                 </div>
-                {client ? (
+                {owner ? (
                   <div>
-                    <Link href={`/clients/${(contract.client_id as string)}`} className="text-sm font-medium text-primary hover:underline">
-                      {client.full_name}
-                    </Link>
-                    {client.phone && <p className="text-xs text-muted-foreground mt-0.5">{client.phone}</p>}
+                    {ownerContact?.id ? (
+                      <Link href={`/contacts/${ownerContact.id}`} className="text-sm font-medium text-primary hover:underline">
+                        {owner.full_name}
+                      </Link>
+                    ) : (
+                      <p className="text-sm font-medium text-foreground">{owner.full_name}</p>
+                    )}
+                    {owner.phone && <p className="text-xs text-muted-foreground mt-0.5">{owner.phone}</p>}
                   </div>
                 ) : <p className="text-sm text-muted-foreground">Не указан</p>}
               </div>
 
+              {/* Клиент */}
               <div className="p-4 bg-muted/30 rounded-xl">
                 <div className="flex items-center gap-2 mb-2">
-                  <Home className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Объект</span>
+                  <User className="w-4 h-4 text-blue-500" />
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Клиент</span>
                 </div>
-                {property ? (
+                {client ? (
                   <div>
-                    <Link href={`/properties/${(contract.property_id as string)}`} className="text-sm font-medium text-primary hover:underline">
-                      {property.title}
-                    </Link>
-                    {property.address && <p className="text-xs text-muted-foreground mt-0.5">{property.address}</p>}
+                    {clientContact?.id ? (
+                      <Link href={`/contacts/${clientContact.id}`} className="text-sm font-medium text-primary hover:underline">
+                        {client.full_name}
+                      </Link>
+                    ) : (
+                      <p className="text-sm font-medium text-foreground">{client.full_name}</p>
+                    )}
+                    {client.phone && <p className="text-xs text-muted-foreground mt-0.5">{client.phone}</p>}
                   </div>
-                ) : (
-                  <div className="space-y-2">
-                    <p className="text-sm text-muted-foreground">Не указан</p>
-                    <Link
-                      href={`/properties/new`}
-                      target="_blank"
-                      className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition font-medium"
-                    >
-                      <Home className="w-3 h-3" />
-                      Создать объект
-                    </Link>
-                  </div>
-                )}
+                ) : <p className="text-sm text-muted-foreground">Не указан</p>}
               </div>
             </div>
+          </div>
+
+          {/* Property */}
+          <div className="bg-card border border-border rounded-2xl p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-foreground">Объект</h2>
+              {!property && (
+                <Link href="/properties/new" target="_blank"
+                  className="flex items-center gap-1.5 text-xs px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition font-medium">
+                  <Home className="w-3 h-3" />
+                  Создать объект
+                </Link>
+              )}
+            </div>
+            {property ? (
+              <div className="flex items-start gap-3 p-3 bg-muted/30 rounded-xl">
+                <Home className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+                <div>
+                  <Link href={`/properties/${property.id ?? contract.property_id}`} className="text-sm font-medium text-primary hover:underline">
+                    {property.title}
+                  </Link>
+                  {property.address && <p className="text-xs text-muted-foreground mt-0.5">{property.address}</p>}
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">Объект не привязан</p>
+            )}
           </div>
 
           {/* Finance */}

@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
-const VALID_LEAD_STATUSES = ['new', 'contacted', 'interested', 'converted', 'rejected']
+const VALID_LEAD_STATUSES = ['new', 'contacted', 'showing', 'searching', 'converted', 'closed', 'interested', 'rejected']
 
 export async function createLeadAction(formData: FormData) {
   const supabase = await createClient()
@@ -64,18 +64,18 @@ export async function convertLeadToClient(id: string) {
 
   if (!lead) return { error: 'Лид не найден' }
 
-  // Создаём клиента из лида
-  const { data: client, error } = await supabase
-    .from('clients')
+  // Создаём контакт с ролью client из лида
+  const { data: contact, error } = await supabase
+    .from('contacts')
     .insert({
       full_name: lead.full_name || 'Без имени',
-      phone: lead.phone,
-      telegram: lead.telegram,
-      whatsapp: lead.whatsapp,
-      source: lead.source,
-      comment: lead.comment,
-      status: 'new',
-      manager_id: user.id,
+      phone:     lead.phone     || null,
+      telegram:  lead.telegram  || null,
+      whatsapp:  lead.whatsapp  || null,
+      source:    lead.source    || null,
+      comment:   lead.comment   || null,
+      role:      'client',
+      status:    'new',
     })
     .select()
     .single()
@@ -83,12 +83,9 @@ export async function convertLeadToClient(id: string) {
   if (error) return { error: error.message }
 
   // Помечаем лид как конвертированный
-  await supabase
-    .from('leads')
-    .update({ status: 'converted' })
-    .eq('id', id)
+  await supabase.from('leads').update({ status: 'converted' }).eq('id', id)
 
   revalidatePath('/leads')
-  revalidatePath('/clients')
-  redirect(`/clients/${client.id}`)
+  revalidatePath('/contacts')
+  redirect(`/contacts/${contact.id}`)
 }
