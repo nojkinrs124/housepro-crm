@@ -1,11 +1,13 @@
 'use client'
 
-import { Bell, Search, Plus } from 'lucide-react'
+import { Search, Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import type { User } from '@/types/database'
 
-export function Header({ user }: { user: User | null }) {
+import { NotificationBell } from '@/components/layout/NotificationBell'
+
+export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCount?: number }) {
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
   const [query, setQuery] = useState('')
@@ -72,10 +74,7 @@ export function Header({ user }: { user: User | null }) {
         </div>
 
         {/* Notifications */}
-        <a href="/settings/notifications"
-          className="relative w-9 h-9 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition-all">
-          <Bell className="w-4 h-4" />
-        </a>
+        <NotificationBell unreadCount={unreadCount} />
 
         {/* Avatar → Profile */}
         <a href="/settings/profile"
