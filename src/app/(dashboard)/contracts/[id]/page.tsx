@@ -82,6 +82,16 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
           <span className={`text-sm px-3 py-1.5 rounded-xl font-medium ${statusColors[contract.status] ?? 'bg-gray-100'}`}>
             {statusLabels[contract.status] ?? contract.status}
           </span>
+          <Link href={`/contracts/${id}/edit`}
+            className="flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-sm font-medium hover:bg-accent transition">
+            <Edit className="w-4 h-4" />
+            Редактировать
+          </Link>
+          <Link href={`/contracts/${id}/generate`}
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition">
+            <FileText className="w-4 h-4" />
+            Сформировать DOCX
+          </Link>
         </div>
       </div>
 

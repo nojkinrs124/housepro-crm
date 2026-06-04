@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import {
   Building2, LayoutDashboard, Users, Home, FileText, CreditCard,
   CheckSquare, Settings, LogOut, ChevronLeft, ChevronRight,
-  Zap, TrendingUp, UserCog,
+  Zap, TrendingUp, UserCog, Download,
 } from 'lucide-react'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
@@ -20,7 +20,8 @@ const navigation = [
   { name: 'Объекты',     href: '/properties', icon: Home },
   { name: 'Договоры',    href: '/contracts',  icon: FileText },
   { name: 'Задачи',      href: '/tasks',      icon: CheckSquare },
-  { name: 'Платежи',    href: '/payments',   icon: CreditCard },
+  { name: 'Платежи',     href: '/payments',   icon: CreditCard },
+  { name: 'Экспорт',     href: '/export',     icon: Download },
   { name: 'Сотрудники',  href: '/employees',  icon: UserCog },
   { name: 'Настройки',   href: '/settings',   icon: Settings },
 ]
