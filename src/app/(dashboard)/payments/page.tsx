@@ -3,39 +3,25 @@ import { getPaymentStats } from '@/features/payments/actions/payments.actions'
 import { MarkPaidButton } from '@/features/payments/components/MarkPaidButton'
 import { DeletePaymentButton } from '@/features/payments/components/DeletePaymentButton'
 import { PaymentStatusEditor } from '@/features/payments/components/PaymentStatusEditor'
-import { Plus, TrendingUp, Clock, AlertTriangle, CheckCircle, Pencil, Banknote, Wallet } from 'lucide-react'
+import { Plus, AlertTriangle, CheckCircle, Pencil, Banknote, Wallet } from 'lucide-react'
 import Link from 'next/link'
 
-const statusConfig: Record<string, { label: string; bg: string; color: string }> = {
-  pending:   { label: 'Ожидает',   bg: '#FFFBEB', color: '#D97706' },
-  paid:      { label: 'Оплачен',   bg: '#F0FDF4', color: '#16A34A' },
-  partial:   { label: 'Частично',  bg: '#EFF6FF', color: '#2563EB' },
-  overdue:   { label: 'Просрочен', bg: '#FEF2F2', color: '#DC2626' },
-  cancelled: { label: 'Отменён',   bg: '#F8FAFC', color: '#64748B' },
+const statusConfig: Record<string, { label: string; cls: string }> = {
+  pending:   { label: 'Ожидает',   cls: 'bg-amber-50 text-amber-700' },
+  paid:      { label: 'Оплачен',   cls: 'bg-green-50 text-green-700' },
+  partial:   { label: 'Частично',  cls: 'bg-blue-50 text-blue-700' },
+  overdue:   { label: 'Просрочен', cls: 'bg-red-50 text-red-600' },
+  cancelled: { label: 'Отменён',   cls: 'bg-slate-50 text-slate-500' },
 }
-
 const typeLabels: Record<string, string> = {
-  rent:       'Аренда',
-  deposit:    'Депозит',
-  commission: 'Комиссия',
-  penalty:    'Штраф',
-  other:      'Прочее',
+  rent: 'Аренда', deposit: 'Депозит', commission: 'Комиссия',
+  penalty: 'Штраф', other: 'Прочее',
 }
 
-function fmt(n: number) {
-  return n.toLocaleString('ru-RU') + ' ₽'
-}
-
+function fmt(n: number) { return n.toLocaleString('ru-RU') + ' ₽' }
 function fmtDate(d?: string | null) {
   if (!d) return '—'
   return new Date(d).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
-}
-
-const cardStyle = {
-  background: '#ffffff',
-  borderRadius: '20px',
-  border: '1px solid rgba(214,219,235,0.6)',
-  boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.05)',
 }
 
 export default async function PaymentsPage({
@@ -67,39 +53,10 @@ export default async function PaymentsPage({
   const payments = rawPayments as any[] | null
 
   const statCards = [
-    {
-      label: 'Получено за месяц',
-      value: fmt(stats.paidThisMonth),
-      Icon: Banknote,
-      iconBg: '#F0FDF4',
-      iconColor: '#16A34A',
-      valueColor: '#16A34A',
-    },
-    {
-      label: 'Всего получено',
-      value: fmt(stats.totalPaid),
-      Icon: CheckCircle,
-      iconBg: '#EFF6FF',
-      iconColor: '#2563EB',
-      valueColor: '#2563EB',
-    },
-    {
-      label: 'Ожидает оплаты',
-      value: fmt(stats.pending),
-      Icon: Wallet,
-      iconBg: '#FFFBEB',
-      iconColor: '#D97706',
-      valueColor: '#D97706',
-    },
-    {
-      label: 'Просрочено',
-      value: fmt(stats.overdue),
-      extra: stats.overdueCount > 0 ? `${stats.overdueCount} платежей` : undefined,
-      Icon: AlertTriangle,
-      iconBg: stats.overdueCount > 0 ? '#FEF2F2' : '#F8FAFC',
-      iconColor: stats.overdueCount > 0 ? '#DC2626' : '#94A3B8',
-      valueColor: stats.overdueCount > 0 ? '#DC2626' : '#64748B',
-    },
+    { label: 'Получено за месяц', value: fmt(stats.paidThisMonth),  Icon: Banknote,      iconCls: 'bg-green-50',  iconColor: 'text-green-600', valueCls: 'text-green-700' },
+    { label: 'Всего получено',    value: fmt(stats.totalPaid),       Icon: CheckCircle,   iconCls: 'bg-blue-50',   iconColor: 'text-blue-600',  valueCls: 'text-blue-700' },
+    { label: 'Ожидает оплаты',    value: fmt(stats.pending),         Icon: Wallet,        iconCls: 'bg-amber-50',  iconColor: 'text-amber-500', valueCls: 'text-amber-700' },
+    { label: 'Просрочено',        value: fmt(stats.overdue),         Icon: AlertTriangle, iconCls: stats.overdueCount > 0 ? 'bg-red-50' : 'bg-slate-50', iconColor: stats.overdueCount > 0 ? 'text-red-500' : 'text-slate-400', valueCls: stats.overdueCount > 0 ? 'text-red-600' : 'text-slate-500', extra: stats.overdueCount > 0 ? `${stats.overdueCount} платежей` : undefined },
   ]
 
   const filters = [
@@ -119,11 +76,8 @@ export default async function PaymentsPage({
           <p className="text-[#64748B] mt-1 text-sm">{payments?.length ?? 0} записей</p>
         </div>
         <Link href="/payments/new"
-          className="flex items-center gap-2 px-4 py-2.5 text-white rounded-[12px] text-sm font-semibold"
-          style={{
-            background: 'linear-gradient(135deg, #16A34A, #22C55E)',
-            boxShadow: '0 2px 8px rgba(22,163,74,0.3)',
-          }}>
+          className="flex items-center gap-2 px-4 py-2.5 text-white rounded-xl text-sm font-semibold"
+          style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 2px 8px rgba(22,163,74,0.3)' }}>
           <Plus style={{ width: 16, height: 16 }} />
           Добавить платёж
         </Link>
@@ -134,57 +88,43 @@ export default async function PaymentsPage({
         {statCards.map(card => {
           const Icon = card.Icon
           return (
-            <div key={card.label} style={cardStyle} className="p-5">
-              <div className="flex items-center justify-between mb-4">
+            <div key={card.label} className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm p-5">
+              <div className="flex items-center justify-between mb-3">
                 <p className="text-xs font-medium text-[#64748B]">{card.label}</p>
-                <div className="w-9 h-9 rounded-[10px] flex items-center justify-center"
-                  style={{ background: card.iconBg }}>
-                  <Icon style={{ width: 17, height: 17, color: card.iconColor }} />
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${card.iconCls}`}>
+                  <Icon className={card.iconColor} style={{ width: 17, height: 17 }} />
                 </div>
               </div>
-              <p className="text-xl font-bold" style={{ color: card.valueColor }}>{card.value}</p>
-              {card.extra && (
-                <p className="text-xs text-[#64748B] mt-0.5 font-medium">{card.extra}</p>
-              )}
+              <p className={`text-xl font-bold ${card.valueCls}`}>{card.value}</p>
+              {card.extra && <p className="text-xs text-[#64748B] mt-0.5 font-medium">{card.extra}</p>}
             </div>
           )
         })}
       </div>
 
       {/* Filter tabs */}
-      <div className="flex items-center gap-1 p-1 rounded-[12px] w-fit"
-        style={{ background: '#F1F5F9' }}>
-        {filters.map((f) => (
-          <Link
-            key={f.value}
-            href={f.value === 'all' ? '/payments' : `/payments?status=${f.value}`}
-            className="px-4 py-2 rounded-[10px] text-sm font-semibold transition-all duration-200"
-            style={{
-              background: (f.value === 'all' && !filterStatus) || filterStatus === f.value
-                ? '#ffffff'
-                : 'transparent',
-              color: (f.value === 'all' && !filterStatus) || filterStatus === f.value
-                ? '#111827'
-                : '#64748B',
-              boxShadow: (f.value === 'all' && !filterStatus) || filterStatus === f.value
-                ? '0 1px 4px rgba(0,0,0,0.08)'
-                : 'none',
-            }}
-          >
-            {f.label}
-          </Link>
-        ))}
+      <div className="flex items-center gap-1 p-1 rounded-xl w-fit bg-slate-100">
+        {filters.map(f => {
+          const isActive = (f.value === 'all' && !filterStatus) || filterStatus === f.value
+          return (
+            <Link key={f.value}
+              href={f.value === 'all' ? '/payments' : `/payments?status=${f.value}`}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${isActive ? 'bg-white text-[#111827] shadow-sm' : 'text-slate-500 hover:text-[#111827]'}`}>
+              {f.label}
+            </Link>
+          )
+        })}
       </div>
 
       {/* Table */}
-      <div style={cardStyle} className="overflow-hidden">
+      <div className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm overflow-hidden">
         {!payments || payments.length === 0 ? (
           <div className="py-16 text-center">
-            <div className="w-12 h-12 rounded-full bg-[#F1F5F9] flex items-center justify-center mx-auto mb-3">
-              <Banknote style={{ width: 20, height: 20, color: '#94A3B8' }} />
+            <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+              <Banknote style={{ width: 20, height: 20 }} className="text-slate-400" />
             </div>
             <p className="text-[#374151] font-semibold">Платежей нет</p>
-            <Link href="/payments/new" className="mt-2 inline-block text-sm text-[#16A34A] hover:underline font-medium">
+            <Link href="/payments/new" className="mt-2 inline-block text-sm text-green-600 hover:underline font-medium">
               Создать первый платёж →
             </Link>
           </div>
@@ -192,16 +132,14 @@ export default async function PaymentsPage({
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr style={{ borderBottom: '1px solid rgba(214,219,235,0.6)', background: '#F8FAFC' }}>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-[#64748B] uppercase tracking-wide">Договор / Клиент</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-[#64748B] uppercase tracking-wide">Тип</th>
-                  <th className="text-right px-5 py-3.5 text-xs font-semibold text-[#64748B] uppercase tracking-wide">Сумма</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-[#64748B] uppercase tracking-wide">Срок</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-[#64748B] uppercase tracking-wide">Статус</th>
-                  <th className="px-5 py-3.5" />
+                <tr className="bg-slate-50 border-b border-slate-100">
+                  {['Договор / Клиент', 'Тип', 'Сумма', 'Срок', 'Статус', ''].map(h => (
+                    <th key={h} className="text-left px-5 py-3.5 text-xs font-semibold text-[#64748B] uppercase tracking-wide">{h}</th>
+                  ))}
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100">
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 {payments.map((p: any) => {
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   const contract = p.contract as any
@@ -209,39 +147,23 @@ export default async function PaymentsPage({
                   const isOverdueDisplay =
                     p.payment_status === 'overdue' ||
                     (p.payment_status === 'pending' && p.due_date && new Date(p.due_date) < new Date())
-
-                  const statusKey = isOverdueDisplay && p.payment_status === 'pending'
-                    ? 'overdue'
-                    : (p.payment_status ?? 'pending')
+                  const statusKey = isOverdueDisplay && p.payment_status === 'pending' ? 'overdue' : (p.payment_status ?? 'pending')
                   const sc = statusConfig[statusKey] ?? statusConfig.pending
 
                   return (
-                    <tr
-                      key={p.id}
-                      style={{ borderBottom: '1px solid rgba(214,219,235,0.4)' }}
-                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#F8FAFC'}
-                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = ''}
-                    >
+                    <tr key={p.id} className="hover:bg-slate-50 transition-colors">
                       <td className="px-5 py-3.5">
-                        <p className="text-sm font-semibold text-[#111827]">
-                          {contract?.contract_number ?? '—'}
-                        </p>
-                        <p className="text-xs text-[#64748B] mt-0.5">
-                          {client?.full_name ?? '—'}
-                        </p>
+                        <p className="text-sm font-semibold text-[#111827]">{contract?.contract_number ?? '—'}</p>
+                        <p className="text-xs text-[#64748B] mt-0.5">{client?.full_name ?? '—'}</p>
+                      </td>
+                      <td className="px-5 py-3.5 text-sm text-[#374151] font-medium">
+                        {typeLabels[p.payment_type ?? ''] ?? p.payment_type ?? '—'}
+                      </td>
+                      <td className="px-5 py-3.5 text-sm font-bold text-[#111827]">
+                        {fmt(Number(p.amount))}
                       </td>
                       <td className="px-5 py-3.5">
-                        <span className="text-sm text-[#374151] font-medium">
-                          {typeLabels[p.payment_type ?? ''] ?? p.payment_type ?? '—'}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3.5 text-right">
-                        <span className="text-sm font-bold text-[#111827]">
-                          {fmt(Number(p.amount))}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3.5">
-                        <span className={`text-sm font-medium ${isOverdueDisplay && p.payment_status !== 'paid' ? 'text-[#DC2626]' : 'text-[#64748B]'}`}>
+                        <span className={`text-sm font-medium ${isOverdueDisplay && p.payment_status !== 'paid' ? 'text-red-600' : 'text-[#64748B]'}`}>
                           {fmtDate(p.due_date)}
                         </span>
                       </td>
@@ -250,11 +172,9 @@ export default async function PaymentsPage({
                       </td>
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-1 justify-end">
-                          <Link
-                            href={`/payments/${p.id}/edit`}
-                            className="p-1.5 rounded-[8px] transition-all text-[#94A3B8] hover:text-[#16A34A] hover:bg-[#F0FDF4]"
-                            title="Редактировать"
-                          >
+                          <Link href={`/payments/${p.id}/edit`}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-green-600 hover:bg-green-50 transition-colors"
+                            title="Редактировать">
                             <Pencil style={{ width: 14, height: 14 }} />
                           </Link>
                           <MarkPaidButton paymentId={p.id} status={p.payment_status ?? 'pending'} />

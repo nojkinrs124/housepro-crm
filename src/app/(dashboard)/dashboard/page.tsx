@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import {
   Users, Home, FileText, CheckSquare, TrendingUp,
   Zap, Clock, DollarSign, AlertTriangle, ArrowUpRight,
-  Calendar, ArrowUp, Banknote, Wallet
+  Calendar, Banknote, Wallet
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -109,13 +109,6 @@ export default async function DashboardPage() {
   const today = new Date()
   const todayStr = today.toLocaleDateString('ru-RU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
 
-  const cardStyle = {
-    background: '#ffffff',
-    borderRadius: '20px',
-    border: '1px solid rgba(214,219,235,0.6)',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.05)',
-  }
-
   return (
     <div className="space-y-8">
 
@@ -127,17 +120,13 @@ export default async function DashboardPage() {
         </div>
         <div className="flex items-center gap-2">
           {(overdueTasksCount ?? 0) > 0 && (
-            <Link href="/tasks"
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-[10px] text-sm font-medium transition-all"
-              style={{ background: '#FEF2F2', color: '#DC2626', border: '1px solid rgba(220,38,38,0.15)' }}>
+            <Link href="/tasks" className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 transition-colors">
               <AlertTriangle style={{ width: 14, height: 14 }} />
               {overdueTasksCount} просроченных задач
             </Link>
           )}
           {(overduePaymentsCount ?? 0) > 0 && (
-            <Link href="/payments"
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-[10px] text-sm font-medium transition-all"
-              style={{ background: '#FFF7ED', color: '#C2410C', border: '1px solid rgba(194,65,12,0.15)' }}>
+            <Link href="/payments" className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium bg-orange-50 text-orange-600 border border-orange-100 hover:bg-orange-100 transition-colors">
               <DollarSign style={{ width: 14, height: 14 }} />
               {overduePaymentsCount} просроченных платежей
             </Link>
@@ -148,40 +137,24 @@ export default async function DashboardPage() {
       {/* KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4">
         {[
-          { title: 'Новые лиды',       value: newLeadsCount ?? 0,   icon: Zap,         iconBg: '#EFF6FF', iconColor: '#3B82F6', href: '/leads',      trend: '+12%' },
-          { title: 'Активных сделок',  value: activeDealsCount ?? 0, icon: TrendingUp,  iconBg: '#F0FDF4', iconColor: '#16A34A', href: '/deals',      trend: '+8%' },
-          { title: 'Контактов',        value: contactsCount ?? 0,   icon: Users,       iconBg: '#F5F3FF', iconColor: '#7C3AED', href: '/contacts',   trend: '+5%' },
-          { title: 'Свободных объект.',value: propertiesCount ?? 0, icon: Home,        iconBg: '#ECFDF5', iconColor: '#059669', href: '/properties', trend: '0%' },
-          { title: 'Активных догов.',  value: contractsCount ?? 0,  icon: FileText,    iconBg: '#FFF7ED', iconColor: '#EA580C', href: '/contracts',  trend: '+3%' },
-          { title: 'Задач в работе',   value: activeTasksCount ?? 0, icon: CheckSquare, iconBg: '#FFF1F2', iconColor: '#E11D48', href: '/tasks',      trend: '-2%' },
+          { title: 'Новые лиды',        value: newLeadsCount ?? 0,    icon: Zap,         iconBg: 'bg-blue-50',    iconColor: 'text-blue-500',    href: '/leads',      trend: '+12%', trendPos: true },
+          { title: 'Активных сделок',   value: activeDealsCount ?? 0,  icon: TrendingUp,  iconBg: 'bg-green-50',   iconColor: 'text-green-600',   href: '/deals',      trend: '+8%',  trendPos: true },
+          { title: 'Контактов',         value: contactsCount ?? 0,    icon: Users,       iconBg: 'bg-violet-50',  iconColor: 'text-violet-600',  href: '/contacts',   trend: '+5%',  trendPos: true },
+          { title: 'Своб. объектов',    value: propertiesCount ?? 0,  icon: Home,        iconBg: 'bg-emerald-50', iconColor: 'text-emerald-600', href: '/properties', trend: '0%',   trendPos: null },
+          { title: 'Активных догов.',   value: contractsCount ?? 0,   icon: FileText,    iconBg: 'bg-orange-50',  iconColor: 'text-orange-500',  href: '/contracts',  trend: '+3%',  trendPos: true },
+          { title: 'Задач в работе',    value: activeTasksCount ?? 0,  icon: CheckSquare, iconBg: 'bg-rose-50',    iconColor: 'text-rose-500',    href: '/tasks',      trend: '-2%',  trendPos: false },
         ].map(card => {
           const Icon = card.icon
+          const trendClass = card.trendPos === true ? 'bg-green-50 text-green-600' : card.trendPos === false ? 'bg-red-50 text-red-500' : 'bg-slate-50 text-slate-500'
           return (
             <Link key={card.title} href={card.href}
-              className="group p-5 transition-all duration-300"
-              style={{
-                ...cardStyle,
-                cursor: 'pointer',
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'
-                ;(e.currentTarget as HTMLElement).style.boxShadow = '0 4px 16px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.08)'
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'
-                ;(e.currentTarget as HTMLElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.05)'
-              }}
+              className="group p-5 bg-white rounded-[20px] border border-slate-200/60 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
             >
               <div className="flex items-start justify-between mb-4">
-                <div className="w-10 h-10 rounded-[12px] flex items-center justify-center"
-                  style={{ background: card.iconBg }}>
-                  <Icon style={{ width: 18, height: 18, color: card.iconColor }} />
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${card.iconBg}`}>
+                  <Icon className={card.iconColor} style={{ width: 18, height: 18 }} />
                 </div>
-                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
-                  style={{
-                    background: card.trend.startsWith('+') ? '#F0FDF4' : card.trend === '0%' ? '#F8FAFC' : '#FFF1F2',
-                    color: card.trend.startsWith('+') ? '#16A34A' : card.trend === '0%' ? '#64748B' : '#E11D48',
-                  }}>
+                <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${trendClass}`}>
                   {card.trend}
                 </span>
               </div>
@@ -196,48 +169,45 @@ export default async function DashboardPage() {
       <div className="grid lg:grid-cols-2 gap-6">
 
         {/* Finance */}
-        <div style={cardStyle} className="p-6">
+        <div className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm p-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="font-semibold text-[#111827] text-[15px]">Финансы — текущий месяц</h2>
-            <Link href="/payments" className="text-xs text-[#16A34A] font-medium flex items-center gap-0.5 hover:underline">
+            <Link href="/payments" className="text-xs text-green-600 font-medium flex items-center gap-0.5 hover:underline">
               Подробнее <ArrowUpRight style={{ width: 12, height: 12 }} />
             </Link>
           </div>
 
           <div className="grid grid-cols-2 gap-3 mb-4">
-            {[
-              { label: 'Получено', value: paidThisMonth, icon: Banknote, bg: 'linear-gradient(135deg, #F0FDF4, #DCFCE7)', color: '#16A34A', iconColor: '#22C55E' },
-              { label: 'Ожидается', value: pendingThisMonth, icon: Wallet, bg: 'linear-gradient(135deg, #FFFBEB, #FEF3C7)', color: '#D97706', iconColor: '#F59E0B' },
-            ].map(item => {
-              const Icon = item.icon
-              return (
-                <div key={item.label} className="p-4 rounded-[16px]" style={{ background: item.bg }}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Icon style={{ width: 15, height: 15, color: item.iconColor }} />
-                    <p className="text-xs font-semibold" style={{ color: item.color }}>{item.label}</p>
-                  </div>
-                  <p className="text-xl font-bold" style={{ color: item.color }}>
-                    {item.value.toLocaleString('ru-RU')} ₽
-                  </p>
-                </div>
-              )
-            })}
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-green-50 to-green-100">
+              <div className="flex items-center gap-2 mb-2">
+                <Banknote style={{ width: 15, height: 15 }} className="text-green-500" />
+                <p className="text-xs font-semibold text-green-700">Получено</p>
+              </div>
+              <p className="text-xl font-bold text-green-700">
+                {paidThisMonth.toLocaleString('ru-RU')} ₽
+              </p>
+            </div>
+            <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100">
+              <div className="flex items-center gap-2 mb-2">
+                <Wallet style={{ width: 15, height: 15 }} className="text-amber-500" />
+                <p className="text-xs font-semibold text-amber-700">Ожидается</p>
+              </div>
+              <p className="text-xl font-bold text-amber-700">
+                {pendingThisMonth.toLocaleString('ru-RU')} ₽
+              </p>
+            </div>
           </div>
 
           {(overduePaymentsList?.length ?? 0) > 0 && (
             <div>
-              <p className="text-xs font-semibold text-[#DC2626] mb-2 flex items-center gap-1.5">
+              <p className="text-xs font-semibold text-red-600 mb-2 flex items-center gap-1.5">
                 <AlertTriangle style={{ width: 13, height: 13 }} />
                 Просроченные платежи
               </p>
               <div className="space-y-1.5">
                 {overduePaymentsList!.map(p => (
                   <Link key={p.id} href={`/payments/${p.id}/edit`}
-                    className="flex items-center justify-between px-3.5 py-2.5 rounded-[12px] transition-all"
-                    style={{ background: '#FEF2F2', border: '1px solid rgba(220,38,38,0.1)' }}
-                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#FEE2E2'}
-                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = '#FEF2F2'}
-                  >
+                    className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-red-50 border border-red-100 hover:bg-red-100 transition-colors">
                     <div>
                       {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                       <p className="text-xs font-semibold text-[#111827]">{(p.contract as any)?.contract_number ?? 'Без договора'}</p>
@@ -245,7 +215,7 @@ export default async function DashboardPage() {
                         {p.due_date ? new Date(p.due_date).toLocaleDateString('ru-RU') : '—'}
                       </p>
                     </div>
-                    <p className="text-sm font-bold text-[#DC2626]">{Number(p.amount).toLocaleString('ru-RU')} ₽</p>
+                    <p className="text-sm font-bold text-red-600">{Number(p.amount).toLocaleString('ru-RU')} ₽</p>
                   </Link>
                 ))}
               </div>
@@ -254,10 +224,10 @@ export default async function DashboardPage() {
         </div>
 
         {/* Funnel */}
-        <div style={cardStyle} className="p-6">
+        <div className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm p-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="font-semibold text-[#111827] text-[15px]">Воронка сделок</h2>
-            <Link href="/deals" className="text-xs text-[#16A34A] font-medium flex items-center gap-0.5 hover:underline">
+            <Link href="/deals" className="text-xs text-green-600 font-medium flex items-center gap-0.5 hover:underline">
               Все сделки <ArrowUpRight style={{ width: 12, height: 12 }} />
             </Link>
           </div>
@@ -268,19 +238,18 @@ export default async function DashboardPage() {
               return (
                 <div key={stage.key} className="flex items-center gap-3">
                   <span className="text-xs font-medium text-[#64748B] w-24 shrink-0">{stage.label}</span>
-                  <div className="flex-1 h-7 rounded-[8px] overflow-hidden" style={{ background: '#F1F5F9' }}>
+                  <div className="flex-1 h-7 rounded-lg overflow-hidden bg-slate-100">
                     <div
-                      className="h-full flex items-center justify-end pr-2.5 rounded-[8px] transition-all duration-700"
+                      className="h-full flex items-center justify-end pr-2.5 rounded-lg transition-all duration-700"
                       style={{
                         width: count > 0 ? `${Math.max(pct, 10)}%` : '0%',
                         background: count > 0 ? stage.color : 'transparent',
-                        opacity: 0.9,
                       }}
                     >
                       {count > 0 && <span className="text-white text-xs font-bold">{count}</span>}
                     </div>
                   </div>
-                  {count === 0 && <span className="text-xs text-[#94A3B8] font-medium w-4">0</span>}
+                  {count === 0 && <span className="text-xs text-slate-400 font-medium w-4">0</span>}
                 </div>
               )
             })}
@@ -292,29 +261,26 @@ export default async function DashboardPage() {
       <div className="grid lg:grid-cols-3 gap-6">
 
         {/* Recent contacts */}
-        <div style={cardStyle} className="p-6">
+        <div className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-[#111827] text-[15px]">Последние контакты</h2>
-            <Link href="/contacts" className="text-xs text-[#16A34A] font-medium flex items-center gap-0.5 hover:underline">
+            <Link href="/contacts" className="text-xs text-green-600 font-medium flex items-center gap-0.5 hover:underline">
               Все <ArrowUpRight style={{ width: 12, height: 12 }} />
             </Link>
           </div>
           {!recentContacts?.length ? (
             <div className="text-center py-8">
-              <div className="w-12 h-12 rounded-full bg-[#F1F5F9] flex items-center justify-center mx-auto mb-3">
-                <Users style={{ width: 20, height: 20, color: '#94A3B8' }} />
+              <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+                <Users style={{ width: 20, height: 20 }} className="text-slate-400" />
               </div>
               <p className="text-sm text-[#64748B]">Нет контактов</p>
-              <Link href="/contacts/new" className="text-xs text-[#16A34A] hover:underline mt-1 block font-medium">+ Добавить</Link>
+              <Link href="/contacts/new" className="text-xs text-green-600 hover:underline mt-1 block font-medium">+ Добавить</Link>
             </div>
           ) : (
             <div className="space-y-1">
               {recentContacts.map(c => (
                 <Link key={c.id} href={`/contacts/${c.id}`}
-                  className="flex items-center justify-between p-2.5 rounded-[12px] transition-all"
-                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#F8FAFC'}
-                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = ''}
-                >
+                  className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors">
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-white text-xs font-semibold"
                       style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)' }}>
@@ -335,20 +301,20 @@ export default async function DashboardPage() {
         </div>
 
         {/* Recent deals */}
-        <div style={cardStyle} className="p-6">
+        <div className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-[#111827] text-[15px]">Последние сделки</h2>
-            <Link href="/deals" className="text-xs text-[#16A34A] font-medium flex items-center gap-0.5 hover:underline">
+            <Link href="/deals" className="text-xs text-green-600 font-medium flex items-center gap-0.5 hover:underline">
               Все <ArrowUpRight style={{ width: 12, height: 12 }} />
             </Link>
           </div>
           {!recentDeals?.length ? (
             <div className="text-center py-8">
-              <div className="w-12 h-12 rounded-full bg-[#F1F5F9] flex items-center justify-center mx-auto mb-3">
-                <TrendingUp style={{ width: 20, height: 20, color: '#94A3B8' }} />
+              <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+                <TrendingUp style={{ width: 20, height: 20 }} className="text-slate-400" />
               </div>
               <p className="text-sm text-[#64748B]">Нет сделок</p>
-              <Link href="/deals/new" className="text-xs text-[#16A34A] hover:underline mt-1 block font-medium">+ Создать</Link>
+              <Link href="/deals/new" className="text-xs text-green-600 hover:underline mt-1 block font-medium">+ Создать</Link>
             </div>
           ) : (
             <div className="space-y-1">
@@ -357,10 +323,7 @@ export default async function DashboardPage() {
                 const clientName = (d.client_contact as any)?.full_name ?? (d.owner_contact as any)?.full_name
                 return (
                   <Link key={d.id} href={`/deals/${d.id}`}
-                    className="flex items-center justify-between p-2.5 rounded-[12px] transition-all"
-                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#F8FAFC'}
-                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = ''}
-                  >
+                    className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors">
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-[#111827]">{dealTypeLabels[d.deal_type] ?? d.deal_type}</p>
                       <p className="text-xs text-[#64748B] truncate">{clientName ?? new Date(d.created_at).toLocaleDateString('ru-RU')}</p>
@@ -379,20 +342,20 @@ export default async function DashboardPage() {
         </div>
 
         {/* My tasks */}
-        <div style={cardStyle} className="p-6">
+        <div className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-[#111827] text-[15px]">Мои задачи</h2>
-            <Link href="/tasks" className="text-xs text-[#16A34A] font-medium flex items-center gap-0.5 hover:underline">
+            <Link href="/tasks" className="text-xs text-green-600 font-medium flex items-center gap-0.5 hover:underline">
               Все <ArrowUpRight style={{ width: 12, height: 12 }} />
             </Link>
           </div>
           {!myTasks?.length ? (
             <div className="text-center py-8">
-              <div className="w-12 h-12 rounded-full bg-[#F1F5F9] flex items-center justify-center mx-auto mb-3">
-                <CheckSquare style={{ width: 20, height: 20, color: '#94A3B8' }} />
+              <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+                <CheckSquare style={{ width: 20, height: 20 }} className="text-slate-400" />
               </div>
               <p className="text-sm text-[#64748B]">Нет активных задач</p>
-              <Link href="/tasks/new" className="text-xs text-[#16A34A] hover:underline mt-1 block font-medium">+ Создать задачу</Link>
+              <Link href="/tasks/new" className="text-xs text-green-600 hover:underline mt-1 block font-medium">+ Создать задачу</Link>
             </div>
           ) : (
             <div className="space-y-2">
@@ -400,11 +363,7 @@ export default async function DashboardPage() {
                 const isOverdue = task.deadline && new Date(task.deadline) < new Date()
                 return (
                   <div key={task.id}
-                    className="p-3 rounded-[12px]"
-                    style={{
-                      background: isOverdue ? '#FEF2F2' : '#F8FAFC',
-                      border: isOverdue ? '1px solid rgba(220,38,38,0.15)' : '1px solid transparent',
-                    }}>
+                    className={`p-3 rounded-xl ${isOverdue ? 'bg-red-50 border border-red-100' : 'bg-slate-50'}`}>
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-sm font-medium text-[#111827] leading-snug">{task.title}</p>
                       <span className={`text-[11px] px-1.5 py-0.5 rounded-full font-semibold shrink-0 ${priorityColors[task.priority] ?? 'bg-slate-50 text-slate-600'}`}>
@@ -412,7 +371,7 @@ export default async function DashboardPage() {
                       </span>
                     </div>
                     {task.deadline && (
-                      <div className={`flex items-center gap-1 mt-1.5 text-xs font-medium ${isOverdue ? 'text-[#DC2626]' : 'text-[#64748B]'}`}>
+                      <div className={`flex items-center gap-1 mt-1.5 text-xs font-medium ${isOverdue ? 'text-red-600' : 'text-[#64748B]'}`}>
                         <Clock style={{ width: 11, height: 11 }} />
                         {isOverdue ? '⚠ ' : ''}{new Date(task.deadline).toLocaleDateString('ru-RU')}
                       </div>
@@ -424,7 +383,7 @@ export default async function DashboardPage() {
           )}
 
           {(upcomingDeadlines?.length ?? 0) > 0 && (
-            <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(214,219,235,0.6)' }}>
+            <div className="mt-4 pt-4 border-t border-slate-100">
               <p className="text-xs font-semibold text-[#64748B] mb-2.5 flex items-center gap-1.5">
                 <Calendar style={{ width: 12, height: 12 }} />
                 Дедлайны на 7 дней
@@ -433,7 +392,7 @@ export default async function DashboardPage() {
                 {upcomingDeadlines!.map(t => (
                   <div key={t.id} className="flex items-center justify-between text-xs">
                     <span className="text-[#374151] truncate max-w-32 font-medium">{t.title}</span>
-                    <span className="text-[#94A3B8] shrink-0 ml-2">
+                    <span className="text-slate-400 shrink-0 ml-2">
                       {t.deadline ? new Date(t.deadline).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }) : ''}
                     </span>
                   </div>
@@ -445,13 +404,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Quick actions */}
-      <div
-        className="p-6 rounded-[20px]"
-        style={{
-          background: 'linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 50%, #F0FDF4 100%)',
-          border: '1px solid rgba(34,197,94,0.2)',
-        }}
-      >
+      <div className="p-6 rounded-[20px] bg-gradient-to-r from-green-50 to-emerald-50 border border-green-100">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <h3 className="font-bold text-[#111827] text-[15px]">Быстрые действия</h3>
@@ -459,18 +412,14 @@ export default async function DashboardPage() {
           </div>
           <div className="flex flex-wrap gap-2">
             {[
-              { label: '+ Лид',     href: '/leads/new',      bg: '#3B82F6' },
-              { label: '+ Контакт', href: '/contacts/new',   bg: '#7C3AED' },
-              { label: '+ Объект',  href: '/properties/new', bg: '#059669' },
-              { label: '+ Договор', href: '/contracts/new',  bg: '#EA580C' },
-              { label: '+ Сделка',  href: '/deals/new',      bg: '#16A34A' },
+              { label: '+ Лид',     href: '/leads/new',      cls: 'bg-blue-600 hover:bg-blue-700' },
+              { label: '+ Контакт', href: '/contacts/new',   cls: 'bg-violet-600 hover:bg-violet-700' },
+              { label: '+ Объект',  href: '/properties/new', cls: 'bg-emerald-600 hover:bg-emerald-700' },
+              { label: '+ Договор', href: '/contracts/new',  cls: 'bg-orange-600 hover:bg-orange-700' },
+              { label: '+ Сделка',  href: '/deals/new',      cls: 'bg-green-600 hover:bg-green-700' },
             ].map(a => (
               <Link key={a.href} href={a.href}
-                className="px-4 py-2 text-white rounded-[10px] text-sm font-semibold transition-all duration-200"
-                style={{ background: a.bg, boxShadow: '0 2px 8px rgba(0,0,0,0.12)' }}
-                onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'}
-                onMouseLeave={e => (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'}
-              >
+                className={`px-4 py-2 text-white rounded-xl text-sm font-semibold transition-colors ${a.cls}`}>
                 {a.label}
               </Link>
             ))}

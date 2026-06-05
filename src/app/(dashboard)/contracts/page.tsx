@@ -8,19 +8,12 @@ const contractTypeLabels: Record<string, string> = {
   property_management: 'Управление', sublease: 'Субаренда',
   agency_contract: 'Агентский договор',
 }
-const statusConfig: Record<string, { label: string; bg: string; color: string; dot: string }> = {
-  draft:     { label: 'Черновик',  bg: '#F8FAFC', color: '#64748B', dot: '#94A3B8' },
-  generated: { label: 'Создан',    bg: '#EFF6FF', color: '#2563EB', dot: '#60A5FA' },
-  signed:    { label: 'Подписан',  bg: '#F0FDF4', color: '#16A34A', dot: '#22C55E' },
-  completed: { label: 'Завершён',  bg: '#ECFDF5', color: '#059669', dot: '#34D399' },
-  cancelled: { label: 'Отменён',   bg: '#FEF2F2', color: '#DC2626', dot: '#F87171' },
-}
-
-const cardStyle = {
-  background: '#ffffff',
-  borderRadius: '20px',
-  border: '1px solid rgba(214,219,235,0.6)',
-  boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.05)',
+const statusConfig: Record<string, { label: string; cls: string; dot: string }> = {
+  draft:     { label: 'Черновик',  cls: 'bg-slate-50 text-slate-600',   dot: 'bg-slate-400' },
+  generated: { label: 'Создан',    cls: 'bg-blue-50 text-blue-700',     dot: 'bg-blue-400' },
+  signed:    { label: 'Подписан',  cls: 'bg-green-50 text-green-700',   dot: 'bg-green-400' },
+  completed: { label: 'Завершён',  cls: 'bg-emerald-50 text-emerald-700', dot: 'bg-emerald-400' },
+  cancelled: { label: 'Отменён',   cls: 'bg-red-50 text-red-600',       dot: 'bg-red-400' },
 }
 
 export default async function ContractsPage({
@@ -37,7 +30,7 @@ export default async function ContractsPage({
     .order('created_at', { ascending: false })
 
   if (params.search) query = query.ilike('contract_number', `%${params.search}%`)
-  if (params.status) query = query.eq('status', params.status)
+  if (params.status)  query = query.eq('status', params.status)
 
   const { data: contracts, error } = await query.limit(50)
 
@@ -71,81 +64,63 @@ export default async function ContractsPage({
   ])
   const propertyMap = Object.fromEntries((propertiesData ?? []).map(p => [p.id, p]))
 
-  if (error) console.error('Contracts error:', error.message)
-
   const statusKeys = Object.keys(statusConfig)
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-[#111827] tracking-tight">Договоры</h1>
           <p className="text-[#64748B] mt-1 text-sm">{contracts?.length ?? 0} договоров</p>
         </div>
         <Link href="/contracts/new"
-          className="flex items-center gap-2 px-4 py-2.5 text-white rounded-[12px] text-sm font-semibold"
-          style={{
-            background: 'linear-gradient(135deg, #16A34A, #22C55E)',
-            boxShadow: '0 2px 8px rgba(22,163,74,0.3)',
-          }}>
+          className="flex items-center gap-2 px-4 py-2.5 text-white rounded-xl text-sm font-semibold"
+          style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 2px 8px rgba(22,163,74,0.3)' }}>
           <Plus style={{ width: 16, height: 16 }} />
           Новый договор
         </Link>
       </div>
 
       {/* Filters */}
-      <div style={cardStyle} className="p-4 flex flex-wrap gap-3">
+      <div className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm p-4 flex flex-wrap gap-3">
         <form method="get" className="flex-1 min-w-64">
           <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
-              style={{ width: 15, height: 15, color: '#94A3B8' }} />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400"
+              style={{ width: 15, height: 15 }} />
             <input name="search" defaultValue={params.search}
               placeholder="Поиск по номеру договора..."
-              className="w-full h-10 pl-10 pr-4 text-sm text-[#111827] placeholder:text-[#94A3B8] outline-none"
-              style={{
-                background: '#F8FAFC',
-                border: '1.5px solid rgba(214,219,235,0.8)',
-                borderRadius: '10px',
-              }} />
+              className="w-full h-10 pl-10 pr-4 text-sm text-[#111827] placeholder:text-slate-400 outline-none bg-slate-50 border border-slate-200 rounded-xl focus:border-green-400 focus:ring-2 focus:ring-green-100 transition-all" />
           </div>
         </form>
         <div className="flex gap-2 flex-wrap">
           <Link href="/contracts"
-            className="px-4 py-2 rounded-[10px] text-sm font-semibold transition-all"
-            style={{
-              background: !params.status ? 'linear-gradient(135deg, #16A34A, #22C55E)' : '#F1F5F9',
-              color: !params.status ? '#ffffff' : '#64748B',
-            }}>
+            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${!params.status ? 'text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+            style={!params.status ? { background: 'linear-gradient(135deg, #16A34A, #22C55E)' } : {}}>
             Все
           </Link>
-          {statusKeys.map(value => {
-            const sc = statusConfig[value]
-            return (
-              <Link key={value} href={`/contracts?status=${value}`}
-                className="px-4 py-2 rounded-[10px] text-sm font-semibold transition-all"
-                style={{
-                  background: params.status === value ? 'linear-gradient(135deg, #16A34A, #22C55E)' : '#F1F5F9',
-                  color: params.status === value ? '#ffffff' : '#64748B',
-                }}>
-                {sc.label}
-              </Link>
-            )
-          })}
+          {statusKeys.map(value => (
+            <Link key={value} href={`/contracts?status=${value}`}
+              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${params.status === value ? 'text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+              style={params.status === value ? { background: 'linear-gradient(135deg, #16A34A, #22C55E)' } : {}}>
+              {statusConfig[value].label}
+            </Link>
+          ))}
         </div>
       </div>
 
       {/* Table */}
-      <div style={cardStyle} className="overflow-hidden">
+      <div className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm overflow-hidden">
         {!contracts || contracts.length === 0 ? (
           <div className="text-center py-16">
-            <div className="w-12 h-12 rounded-full bg-[#F1F5F9] flex items-center justify-center mx-auto mb-3">
-              <FileText style={{ width: 20, height: 20, color: '#94A3B8' }} />
+            <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+              <FileText style={{ width: 20, height: 20 }} className="text-slate-400" />
             </div>
             <p className="text-[#374151] font-semibold">
               {error ? `Ошибка: ${error.message}` : 'Нет договоров'}
             </p>
             <Link href="/contracts/new"
-              className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 text-white rounded-[12px] text-sm font-semibold"
+              className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 text-white rounded-xl text-sm font-semibold"
               style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 2px 8px rgba(22,163,74,0.3)' }}>
               <Plus style={{ width: 14, height: 14 }} />
               Создать договор
@@ -155,30 +130,25 @@ export default async function ContractsPage({
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr style={{ borderBottom: '1px solid rgba(214,219,235,0.6)', background: '#F8FAFC' }}>
+                <tr className="bg-slate-50 border-b border-slate-100">
                   {['Номер', 'Тип', 'Клиент', 'Объект', 'Сумма', 'Статус', 'Дата', ''].map(h => (
                     <th key={h} className="text-left text-xs font-semibold text-[#64748B] uppercase tracking-wide px-4 py-3.5 first:px-6">{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100">
                 {contracts.map(contract => {
                   const clientId = contract.client_contact_id || contract.client_id
-                  const client = clientId ? clientMap[clientId] : null
+                  const client   = clientId ? clientMap[clientId] : null
                   const property = contract.property_id ? propertyMap[contract.property_id] : null
-                  const sc = statusConfig[contract.status] ?? statusConfig.draft
+                  const sc       = statusConfig[contract.status] ?? statusConfig.draft
+
                   return (
-                    <tr
-                      key={contract.id}
-                      style={{ borderBottom: '1px solid rgba(214,219,235,0.4)' }}
-                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#F8FAFC'}
-                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = ''}
-                    >
+                    <tr key={contract.id} className="hover:bg-slate-50 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-[10px] flex items-center justify-center shrink-0"
-                            style={{ background: '#F5F3FF' }}>
-                            <FileText style={{ width: 14, height: 14, color: '#7C3AED' }} />
+                          <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-violet-50 shrink-0">
+                            <FileText style={{ width: 14, height: 14 }} className="text-violet-600" />
                           </div>
                           <span className="text-sm font-semibold text-[#111827]">
                             {contract.contract_number ?? `#${contract.id.slice(0, 8)}`}
@@ -191,16 +161,15 @@ export default async function ContractsPage({
                       <td className="px-4 py-4 text-sm font-medium text-[#374151]">
                         {client?.full_name ?? '—'}
                       </td>
-                      <td className="px-4 py-4 text-sm text-[#64748B] max-w-xs truncate">
+                      <td className="px-4 py-4 text-sm text-[#64748B] max-w-[200px] truncate">
                         {property?.title ?? property?.address ?? '—'}
                       </td>
                       <td className="px-4 py-4 text-sm font-bold text-[#111827]">
                         {contract.amount ? `${Number(contract.amount).toLocaleString('ru-RU')} ₽` : '—'}
                       </td>
                       <td className="px-4 py-4">
-                        <span className="flex items-center gap-1.5 w-fit text-[11px] font-semibold px-2.5 py-1 rounded-full"
-                          style={{ background: sc.bg, color: sc.color }}>
-                          <span className="w-1.5 h-1.5 rounded-full" style={{ background: sc.dot }} />
+                        <span className={`flex items-center gap-1.5 w-fit text-[11px] font-semibold px-2.5 py-1 rounded-full ${sc.cls}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />
                           {sc.label}
                         </span>
                       </td>
@@ -210,12 +179,12 @@ export default async function ContractsPage({
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-3">
                           <Link href={`/contracts/${contract.id}`}
-                            className="text-sm text-[#16A34A] font-semibold hover:underline">
+                            className="text-sm text-green-600 font-semibold hover:underline">
                             Открыть
                           </Link>
-                          <span className="text-[#CBD5E1]">·</span>
+                          <span className="text-slate-300">·</span>
                           <Link href={`/contracts/${contract.id}/generate`}
-                            className="text-sm text-[#7C3AED] font-semibold hover:underline">
+                            className="text-sm text-violet-600 font-semibold hover:underline">
                             DOCX
                           </Link>
                         </div>
