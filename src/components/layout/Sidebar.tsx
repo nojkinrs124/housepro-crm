@@ -32,7 +32,7 @@ const roleLabels: Record<string, string> = {
 }
 const roleBadgeColors: Record<string, string> = {
   admin:      'bg-red-100 text-red-700',
-  manager:    'bg-blue-100 text-blue-700',
+  manager:    'bg-emerald-100 text-emerald-700',
   agent:      'bg-green-100 text-green-700',
   accountant: 'bg-purple-100 text-purple-700',
 }
@@ -42,93 +42,152 @@ export function Sidebar({ user }: { user: User | null }) {
   const [collapsed, setCollapsed] = useState(false)
 
   return (
-    <aside className={cn(
-      'relative flex flex-col border-r border-border bg-card transition-all duration-300 shrink-0',
-      collapsed ? 'w-16' : 'w-64'
-    )}>
+    <aside
+      className={cn(
+        'relative flex flex-col shrink-0 transition-all duration-300 ease-in-out',
+        'bg-white border-r border-border/60',
+        collapsed ? 'w-[72px]' : 'w-[280px]'
+      )}
+      style={{ boxShadow: '4px 0 24px rgba(0,0,0,0.03)' }}
+    >
       {/* Logo */}
-      <div className="h-16 flex items-center px-4 border-b border-border">
+      <div className={cn(
+        'h-[68px] flex items-center border-b border-border/60 shrink-0',
+        collapsed ? 'px-4 justify-center' : 'px-6'
+      )}>
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shrink-0">
-            <Building2 className="w-4 h-4 text-primary-foreground" />
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+            style={{ background: 'linear-gradient(135deg, #16A34A 0%, #22C55E 100%)' }}
+          >
+            <Building2 className="w-4.5 h-4.5 text-white" style={{ width: 18, height: 18 }} />
           </div>
-          {!collapsed && <span className="font-bold text-foreground truncate">HousePro CRM</span>}
+          {!collapsed && (
+            <div className="min-w-0">
+              <span className="font-bold text-[#111827] text-[15px] leading-tight block">HousePro</span>
+              <span className="text-[11px] text-[#64748B] font-medium tracking-wide uppercase leading-tight">CRM</span>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto">
-        {navigation.map((item) => {
-          const Icon = item.icon
-          const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
-          return (
-            <Link key={item.href} href={item.href}
-              className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all',
-                isActive
-                  ? 'bg-primary text-primary-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-accent',
-                collapsed && 'justify-center px-2'
-              )}
-              title={collapsed ? item.name : undefined}>
-              <Icon className="w-4 h-4 shrink-0" />
-              {!collapsed && <span>{item.name}</span>}
-            </Link>
-          )
-        })}
+      <nav className={cn('flex-1 py-4 overflow-y-auto', collapsed ? 'px-3' : 'px-4')}>
+        <div className="space-y-0.5">
+          {navigation.map((item) => {
+            const Icon = item.icon
+            const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                title={collapsed ? item.name : undefined}
+                className={cn(
+                  'relative flex items-center gap-3 rounded-[12px] text-sm font-medium transition-all duration-200',
+                  collapsed ? 'px-2.5 py-2.5 justify-center' : 'px-3.5 py-2.5',
+                  isActive
+                    ? 'text-[#16A34A]'
+                    : 'text-[#64748B] hover:text-[#111827]'
+                )}
+                style={isActive ? {
+                  background: 'rgba(34,197,94,0.1)',
+                } : undefined}
+              >
+                {/* Active indicator */}
+                {isActive && !collapsed && (
+                  <span
+                    className="absolute left-0 top-[6px] bottom-[6px] w-[3px] rounded-r-full"
+                    style={{ background: '#22C55E' }}
+                  />
+                )}
+                {/* Hover background */}
+                <span
+                  className={cn(
+                    'absolute inset-0 rounded-[12px] transition-all duration-200',
+                    !isActive && 'hover:bg-[#F8FAFC]'
+                  )}
+                  aria-hidden
+                />
+                <Icon
+                  className={cn(
+                    'shrink-0 relative z-10 transition-all duration-200',
+                    isActive ? 'text-[#16A34A]' : 'text-[#94A3B8]'
+                  )}
+                  style={{ width: 17, height: 17 }}
+                />
+                {!collapsed && (
+                  <span className="relative z-10">{item.name}</span>
+                )}
+              </Link>
+            )
+          })}
+        </div>
       </nav>
 
-      {/* User */}
-      <div className="border-t border-border p-3">
+      {/* User section */}
+      <div className={cn('border-t border-border/60 p-4', collapsed && 'p-3')}>
         {!collapsed ? (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2.5 px-1">
+          <div className="space-y-3">
+            <Link
+              href="/settings/profile"
+              className="flex items-center gap-3 p-2.5 rounded-[12px] hover:bg-[#F8FAFC] transition-all duration-200 group"
+            >
               {user?.avatar_url ? (
-                <img 
+                <img
                   src={user.avatar_url}
                   alt={user.full_name || 'User'}
-                  className="w-8 h-8 rounded-full object-cover shrink-0"
+                  className="w-9 h-9 rounded-full object-cover shrink-0 ring-2 ring-[#22C55E]/20"
                 />
               ) : (
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <span className="text-primary text-xs font-semibold">
-                    {user?.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
-                  </span>
+                <div
+                  className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-white text-sm font-semibold"
+                  style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)' }}
+                >
+                  {user?.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-foreground truncate">
+                <p className="text-sm font-semibold text-[#111827] truncate leading-tight">
                   {user?.full_name ?? 'Сотрудник'}
                 </p>
                 <span className={cn(
-                  'inline-block text-xs px-1.5 py-0.5 rounded-full font-medium',
+                  'inline-block text-[11px] px-1.5 py-0.5 rounded-full font-medium mt-0.5',
                   roleBadgeColors[user?.role ?? 'agent']
                 )}>
                   {roleLabels[user?.role ?? 'agent']}
                 </span>
               </div>
-            </div>
+            </Link>
             <form action={logout}>
-              <button type="submit"
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all">
-                <LogOut className="w-4 h-4" /><span>Выйти</span>
+              <button
+                type="submit"
+                className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-[#64748B] hover:text-red-600 hover:bg-red-50 rounded-[12px] transition-all duration-200 font-medium"
+              >
+                <LogOut style={{ width: 16, height: 16 }} />
+                <span>Выйти</span>
               </button>
             </form>
           </div>
         ) : (
           <form action={logout}>
-            <button type="submit" title="Выйти"
-              className="w-full flex items-center justify-center p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all">
-              <LogOut className="w-4 h-4" />
+            <button
+              type="submit"
+              title="Выйти"
+              className="w-full flex items-center justify-center p-2.5 text-[#94A3B8] hover:text-red-600 hover:bg-red-50 rounded-[12px] transition-all duration-200"
+            >
+              <LogOut style={{ width: 17, height: 17 }} />
             </button>
           </form>
         )}
       </div>
 
       {/* Collapse toggle */}
-      <button onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-3 top-20 w-6 h-6 bg-card border border-border rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-all shadow-sm z-10">
-        {collapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        className="absolute -right-3.5 top-[84px] w-7 h-7 bg-white border border-border/80 rounded-full flex items-center justify-center text-[#64748B] hover:text-[#16A34A] hover:border-[#22C55E]/40 transition-all shadow-sm z-10"
+        style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
+      >
+        {collapsed ? <ChevronRight style={{ width: 13, height: 13 }} /> : <ChevronLeft style={{ width: 13, height: 13 }} />}
       </button>
     </aside>
   )

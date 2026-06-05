@@ -23,12 +23,14 @@ export default async function DashboardLayout({
   ])
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <div className="flex h-screen overflow-hidden" style={{ background: '#F8FAFC' }}>
       <Sidebar user={profile} />
       <div className="flex-1 flex flex-col min-w-0">
         <Header user={profile} unreadCount={unreadCount ?? 0} />
-        <main className="flex-1 overflow-y-auto p-6">
-          {children}
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-6 lg:p-8 max-w-[1600px] mx-auto">
+            {children}
+          </div>
         </main>
       </div>
       <GlobalSearch />
