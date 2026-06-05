@@ -8,19 +8,14 @@ const contractTypeLabels: Record<string, string> = {
   property_management: 'Управление', sublease: 'Субаренда',
   agency_contract: 'Агентский договор',
 }
-const statusConfig: Record<string, { label: string; bg: string; color: string; dot: string }> = {
-  draft:     { label: 'Черновик',  bg: '#F8FAFC', color: '#64748B', dot: '#94A3B8' },
-  generated: { label: 'Создан',    bg: '#EFF6FF', color: '#2563EB', dot: '#60A5FA' },
-  signed:    { label: 'Подписан',  bg: '#F0FDF4', color: '#16A34A', dot: '#22C55E' },
-  completed: { label: 'Завершён',  bg: '#ECFDF5', color: '#059669', dot: '#34D399' },
-  cancelled: { label: 'Отменён',   bg: '#FEF2F2', color: '#DC2626', dot: '#F87171' },
+const statusColors: Record<string, string> = {
+  draft: 'bg-gray-100 text-gray-600', generated: 'bg-blue-100 text-blue-700',
+  signed: 'bg-green-100 text-green-700', completed: 'bg-emerald-100 text-emerald-700',
+  cancelled: 'bg-red-100 text-red-700',
 }
-
-const cardStyle = {
-  background: '#ffffff',
-  borderRadius: '20px',
-  border: '1px solid rgba(214,219,235,0.6)',
-  boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.05)',
+const statusLabels: Record<string, string> = {
+  draft: 'Черновик', generated: 'Создан', signed: 'Подписан',
+  completed: 'Завершён', cancelled: 'Отменён',
 }
 
 export default async function ContractsPage({
@@ -31,6 +26,7 @@ export default async function ContractsPage({
   const params = await searchParams
   const supabase = await createClient()
 
+  // Простой запрос без сложных JOIN
   let query = supabase
     .from('contracts')
     .select('id, contract_number, contract_type, status, amount, client_id, client_contact_id, property_id, created_at')
@@ -41,6 +37,7 @@ export default async function ContractsPage({
 
   const { data: contracts, error } = await query.limit(50)
 
+  // Загружаем контакты и объекты отдельно (поддержка и старого client_id и нового client_contact_id)
   const contactIds = [...new Set([
     ...(contracts?.map(c => c.client_contact_id).filter(Boolean) ?? []),
     ...(contracts?.map(c => c.client_id).filter(Boolean) ?? []),
@@ -56,6 +53,7 @@ export default async function ContractsPage({
       : Promise.resolve({ data: [] }),
   ])
 
+  // Фоллбэк на clients для старых записей
   const legacyClientIds = (contracts ?? [])
     .filter(c => !c.client_contact_id && c.client_id)
     .map(c => c.client_id)
@@ -73,149 +71,110 @@ export default async function ContractsPage({
 
   if (error) console.error('Contracts error:', error.message)
 
-  const statusKeys = Object.keys(statusConfig)
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#111827] tracking-tight">Договоры</h1>
-          <p className="text-[#64748B] mt-1 text-sm">{contracts?.length ?? 0} договоров</p>
+          <h1 className="text-2xl font-bold text-foreground">Договоры</h1>
+          <p className="text-muted-foreground mt-1">{contracts?.length ?? 0} договоров</p>
         </div>
         <Link href="/contracts/new"
-          className="flex items-center gap-2 px-4 py-2.5 text-white rounded-[12px] text-sm font-semibold"
-          style={{
-            background: 'linear-gradient(135deg, #16A34A, #22C55E)',
-            boxShadow: '0 2px 8px rgba(22,163,74,0.3)',
-          }}>
-          <Plus style={{ width: 16, height: 16 }} />
-          Новый договор
+          className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition-all">
+          <Plus className="w-4 h-4" />Новый договор
         </Link>
       </div>
 
       {/* Filters */}
-      <div style={cardStyle} className="p-4 flex flex-wrap gap-3">
+      <div className="bg-card border border-border rounded-2xl p-4 flex flex-wrap gap-3">
         <form method="get" className="flex-1 min-w-64">
           <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
-              style={{ width: 15, height: 15, color: '#94A3B8' }} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input name="search" defaultValue={params.search}
               placeholder="Поиск по номеру договора..."
-              className="w-full h-10 pl-10 pr-4 text-sm text-[#111827] placeholder:text-[#94A3B8] outline-none"
-              style={{
-                background: '#F8FAFC',
-                border: '1.5px solid rgba(214,219,235,0.8)',
-                borderRadius: '10px',
-              }} />
+              className="w-full h-9 pl-9 pr-4 rounded-lg border border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all" />
           </div>
         </form>
         <div className="flex gap-2 flex-wrap">
           <Link href="/contracts"
-            className="px-4 py-2 rounded-[10px] text-sm font-semibold transition-all"
-            style={{
-              background: !params.status ? 'linear-gradient(135deg, #16A34A, #22C55E)' : '#F1F5F9',
-              color: !params.status ? '#ffffff' : '#64748B',
-            }}>
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${!params.status ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}>
             Все
           </Link>
-          {statusKeys.map(value => {
-            const sc = statusConfig[value]
-            return (
-              <Link key={value} href={`/contracts?status=${value}`}
-                className="px-4 py-2 rounded-[10px] text-sm font-semibold transition-all"
-                style={{
-                  background: params.status === value ? 'linear-gradient(135deg, #16A34A, #22C55E)' : '#F1F5F9',
-                  color: params.status === value ? '#ffffff' : '#64748B',
-                }}>
-                {sc.label}
-              </Link>
-            )
-          })}
+          {Object.entries(statusLabels).map(([value, label]) => (
+            <Link key={value} href={`/contracts?status=${value}`}
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${params.status === value ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}>
+              {label}
+            </Link>
+          ))}
         </div>
       </div>
 
       {/* Table */}
-      <div style={cardStyle} className="overflow-hidden">
+      <div className="bg-card border border-border rounded-2xl overflow-hidden">
         {!contracts || contracts.length === 0 ? (
           <div className="text-center py-16">
-            <div className="w-12 h-12 rounded-full bg-[#F1F5F9] flex items-center justify-center mx-auto mb-3">
-              <FileText style={{ width: 20, height: 20, color: '#94A3B8' }} />
-            </div>
-            <p className="text-[#374151] font-semibold">
-              {error ? `Ошибка: ${error.message}` : 'Нет договоров'}
+            <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-40" />
+            <p className="text-muted-foreground font-medium">
+              {error ? `Ошибка загрузки: ${error.message}` : 'Нет договоров'}
             </p>
             <Link href="/contracts/new"
-              className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 text-white rounded-[12px] text-sm font-semibold"
-              style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 2px 8px rgba(22,163,74,0.3)' }}>
-              <Plus style={{ width: 14, height: 14 }} />
-              Создать договор
+              className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition-all">
+              <Plus className="w-4 h-4" />Создать договор
             </Link>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr style={{ borderBottom: '1px solid rgba(214,219,235,0.6)', background: '#F8FAFC' }}>
+                <tr className="border-b border-border bg-muted/30">
                   {['Номер', 'Тип', 'Клиент', 'Объект', 'Сумма', 'Статус', 'Дата', ''].map(h => (
-                    <th key={h} className="text-left text-xs font-semibold text-[#64748B] uppercase tracking-wide px-4 py-3.5 first:px-6">{h}</th>
+                    <th key={h} className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide px-4 py-3 first:px-6">{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-border">
                 {contracts.map(contract => {
                   const clientId = contract.client_contact_id || contract.client_id
                   const client = clientId ? clientMap[clientId] : null
                   const property = contract.property_id ? propertyMap[contract.property_id] : null
-                  const sc = statusConfig[contract.status] ?? statusConfig.draft
                   return (
-                    <tr
-                      key={contract.id}
-                      style={{ borderBottom: '1px solid rgba(214,219,235,0.4)' }}
-                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#F8FAFC'}
-                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = ''}
-                    >
+                    <tr key={contract.id} className="hover:bg-accent/50 transition-colors">
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-[10px] flex items-center justify-center shrink-0"
-                            style={{ background: '#F5F3FF' }}>
-                            <FileText style={{ width: 14, height: 14, color: '#7C3AED' }} />
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center shrink-0">
+                            <FileText className="w-4 h-4 text-violet-600" />
                           </div>
-                          <span className="text-sm font-semibold text-[#111827]">
+                          <span className="text-sm font-medium text-foreground">
                             {contract.contract_number ?? `#${contract.id.slice(0, 8)}`}
                           </span>
                         </div>
                       </td>
-                      <td className="px-4 py-4 text-sm text-[#64748B]">
+                      <td className="px-4 py-4 text-sm text-muted-foreground">
                         {contractTypeLabels[contract.contract_type] ?? contract.contract_type}
                       </td>
-                      <td className="px-4 py-4 text-sm font-medium text-[#374151]">
+                      <td className="px-4 py-4 text-sm text-foreground">
                         {client?.full_name ?? '—'}
                       </td>
-                      <td className="px-4 py-4 text-sm text-[#64748B] max-w-xs truncate">
+                      <td className="px-4 py-4 text-sm text-muted-foreground max-w-xs truncate">
                         {property?.title ?? property?.address ?? '—'}
                       </td>
-                      <td className="px-4 py-4 text-sm font-bold text-[#111827]">
+                      <td className="px-4 py-4 text-sm font-medium text-foreground">
                         {contract.amount ? `${Number(contract.amount).toLocaleString('ru-RU')} ₽` : '—'}
                       </td>
                       <td className="px-4 py-4">
-                        <span className="flex items-center gap-1.5 w-fit text-[11px] font-semibold px-2.5 py-1 rounded-full"
-                          style={{ background: sc.bg, color: sc.color }}>
-                          <span className="w-1.5 h-1.5 rounded-full" style={{ background: sc.dot }} />
-                          {sc.label}
+                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${statusColors[contract.status] ?? 'bg-gray-100'}`}>
+                          {statusLabels[contract.status] ?? contract.status}
                         </span>
                       </td>
-                      <td className="px-4 py-4 text-sm text-[#64748B]">
+                      <td className="px-4 py-4 text-sm text-muted-foreground">
                         {new Date(contract.created_at).toLocaleDateString('ru-RU')}
                       </td>
                       <td className="px-4 py-4">
-                        <div className="flex items-center gap-3">
-                          <Link href={`/contracts/${contract.id}`}
-                            className="text-sm text-[#16A34A] font-semibold hover:underline">
+                        <div className="flex items-center gap-2">
+                          <Link href={`/contracts/${contract.id}`} className="text-sm text-primary hover:underline">
                             Открыть
                           </Link>
-                          <span className="text-[#CBD5E1]">·</span>
-                          <Link href={`/contracts/${contract.id}/generate`}
-                            className="text-sm text-[#7C3AED] font-semibold hover:underline">
+                          <span className="text-muted-foreground">·</span>
+                          <Link href={`/contracts/${contract.id}/generate`} className="text-sm text-violet-600 hover:underline">
                             DOCX
                           </Link>
                         </div>

@@ -1,126 +1,56 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 @layer base {
   :root {
-    /* Brand */
-    --primary: 142.1 76.2% 36.3%;
-    --primary-foreground: 355.7 100% 97.3%;
-    --primary-light: 142.1 76.2% 94%;
-
-    /* Backgrounds */
-    --background: 210 40% 98.2%;
-    --foreground: 220 43% 11%;
-
-    /* Cards */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
-    --card-foreground: 220 43% 11%;
-
+    --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 220 43% 11%;
-
-    /* Neutrals */
-    --secondary: 215 20% 96%;
-    --secondary-foreground: 220 43% 11%;
-    --muted: 210 30% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 142.1 76.2% 96%;
-    --accent-foreground: 142.1 76.2% 28%;
-
-    /* Semantic */
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-
-    /* Borders */
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 142.1 76.2% 36.3%;
-
-    --radius: 0.75rem;
-
-    /* Shadows */
-    --shadow-card: 0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06);
-    --shadow-hover: 0 4px 16px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.08);
-    --shadow-sidebar: 4px 0 24px rgba(0,0,0,0.04);
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
   }
-
   .dark {
-    --background: 220 40% 7%;
+    --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-    --card: 220 35% 10%;
+    --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
-    --popover: 220 35% 10%;
+    --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 142.1 70.6% 45.3%;
-    --primary-foreground: 144.9 80.4% 10%;
-    --secondary: 220 30% 16%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 220 30% 16%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 142.1 70.6% 14%;
-    --accent-foreground: 142.1 70.6% 60%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 220 25% 18%;
-    --input: 220 25% 18%;
-    --ring: 142.1 76.2% 36.3%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
   }
 }
 
 @layer base {
-  * {
-    border-color: hsl(var(--border));
-    box-sizing: border-box;
-  }
-
-  html {
-    scroll-behavior: smooth;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
+  * { border-color: hsl(var(--border)); }
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-  }
-
-  /* Scrollbar styling */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  ::-webkit-scrollbar-thumb {
-    background: hsl(var(--border));
-    border-radius: 3px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground) / 0.5);
-  }
-}
-
-@layer utilities {
-  .card-shadow {
-    box-shadow: var(--shadow-card);
-  }
-  .card-shadow-hover {
-    box-shadow: var(--shadow-hover);
-  }
-  .glass {
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-  }
-  .gradient-green {
-    background: linear-gradient(135deg, #16A34A 0%, #22C55E 100%);
-  }
-  .text-gradient-green {
-    background: linear-gradient(135deg, #16A34A, #22C55E);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    font-family: system-ui, -apple-system, sans-serif;
   }
 }
