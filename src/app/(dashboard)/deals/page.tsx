@@ -1,7 +1,14 @@
 import { DealsKanbanBoard } from '@/features/deals/components/DealsKanban'
-import { Plus, DollarSign, TrendingUp } from 'lucide-react'
+import { Plus, DollarSign, TrendingUp, XCircle, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+
+const cardStyle = {
+  background: '#ffffff',
+  borderRadius: '20px',
+  border: '1px solid rgba(214,219,235,0.6)',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.05)',
+}
 
 export default async function DealsPage() {
   const supabase = await createClient()
@@ -31,18 +38,22 @@ export default async function DealsPage() {
     !['completed', 'cancelled'].includes(d.status)).length
 
   return (
-    <div className="space-y-6 max-w-full">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Сделки</h1>
-          <p className="text-muted-foreground mt-1">
-            {activeDealCount} активных · {totalAmount > 0 ? `${totalAmount.toLocaleString('ru-RU')} ₽ завершено` : ''}
+          <h1 className="text-2xl font-bold text-[#111827] tracking-tight">Сделки</h1>
+          <p className="text-[#64748B] mt-1 text-sm">
+            {activeDealCount} активных{totalAmount > 0 ? ` · ${totalAmount.toLocaleString('ru-RU')} ₽ завершено` : ''}
           </p>
         </div>
         <Link href="/deals/new"
-          className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition-all">
-          <Plus className="w-4 h-4" />
+          className="flex items-center gap-2 px-4 py-2.5 text-white rounded-[12px] text-sm font-semibold"
+          style={{
+            background: 'linear-gradient(135deg, #16A34A, #22C55E)',
+            boxShadow: '0 2px 8px rgba(22,163,74,0.3)',
+          }}>
+          <Plus style={{ width: 16, height: 16 }} />
           Новая сделка
         </Link>
       </div>
@@ -50,20 +61,21 @@ export default async function DealsPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Всего сделок',  value: deals?.length ?? 0,         icon: TrendingUp, color: 'bg-blue-50 text-blue-600' },
-          { label: 'Активных',      value: activeDealCount,             icon: DollarSign, color: 'bg-green-50 text-green-600' },
-          { label: 'Завершено',     value: byStatus('completed').length, icon: TrendingUp, color: 'bg-emerald-50 text-emerald-600' },
-          { label: 'Отменено',      value: byStatus('cancelled').length, icon: TrendingUp, color: 'bg-red-50 text-red-600' },
+          { label: 'Всего сделок', value: deals?.length ?? 0,         icon: TrendingUp,   iconBg: '#EFF6FF', iconColor: '#3B82F6' },
+          { label: 'Активных',     value: activeDealCount,             icon: DollarSign,   iconBg: '#F0FDF4', iconColor: '#16A34A' },
+          { label: 'Завершено',    value: byStatus('completed').length, icon: CheckCircle2, iconBg: '#ECFDF5', iconColor: '#059669' },
+          { label: 'Отменено',     value: byStatus('cancelled').length, icon: XCircle,      iconBg: '#FEF2F2', iconColor: '#DC2626' },
         ].map(stat => {
           const Icon = stat.icon
           return (
-            <div key={stat.label} className="bg-card border border-border rounded-2xl p-4 flex items-center gap-3">
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${stat.color}`}>
-                <Icon className="w-4 h-4" />
+            <div key={stat.label} style={cardStyle} className="p-5 flex items-center gap-4">
+              <div className="w-11 h-11 rounded-[12px] flex items-center justify-center shrink-0"
+                style={{ background: stat.iconBg }}>
+                <Icon style={{ width: 20, height: 20, color: stat.iconColor }} />
               </div>
               <div>
-                <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-                <p className="text-xs text-muted-foreground">{stat.label}</p>
+                <p className="text-2xl font-bold text-[#111827]">{stat.value}</p>
+                <p className="text-xs text-[#64748B] font-medium mt-0.5">{stat.label}</p>
               </div>
             </div>
           )
