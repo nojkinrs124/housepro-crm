@@ -122,13 +122,13 @@ export function LeadsKanban({ leads: initialLeads }: { leads: any[] }) {
                     >
                       {/* Name + source */}
                       <div>
-                        <p className="text-sm font-semibold text-foreground">
+                        <a href={`/leads/${lead.id}`}
+                          onClick={e => e.stopPropagation()}
+                          className="text-sm font-semibold text-foreground hover:text-primary transition">
                           {lead.full_name || 'Без имени'}
-                        </p>
+                        </a>
                         {lead.source && (
-                          <span className="text-xs text-muted-foreground">
-                            {sourceLabels[lead.source] ?? lead.source}
-                          </span>
+                          <p className="text-xs text-muted-foreground">{sourceLabels[lead.source] ?? lead.source}</p>
                         )}
                       </div>
 
@@ -152,6 +152,27 @@ export function LeadsKanban({ leads: initialLeads }: { leads: any[] }) {
 
                       {lead.comment && (
                         <p className="text-xs text-muted-foreground line-clamp-2">{lead.comment}</p>
+                      )}
+
+                      {/* Criteria preview */}
+                      {(lead.budget_max || lead.deal_type || lead.rooms) && (
+                        <div className="flex flex-wrap gap-1">
+                          {lead.deal_type && (
+                            <span className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded-md font-medium">
+                              {lead.deal_type === 'rent' ? 'Аренда' : lead.deal_type === 'sale' ? 'Покупка' : lead.deal_type}
+                            </span>
+                          )}
+                          {lead.rooms && (
+                            <span className="text-xs px-1.5 py-0.5 bg-muted text-muted-foreground rounded-md">
+                              {lead.rooms}к
+                            </span>
+                          )}
+                          {lead.budget_max && (
+                            <span className="text-xs px-1.5 py-0.5 bg-green-50 text-green-700 rounded-md font-medium">
+                              до {Number(lead.budget_max).toLocaleString('ru-RU')} ₽
+                            </span>
+                          )}
+                        </div>
                       )}
 
                       {/* Date */}
