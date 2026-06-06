@@ -96,9 +96,7 @@ export default async function NotificationsPage() {
                 </div>
               )
               return href ? (
-                <a key={n.id} href={href} onClick={async () => {
-                  // mark as read on click (handled server-side via link)
-                }}>
+                <a key={n.id} href={href}>
                   {Inner}
                 </a>
               ) : (

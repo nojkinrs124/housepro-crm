@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
-import { ArrowLeft, Phone, Mail, MessageCircle, Clock, UserCheck, MapPin, Home, DollarSign, Zap, Edit, Trash2, Plus } from 'lucide-react'
+import { ArrowLeft, Phone, Mail, MessageCircle, Clock, UserCheck, MapPin, Home, DollarSign, Zap, Edit, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { deleteLeadAction, convertLeadToClient, updateLeadStatusAction } from '@/features/leads/actions/leads.actions'
+import { convertLeadToClient } from '@/features/leads/actions/leads.actions'
+import { DeleteLeadButton } from '@/features/leads/components/DeleteLeadButton'
 import { LeadActivityForm } from '@/features/leads/components/LeadActivityForm'
 import { LeadStatusSelect } from '@/features/leads/components/LeadStatusSelect'
 
@@ -119,13 +120,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
             <Edit className="w-4 h-4" />
             Изменить
           </Link>
-          <form action={deleteLeadAction.bind(null, id)}>
-            <button type="submit"
-              onClick={(e) => { if (!confirm('Удалить лид?')) e.preventDefault() }}
-              className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl transition">
-              <Trash2 className="w-4 h-4" />
-            </button>
-          </form>
+          <DeleteLeadButton leadId={id} />
         </div>
       </div>
 
