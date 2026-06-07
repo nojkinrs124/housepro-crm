@@ -3,6 +3,7 @@ import { ArrowLeft, Shield, UserCheck, User, Mail, Phone, CheckCircle, XCircle }
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { updateEmployeeAction, deactivateEmployeeAction, activateEmployeeAction } from '@/features/users/actions/users.actions'
+import { formAction } from '@/lib/form-action'
 
 const roleLabels: Record<string, string> = {
   admin: 'Администратор', manager: 'Менеджер',
@@ -116,7 +117,7 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
         <div className="bg-card border border-border rounded-2xl p-6 space-y-5">
           <h2 className="font-semibold text-foreground">Редактировать</h2>
 
-          <form action={boundUpdate} className="space-y-4">
+          <form action={formAction(boundUpdate)} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className={lbl}>Полное имя</label>
@@ -147,14 +148,14 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
           {!isSelf && (
             <div className="pt-4 border-t border-border">
               {emp.is_active ? (
-                <form action={deactivateEmployeeAction.bind(null, id)}>
+                <form action={formAction(deactivateEmployeeAction.bind(null, id))}>
                   <button type="submit"
                     className="w-full h-10 border border-destructive/30 text-destructive rounded-xl text-sm font-medium hover:bg-destructive/10 transition">
                     Деактивировать сотрудника
                   </button>
                 </form>
               ) : (
-                <form action={activateEmployeeAction.bind(null, id)}>
+                <form action={formAction(activateEmployeeAction.bind(null, id))}>
                   <button type="submit"
                     className="w-full h-10 border border-green-300 text-green-700 rounded-xl text-sm font-medium hover:bg-green-50 transition">
                     Восстановить доступ

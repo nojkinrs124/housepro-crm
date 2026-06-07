@@ -3,6 +3,7 @@ import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { updateContactAction } from '@/features/contacts/actions/contacts.actions'
+import { formAction } from '@/lib/form-action'
 
 export default async function EditContactPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -27,7 +28,7 @@ export default async function EditContactPage({ params }: { params: Promise<{ id
         <p className="text-muted-foreground mt-1">{c.full_name}</p>
       </div>
 
-      <form action={boundAction} className="space-y-4">
+      <form action={formAction(boundAction)} className="space-y-4">
 
         {/* Основное */}
         <div className="bg-card border border-border rounded-2xl p-6 space-y-4">

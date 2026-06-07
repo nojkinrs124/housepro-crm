@@ -2,6 +2,7 @@ import { createContractAction } from '@/features/contracts/actions/contracts.act
 import { createClient } from '@/lib/supabase/server'
 import { ArrowLeft, FileText, Building2, User, Home } from 'lucide-react'
 import Link from 'next/link'
+import { formAction } from '@/lib/form-action'
 
 const contractTypes = [
   { value: 'rent_apartment',      label: '🏠 Аренда квартиры' },
@@ -49,7 +50,7 @@ export default async function NewContractPage({
         </div>
       </div>
 
-      <form action={createContractAction} className="space-y-4">
+      <form action={formAction(createContractAction)} className="space-y-4">
 
         {/* Тип договора */}
         <div className="bg-card border border-border rounded-2xl p-6 space-y-4">

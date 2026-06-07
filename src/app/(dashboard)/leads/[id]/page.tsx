@@ -6,6 +6,7 @@ import { convertLeadToClient } from '@/features/leads/actions/leads.actions'
 import { DeleteLeadButton } from '@/features/leads/components/DeleteLeadButton'
 import { LeadActivityForm } from '@/features/leads/components/LeadActivityForm'
 import { LeadStatusSelect } from '@/features/leads/components/LeadStatusSelect'
+import { formAction } from '@/lib/form-action'
 
 const sourceLabels: Record<string, string> = {
   avito: '🟡 Авито', cian: '🟢 ЦИАН', domclick: '🔵 Домклик',
@@ -107,7 +108,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
 
         <div className="flex items-center gap-2 shrink-0">
           {!isConverted && (
-            <form action={convertLeadToClient.bind(null, id)}>
+            <form action={formAction(convertLeadToClient.bind(null, id))}>
               <button type="submit"
                 className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-xl text-sm font-medium hover:bg-green-700 transition">
                 <UserCheck className="w-4 h-4" />

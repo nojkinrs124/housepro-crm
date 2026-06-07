@@ -2,6 +2,7 @@ import { createLeadAction } from '@/features/leads/actions/leads.actions'
 import { createClient } from '@/lib/supabase/server'
 import { ArrowLeft, Zap } from 'lucide-react'
 import Link from 'next/link'
+import { formAction } from '@/lib/form-action'
 
 const sourceOptions = [
   { value: 'avito',    label: '🟡 Авито' },
@@ -59,7 +60,7 @@ export default async function NewLeadPage() {
         </div>
       </div>
 
-      <form action={createLeadAction} className="space-y-4">
+      <form action={formAction(createLeadAction)} className="space-y-4">
 
         {/* Контакт */}
         <div className="bg-card border border-border rounded-2xl p-6 space-y-4">

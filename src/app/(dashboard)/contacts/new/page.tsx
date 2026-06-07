@@ -1,6 +1,7 @@
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { createContactAction } from '@/features/contacts/actions/contacts.actions'
+import { formAction } from '@/lib/form-action'
 
 export default function NewContactPage() {
   return (
@@ -15,7 +16,7 @@ export default function NewContactPage() {
         <p className="text-muted-foreground mt-1">Клиент, собственник или оба</p>
       </div>
 
-      <form action={createContactAction} className="space-y-4">
+      <form action={formAction(createContactAction)} className="space-y-4">
         {/* Основное */}
         <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Основные данные</h2>

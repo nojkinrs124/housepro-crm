@@ -3,6 +3,7 @@ import { ArrowLeft, DollarSign } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { updatePaymentAction } from '@/features/payments/actions/payments.actions'
+import { formAction } from '@/lib/form-action'
 
 const typeOptions = [
   { value: 'rent',       label: 'Аренда' },
@@ -64,7 +65,7 @@ export default async function EditPaymentPage({ params }: { params: Promise<{ id
         </div>
       </div>
 
-      <form action={boundAction} className="bg-card border border-border rounded-2xl p-6 space-y-5">
+      <form action={formAction(boundAction)} className="bg-card border border-border rounded-2xl p-6 space-y-5">
 
         {/* Сумма */}
         <div>

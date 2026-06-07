@@ -3,6 +3,7 @@ import { ArrowLeft, FileText, Upload, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { TemplateUploadForm } from './TemplateUploadForm'
 import { deleteTemplateAction } from './templates.actions'
+import { formAction } from '@/lib/form-action'
 
 const typeLabels: Record<string, string> = {
   rent_apartment:     'Аренда квартиры',
@@ -73,7 +74,7 @@ export default async function TemplatesPage() {
                       Скачать
                     </a>
                   )}
-                  <form action={deleteTemplateAction.bind(null, t.id)}>
+                  <form action={formAction(deleteTemplateAction.bind(null, t.id))}>
                     <button type="submit"
                       className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition">
                       <Trash2 className="w-4 h-4" />

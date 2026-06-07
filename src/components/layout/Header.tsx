@@ -159,7 +159,7 @@ export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCou
             className="w-9 h-9 rounded-full flex items-center justify-center overflow-hidden text-white text-sm font-semibold"
             style={{
               background: user?.avatar_url ? undefined : 'linear-gradient(135deg, #16A34A, #22C55E)',
-              ring: '2px solid rgba(34,197,94,0.25)',
+
               boxShadow: '0 0 0 2.5px rgba(34,197,94,0.2)',
             }}
           >

@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import {
   ArrowLeft, Home, MapPin, DollarSign, Ruler, Edit,
-  Layers, Calendar, Wifi, Droplets, Flame, Car, Elevator,
+  Layers, Calendar, Wifi, Droplets, Flame, Car,
   CheckCircle, XCircle, TrendingUp, FileText, Plus
 } from 'lucide-react'
 import Link from 'next/link'

@@ -2,6 +2,7 @@ import { createTaskAction } from '@/features/tasks/actions/tasks.actions'
 import { createClient } from '@/lib/supabase/server'
 import { ArrowLeft, CheckSquare } from 'lucide-react'
 import Link from 'next/link'
+import { formAction } from '@/lib/form-action'
 
 export default async function NewTaskPage({
   searchParams,
@@ -40,7 +41,7 @@ export default async function NewTaskPage({
         </div>
       </div>
 
-      <form action={createTaskAction} className="space-y-4">
+      <form action={formAction(createTaskAction)} className="space-y-4">
         <div className="bg-card border border-border rounded-2xl p-6 space-y-5">
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-foreground">

@@ -2,6 +2,7 @@ import { createDealAction } from '@/features/deals/actions/deals.actions'
 import { createClient } from '@/lib/supabase/server'
 import { ArrowLeft, TrendingUp, User, Building2 } from 'lucide-react'
 import Link from 'next/link'
+import { formAction } from '@/lib/form-action'
 
 export default async function NewDealPage({
   searchParams,
@@ -41,7 +42,7 @@ export default async function NewDealPage({
         </div>
       </div>
 
-      <form action={createDealAction} className="space-y-4">
+      <form action={formAction(createDealAction)} className="space-y-4">
 
         {/* Тип сделки */}
         <div className="bg-card border border-border rounded-2xl p-6 space-y-4">

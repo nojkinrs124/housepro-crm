@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Phone, MessageCircle, UserCheck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { convertLeadToClient } from '@/features/leads/actions/leads.actions'
+import { formAction } from '@/lib/form-action'
 
 const columns = [
   { status: 'new',       label: 'Новые',    color: 'border-t-blue-400',   badge: 'bg-blue-100 text-blue-700' },
@@ -182,7 +183,7 @@ export function LeadsKanban({ leads: initialLeads }: { leads: any[] }) {
 
                       {/* Convert button */}
                       {col.status !== 'converted' && col.status !== 'closed' && (
-                        <form action={convertLeadToClient.bind(null, lead.id)}
+                        <form action={formAction(convertLeadToClient.bind(null, lead.id))}
                           onClick={e => e.stopPropagation()}>
                           <button type="submit"
                             className="w-full flex items-center justify-center gap-1.5 text-xs px-2 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-all font-medium">

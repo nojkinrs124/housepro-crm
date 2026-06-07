@@ -2,6 +2,7 @@ import { createPropertyAction } from '@/features/properties/actions/properties.a
 import { createClient } from '@/lib/supabase/server'
 import { ArrowLeft, Home } from 'lucide-react'
 import Link from 'next/link'
+import { formAction } from '@/lib/form-action'
 
 export default async function NewPropertyPage() {
   const supabase = await createClient()
@@ -28,7 +29,7 @@ export default async function NewPropertyPage() {
         </div>
       </div>
 
-      <form action={createPropertyAction} className="space-y-4">
+      <form action={formAction(createPropertyAction)} className="space-y-4">
 
         {/* Основное */}
         <div className="bg-card border border-border rounded-2xl p-6 space-y-4">

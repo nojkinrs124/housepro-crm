@@ -3,6 +3,7 @@ import { ArrowLeft, FileText } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { updateContractAction } from '@/features/contracts/actions/contracts.actions'
+import { formAction } from '@/lib/form-action'
 
 const contractTypes = [
   { value: 'rent_apartment',      label: '🏠 Аренда квартиры' },
@@ -65,7 +66,7 @@ export default async function EditContractPage({ params }: { params: Promise<{ i
         </div>
       </div>
 
-      <form action={boundAction} className="space-y-4">
+      <form action={formAction(boundAction)} className="space-y-4">
 
         {/* Тип и статус */}
         <div className="bg-card border border-border rounded-2xl p-6 space-y-4">

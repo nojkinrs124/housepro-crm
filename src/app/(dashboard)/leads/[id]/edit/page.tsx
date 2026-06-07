@@ -3,6 +3,7 @@ import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { updateLeadAction } from '@/features/leads/actions/leads.actions'
+import { formAction } from '@/lib/form-action'
 
 const sourceOptions = [
   { value: 'avito', label: '🟡 Авито' }, { value: 'cian', label: '🟢 ЦИАН' },
@@ -47,7 +48,7 @@ export default async function EditLeadPage({ params }: { params: Promise<{ id: s
 
       <h1 className="text-2xl font-bold text-foreground">Редактировать лид</h1>
 
-      <form action={boundAction} className="space-y-4">
+      <form action={formAction(boundAction)} className="space-y-4">
 
         {/* Контакт */}
         <div className="bg-card border border-border rounded-2xl p-6 space-y-4">

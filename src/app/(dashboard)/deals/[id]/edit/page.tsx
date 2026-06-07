@@ -3,6 +3,7 @@ import { ArrowLeft, TrendingUp, Building2, User } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { updateDealAction } from '@/features/deals/actions/deals.actions'
+import { formAction } from '@/lib/form-action'
 
 export default async function EditDealPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -50,7 +51,7 @@ export default async function EditDealPage({ params }: { params: Promise<{ id: s
         </div>
       </div>
 
-      <form action={boundAction} className="space-y-4">
+      <form action={formAction(boundAction)} className="space-y-4">
 
         {/* Тип сделки */}
         <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
