@@ -110,14 +110,3 @@ export async function deleteContactAction(contactId: string) {
   revalidatePath('/contacts')
   redirect('/contacts')
 }
-
-export async function deleteContactAction(id: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Не авторизован' }
-
-  await supabase.from('contacts').delete().eq('id', id)
-
-  revalidatePath('/contacts')
-  redirect('/contacts')
-}
