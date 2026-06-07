@@ -325,6 +325,13 @@ git push origin main
 ### Supabase прямые HTTP запросы не работают
 → `api.supabase.com` заблокирован. Использовать только MCP коннектор Supabase.
 
+### \"the name X is defined multiple times\" (Turbopack build error)
+→ Перед добавлением функции в существующий actions файл **всегда проверять** что такой функции там ещё нет:
+```bash
+grep -n "functionName" src/features/module/actions/module.actions.ts
+```
+Если функция уже есть — использовать её, не добавлять новую. Особенно актуально для `delete*Action` — они часто уже существуют в файлах.
+
 ### RLS политика уже существует
 → Оборачивать в `DO $$ BEGIN IF NOT EXISTS ... END $$`.
 
