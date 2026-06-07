@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { CheckSquare, Clock, AlertCircle } from 'lucide-react'
+import { CheckSquare, Clock, AlertCircle, ExternalLink } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import Link from 'next/link'
 
 const columns = [
   { status: 'todo',        label: 'К выполнению', color: 'border-t-gray-300' },
@@ -102,7 +103,9 @@ export function TasksKanbanBoard({ tasks: initialTasks }: { tasks: any[] }) {
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm font-medium text-foreground">{task.title}</p>
+                      <Link href={`/tasks/${task.id}`} className="text-sm font-medium text-foreground hover:text-primary transition-colors line-clamp-2 flex-1" onClick={e => e.stopPropagation()}>
+                        {task.title}
+                      </Link>
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${priorityColors[task.priority]}`}>
                         {priorityLabels[task.priority]}
                       </span>

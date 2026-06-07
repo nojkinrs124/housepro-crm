@@ -153,8 +153,10 @@ export default async function PaymentsPage({
                   return (
                     <tr key={p.id} className="hover:bg-slate-50 transition-colors">
                       <td className="px-5 py-3.5">
-                        <p className="text-sm font-semibold text-[#111827]">{contract?.contract_number ?? '—'}</p>
-                        <p className="text-xs text-[#64748B] mt-0.5">{client?.full_name ?? '—'}</p>
+                        <Link href={`/payments/${p.id}`} className="hover:text-blue-600 transition-colors group">
+                          <p className="text-sm font-semibold text-[#111827] group-hover:text-blue-600">{contract?.contract_number ?? '—'}</p>
+                          <p className="text-xs text-[#64748B] mt-0.5">{client?.full_name ?? '—'}</p>
+                        </Link>
                       </td>
                       <td className="px-5 py-3.5 text-sm text-[#374151] font-medium">
                         {typeLabels[p.payment_type ?? ''] ?? p.payment_type ?? '—'}
