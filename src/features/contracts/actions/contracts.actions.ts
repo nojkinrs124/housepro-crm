@@ -81,3 +81,14 @@ export async function deleteContractAction(id: string) {
   revalidatePath('/contracts')
   redirect('/contracts')
 }
+
+export async function deleteContractAction(id: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Не авторизован' }
+
+  await supabase.from('contracts').delete().eq('id', id)
+
+  revalidatePath('/contracts')
+  redirect('/contracts')
+}

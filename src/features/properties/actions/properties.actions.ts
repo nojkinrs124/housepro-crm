@@ -108,3 +108,14 @@ export async function deletePropertyAction(id: string) {
   revalidatePath('/properties')
   redirect('/properties')
 }
+
+export async function deletePropertyAction(id: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Не авторизован' }
+
+  await supabase.from('properties').delete().eq('id', id)
+
+  revalidatePath('/properties')
+  redirect('/properties')
+}

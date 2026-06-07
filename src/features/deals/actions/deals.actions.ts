@@ -92,3 +92,14 @@ export async function updateDealAction(id: string, formData: FormData) {
   revalidatePath(`/deals/${id}`)
   redirect(`/deals/${id}`)
 }
+
+export async function deleteDealAction(id: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Не авторизован' }
+
+  await supabase.from('deals').delete().eq('id', id)
+
+  revalidatePath('/deals')
+  redirect('/deals')
+}

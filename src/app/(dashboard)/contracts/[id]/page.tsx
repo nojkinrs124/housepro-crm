@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { DeleteContractButton } from '@/features/contracts/components/DeleteContractButton'
 import { ArrowLeft, FileText, User, Home, Building2, Calendar, DollarSign, Edit } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -87,6 +88,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
             <Edit className="w-4 h-4" />
             Редактировать
           </Link>
+          <DeleteContractButton contractId={id} />
           <Link href={`/contracts/${id}/generate`}
             className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition">
             <FileText className="w-4 h-4" />

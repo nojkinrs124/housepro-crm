@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { DeletePropertyButton } from '@/features/properties/components/DeletePropertyButton'
 import {
   ArrowLeft, Home, MapPin, DollarSign, Ruler, Edit,
   Layers, Calendar, Wifi, Droplets, Flame, Car,
@@ -122,6 +123,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
             <Edit className="w-4 h-4" />
             Редактировать
           </Link>
+          <DeletePropertyButton propertyId={id} />
           <Link href={`/contracts/new?property_id=${id}`}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition">
             + Договор

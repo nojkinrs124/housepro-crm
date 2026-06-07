@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { ArrowLeft, Phone, Mail, MapPin, Edit, MessageCircle, CheckSquare, TrendingUp, FileText, Plus } from 'lucide-react'
+import { DeleteContactButton } from '@/features/contacts/components/DeleteContactButton'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Contact } from '@/types/database'
@@ -90,6 +91,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
             <Edit className="w-4 h-4" />
             Редактировать
           </Link>
+          <DeleteContactButton contactId={id} />
         </div>
       </div>
 

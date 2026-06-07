@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { ArrowLeft, TrendingUp, User, Building2, Home, DollarSign, Edit } from 'lucide-react'
+import { DeleteDealButton } from '@/features/deals/components/DeleteDealButton'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
@@ -87,6 +88,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
             <Edit className="w-4 h-4" />
             Редактировать
           </Link>
+          <DeleteDealButton dealId={id} />
         </div>
       </div>
 
