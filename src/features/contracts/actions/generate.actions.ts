@@ -29,18 +29,19 @@ export async function generateContractDocx(contractId: string) {
     // 3. Ищем шаблон для данного типа договора
     const { data: template } = await supabase
       .from('document_templates')
-      .select('file_url, name')
+      .select('file_url, storage_path, name')
       .eq('template_type', contract.contract_type)
       .limit(1)
       .single()
 
     let docxBuffer: Buffer
 
-    if (template?.file_url) {
-      // Загружаем шаблон из Storage
+    if (template?.storage_path || template?.file_url) {
+      // Загружаем шаблон из Storage по storage_path (или fallback на file_url для старых записей)
+      const downloadPath = template.storage_path || template.file_url
       const { data: templateFile } = await supabase.storage
         .from('document-templates')
-        .download(template.file_url)
+        .download(downloadPath)
 
       if (!templateFile) return { error: 'Не удалось загрузить шаблон' }
 

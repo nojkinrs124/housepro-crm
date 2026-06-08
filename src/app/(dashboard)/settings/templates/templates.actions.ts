@@ -37,6 +37,7 @@ export async function uploadTemplateAction(formData: FormData) {
     name,
     template_type,
     file_url: urlData?.signedUrl ?? path,
+    storage_path: path,
     created_by: user.id,
   })
 
