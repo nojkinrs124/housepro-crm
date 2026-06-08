@@ -224,6 +224,7 @@ export async function createSomethingAction(formData: FormData) {
 | `contacts` | Единые контакты (клиенты + собственники, поле `role`) |
 | `leads` | Лиды/заявки |
 | `deals` | Сделки |
+| `deal_comments` | Комментарии к сделкам |
 | `properties` | Объекты недвижимости |
 | `contracts` | Договоры |
 | `payments` | Платежи |
@@ -345,17 +346,18 @@ grep -n "functionName" src/features/module/actions/module.actions.ts
 | Dashboard | `/dashboard` | ✅ |
 | Leads | `/leads` + Kanban | ✅ |
 | Contacts | `/contacts` (unified clients+owners) | ✅ |
-| Deals | `/deals` + Kanban | ✅ |
+| Deals | `/deals` + Kanban + комментарии | ✅ |
 | Properties | `/properties` | ✅ |
 | Contracts | `/contracts` + генерация DOCX | ✅ |
-| Payments | `/payments` | ✅ |
-| Tasks | `/tasks` + Kanban | ✅ |
+| Payments | `/payments` + `/payments/[id]` | ✅ |
+| Tasks | `/tasks` + Kanban + `/tasks/[id]` | ✅ |
 | Employees | `/employees` | ✅ |
 | Search | `/search` (Ctrl+K) | ✅ |
 | Export | `/export` (Avito/CIAN XML) | ✅ |
+| Analytics | `/analytics` (Recharts: funnel, payments, conversion) | ✅ |
 | Settings | `/settings/*` | ✅ |
 | Notifications | bell + pg_cron | ✅ |
-| Files | upload + preview | ✅ |
+| Files | upload + preview + magic bytes validation | ✅ |
 
 ---
 
