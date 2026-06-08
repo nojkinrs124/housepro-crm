@@ -41,14 +41,15 @@ export interface DealTypeData {
 
 // ─── Formatters ───────────────────────────────────────────────────────────────
 
-function formatMoney(v: number) {
-  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}М ₽`
-  if (v >= 1_000) return `${(v / 1_000).toFixed(0)}К ₽`
-  return `${v} ₽`
+function formatMoney(v: number | string | undefined) {
+  const n = Number(v ?? 0)
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}М ₽`
+  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}К ₽`
+  return `${n} ₽`
 }
 
-function moneyTooltip(value: number) {
-  return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(value)
+function moneyTooltip(v: number | string | undefined) {
+  return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(Number(v ?? 0))
 }
 
 // ─── Monthly Deals Area Chart ─────────────────────────────────────────────────
@@ -72,7 +73,7 @@ export function DealsAreaChart({ data }: { data: MonthlyDealsData[] }) {
         <YAxis tickFormatter={formatMoney} tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} width={60} />
         <Tooltip
           contentStyle={{ borderRadius: 12, border: '1px solid #E2E8F0', fontSize: 12 }}
-          formatter={(v: number, name: string) => [moneyTooltip(v), name === 'amount' ? 'Сумма сделок' : 'Комиссия']}
+          formatter={(v, name) => [moneyTooltip(v as number), name === 'amount' ? 'Сумма сделок' : 'Комиссия']}
         />
         <Area type="monotone" dataKey="amount" stroke="#16A34A" strokeWidth={2} fill="url(#dealsGrad)" name="amount" />
         <Area type="monotone" dataKey="commission" stroke="#2563EB" strokeWidth={2} fill="url(#commissionGrad)" name="commission" />
@@ -92,7 +93,7 @@ export function DealFunnelChart({ data }: { data: FunnelData[] }) {
         <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
         <Tooltip
           contentStyle={{ borderRadius: 12, border: '1px solid #E2E8F0', fontSize: 12 }}
-          formatter={(v: number) => [v, 'Сделок']}
+          formatter={(v) => [v, 'Сделок']}
         />
         <Bar dataKey="count" radius={[6, 6, 0, 0]}>
           {data.map((entry, i) => (
@@ -124,6 +125,8 @@ export function LeadsConversionChart({ data }: { data: LeadsConversionData[] }) 
 
 // ─── Payments Monthly Chart ───────────────────────────────────────────────────
 
+const PAYMENT_LABELS: Record<string, string> = { paid: 'Оплачено', pending: 'Ожидает', overdue: 'Просрочено' }
+
 export function PaymentsMonthlyChart({ data }: { data: PaymentMonthlyData[] }) {
   return (
     <ResponsiveContainer width="100%" height={220}>
@@ -133,13 +136,10 @@ export function PaymentsMonthlyChart({ data }: { data: PaymentMonthlyData[] }) {
         <YAxis tickFormatter={formatMoney} tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} width={60} />
         <Tooltip
           contentStyle={{ borderRadius: 12, border: '1px solid #E2E8F0', fontSize: 12 }}
-          formatter={(v: number, name: string) => {
-            const labels: Record<string, string> = { paid: 'Оплачено', pending: 'Ожидает', overdue: 'Просрочено' }
-            return [moneyTooltip(v), labels[name] ?? name]
-          }}
+          formatter={(v, name) => [moneyTooltip(v as number), PAYMENT_LABELS[name as string] ?? name]}
         />
         <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
-          formatter={(v) => ({ paid: 'Оплачено', pending: 'Ожидает', overdue: 'Просрочено' })[v] ?? v} />
+          formatter={(v) => PAYMENT_LABELS[v] ?? v} />
         <Bar dataKey="paid" fill="#16A34A" radius={[4, 4, 0, 0]} stackId="a" />
         <Bar dataKey="pending" fill="#93C5FD" radius={[0, 0, 0, 0]} stackId="a" />
         <Bar dataKey="overdue" fill="#FCA5A5" radius={[4, 4, 0, 0]} stackId="a" />
@@ -151,10 +151,17 @@ export function PaymentsMonthlyChart({ data }: { data: PaymentMonthlyData[] }) {
 // ─── Deal Type Pie Chart ──────────────────────────────────────────────────────
 
 const RADIAN = Math.PI / 180
-function renderLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent }: {
-  cx: number; cy: number; midAngle: number
-  innerRadius: number; outerRadius: number; percent: number
-}) {
+
+interface LabelProps {
+  cx?: number
+  cy?: number
+  midAngle?: number
+  innerRadius?: number
+  outerRadius?: number
+  percent?: number
+}
+
+function renderLabel({ cx = 0, cy = 0, midAngle = 0, innerRadius = 0, outerRadius = 0, percent = 0 }: LabelProps) {
   if (percent < 0.05) return null
   const radius = innerRadius + (outerRadius - innerRadius) * 0.5
   const x = cx + radius * Math.cos(-midAngle * RADIAN)
@@ -185,7 +192,7 @@ export function DealTypePieChart({ data }: { data: DealTypeData[] }) {
         </Pie>
         <Tooltip
           contentStyle={{ borderRadius: 12, border: '1px solid #E2E8F0', fontSize: 12 }}
-          formatter={(v: number, _: string, props: { payload: { name: string } }) => [v, props.payload.name]}
+          formatter={(v, _name, props) => [v, (props.payload as DealTypeData).name]}
         />
         <Legend wrapperStyle={{ fontSize: 12 }} />
       </PieChart>

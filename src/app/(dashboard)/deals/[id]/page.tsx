@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { ArrowLeft, TrendingUp, User, Building2, Home, DollarSign, Edit } from 'lucide-react'
 import { DeleteDealButton } from '@/features/deals/components/DeleteDealButton'
+import { DealComments } from '@/features/deals/components/DealComments'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
@@ -28,23 +29,35 @@ const statusLabels: Record<string, string> = {
 export default async function DealPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: rawDeal } = await supabase
-    .from('deals')
-    .select(`
-      *,
-      client:clients(full_name, phone),
-      property:properties(id, title, address),
-      manager:users(full_name),
-      owner_contact:contacts!deals_owner_contact_id_fkey(id, full_name, phone),
-      client_contact:contacts!deals_client_contact_id_fkey(id, full_name, phone)
-    `)
-    .eq('id', id)
-    .single()
+  const [dealResult, commentsResult] = await Promise.all([
+    supabase
+      .from('deals')
+      .select(`
+        *,
+        client:clients(full_name, phone),
+        property:properties(id, title, address),
+        manager:users(full_name),
+        owner_contact:contacts!deals_owner_contact_id_fkey(id, full_name, phone),
+        client_contact:contacts!deals_client_contact_id_fkey(id, full_name, phone)
+      `)
+      .eq('id', id)
+      .single(),
+
+    supabase
+      .from('deal_comments')
+      .select('id, body, created_at, author:users!deal_comments_author_id_fkey(id, full_name, avatar_url)')
+      .eq('deal_id', id)
+      .order('created_at', { ascending: true }),
+  ])
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const deal = rawDeal as any
+  const deal = dealResult.data as any
   if (!deal) notFound()
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const comments = (commentsResult.data ?? []) as any[]
 
   const ownerContact = deal.owner_contact as { id?: string; full_name?: string; phone?: string } | null
   const clientContact = deal.client_contact as { id?: string; full_name?: string; phone?: string } | null
@@ -190,6 +203,13 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
               <p className="text-sm text-foreground whitespace-pre-wrap">{deal.notes}</p>
             </div>
           )}
+
+          {/* Comments */}
+          <DealComments
+            dealId={id}
+            comments={comments}
+            currentUserId={user?.id ?? ''}
+          />
         </div>
 
         {/* Right column */}
