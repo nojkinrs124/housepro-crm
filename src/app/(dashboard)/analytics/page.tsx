@@ -1,0 +1,444 @@
+import { createClient } from '@/lib/supabase/server'
+import {
+  TrendingUp, Banknote, Users, Home,
+  AlertTriangle, CheckCircle2, Clock, FileText,
+} from 'lucide-react'
+import {
+  DealsAreaChart,
+  DealFunnelChart,
+  LeadsConversionChart,
+  PaymentsMonthlyChart,
+  DealTypePieChart,
+  type MonthlyDealsData,
+  type FunnelData,
+  type LeadsConversionData,
+  type PaymentMonthlyData,
+  type DealTypeData,
+} from '@/features/analytics/components/AnalyticsCharts'
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function formatMoney(n: number) {
+  return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(n)
+}
+
+function monthLabel(isoMonth: string) {
+  const d = new Date(isoMonth)
+  return d.toLocaleDateString('ru-RU', { month: 'short', year: '2-digit' })
+}
+
+function getLast12Months(): string[] {
+  const months: string[] = []
+  const now = new Date()
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`)
+  }
+  return months
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
+export default async function AnalyticsPage() {
+  const supabase = await createClient()
+  const last12 = getLast12Months()
+  const fromDate = `${last12[0]}-01`
+
+  const [
+    dealsResult,
+    paymentsResult,
+    leadsResult,
+    leadsConvertedResult,
+    propertiesResult,
+    overduePaymentsResult,
+    overdueTasksResult,
+    contractsResult,
+    contactsResult,
+  ] = await Promise.all([
+    // All deals last 12 months
+    supabase.from('deals')
+      .select('status, deal_type, amount, commission, created_at')
+      .gte('created_at', fromDate),
+
+    // Payments last 12 months
+    supabase.from('payments')
+      .select('payment_status, amount, payment_date, due_date, created_at')
+      .gte('created_at', fromDate),
+
+    // Leads last 12 months
+    supabase.from('leads')
+      .select('status, created_at')
+      .gte('created_at', fromDate),
+
+    // Leads that converted (have a deal)
+    supabase.from('leads')
+      .select('status, created_at')
+      .eq('status', 'closed')
+      .gte('created_at', fromDate),
+
+    // Properties overview
+    supabase.from('properties')
+      .select('status'),
+
+    // Overdue payments
+    supabase.from('payments')
+      .select('id, amount, due_date, contract:contracts(contract_number)')
+      .eq('payment_status', 'overdue')
+      .order('due_date', { ascending: true })
+      .limit(6),
+
+    // Overdue tasks
+    supabase.from('tasks')
+      .select('id, title, priority, deadline, assignee:users!tasks_assigned_to_fkey(full_name)')
+      .lt('deadline', new Date().toISOString())
+      .not('status', 'in', '(done,cancelled)')
+      .order('deadline', { ascending: true })
+      .limit(6),
+
+    // Contracts summary
+    supabase.from('contracts')
+      .select('status, contract_type'),
+
+    // Contacts summary
+    supabase.from('contacts')
+      .select('role, status, created_at')
+      .gte('created_at', fromDate),
+  ])
+
+  const deals = dealsResult.data ?? []
+  const payments = paymentsResult.data ?? []
+  const leads = leadsResult.data ?? []
+  const leadsConverted = leadsConvertedResult.data ?? []
+  const properties = propertiesResult.data ?? []
+  const overduePayments = overduePaymentsResult.data ?? []
+  const overdueTasks = overdueTasksResult.data ?? []
+  const contracts = contractsResult.data ?? []
+  const contacts = contactsResult.data ?? []
+
+  // ── KPI numbers ──────────────────────────────────────────────────────────────
+
+  const totalRevenue = deals
+    .filter(d => d.status === 'completed')
+    .reduce((s, d) => s + Number(d.commission ?? 0), 0)
+
+  const totalDealsAmount = deals
+    .filter(d => d.status === 'completed')
+    .reduce((s, d) => s + Number(d.amount ?? 0), 0)
+
+  const activeDeals = deals.filter(d => !['completed', 'cancelled'].includes(d.status)).length
+  const completedDeals = deals.filter(d => d.status === 'completed').length
+  const conversionRate = leads.length > 0
+    ? Math.round((leadsConverted.length / leads.length) * 100)
+    : 0
+
+  const paidTotal = payments
+    .filter(p => p.payment_status === 'paid')
+    .reduce((s, p) => s + Number(p.amount ?? 0), 0)
+
+  const overdueTotal = payments
+    .filter(p => p.payment_status === 'overdue')
+    .reduce((s, p) => s + Number(p.amount ?? 0), 0)
+
+  const availableProps = properties.filter(p => p.status === 'available').length
+  const rentedProps = properties.filter(p => p.status === 'rented').length
+  const soldProps = properties.filter(p => p.status === 'sold').length
+
+  const activeContracts = contracts.filter(c => c.status === 'signed').length
+
+  // ── Monthly deals chart data ──────────────────────────────────────────────────
+
+  const monthlyDeals: MonthlyDealsData[] = last12.map(m => {
+    const monthDeals = deals.filter(d => d.created_at?.startsWith(m))
+    return {
+      month: monthLabel(m),
+      count: monthDeals.length,
+      amount: monthDeals.reduce((s, d) => s + Number(d.amount ?? 0), 0),
+      commission: monthDeals.reduce((s, d) => s + Number(d.commission ?? 0), 0),
+    }
+  })
+
+  // ── Funnel chart data ─────────────────────────────────────────────────────────
+
+  const funnelStages: FunnelData[] = [
+    { stage: 'Новые',      color: '#60A5FA' },
+    { stage: 'Показы',     color: '#FBBF24' },
+    { stage: 'Переговоры', color: '#F97316' },
+    { stage: 'Договор',    color: '#A78BFA' },
+    { stage: 'Оплата',     color: '#22D3EE' },
+    { stage: 'Завершено',  color: '#22C55E' },
+  ].map((s, i) => ({
+    ...s,
+    count: deals.filter(d => d.status === ['new', 'showing', 'negotiation', 'contract', 'payment', 'completed'][i]).length,
+  }))
+
+  // ── Leads conversion monthly ──────────────────────────────────────────────────
+
+  const leadsConversionData: LeadsConversionData[] = last12.map(m => ({
+    month: monthLabel(m),
+    leads: leads.filter(l => l.created_at?.startsWith(m)).length,
+    converted: leadsConverted.filter(l => l.created_at?.startsWith(m)).length,
+  }))
+
+  // ── Payments monthly ──────────────────────────────────────────────────────────
+
+  const paymentsMonthly: PaymentMonthlyData[] = last12.map(m => {
+    const mp = payments.filter(p => p.created_at?.startsWith(m))
+    return {
+      month: monthLabel(m),
+      paid: mp.filter(p => p.payment_status === 'paid').reduce((s, p) => s + Number(p.amount ?? 0), 0),
+      pending: mp.filter(p => p.payment_status === 'pending').reduce((s, p) => s + Number(p.amount ?? 0), 0),
+      overdue: mp.filter(p => p.payment_status === 'overdue').reduce((s, p) => s + Number(p.amount ?? 0), 0),
+    }
+  })
+
+  // ── Deal types pie ────────────────────────────────────────────────────────────
+
+  const dealTypeMap: Record<string, { name: string; color: string }> = {
+    rent:       { name: 'Аренда',     color: '#16A34A' },
+    sale:       { name: 'Продажа',    color: '#2563EB' },
+    management: { name: 'Управление', color: '#7C3AED' },
+    commercial: { name: 'Коммерция',  color: '#EA580C' },
+    subrent:    { name: 'Субаренда',  color: '#0891B2' },
+  }
+
+  const dealTypeCounts: Record<string, number> = {}
+  for (const d of deals) {
+    dealTypeCounts[d.deal_type] = (dealTypeCounts[d.deal_type] ?? 0) + 1
+  }
+  const dealTypePie: DealTypeData[] = Object.entries(dealTypeCounts)
+    .filter(([, v]) => v > 0)
+    .map(([k, v]) => ({
+      name: dealTypeMap[k]?.name ?? k,
+      value: v,
+      color: dealTypeMap[k]?.color ?? '#94A3B8',
+    }))
+    .sort((a, b) => b.value - a.value)
+
+  // ── Priority colors ───────────────────────────────────────────────────────────
+
+  const priorityBadge: Record<string, string> = {
+    high: 'bg-red-100 text-red-700',
+    medium: 'bg-yellow-100 text-yellow-700',
+    low: 'bg-slate-100 text-slate-600',
+  }
+  const priorityLabel: Record<string, string> = {
+    high: 'Высокий', medium: 'Средний', low: 'Низкий',
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-[#111827]">Аналитика</h1>
+        <p className="text-sm text-[#64748B] mt-1">Данные за последние 12 месяцев</p>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          {
+            label: 'Комиссия (закрытые)',
+            value: formatMoney(totalRevenue),
+            sub: `${completedDeals} сделок закрыто`,
+            icon: <Banknote style={{ width: 20, height: 20 }} />,
+            gradient: 'from-green-500 to-emerald-600',
+          },
+          {
+            label: 'Объём сделок',
+            value: formatMoney(totalDealsAmount),
+            sub: `${activeDeals} в работе`,
+            icon: <TrendingUp style={{ width: 20, height: 20 }} />,
+            gradient: 'from-blue-500 to-blue-600',
+          },
+          {
+            label: 'Платежи получены',
+            value: formatMoney(paidTotal),
+            sub: overdueTotal > 0 ? `Просрочено: ${formatMoney(overdueTotal)}` : 'Нет просроченных',
+            icon: <CheckCircle2 style={{ width: 20, height: 20 }} />,
+            gradient: 'from-violet-500 to-purple-600',
+          },
+          {
+            label: 'Конверсия лидов',
+            value: `${conversionRate}%`,
+            sub: `${leads.length} лидов, ${leadsConverted.length} закрыто`,
+            icon: <Users style={{ width: 20, height: 20 }} />,
+            gradient: 'from-orange-500 to-orange-600',
+          },
+        ].map(card => (
+          <div key={card.label} className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-sm">
+            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center text-white mb-3`}>
+              {card.icon}
+            </div>
+            <p className="text-2xl font-bold text-[#111827]">{card.value}</p>
+            <p className="text-xs text-[#64748B] mt-0.5">{card.label}</p>
+            <p className="text-xs text-[#94A3B8] mt-1">{card.sub}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Secondary KPIs */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          { label: 'Объектов свободно', value: availableProps, icon: <Home style={{ width: 16, height: 16 }} />, color: 'text-green-600 bg-green-50' },
+          { label: 'Сдано в аренду', value: rentedProps, icon: <Clock style={{ width: 16, height: 16 }} />, color: 'text-blue-600 bg-blue-50' },
+          { label: 'Продано объектов', value: soldProps, icon: <CheckCircle2 style={{ width: 16, height: 16 }} />, color: 'text-violet-600 bg-violet-50' },
+          { label: 'Активных договоров', value: activeContracts, icon: <FileText style={{ width: 16, height: 16 }} />, color: 'text-orange-600 bg-orange-50' },
+        ].map(item => (
+          <div key={item.label} className="bg-white rounded-2xl border border-[#E2E8F0] p-4 shadow-sm flex items-center gap-3">
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${item.color}`}>
+              {item.icon}
+            </div>
+            <div>
+              <p className="text-xl font-bold text-[#111827]">{item.value}</p>
+              <p className="text-xs text-[#64748B]">{item.label}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Charts row 1 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-sm">
+          <h2 className="text-sm font-semibold text-[#111827] mb-4">Сумма и комиссия по сделкам</h2>
+          <DealsAreaChart data={monthlyDeals} />
+          <div className="flex items-center gap-4 mt-3">
+            <span className="flex items-center gap-1.5 text-xs text-[#64748B]">
+              <span className="w-3 h-0.5 bg-green-600 inline-block rounded" /> Сумма сделок
+            </span>
+            <span className="flex items-center gap-1.5 text-xs text-[#64748B]">
+              <span className="w-3 h-0.5 bg-blue-600 inline-block rounded" /> Комиссия
+            </span>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-sm">
+          <h2 className="text-sm font-semibold text-[#111827] mb-4">Воронка сделок</h2>
+          <DealFunnelChart data={funnelStages} />
+        </div>
+      </div>
+
+      {/* Charts row 2 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-sm">
+          <h2 className="text-sm font-semibold text-[#111827] mb-4">Платежи по месяцам</h2>
+          <PaymentsMonthlyChart data={paymentsMonthly} />
+        </div>
+
+        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-[#111827]">Типы сделок</h2>
+          </div>
+          {dealTypePie.length > 0 ? (
+            <DealTypePieChart data={dealTypePie} />
+          ) : (
+            <div className="h-[220px] flex items-center justify-center text-sm text-[#94A3B8]">
+              Нет данных о сделках
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Chart row 3 */}
+      <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-sm">
+        <h2 className="text-sm font-semibold text-[#111827] mb-4">Лиды и конверсия по месяцам</h2>
+        <LeadsConversionChart data={leadsConversionData} />
+      </div>
+
+      {/* Alerts row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Overdue payments */}
+        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-7 h-7 rounded-lg bg-red-100 flex items-center justify-center">
+              <AlertTriangle style={{ width: 14, height: 14, color: '#DC2626' }} />
+            </div>
+            <h2 className="text-sm font-semibold text-[#111827]">Просроченные платежи</h2>
+            {overduePayments.length > 0 && (
+              <span className="ml-auto text-xs font-semibold bg-red-100 text-red-700 px-2 py-0.5 rounded-full">
+                {overduePayments.length}
+              </span>
+            )}
+          </div>
+
+          {overduePayments.length === 0 ? (
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-green-50 border border-green-200">
+              <CheckCircle2 style={{ width: 16, height: 16, color: '#16A34A' }} />
+              <p className="text-sm text-green-700 font-medium">Просроченных платежей нет</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {overduePayments.map(p => {
+                const contract = p.contract as { contract_number?: string } | null
+                const daysOverdue = p.due_date
+                  ? Math.floor((Date.now() - new Date(p.due_date).getTime()) / 86400000)
+                  : 0
+                return (
+                  <a key={p.id} href={`/payments/${p.id}`}
+                    className="flex items-center justify-between p-3 rounded-xl border border-red-100 hover:border-red-300 hover:bg-red-50/40 transition-all group">
+                    <div>
+                      <p className="text-sm font-medium text-[#111827] group-hover:text-red-700 transition-colors">
+                        Договор № {contract?.contract_number ?? '—'}
+                      </p>
+                      <p className="text-xs text-red-500">Просрочен на {daysOverdue} дн.</p>
+                    </div>
+                    <p className="text-sm font-bold text-red-600">
+                      {formatMoney(Number(p.amount ?? 0))}
+                    </p>
+                  </a>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Overdue tasks */}
+        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-7 h-7 rounded-lg bg-orange-100 flex items-center justify-center">
+              <Clock style={{ width: 14, height: 14, color: '#EA580C' }} />
+            </div>
+            <h2 className="text-sm font-semibold text-[#111827]">Просроченные задачи</h2>
+            {overdueTasks.length > 0 && (
+              <span className="ml-auto text-xs font-semibold bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
+                {overdueTasks.length}
+              </span>
+            )}
+          </div>
+
+          {overdueTasks.length === 0 ? (
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-green-50 border border-green-200">
+              <CheckCircle2 style={{ width: 16, height: 16, color: '#16A34A' }} />
+              <p className="text-sm text-green-700 font-medium">Просроченных задач нет</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {overdueTasks.map(t => {
+                const assignee = t.assignee as { full_name?: string } | null
+                const daysOverdue = t.deadline
+                  ? Math.floor((Date.now() - new Date(t.deadline).getTime()) / 86400000)
+                  : 0
+                return (
+                  <a key={t.id} href={`/tasks/${t.id}`}
+                    className="flex items-center justify-between p-3 rounded-xl border border-orange-100 hover:border-orange-300 hover:bg-orange-50/40 transition-all group">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-[#111827] group-hover:text-orange-700 transition-colors truncate">
+                        {t.title}
+                      </p>
+                      <p className="text-xs text-[#94A3B8]">
+                        {assignee?.full_name ? `${assignee.full_name} · ` : ''}
+                        Просрочена на {daysOverdue} дн.
+                      </p>
+                    </div>
+                    <span className={`shrink-0 ml-2 text-xs font-medium px-2 py-0.5 rounded-full ${priorityBadge[t.priority ?? 'medium']}`}>
+                      {priorityLabel[t.priority ?? 'medium']}
+                    </span>
+                  </a>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
