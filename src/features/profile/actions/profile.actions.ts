@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { validateUploadedFile } from '@/lib/validate-file'
 
 const AVATAR_BUCKET = 'avatars'
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
@@ -77,11 +78,16 @@ export async function uploadAvatarAction(formData: FormData) {
   if (!file || file.size === 0) return { error: 'Файл не выбран' }
 
   const MAX_SIZE = 5 * 1024 * 1024 // 5 МБ
-  if (file.size > MAX_SIZE) return { error: 'Максимум 5 МБ' }
 
-  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-    return { error: 'Только изображения (JPEG, PNG, WebP, GIF)' }
-  }
+  const arrayBuffer = await file.arrayBuffer()
+  const buffer = new Uint8Array(arrayBuffer)
+
+  // Валидация: размер + расширение + magic bytes
+  const validationError = validateUploadedFile(file, buffer, {
+    allowedMimeTypes: ALLOWED_IMAGE_TYPES,
+    maxSizeBytes: MAX_SIZE,
+  })
+  if (validationError) return { error: validationError }
 
   const ext = file.name.split('.').pop()?.toLowerCase()
   if (!ext || !ALLOWED_IMAGE_EXTENSIONS.includes(ext)) {
@@ -89,9 +95,6 @@ export async function uploadAvatarAction(formData: FormData) {
   }
 
   const path = `${user.id}/avatar.${ext}`
-
-  const arrayBuffer = await file.arrayBuffer()
-  const buffer = new Uint8Array(arrayBuffer)
 
   const { error: uploadError } = await supabase.storage
     .from(AVATAR_BUCKET)

@@ -3,9 +3,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { FileRecord } from '@/types/database'
+import { validateUploadedFile } from '@/lib/validate-file'
 
 const BUCKET = 'documents'
-const BLOCKED_EXTENSIONS = ['exe', 'bat', 'cmd', 'com', 'msi', 'scr', 'vbs', 'js', 'jar', 'zip']
 const MAX_FILE_SIZE = 20 * 1024 * 1024 // 20 МБ
 
 export async function uploadFileAction(formData: FormData) {
@@ -25,26 +25,21 @@ export async function uploadFileAction(formData: FormData) {
     return { error: 'Файл не выбран' }
   }
 
-  if (file.size > MAX_FILE_SIZE) {
-    return { error: 'Файл слишком большой (максимум 20 МБ)' }
-  }
-
-  // Валидация расширения файла
-  const ext = file.name.split('.').pop()?.toLowerCase()
-  if (ext && BLOCKED_EXTENSIONS.includes(ext)) {
-    return { error: `Недопустимый тип файла: .${ext}` }
-  }
-
   const entityId = clientId || propertyId || contractId
   if (!entityId) {
     return { error: 'Необходимо указать связанный объект (клиент, объект или договор)' }
   }
 
-  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
-  const storagePath = `${entityId}/${Date.now()}-${safeName}`
-
   const arrayBuffer = await file.arrayBuffer()
   const buffer = new Uint8Array(arrayBuffer)
+
+  // Валидация: размер + расширение + magic bytes
+  const validationError = validateUploadedFile(file, buffer, { maxSizeBytes: MAX_FILE_SIZE })
+  if (validationError) return { error: validationError }
+
+  const ext = file.name.split('.').pop()?.toLowerCase()
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+  const storagePath = `${entityId}/${Date.now()}-${safeName}`
 
   const { error: uploadError } = await supabase.storage
     .from(BUCKET)

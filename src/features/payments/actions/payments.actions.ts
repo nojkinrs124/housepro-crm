@@ -88,17 +88,22 @@ export async function markPaidAction(paymentId: string) {
     return { error: 'Не авторизован' }
   }
 
-  const { error } = await supabase
+  const { data: updated, error } = await supabase
     .from('payments')
     .update({
       payment_status: 'paid' as PaymentStatus,
       payment_date: new Date().toISOString(),
     })
     .eq('id', paymentId)
+    .neq('payment_status', 'paid')
+    .select('id')
+    .single()
 
   if (error) return { error: error.message }
-  
+  if (!updated) return { error: 'Платёж уже отмечен как оплаченный' }
+
   revalidatePath('/payments')
+  revalidatePath(`/payments/${paymentId}`)
   return { success: true }
 }
 
