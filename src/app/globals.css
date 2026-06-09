@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @config "../../tailwind.config.ts";
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -9,7 +11,7 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
+    --primary: 142 76% 36%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -19,11 +21,26 @@
     --accent-foreground: 222.2 47.4% 11.2%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 78%;
+    --border: 214.3 31.8% 88%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --ring: 142 76% 36%;
     --radius: 0.5rem;
+
+    /* HousePro design tokens */
+    --hp-green: #16A34A;
+    --hp-green-light: #22C55E;
+    --hp-bg: #F8FAFC;
+    --hp-card: #FFFFFF;
+    --hp-text: #111827;
+    --hp-text-secondary: #64748B;
+    --hp-border: rgba(214, 219, 235, 0.7);
+    --hp-shadow-sm: 0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06);
+    --hp-shadow-md: 0 4px 16px rgba(0,0,0,0.06), 0 12px 40px rgba(0,0,0,0.08);
+    --hp-shadow-lg: 0 8px 32px rgba(0,0,0,0.10), 0 20px 60px rgba(0,0,0,0.12);
+    --hp-radius: 20px;
+    --hp-radius-sm: 12px;
   }
+
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
@@ -50,8 +67,33 @@
 @layer base {
   * { border-color: hsl(var(--border)); }
   body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
-    font-family: system-ui, -apple-system, sans-serif;
+    background-color: var(--hp-bg);
+    color: var(--hp-text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(100,116,139,0.25); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(100,116,139,0.4); }
+
+/* HP Card utility */
+.hp-card {
+  background: var(--hp-card);
+  border-radius: var(--hp-radius);
+  box-shadow: var(--hp-shadow-sm);
+  border: 1px solid var(--hp-border);
+}
+
+.hp-card-hover {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hp-card-hover:hover {
+  box-shadow: var(--hp-shadow-md);
+  transform: translateY(-2px);
 }

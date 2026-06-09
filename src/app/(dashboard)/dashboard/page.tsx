@@ -5,6 +5,7 @@ import {
   Calendar, Banknote, Wallet
 } from 'lucide-react'
 import Link from 'next/link'
+import { DashboardKpiCards } from '@/features/dashboard/components/DashboardKpiCards'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -68,12 +69,12 @@ export default async function DashboardPage() {
     .reduce((s, p) => s + Number(p.amount ?? 0), 0)
 
   const funnelStages = [
-    { key: 'new',         label: 'Новые',      color: '#60A5FA' },
-    { key: 'showing',     label: 'Показы',     color: '#FBBF24' },
-    { key: 'negotiation', label: 'Переговоры', color: '#F97316' },
-    { key: 'contract',    label: 'Договор',    color: '#A78BFA' },
-    { key: 'payment',     label: 'Оплата',     color: '#22D3EE' },
-    { key: 'completed',   label: 'Завершено',  color: '#22C55E' },
+    { key: 'new',         label: 'Новые',      color: '#60A5FA', bg: 'rgba(96,165,250,0.12)' },
+    { key: 'showing',     label: 'Показы',     color: '#FBBF24', bg: 'rgba(251,191,36,0.12)' },
+    { key: 'negotiation', label: 'Переговоры', color: '#F97316', bg: 'rgba(249,115,22,0.12)' },
+    { key: 'contract',    label: 'Договор',    color: '#A78BFA', bg: 'rgba(167,139,250,0.12)' },
+    { key: 'payment',     label: 'Оплата',     color: '#22D3EE', bg: 'rgba(34,211,238,0.12)' },
+    { key: 'completed',   label: 'Завершено',  color: '#22C55E', bg: 'rgba(34,197,94,0.12)' },
   ]
   const dealCounts = Object.fromEntries(
     funnelStages.map(s => [s.key, (dealsByStatus ?? []).filter(d => d.status === s.key).length])
@@ -94,8 +95,10 @@ export default async function DashboardPage() {
     new: 'Новая', showing: 'Показ', negotiation: 'Переговоры',
     contract: 'Договор', payment: 'Оплата', completed: 'Завершена', cancelled: 'Отменена',
   }
-  const priorityColors: Record<string, string> = {
-    low: 'bg-slate-50 text-slate-600', medium: 'bg-amber-50 text-amber-700', high: 'bg-red-50 text-red-600',
+  const priorityColors: Record<string, { bg: string; text: string; dot: string }> = {
+    low:    { bg: 'bg-slate-50',  text: 'text-slate-600', dot: 'bg-slate-400' },
+    medium: { bg: 'bg-amber-50',  text: 'text-amber-700', dot: 'bg-amber-400' },
+    high:   { bg: 'bg-red-50',    text: 'text-red-600',   dot: 'bg-red-400' },
   }
   const priorityLabels: Record<string, string> = { low: 'Низкий', medium: 'Средний', high: 'Высокий' }
   const contactStatusColors: Record<string, string> = {
@@ -109,90 +112,82 @@ export default async function DashboardPage() {
   const today = new Date()
   const todayStr = today.toLocaleDateString('ru-RU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
 
+  const kpiData = [
+    { title: 'Новые лиды',       value: newLeadsCount ?? 0,    icon: 'Zap',         color: '#3B82F6', iconBg: 'rgba(59,130,246,0.1)', href: '/leads',      trend: '+12%', trendPos: true },
+    { title: 'Активных сделок',  value: activeDealsCount ?? 0,  icon: 'TrendingUp',  color: '#16A34A', iconBg: 'rgba(22,163,74,0.1)',  href: '/deals',      trend: '+8%',  trendPos: true },
+    { title: 'Контактов',        value: contactsCount ?? 0,    icon: 'Users',       color: '#8B5CF6', iconBg: 'rgba(139,92,246,0.1)', href: '/contacts',   trend: '+5%',  trendPos: true },
+    { title: 'Своб. объектов',   value: propertiesCount ?? 0,  icon: 'Home',        color: '#10B981', iconBg: 'rgba(16,185,129,0.1)', href: '/properties', trend: '0%',   trendPos: null },
+    { title: 'Активных догов.',  value: contractsCount ?? 0,   icon: 'FileText',    color: '#F59E0B', iconBg: 'rgba(245,158,11,0.1)', href: '/contracts',  trend: '+3%',  trendPos: true },
+    { title: 'Задач в работе',   value: activeTasksCount ?? 0,  icon: 'CheckSquare', color: '#EF4444', iconBg: 'rgba(239,68,68,0.1)',  href: '/tasks',      trend: '-2%',  trendPos: false },
+  ]
+
   return (
     <div className="space-y-8">
 
       {/* Page Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#111827] tracking-tight">Дашборд</h1>
-          <p className="text-[#64748B] mt-1 text-sm capitalize">{todayStr}</p>
+          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Дашборд</h1>
+          <p className="text-[#64748B] mt-1.5 text-sm font-medium capitalize">{todayStr}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {(overdueTasksCount ?? 0) > 0 && (
-            <Link href="/tasks" className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 transition-colors">
+            <Link href="/tasks" className="flex items-center gap-2 px-4 py-2 rounded-[12px] text-sm font-semibold bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 transition-colors">
               <AlertTriangle style={{ width: 14, height: 14 }} />
-              {overdueTasksCount} просроченных задач
+              {overdueTasksCount} просроч. задач
             </Link>
           )}
           {(overduePaymentsCount ?? 0) > 0 && (
-            <Link href="/payments" className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium bg-orange-50 text-orange-600 border border-orange-100 hover:bg-orange-100 transition-colors">
+            <Link href="/payments" className="flex items-center gap-2 px-4 py-2 rounded-[12px] text-sm font-semibold bg-orange-50 text-orange-600 border border-orange-100 hover:bg-orange-100 transition-colors">
               <DollarSign style={{ width: 14, height: 14 }} />
-              {overduePaymentsCount} просроченных платежей
+              {overduePaymentsCount} просроч. платежей
             </Link>
           )}
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4">
-        {[
-          { title: 'Новые лиды',        value: newLeadsCount ?? 0,    icon: Zap,         iconBg: 'bg-blue-50',    iconColor: 'text-blue-500',    href: '/leads',      trend: '+12%', trendPos: true },
-          { title: 'Активных сделок',   value: activeDealsCount ?? 0,  icon: TrendingUp,  iconBg: 'bg-green-50',   iconColor: 'text-green-600',   href: '/deals',      trend: '+8%',  trendPos: true },
-          { title: 'Контактов',         value: contactsCount ?? 0,    icon: Users,       iconBg: 'bg-violet-50',  iconColor: 'text-violet-600',  href: '/contacts',   trend: '+5%',  trendPos: true },
-          { title: 'Своб. объектов',    value: propertiesCount ?? 0,  icon: Home,        iconBg: 'bg-emerald-50', iconColor: 'text-emerald-600', href: '/properties', trend: '0%',   trendPos: null },
-          { title: 'Активных догов.',   value: contractsCount ?? 0,   icon: FileText,    iconBg: 'bg-orange-50',  iconColor: 'text-orange-500',  href: '/contracts',  trend: '+3%',  trendPos: true },
-          { title: 'Задач в работе',    value: activeTasksCount ?? 0,  icon: CheckSquare, iconBg: 'bg-rose-50',    iconColor: 'text-rose-500',    href: '/tasks',      trend: '-2%',  trendPos: false },
-        ].map(card => {
-          const Icon = card.icon
-          const trendClass = card.trendPos === true ? 'bg-green-50 text-green-600' : card.trendPos === false ? 'bg-red-50 text-red-500' : 'bg-slate-50 text-slate-500'
-          return (
-            <Link key={card.title} href={card.href}
-              className="group p-5 bg-white rounded-[20px] border border-slate-200/60 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${card.iconBg}`}>
-                  <Icon className={card.iconColor} style={{ width: 18, height: 18 }} />
-                </div>
-                <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${trendClass}`}>
-                  {card.trend}
-                </span>
-              </div>
-              <p className="text-3xl font-bold text-[#111827] leading-none">{card.value}</p>
-              <p className="text-xs text-[#64748B] mt-1.5 leading-snug font-medium">{card.title}</p>
-            </Link>
-          )
-        })}
-      </div>
+      {/* KPI Cards — animated client component */}
+      <DashboardKpiCards cards={kpiData} />
 
       {/* Finance + Funnel */}
       <div className="grid lg:grid-cols-2 gap-6">
 
         {/* Finance */}
-        <div className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm p-6">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="font-semibold text-[#111827] text-[15px]">Финансы — текущий месяц</h2>
-            <Link href="/payments" className="text-xs text-green-600 font-medium flex items-center gap-0.5 hover:underline">
-              Подробнее <ArrowUpRight style={{ width: 12, height: 12 }} />
+        <div className="bg-white rounded-[20px] border border-slate-100 p-6" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="font-bold text-[#111827] text-[16px] tracking-tight">Финансы</h2>
+              <p className="text-xs text-[#64748B] mt-0.5 font-medium">Текущий месяц</p>
+            </div>
+            <Link href="/payments" className="flex items-center gap-1 text-xs text-[#16A34A] font-semibold hover:underline">
+              Подробнее <ArrowUpRight style={{ width: 13, height: 13 }} />
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-green-50 to-green-100">
-              <div className="flex items-center gap-2 mb-2">
-                <Banknote style={{ width: 15, height: 15 }} className="text-green-500" />
+          <div className="grid grid-cols-2 gap-3 mb-5">
+            {/* Paid */}
+            <div className="p-4 rounded-[16px] relative overflow-hidden"
+              style={{ background: 'linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%)', border: '1px solid rgba(34,197,94,0.15)' }}>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-white/80">
+                  <Banknote style={{ width: 15, height: 15, color: '#16A34A' }} />
+                </div>
                 <p className="text-xs font-semibold text-green-700">Получено</p>
               </div>
-              <p className="text-xl font-bold text-green-700">
+              <p className="text-xl font-bold text-[#111827]">
                 {paidThisMonth.toLocaleString('ru-RU')} ₽
               </p>
             </div>
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100">
-              <div className="flex items-center gap-2 mb-2">
-                <Wallet style={{ width: 15, height: 15 }} className="text-amber-500" />
+            {/* Pending */}
+            <div className="p-4 rounded-[16px] relative overflow-hidden"
+              style={{ background: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)', border: '1px solid rgba(245,158,11,0.15)' }}>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-white/80">
+                  <Wallet style={{ width: 15, height: 15, color: '#F59E0B' }} />
+                </div>
                 <p className="text-xs font-semibold text-amber-700">Ожидается</p>
               </div>
-              <p className="text-xl font-bold text-amber-700">
+              <p className="text-xl font-bold text-[#111827]">
                 {pendingThisMonth.toLocaleString('ru-RU')} ₽
               </p>
             </div>
@@ -200,17 +195,18 @@ export default async function DashboardPage() {
 
           {(overduePaymentsList?.length ?? 0) > 0 && (
             <div>
-              <p className="text-xs font-semibold text-red-600 mb-2 flex items-center gap-1.5">
-                <AlertTriangle style={{ width: 13, height: 13 }} />
+              <p className="text-xs font-bold text-red-600 mb-3 flex items-center gap-1.5">
+                <AlertTriangle style={{ width: 12, height: 12 }} />
                 Просроченные платежи
               </p>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 {overduePaymentsList!.map(p => (
                   <Link key={p.id} href={`/payments/${p.id}/edit`}
-                    className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-red-50 border border-red-100 hover:bg-red-100 transition-colors">
+                    className="flex items-center justify-between px-4 py-3 rounded-[12px] border transition-all hover:-translate-y-0.5"
+                    style={{ background: '#FFF5F5', borderColor: 'rgba(239,68,68,0.15)' }}>
                     <div>
                       {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                      <p className="text-xs font-semibold text-[#111827]">{(p.contract as any)?.contract_number ?? 'Без договора'}</p>
+                      <p className="text-xs font-bold text-[#111827]">{(p.contract as any)?.contract_number ?? 'Без договора'}</p>
                       <p className="text-xs text-[#64748B] mt-0.5">
                         {p.due_date ? new Date(p.due_date).toLocaleDateString('ru-RU') : '—'}
                       </p>
@@ -224,11 +220,14 @@ export default async function DashboardPage() {
         </div>
 
         {/* Funnel */}
-        <div className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm p-6">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="font-semibold text-[#111827] text-[15px]">Воронка сделок</h2>
-            <Link href="/deals" className="text-xs text-green-600 font-medium flex items-center gap-0.5 hover:underline">
-              Все сделки <ArrowUpRight style={{ width: 12, height: 12 }} />
+        <div className="bg-white rounded-[20px] border border-slate-100 p-6" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="font-bold text-[#111827] text-[16px] tracking-tight">Воронка сделок</h2>
+              <p className="text-xs text-[#64748B] mt-0.5 font-medium">По стадиям</p>
+            </div>
+            <Link href="/deals" className="flex items-center gap-1 text-xs text-[#16A34A] font-semibold hover:underline">
+              Все сделки <ArrowUpRight style={{ width: 13, height: 13 }} />
             </Link>
           </div>
           <div className="space-y-3">
@@ -237,19 +236,20 @@ export default async function DashboardPage() {
               const pct = Math.round((count / maxDeals) * 100)
               return (
                 <div key={stage.key} className="flex items-center gap-3">
-                  <span className="text-xs font-medium text-[#64748B] w-24 shrink-0">{stage.label}</span>
-                  <div className="flex-1 h-7 rounded-lg overflow-hidden bg-slate-100">
+                  <span className="text-xs font-semibold text-[#64748B] w-24 shrink-0">{stage.label}</span>
+                  <div className="flex-1 h-8 rounded-[10px] overflow-hidden" style={{ background: '#F8FAFC' }}>
                     <div
-                      className="h-full flex items-center justify-end pr-2.5 rounded-lg transition-all duration-700"
+                      className="h-full flex items-center justify-end pr-3 rounded-[10px] transition-all duration-700"
                       style={{
-                        width: count > 0 ? `${Math.max(pct, 10)}%` : '0%',
+                        width: count > 0 ? `${Math.max(pct, 8)}%` : '0%',
                         background: count > 0 ? stage.color : 'transparent',
+                        minWidth: count > 0 ? '32px' : '0',
                       }}
                     >
                       {count > 0 && <span className="text-white text-xs font-bold">{count}</span>}
                     </div>
                   </div>
-                  {count === 0 && <span className="text-xs text-slate-400 font-medium w-4">0</span>}
+                  {count === 0 && <span className="text-xs text-slate-300 font-medium w-4">0</span>}
                 </div>
               )
             })}
@@ -257,41 +257,41 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* 3-column content */}
+      {/* 3-column */}
       <div className="grid lg:grid-cols-3 gap-6">
 
         {/* Recent contacts */}
-        <div className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-[#111827] text-[15px]">Последние контакты</h2>
-            <Link href="/contacts" className="text-xs text-green-600 font-medium flex items-center gap-0.5 hover:underline">
+        <div className="bg-white rounded-[20px] border border-slate-100 p-6" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="font-bold text-[#111827] text-[15px]">Последние контакты</h2>
+            <Link href="/contacts" className="text-xs text-[#16A34A] font-semibold flex items-center gap-0.5 hover:underline">
               Все <ArrowUpRight style={{ width: 12, height: 12 }} />
             </Link>
           </div>
           {!recentContacts?.length ? (
             <div className="text-center py-8">
-              <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
-                <Users style={{ width: 20, height: 20 }} className="text-slate-400" />
+              <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-3">
+                <Users style={{ width: 20, height: 20 }} className="text-slate-300" />
               </div>
               <p className="text-sm text-[#64748B]">Нет контактов</p>
-              <Link href="/contacts/new" className="text-xs text-green-600 hover:underline mt-1 block font-medium">+ Добавить</Link>
+              <Link href="/contacts/new" className="text-xs text-[#16A34A] hover:underline mt-1 block font-semibold">+ Добавить</Link>
             </div>
           ) : (
             <div className="space-y-1">
               {recentContacts.map(c => (
                 <Link key={c.id} href={`/contacts/${c.id}`}
-                  className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors">
+                  className="flex items-center justify-between p-2.5 rounded-[12px] hover:bg-[#F8FAFC] transition-colors group">
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-white text-xs font-semibold"
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-white text-xs font-bold"
                       style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)' }}>
                       {c.full_name?.charAt(0)?.toUpperCase()}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-[#111827] truncate">{c.full_name}</p>
+                      <p className="text-sm font-semibold text-[#111827] truncate group-hover:text-[#16A34A] transition-colors">{c.full_name}</p>
                       <p className="text-xs text-[#64748B]">{roleLabels[c.role] ?? c.role}</p>
                     </div>
                   </div>
-                  <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold shrink-0 ${contactStatusColors[c.status] ?? 'bg-slate-50 text-slate-600'}`}>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ${contactStatusColors[c.status] ?? 'bg-slate-50 text-slate-600'}`}>
                     {contactStatusLabels[c.status] ?? c.status}
                   </span>
                 </Link>
@@ -301,20 +301,20 @@ export default async function DashboardPage() {
         </div>
 
         {/* Recent deals */}
-        <div className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-[#111827] text-[15px]">Последние сделки</h2>
-            <Link href="/deals" className="text-xs text-green-600 font-medium flex items-center gap-0.5 hover:underline">
+        <div className="bg-white rounded-[20px] border border-slate-100 p-6" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="font-bold text-[#111827] text-[15px]">Последние сделки</h2>
+            <Link href="/deals" className="text-xs text-[#16A34A] font-semibold flex items-center gap-0.5 hover:underline">
               Все <ArrowUpRight style={{ width: 12, height: 12 }} />
             </Link>
           </div>
           {!recentDeals?.length ? (
             <div className="text-center py-8">
-              <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
-                <TrendingUp style={{ width: 20, height: 20 }} className="text-slate-400" />
+              <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-3">
+                <TrendingUp style={{ width: 20, height: 20 }} className="text-slate-300" />
               </div>
               <p className="text-sm text-[#64748B]">Нет сделок</p>
-              <Link href="/deals/new" className="text-xs text-green-600 hover:underline mt-1 block font-medium">+ Создать</Link>
+              <Link href="/deals/new" className="text-xs text-[#16A34A] hover:underline mt-1 block font-semibold">+ Создать</Link>
             </div>
           ) : (
             <div className="space-y-1">
@@ -323,16 +323,16 @@ export default async function DashboardPage() {
                 const clientName = (d.client_contact as any)?.full_name ?? (d.owner_contact as any)?.full_name
                 return (
                   <Link key={d.id} href={`/deals/${d.id}`}
-                    className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 transition-colors">
+                    className="flex items-center justify-between p-2.5 rounded-[12px] hover:bg-[#F8FAFC] transition-colors group">
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-[#111827]">{dealTypeLabels[d.deal_type] ?? d.deal_type}</p>
+                      <p className="text-sm font-semibold text-[#111827] group-hover:text-[#16A34A] transition-colors">{dealTypeLabels[d.deal_type] ?? d.deal_type}</p>
                       <p className="text-xs text-[#64748B] truncate">{clientName ?? new Date(d.created_at).toLocaleDateString('ru-RU')}</p>
                     </div>
                     <div className="shrink-0 text-right">
-                      <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold block ${dealStatusColors[d.status] ?? 'bg-gray-50'}`}>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold block ${dealStatusColors[d.status] ?? 'bg-gray-50'}`}>
                         {dealStatusLabels[d.status] ?? d.status}
                       </span>
-                      {d.amount && <p className="text-xs text-[#64748B] mt-0.5">{Number(d.amount).toLocaleString('ru-RU')} ₽</p>}
+                      {d.amount && <p className="text-xs text-[#64748B] mt-0.5 font-medium">{Number(d.amount).toLocaleString('ru-RU')} ₽</p>}
                     </div>
                   </Link>
                 )
@@ -342,41 +342,48 @@ export default async function DashboardPage() {
         </div>
 
         {/* My tasks */}
-        <div className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-[#111827] text-[15px]">Мои задачи</h2>
-            <Link href="/tasks" className="text-xs text-green-600 font-medium flex items-center gap-0.5 hover:underline">
+        <div className="bg-white rounded-[20px] border border-slate-100 p-6" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="font-bold text-[#111827] text-[15px]">Мои задачи</h2>
+            <Link href="/tasks" className="text-xs text-[#16A34A] font-semibold flex items-center gap-0.5 hover:underline">
               Все <ArrowUpRight style={{ width: 12, height: 12 }} />
             </Link>
           </div>
           {!myTasks?.length ? (
             <div className="text-center py-8">
-              <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
-                <CheckSquare style={{ width: 20, height: 20 }} className="text-slate-400" />
+              <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-3">
+                <CheckSquare style={{ width: 20, height: 20 }} className="text-slate-300" />
               </div>
               <p className="text-sm text-[#64748B]">Нет активных задач</p>
-              <Link href="/tasks/new" className="text-xs text-green-600 hover:underline mt-1 block font-medium">+ Создать задачу</Link>
+              <Link href="/tasks/new" className="text-xs text-[#16A34A] hover:underline mt-1 block font-semibold">+ Создать задачу</Link>
             </div>
           ) : (
             <div className="space-y-2">
               {myTasks.map(task => {
                 const isOverdue = task.deadline && new Date(task.deadline) < new Date()
+                const pr = priorityColors[task.priority] ?? priorityColors.low
                 return (
-                  <div key={task.id}
-                    className={`p-3 rounded-xl ${isOverdue ? 'bg-red-50 border border-red-100' : 'bg-slate-50'}`}>
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm font-medium text-[#111827] leading-snug">{task.title}</p>
-                      <span className={`text-[11px] px-1.5 py-0.5 rounded-full font-semibold shrink-0 ${priorityColors[task.priority] ?? 'bg-slate-50 text-slate-600'}`}>
-                        {priorityLabels[task.priority] ?? task.priority}
-                      </span>
-                    </div>
-                    {task.deadline && (
-                      <div className={`flex items-center gap-1 mt-1.5 text-xs font-medium ${isOverdue ? 'text-red-600' : 'text-[#64748B]'}`}>
-                        <Clock style={{ width: 11, height: 11 }} />
-                        {isOverdue ? '⚠ ' : ''}{new Date(task.deadline).toLocaleDateString('ru-RU')}
+                  <Link key={task.id} href={`/tasks/${task.id}`}>
+                    <div
+                      className="p-3 rounded-[12px] border transition-all hover:-translate-y-0.5 cursor-pointer"
+                      style={isOverdue
+                        ? { background: '#FFF5F5', borderColor: 'rgba(239,68,68,0.2)' }
+                        : { background: '#F8FAFC', borderColor: 'rgba(214,219,235,0.5)' }}>
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-sm font-semibold text-[#111827] leading-snug">{task.title}</p>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 flex items-center gap-1 ${pr.bg} ${pr.text}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${pr.dot}`} />
+                          {priorityLabels[task.priority] ?? task.priority}
+                        </span>
                       </div>
-                    )}
-                  </div>
+                      {task.deadline && (
+                        <div className={`flex items-center gap-1 mt-1.5 text-xs font-semibold ${isOverdue ? 'text-red-600' : 'text-[#64748B]'}`}>
+                          <Clock style={{ width: 11, height: 11 }} />
+                          {isOverdue ? '⚠ ' : ''}{new Date(task.deadline).toLocaleDateString('ru-RU')}
+                        </div>
+                      )}
+                    </div>
+                  </Link>
                 )
               })}
             </div>
@@ -384,15 +391,15 @@ export default async function DashboardPage() {
 
           {(upcomingDeadlines?.length ?? 0) > 0 && (
             <div className="mt-4 pt-4 border-t border-slate-100">
-              <p className="text-xs font-semibold text-[#64748B] mb-2.5 flex items-center gap-1.5">
-                <Calendar style={{ width: 12, height: 12 }} />
-                Дедлайны на 7 дней
+              <p className="text-xs font-bold text-[#64748B] mb-2.5 flex items-center gap-1.5 uppercase tracking-wide">
+                <Calendar style={{ width: 11, height: 11 }} />
+                Дедлайны · 7 дней
               </p>
               <div className="space-y-1.5">
                 {upcomingDeadlines!.map(t => (
                   <div key={t.id} className="flex items-center justify-between text-xs">
                     <span className="text-[#374151] truncate max-w-32 font-medium">{t.title}</span>
-                    <span className="text-slate-400 shrink-0 ml-2">
+                    <span className="text-slate-400 shrink-0 ml-2 font-medium">
                       {t.deadline ? new Date(t.deadline).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }) : ''}
                     </span>
                   </div>
@@ -404,22 +411,27 @@ export default async function DashboardPage() {
       </div>
 
       {/* Quick actions */}
-      <div className="p-6 rounded-[20px] bg-gradient-to-r from-green-50 to-emerald-50 border border-green-100">
-        <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="p-6 rounded-[20px] relative overflow-hidden"
+        style={{ background: 'linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)', border: '1px solid rgba(34,197,94,0.15)' }}>
+        {/* Background decoration */}
+        <div className="absolute right-0 top-0 w-48 h-48 opacity-5"
+          style={{ background: 'radial-gradient(circle, #16A34A 0%, transparent 70%)', transform: 'translate(25%, -25%)' }} />
+        <div className="flex items-center justify-between flex-wrap gap-4 relative">
           <div>
-            <h3 className="font-bold text-[#111827] text-[15px]">Быстрые действия</h3>
+            <h3 className="font-bold text-[#111827] text-[16px] tracking-tight">Быстрые действия</h3>
             <p className="text-sm text-[#64748B] mt-0.5">Создайте новую запись одним кликом</p>
           </div>
           <div className="flex flex-wrap gap-2">
             {[
-              { label: '+ Лид',     href: '/leads/new',      cls: 'bg-blue-600 hover:bg-blue-700' },
-              { label: '+ Контакт', href: '/contacts/new',   cls: 'bg-violet-600 hover:bg-violet-700' },
-              { label: '+ Объект',  href: '/properties/new', cls: 'bg-emerald-600 hover:bg-emerald-700' },
-              { label: '+ Договор', href: '/contracts/new',  cls: 'bg-orange-600 hover:bg-orange-700' },
-              { label: '+ Сделка',  href: '/deals/new',      cls: 'bg-green-600 hover:bg-green-700' },
+              { label: '+ Лид',     href: '/leads/new',      bg: '#3B82F6' },
+              { label: '+ Контакт', href: '/contacts/new',   bg: '#8B5CF6' },
+              { label: '+ Объект',  href: '/properties/new', bg: '#10B981' },
+              { label: '+ Договор', href: '/contracts/new',  bg: '#F59E0B' },
+              { label: '+ Сделка',  href: '/deals/new',      bg: '#16A34A' },
             ].map(a => (
               <Link key={a.href} href={a.href}
-                className={`px-4 py-2 text-white rounded-xl text-sm font-semibold transition-colors ${a.cls}`}>
+                className="px-4 py-2 text-white rounded-[12px] text-sm font-bold transition-all hover:-translate-y-0.5 hover:shadow-md"
+                style={{ background: a.bg }}>
                 {a.label}
               </Link>
             ))}
