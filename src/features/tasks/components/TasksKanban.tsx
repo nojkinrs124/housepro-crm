@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { CheckSquare, Clock, AlertCircle, ExternalLink } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
@@ -67,13 +67,16 @@ export function TasksKanbanBoard({ tasks: initialTasks }: { tasks: any[] }) {
   }
 
   return (
-    <div className="grid lg:grid-cols-4 gap-4">
+    <div className="overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 lg:overflow-visible lg:pb-0"
+      style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
+      <div className="flex gap-4 min-w-max lg:grid lg:grid-cols-4 lg:min-w-0">
       {columns.map((col) => {
         const colTasks = byStatus(col.status)
         return (
           <div
             key={col.status}
-            className={`bg-card border-t-2 ${col.color} border border-border rounded-2xl overflow-hidden`}
+            className={`w-[82vw] sm:w-72 lg:w-auto bg-card border-t-2 ${col.color} border border-border rounded-2xl overflow-hidden`}
+            style={{ scrollSnapAlign: 'start' } as React.CSSProperties}
             onDragOver={handleDragOver}
             onDrop={(e) => handleDrop(e, col.status)}
           >
@@ -140,6 +143,7 @@ export function TasksKanbanBoard({ tasks: initialTasks }: { tasks: any[] }) {
           </div>
         )
       })}
+      </div>
     </div>
   )
 }

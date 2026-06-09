@@ -1,4 +1,4 @@
-import { Sidebar } from '@/components/layout/Sidebar'
+import { Sidebar, MobileBottomNav } from '@/components/layout/Sidebar'
 import { Header } from '@/components/layout/Header'
 import { GlobalSearch } from '@/components/search/GlobalSearch'
 import { createClient } from '@/lib/supabase/server'
@@ -24,15 +24,22 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ background: '#F8FAFC' }}>
+      {/* Desktop sidebar */}
       <Sidebar user={profile} />
+
       <div className="flex-1 flex flex-col min-w-0">
         <Header user={profile} unreadCount={unreadCount ?? 0} />
         <main className="flex-1 overflow-y-auto">
-          <div className="p-6 lg:p-8 max-w-[1600px] mx-auto">
+          {/* pb-20 on mobile to clear the bottom nav bar */}
+          <div className="p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto pb-24 md:pb-8">
             {children}
           </div>
         </main>
       </div>
+
+      {/* Mobile bottom nav + drawer */}
+      <MobileBottomNav user={profile} />
+
       <GlobalSearch />
     </div>
   )

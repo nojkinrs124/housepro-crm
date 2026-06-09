@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Building2, Home, User } from 'lucide-react'
 
@@ -78,14 +78,15 @@ export function DealsKanbanBoard({ deals: initialDeals }: { deals: any[] }) {
   }
 
   return (
-    <div className="overflow-x-auto pb-4">
+    <div className="overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0" style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
       <div className="flex gap-4 min-w-max">
         {columns.map(col => {
           const colDeals = byStatus(col.status)
           return (
             <div
               key={col.status}
-              className={`w-64 bg-card border-t-2 ${col.color} border border-border rounded-2xl flex flex-col`}
+              className={`w-[82vw] sm:w-72 md:w-64 bg-card border-t-2 ${col.color} border border-border rounded-2xl flex flex-col`}
+              style={{ scrollSnapAlign: 'start' }}
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, col.status)}
             >

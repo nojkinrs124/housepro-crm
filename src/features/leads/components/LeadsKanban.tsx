@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Phone, MessageCircle, UserCheck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { convertLeadToClient } from '@/features/leads/actions/leads.actions'
@@ -76,7 +76,7 @@ export function LeadsKanban({ leads: initialLeads }: { leads: any[] }) {
   }
 
   return (
-    <div className="overflow-x-auto pb-4">
+    <div className="overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0" style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
       <div className="flex gap-4 min-w-max">
         {columns.map(col => {
           const colLeads = byStatus(col.status)
@@ -84,9 +84,10 @@ export function LeadsKanban({ leads: initialLeads }: { leads: any[] }) {
           return (
             <div
               key={col.status}
-              className={`w-64 bg-card border-t-2 ${col.color} border rounded-2xl flex flex-col transition-all ${
+              className={`w-[82vw] sm:w-72 md:w-64 bg-card border-t-2 ${col.color} border rounded-2xl flex flex-col transition-all ${
                 isOver ? 'border-primary/50 shadow-lg shadow-primary/10' : 'border-border'
               }`}
+              style={{ scrollSnapAlign: 'start' }}
               onDragOver={(e) => handleDragOver(e, col.status)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, col.status)}

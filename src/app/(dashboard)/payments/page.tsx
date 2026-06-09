@@ -116,7 +116,7 @@ export default async function PaymentsPage({
         })}
       </div>
 
-      {/* Table */}
+      {/* Payment list */}
       <div className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm overflow-hidden">
         {!payments || payments.length === 0 ? (
           <div className="py-16 text-center">
@@ -129,66 +129,117 @@ export default async function PaymentsPage({
             </Link>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-100">
-                  {['Договор / Клиент', 'Тип', 'Сумма', 'Срок', 'Статус', ''].map(h => (
-                    <th key={h} className="text-left px-5 py-3.5 text-xs font-semibold text-[#64748B] uppercase tracking-wide">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                {payments.map((p: any) => {
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  const contract = p.contract as any
-                  const client = contract?.client
-                  const isOverdueDisplay =
-                    p.payment_status === 'overdue' ||
-                    (p.payment_status === 'pending' && p.due_date && new Date(p.due_date) < new Date())
-                  const statusKey = isOverdueDisplay && p.payment_status === 'pending' ? 'overdue' : (p.payment_status ?? 'pending')
-                  const sc = statusConfig[statusKey] ?? statusConfig.pending
+          <>
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-100">
+                    {['Договор / Клиент', 'Тип', 'Сумма', 'Срок', 'Статус', ''].map(h => (
+                      <th key={h} className="text-left px-5 py-3.5 text-xs font-semibold text-[#64748B] uppercase tracking-wide">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                  {payments.map((p: any) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const contract = p.contract as any
+                    const client = contract?.client
+                    const isOverdueDisplay =
+                      p.payment_status === 'overdue' ||
+                      (p.payment_status === 'pending' && p.due_date && new Date(p.due_date) < new Date())
+                    const statusKey = isOverdueDisplay && p.payment_status === 'pending' ? 'overdue' : (p.payment_status ?? 'pending')
+                    const sc = statusConfig[statusKey] ?? statusConfig.pending
 
-                  return (
-                    <tr key={p.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-5 py-3.5">
-                        <Link href={`/payments/${p.id}`} className="hover:text-blue-600 transition-colors group">
-                          <p className="text-sm font-semibold text-[#111827] group-hover:text-blue-600">{contract?.contract_number ?? '—'}</p>
-                          <p className="text-xs text-[#64748B] mt-0.5">{client?.full_name ?? '—'}</p>
-                        </Link>
-                      </td>
-                      <td className="px-5 py-3.5 text-sm text-[#374151] font-medium">
-                        {typeLabels[p.payment_type ?? ''] ?? p.payment_type ?? '—'}
-                      </td>
-                      <td className="px-5 py-3.5 text-sm font-bold text-[#111827]">
-                        {fmt(Number(p.amount))}
-                      </td>
-                      <td className="px-5 py-3.5">
-                        <span className={`text-sm font-medium ${isOverdueDisplay && p.payment_status !== 'paid' ? 'text-red-600' : 'text-[#64748B]'}`}>
-                          {fmtDate(p.due_date)}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3.5">
-                        <PaymentStatusEditor paymentId={p.id} currentStatus={(p.payment_status ?? 'pending') as any} />
-                      </td>
-                      <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-1 justify-end">
-                          <Link href={`/payments/${p.id}/edit`}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-green-600 hover:bg-green-50 transition-colors"
-                            title="Редактировать">
-                            <Pencil style={{ width: 14, height: 14 }} />
+                    return (
+                      <tr key={p.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-5 py-3.5">
+                          <Link href={`/payments/${p.id}`} className="hover:text-blue-600 transition-colors group">
+                            <p className="text-sm font-semibold text-[#111827] group-hover:text-blue-600">{contract?.contract_number ?? '—'}</p>
+                            <p className="text-xs text-[#64748B] mt-0.5">{client?.full_name ?? '—'}</p>
                           </Link>
-                          <MarkPaidButton paymentId={p.id} status={p.payment_status ?? 'pending'} />
-                          <DeletePaymentButton paymentId={p.id} />
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+                        </td>
+                        <td className="px-5 py-3.5 text-sm text-[#374151] font-medium">
+                          {typeLabels[p.payment_type ?? ''] ?? p.payment_type ?? '—'}
+                        </td>
+                        <td className="px-5 py-3.5 text-sm font-bold text-[#111827]">
+                          {fmt(Number(p.amount))}
+                        </td>
+                        <td className="px-5 py-3.5">
+                          <span className={`text-sm font-medium ${isOverdueDisplay && p.payment_status !== 'paid' ? 'text-red-600' : 'text-[#64748B]'}`}>
+                            {fmtDate(p.due_date)}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3.5">
+                          <PaymentStatusEditor paymentId={p.id} currentStatus={(p.payment_status ?? 'pending') as 'pending' | 'paid' | 'partial' | 'overdue' | 'cancelled'} />
+                        </td>
+                        <td className="px-5 py-3.5">
+                          <div className="flex items-center gap-1 justify-end">
+                            <Link href={`/payments/${p.id}/edit`}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-green-600 hover:bg-green-50 transition-colors"
+                              title="Редактировать">
+                              <Pencil style={{ width: 14, height: 14 }} />
+                            </Link>
+                            <MarkPaidButton paymentId={p.id} status={p.payment_status ?? 'pending'} />
+                            <DeletePaymentButton paymentId={p.id} />
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="md:hidden divide-y divide-slate-100">
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+              {payments.map((p: any) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const contract = p.contract as any
+                const client = contract?.client
+                const isOverdueDisplay =
+                  p.payment_status === 'overdue' ||
+                  (p.payment_status === 'pending' && p.due_date && new Date(p.due_date) < new Date())
+                const statusKey = isOverdueDisplay && p.payment_status === 'pending' ? 'overdue' : (p.payment_status ?? 'pending')
+                const sc = statusConfig[statusKey] ?? statusConfig.pending
+
+                return (
+                  <div key={p.id} className="p-4">
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <Link href={`/payments/${p.id}`} className="min-w-0">
+                        <p className="text-sm font-bold text-[#111827] truncate">
+                          {contract?.contract_number ? `Договор ${contract.contract_number}` : 'Без договора'}
+                        </p>
+                        <p className="text-xs text-[#64748B] mt-0.5">{client?.full_name ?? '—'}</p>
+                      </Link>
+                      <p className="text-base font-bold text-[#111827] shrink-0">{fmt(Number(p.amount))}</p>
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${sc.cls}`}>{sc.label}</span>
+                      <span className="text-xs text-[#64748B]">{typeLabels[p.payment_type ?? ''] ?? p.payment_type}</span>
+                      {p.due_date && (
+                        <span className={`text-xs font-medium ${isOverdueDisplay && p.payment_status !== 'paid' ? 'text-red-600' : 'text-[#94A3B8]'}`}>
+                          до {fmtDate(p.due_date)}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100">
+                      <MarkPaidButton paymentId={p.id} status={p.payment_status ?? 'pending'} />
+                      <Link href={`/payments/${p.id}/edit`}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#64748B] border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+                        <Pencil style={{ width: 12, height: 12 }} /> Изменить
+                      </Link>
+                      <div className="ml-auto">
+                        <DeletePaymentButton paymentId={p.id} />
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </>
         )}
       </div>
     </div>

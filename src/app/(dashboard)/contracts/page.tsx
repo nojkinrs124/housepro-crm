@@ -127,74 +127,118 @@ export default async function ContractsPage({
             </Link>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-100">
-                  {['Номер', 'Тип', 'Клиент', 'Объект', 'Сумма', 'Статус', 'Дата', ''].map(h => (
-                    <th key={h} className="text-left text-xs font-semibold text-[#64748B] uppercase tracking-wide px-4 py-3.5 first:px-6">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {contracts.map(contract => {
-                  const clientId = contract.client_contact_id || contract.client_id
-                  const client   = clientId ? clientMap[clientId] : null
-                  const property = contract.property_id ? propertyMap[contract.property_id] : null
-                  const sc       = statusConfig[contract.status] ?? statusConfig.draft
+          <>
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-100">
+                    {['Номер', 'Тип', 'Клиент', 'Объект', 'Сумма', 'Статус', 'Дата', ''].map(h => (
+                      <th key={h} className="text-left text-xs font-semibold text-[#64748B] uppercase tracking-wide px-4 py-3.5 first:px-6">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {contracts.map(contract => {
+                    const clientId = contract.client_contact_id || contract.client_id
+                    const client   = clientId ? clientMap[clientId] : null
+                    const property = contract.property_id ? propertyMap[contract.property_id] : null
+                    const sc       = statusConfig[contract.status] ?? statusConfig.draft
 
-                  return (
-                    <tr key={contract.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-violet-50 shrink-0">
-                            <FileText style={{ width: 14, height: 14 }} className="text-violet-600" />
+                    return (
+                      <tr key={contract.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-violet-50 shrink-0">
+                              <FileText style={{ width: 14, height: 14 }} className="text-violet-600" />
+                            </div>
+                            <span className="text-sm font-semibold text-[#111827]">
+                              {contract.contract_number ?? `#${contract.id.slice(0, 8)}`}
+                            </span>
                           </div>
-                          <span className="text-sm font-semibold text-[#111827]">
-                            {contract.contract_number ?? `#${contract.id.slice(0, 8)}`}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-[#64748B]">
+                          {contractTypeLabels[contract.contract_type] ?? contract.contract_type}
+                        </td>
+                        <td className="px-4 py-4 text-sm font-medium text-[#374151]">
+                          {client?.full_name ?? '—'}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-[#64748B] max-w-[200px] truncate">
+                          {property?.title ?? property?.address ?? '—'}
+                        </td>
+                        <td className="px-4 py-4 text-sm font-bold text-[#111827]">
+                          {contract.amount ? `${Number(contract.amount).toLocaleString('ru-RU')} ₽` : '—'}
+                        </td>
+                        <td className="px-4 py-4">
+                          <span className={`flex items-center gap-1.5 w-fit text-[11px] font-semibold px-2.5 py-1 rounded-full ${sc.cls}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />
+                            {sc.label}
                           </span>
+                        </td>
+                        <td className="px-4 py-4 text-sm text-[#64748B]">
+                          {new Date(contract.created_at).toLocaleDateString('ru-RU')}
+                        </td>
+                        <td className="px-4 py-4">
+                          <div className="flex items-center gap-3">
+                            <Link href={`/contracts/${contract.id}`}
+                              className="text-sm text-green-600 font-semibold hover:underline">
+                              Открыть
+                            </Link>
+                            <span className="text-slate-300">·</span>
+                            <Link href={`/contracts/${contract.id}/generate`}
+                              className="text-sm text-violet-600 font-semibold hover:underline">
+                              DOCX
+                            </Link>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="md:hidden divide-y divide-slate-100">
+              {contracts.map(contract => {
+                const clientId = contract.client_contact_id || contract.client_id
+                const client   = clientId ? clientMap[clientId] : null
+                const property = contract.property_id ? propertyMap[contract.property_id] : null
+                const sc       = statusConfig[contract.status] ?? statusConfig.draft
+
+                return (
+                  <Link key={contract.id} href={`/contracts/${contract.id}`} className="block p-4 hover:bg-slate-50 transition-colors">
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-violet-50 shrink-0">
+                          <FileText style={{ width: 13, height: 13 }} className="text-violet-600" />
                         </div>
-                      </td>
-                      <td className="px-4 py-4 text-sm text-[#64748B]">
-                        {contractTypeLabels[contract.contract_type] ?? contract.contract_type}
-                      </td>
-                      <td className="px-4 py-4 text-sm font-medium text-[#374151]">
-                        {client?.full_name ?? '—'}
-                      </td>
-                      <td className="px-4 py-4 text-sm text-[#64748B] max-w-[200px] truncate">
-                        {property?.title ?? property?.address ?? '—'}
-                      </td>
-                      <td className="px-4 py-4 text-sm font-bold text-[#111827]">
-                        {contract.amount ? `${Number(contract.amount).toLocaleString('ru-RU')} ₽` : '—'}
-                      </td>
-                      <td className="px-4 py-4">
-                        <span className={`flex items-center gap-1.5 w-fit text-[11px] font-semibold px-2.5 py-1 rounded-full ${sc.cls}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />
-                          {sc.label}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 text-sm text-[#64748B]">
-                        {new Date(contract.created_at).toLocaleDateString('ru-RU')}
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="flex items-center gap-3">
-                          <Link href={`/contracts/${contract.id}`}
-                            className="text-sm text-green-600 font-semibold hover:underline">
-                            Открыть
-                          </Link>
-                          <span className="text-slate-300">·</span>
-                          <Link href={`/contracts/${contract.id}/generate`}
-                            className="text-sm text-violet-600 font-semibold hover:underline">
-                            DOCX
-                          </Link>
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-[#111827]">
+                            {contract.contract_number ?? `#${contract.id.slice(0, 8)}`}
+                          </p>
+                          <p className="text-xs text-[#64748B]">{contractTypeLabels[contract.contract_type] ?? contract.contract_type}</p>
                         </div>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+                      </div>
+                      <span className={`shrink-0 flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${sc.cls}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />
+                        {sc.label}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 flex-wrap text-xs text-[#64748B] mt-1">
+                      {client?.full_name && <span>👤 {client.full_name}</span>}
+                      {(property?.title || property?.address) && (
+                        <span className="truncate max-w-[160px]">🏠 {property.title ?? property.address}</span>
+                      )}
+                      {contract.amount && (
+                        <span className="font-bold text-[#111827]">{Number(contract.amount).toLocaleString('ru-RU')} ₽</span>
+                      )}
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          </>
         )}
       </div>
     </div>

@@ -4,7 +4,6 @@ import { Search, Plus, Bell, ChevronDown } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import type { User } from '@/types/database'
-
 import { NotificationBell } from '@/components/layout/NotificationBell'
 
 export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCount?: number }) {
@@ -40,29 +39,20 @@ export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCou
 
   return (
     <header
-      className="h-[68px] flex items-center px-6 gap-4 shrink-0 sticky top-0 z-30"
+      className="h-[60px] md:h-[68px] flex items-center px-4 md:px-6 gap-3 md:gap-4 shrink-0 sticky top-0 z-30"
       style={{
-        background: 'rgba(248, 250, 252, 0.85)',
+        background: 'rgba(248, 250, 252, 0.92)',
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
         borderBottom: '1px solid rgba(214, 219, 235, 0.6)',
       }}
     >
-      {/* Search */}
-      <form onSubmit={handleSearch} className="flex-1 max-w-[480px]">
-        <div
-          className="relative"
-          style={{
-            transition: 'all 0.2s ease',
-          }}
-        >
+      {/* Search — hidden on mobile (use search icon instead) */}
+      <form onSubmit={handleSearch} className="hidden sm:block flex-1 max-w-[480px]">
+        <div className="relative">
           <Search
             className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none transition-colors"
-            style={{
-              width: 15,
-              height: 15,
-              color: focused ? '#16A34A' : '#94A3B8',
-            }}
+            style={{ width: 15, height: 15, color: focused ? '#16A34A' : '#94A3B8' }}
           />
           <input
             ref={inputRef}
@@ -79,7 +69,7 @@ export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCou
               boxShadow: focused ? '0 0 0 3px rgba(34,197,94,0.1)' : 'none',
             }}
           />
-          <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+          <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
             <kbd className="hidden sm:flex items-center px-1.5 py-0.5 text-[10px] font-mono text-[#94A3B8] rounded-md"
               style={{ background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.08)' }}>
               ⌘K
@@ -88,28 +78,37 @@ export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCou
         </div>
       </form>
 
-      <div className="flex items-center gap-2 ml-auto">
+      {/* Mobile search icon */}
+      <button
+        className="sm:hidden w-9 h-9 flex items-center justify-center rounded-xl text-[#64748B] hover:bg-[#F1F5F9] transition-all"
+        onClick={() => router.push('/search')}
+      >
+        <Search style={{ width: 18, height: 18 }} />
+      </button>
+
+      {/* Spacer on mobile */}
+      <div className="flex-1 sm:hidden" />
+
+      <div className="flex items-center gap-2">
         {/* Quick create */}
         <div className="relative">
           <button
             onClick={(e) => { e.stopPropagation(); setCreateOpen(!createOpen) }}
-            className="flex items-center gap-2 h-9 px-4 text-sm font-semibold text-white rounded-[10px] transition-all duration-200"
+            className="flex items-center gap-1.5 md:gap-2 h-9 px-3 md:px-4 text-sm font-semibold text-white rounded-[10px] transition-all duration-200"
             style={{
               background: 'linear-gradient(135deg, #16A34A, #22C55E)',
               boxShadow: '0 2px 8px rgba(22,163,74,0.3)',
             }}
-            onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 16px rgba(22,163,74,0.4)')}
-            onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 2px 8px rgba(22,163,74,0.3)')}
           >
             <Plus style={{ width: 16, height: 16 }} />
             <span className="hidden sm:block">Создать</span>
             <ChevronDown
               style={{
-                width: 14,
-                height: 14,
+                width: 14, height: 14,
                 transition: 'transform 0.2s',
                 transform: createOpen ? 'rotate(180deg)' : 'rotate(0)',
               }}
+              className="hidden sm:block"
             />
           </button>
 
@@ -133,10 +132,8 @@ export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCou
                 <a
                   key={item.href}
                   href={item.href}
-                  className="flex items-center gap-3 px-4 py-2 text-sm text-[#374151] font-medium transition-colors"
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-[#374151] font-medium transition-colors hover:bg-[#F8FAFC]"
                   style={{ borderRadius: '10px' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = '#F8FAFC')}
-                  onMouseLeave={e => (e.currentTarget.style.background = '')}
                 >
                   <span className="text-base">{item.emoji}</span>
                   {item.label}
@@ -159,7 +156,6 @@ export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCou
             className="w-9 h-9 rounded-full flex items-center justify-center overflow-hidden text-white text-sm font-semibold"
             style={{
               background: user?.avatar_url ? undefined : 'linear-gradient(135deg, #16A34A, #22C55E)',
-
               boxShadow: '0 0 0 2.5px rgba(34,197,94,0.2)',
             }}
           >

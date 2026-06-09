@@ -5,9 +5,9 @@ import { usePathname } from 'next/navigation'
 import {
   Building2, LayoutDashboard, Users, Home, FileText, CreditCard,
   CheckSquare, Settings, LogOut, ChevronLeft, ChevronRight,
-  Zap, TrendingUp, UserCog, Download, BarChart2,
+  Zap, TrendingUp, UserCog, Download, BarChart2, X, Menu,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { logout } from '@/features/auth/actions/auth.actions'
 import type { User } from '@/types/database'
@@ -38,40 +38,31 @@ const roleBadgeColors: Record<string, string> = {
   accountant: 'bg-purple-100 text-purple-700',
 }
 
-export function Sidebar({ user }: { user: User | null }) {
+// ─── Mobile bottom nav (5 most-used items) ───────────────────────────────────
+
+const bottomNav = [
+  { name: 'Дашборд',  href: '/dashboard',  icon: LayoutDashboard },
+  { name: 'Лиды',     href: '/leads',      icon: Zap },
+  { name: 'Сделки',   href: '/deals',      icon: TrendingUp },
+  { name: 'Задачи',   href: '/tasks',      icon: CheckSquare },
+  { name: 'Меню',     href: '#menu',       icon: Menu },
+]
+
+// ─── Sidebar inner content (shared between desktop + mobile drawer) ──────────
+
+function SidebarContent({
+  user,
+  collapsed,
+  onNavClick,
+}: {
+  user: User | null
+  collapsed: boolean
+  onNavClick?: () => void
+}) {
   const pathname = usePathname()
-  const [collapsed, setCollapsed] = useState(false)
 
   return (
-    <aside
-      className={cn(
-        'relative flex flex-col shrink-0 transition-all duration-300 ease-in-out',
-        'bg-white border-r border-border/60',
-        collapsed ? 'w-[72px]' : 'w-[280px]'
-      )}
-      style={{ boxShadow: '4px 0 24px rgba(0,0,0,0.03)' }}
-    >
-      {/* Logo */}
-      <div className={cn(
-        'h-[68px] flex items-center border-b border-border/60 shrink-0',
-        collapsed ? 'px-4 justify-center' : 'px-6'
-      )}>
-        <div className="flex items-center gap-3 min-w-0">
-          <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-            style={{ background: 'linear-gradient(135deg, #16A34A 0%, #22C55E 100%)' }}
-          >
-            <Building2 className="w-4.5 h-4.5 text-white" style={{ width: 18, height: 18 }} />
-          </div>
-          {!collapsed && (
-            <div className="min-w-0">
-              <span className="font-bold text-[#111827] text-[15px] leading-tight block">HousePro</span>
-              <span className="text-[11px] text-[#64748B] font-medium tracking-wide uppercase leading-tight">CRM</span>
-            </div>
-          )}
-        </div>
-      </div>
-
+    <>
       {/* Nav */}
       <nav className={cn('flex-1 py-4 overflow-y-auto', collapsed ? 'px-3' : 'px-4')}>
         <div className="space-y-0.5">
@@ -83,6 +74,7 @@ export function Sidebar({ user }: { user: User | null }) {
                 key={item.href}
                 href={item.href}
                 title={collapsed ? item.name : undefined}
+                onClick={onNavClick}
                 className={cn(
                   'relative flex items-center gap-3 rounded-[12px] text-sm font-medium transition-all duration-200',
                   collapsed ? 'px-2.5 py-2.5 justify-center' : 'px-3.5 py-2.5',
@@ -90,18 +82,14 @@ export function Sidebar({ user }: { user: User | null }) {
                     ? 'text-[#16A34A]'
                     : 'text-[#64748B] hover:text-[#111827]'
                 )}
-                style={isActive ? {
-                  background: 'rgba(34,197,94,0.1)',
-                } : undefined}
+                style={isActive ? { background: 'rgba(34,197,94,0.1)' } : undefined}
               >
-                {/* Active indicator */}
                 {isActive && !collapsed && (
                   <span
                     className="absolute left-0 top-[6px] bottom-[6px] w-[3px] rounded-r-full"
                     style={{ background: '#22C55E' }}
                   />
                 )}
-                {/* Hover background */}
                 <span
                   className={cn(
                     'absolute inset-0 rounded-[12px] transition-all duration-200',
@@ -116,9 +104,7 @@ export function Sidebar({ user }: { user: User | null }) {
                   )}
                   style={{ width: 17, height: 17 }}
                 />
-                {!collapsed && (
-                  <span className="relative z-10">{item.name}</span>
-                )}
+                {!collapsed && <span className="relative z-10">{item.name}</span>}
               </Link>
             )
           })}
@@ -131,6 +117,7 @@ export function Sidebar({ user }: { user: User | null }) {
           <div className="space-y-3">
             <Link
               href="/settings/profile"
+              onClick={onNavClick}
               className="flex items-center gap-3 p-2.5 rounded-[12px] hover:bg-[#F8FAFC] transition-all duration-200 group"
             >
               {user?.avatar_url ? (
@@ -181,6 +168,171 @@ export function Sidebar({ user }: { user: User | null }) {
           </form>
         )}
       </div>
+    </>
+  )
+}
+
+// ─── Mobile Drawer ────────────────────────────────────────────────────────────
+
+function MobileDrawer({
+  user,
+  open,
+  onClose,
+}: {
+  user: User | null
+  open: boolean
+  onClose: () => void
+}) {
+  // Lock body scroll when drawer is open
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [open])
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className={cn(
+          'fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300 md:hidden',
+          open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        )}
+        onClick={onClose}
+      />
+
+      {/* Drawer panel */}
+      <aside
+        className={cn(
+          'fixed left-0 top-0 bottom-0 z-50 w-[280px] flex flex-col bg-white transition-transform duration-300 ease-in-out md:hidden',
+        )}
+        style={{
+          transform: open ? 'translateX(0)' : 'translateX(-100%)',
+          boxShadow: '4px 0 32px rgba(0,0,0,0.12)',
+        }}
+      >
+        {/* Drawer header */}
+        <div className="h-[68px] flex items-center justify-between px-6 border-b border-border/60 shrink-0">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: 'linear-gradient(135deg, #16A34A 0%, #22C55E 100%)' }}
+            >
+              <Building2 style={{ width: 18, height: 18 }} className="text-white" />
+            </div>
+            <div>
+              <span className="font-bold text-[#111827] text-[15px] leading-tight block">HousePro</span>
+              <span className="text-[11px] text-[#64748B] font-medium tracking-wide uppercase leading-tight">CRM</span>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-9 h-9 flex items-center justify-center rounded-xl text-[#64748B] hover:text-[#111827] hover:bg-[#F8FAFC] transition-all"
+          >
+            <X style={{ width: 18, height: 18 }} />
+          </button>
+        </div>
+
+        <SidebarContent user={user} collapsed={false} onNavClick={onClose} />
+      </aside>
+    </>
+  )
+}
+
+// ─── Mobile Bottom Nav Bar ────────────────────────────────────────────────────
+
+export function MobileBottomNav({ user }: { user: User | null }) {
+  const pathname = usePathname()
+  const [drawerOpen, setDrawerOpen] = useState(false)
+
+  return (
+    <>
+      <MobileDrawer user={user} open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-30 md:hidden"
+        style={{
+          background: 'rgba(255,255,255,0.95)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          borderTop: '1px solid rgba(214,219,235,0.8)',
+          paddingBottom: 'env(safe-area-inset-bottom)',
+        }}
+      >
+        <div className="flex items-center justify-around px-2 h-[60px]">
+          {bottomNav.map((item) => {
+            const Icon = item.icon
+            const isMenu = item.href === '#menu'
+            const isActive = isMenu
+              ? drawerOpen
+              : (pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href)))
+
+            return (
+              <button
+                key={item.href}
+                onClick={() => {
+                  if (isMenu) {
+                    setDrawerOpen(true)
+                  } else {
+                    window.location.href = item.href
+                  }
+                }}
+                className={cn(
+                  'flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all duration-200 min-w-[52px]',
+                  isActive ? 'text-[#16A34A]' : 'text-[#94A3B8]'
+                )}
+                style={isActive ? { background: 'rgba(34,197,94,0.08)' } : undefined}
+              >
+                <Icon style={{ width: 20, height: 20 }} />
+                <span className="text-[10px] font-medium leading-tight">{item.name}</span>
+              </button>
+            )
+          })}
+        </div>
+      </nav>
+    </>
+  )
+}
+
+// ─── Desktop Sidebar ──────────────────────────────────────────────────────────
+
+export function Sidebar({ user }: { user: User | null }) {
+  const [collapsed, setCollapsed] = useState(false)
+
+  return (
+    <aside
+      className={cn(
+        'relative hidden md:flex flex-col shrink-0 transition-all duration-300 ease-in-out',
+        'bg-white border-r border-border/60',
+        collapsed ? 'w-[72px]' : 'w-[280px]'
+      )}
+      style={{ boxShadow: '4px 0 24px rgba(0,0,0,0.03)' }}
+    >
+      {/* Logo */}
+      <div className={cn(
+        'h-[68px] flex items-center border-b border-border/60 shrink-0',
+        collapsed ? 'px-4 justify-center' : 'px-6'
+      )}>
+        <div className="flex items-center gap-3 min-w-0">
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+            style={{ background: 'linear-gradient(135deg, #16A34A 0%, #22C55E 100%)' }}
+          >
+            <Building2 className="text-white" style={{ width: 18, height: 18 }} />
+          </div>
+          {!collapsed && (
+            <div className="min-w-0">
+              <span className="font-bold text-[#111827] text-[15px] leading-tight block">HousePro</span>
+              <span className="text-[11px] text-[#64748B] font-medium tracking-wide uppercase leading-tight">CRM</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <SidebarContent user={user} collapsed={collapsed} />
 
       {/* Collapse toggle */}
       <button
