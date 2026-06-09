@@ -31,14 +31,14 @@ export default async function DealsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#111827] tracking-tight">Сделки</h1>
+          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Сделки</h1>
           <p className="text-[#64748B] mt-1 text-sm">
             {activeDealCount} активных{totalAmount > 0 ? ` · ${totalAmount.toLocaleString('ru-RU')} ₽ завершено` : ''}
           </p>
         </div>
         <Link href="/deals/new"
           className="flex items-center gap-2 px-4 py-2.5 text-white rounded-xl text-sm font-semibold"
-          style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 2px 8px rgba(22,163,74,0.3)' }}>
+          style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
           <Plus style={{ width: 16, height: 16 }} />
           Новая сделка
         </Link>

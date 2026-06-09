@@ -21,12 +21,12 @@ export default async function TasksPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#111827] tracking-tight">Задачи</h1>
+          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Задачи</h1>
           <p className="text-[#64748B] mt-1 text-sm">{total} задач · {active} активных</p>
         </div>
         <Link href="/tasks/new"
           className="flex items-center gap-2 px-4 py-2.5 text-white rounded-xl text-sm font-semibold"
-          style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 2px 8px rgba(22,163,74,0.3)' }}>
+          style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
           <Plus style={{ width: 16, height: 16 }} />
           Новая задача
         </Link>
@@ -64,7 +64,7 @@ export default async function TasksPage() {
           <p className="text-[#64748B] text-sm mt-1">Создайте первую задачу для команды</p>
           <Link href="/tasks/new"
             className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 text-white rounded-xl text-sm font-semibold"
-            style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 2px 8px rgba(22,163,74,0.3)' }}>
+            style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
             <Plus style={{ width: 16, height: 16 }} />
             Создать задачу
           </Link>

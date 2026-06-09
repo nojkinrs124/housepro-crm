@@ -72,12 +72,12 @@ export default async function PaymentsPage({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#111827] tracking-tight">Платежи</h1>
+          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight">Платежи</h1>
           <p className="text-[#64748B] mt-1 text-sm">{payments?.length ?? 0} записей</p>
         </div>
         <Link href="/payments/new"
           className="flex items-center gap-2 px-4 py-2.5 text-white rounded-xl text-sm font-semibold"
-          style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 2px 8px rgba(22,163,74,0.3)' }}>
+          style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
           <Plus style={{ width: 16, height: 16 }} />
           Добавить платёж
         </Link>
@@ -88,7 +88,7 @@ export default async function PaymentsPage({
         {statCards.map(card => {
           const Icon = card.Icon
           return (
-            <div key={card.label} className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm p-5">
+            <div key={card.label} className="bg-white rounded-[20px] border border-slate-100 p-5 transition-all hover:-translate-y-0.5" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
               <div className="flex items-center justify-between mb-3">
                 <p className="text-xs font-medium text-[#64748B]">{card.label}</p>
                 <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${card.iconCls}`}>
@@ -117,7 +117,7 @@ export default async function PaymentsPage({
       </div>
 
       {/* Payment list */}
-      <div className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-[20px] border border-slate-100 overflow-hidden" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
         {!payments || payments.length === 0 ? (
           <div className="py-16 text-center">
             <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
@@ -134,7 +134,7 @@ export default async function PaymentsPage({
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-100">
+                  <tr className="border-b border-slate-100" style={{ background: '#F8FAFC' }}>
                     {['Договор / Клиент', 'Тип', 'Сумма', 'Срок', 'Статус', ''].map(h => (
                       <th key={h} className="text-left px-5 py-3.5 text-xs font-semibold text-[#64748B] uppercase tracking-wide">{h}</th>
                     ))}

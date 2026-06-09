@@ -71,12 +71,12 @@ export default async function ContractsPage({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#111827] tracking-tight">Договоры</h1>
+          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Договоры</h1>
           <p className="text-[#64748B] mt-1 text-sm">{contracts?.length ?? 0} договоров</p>
         </div>
         <Link href="/contracts/new"
           className="flex items-center gap-2 px-4 py-2.5 text-white rounded-xl text-sm font-semibold"
-          style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 2px 8px rgba(22,163,74,0.3)' }}>
+          style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
           <Plus style={{ width: 16, height: 16 }} />
           Новый договор
         </Link>
@@ -121,7 +121,7 @@ export default async function ContractsPage({
             </p>
             <Link href="/contracts/new"
               className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 text-white rounded-xl text-sm font-semibold"
-              style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 2px 8px rgba(22,163,74,0.3)' }}>
+              style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
               <Plus style={{ width: 14, height: 14 }} />
               Создать договор
             </Link>

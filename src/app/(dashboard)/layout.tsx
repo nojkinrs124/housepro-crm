@@ -27,10 +27,9 @@ export default async function DashboardLayout({
       {/* Desktop sidebar */}
       <Sidebar user={profile} />
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <Header user={profile} unreadCount={unreadCount ?? 0} />
         <main className="flex-1 overflow-y-auto">
-          {/* pb-20 on mobile to clear the bottom nav bar */}
           <div className="p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto pb-24 md:pb-8">
             {children}
           </div>

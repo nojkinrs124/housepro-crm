@@ -19,14 +19,14 @@ export default async function LeadsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#111827] tracking-tight">Лиды</h1>
+          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Лиды</h1>
           <p className="text-[#64748B] mt-1 text-sm">
             {total} всего · {newCount} новых · {converted} конвертировано
           </p>
         </div>
         <Link href="/leads/new"
           className="flex items-center gap-2 px-4 py-2.5 text-white rounded-xl text-sm font-semibold"
-          style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 2px 8px rgba(22,163,74,0.3)' }}>
+          style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
           <Plus style={{ width: 16, height: 16 }} />
           Новый лид
         </Link>
@@ -64,7 +64,7 @@ export default async function LeadsPage() {
           <p className="text-[#64748B] text-sm mt-1">Добавьте первый лид из входящего обращения</p>
           <Link href="/leads/new"
             className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 text-white rounded-xl text-sm font-semibold"
-            style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 2px 8px rgba(22,163,74,0.3)' }}>
+            style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
             <Plus style={{ width: 16, height: 16 }} />
             Добавить лид
           </Link>
