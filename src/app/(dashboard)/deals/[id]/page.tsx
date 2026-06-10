@@ -11,21 +11,6 @@ const dealTypeLabels: Record<string, string> = {
   management: 'Управление', commercial: 'Коммерция', subrent: 'Субаренда',
 }
 
-const statusColors: Record<string, string> = {
-  new:         'bg-blue-100 text-blue-700',
-  showing:     'bg-yellow-100 text-yellow-700',
-  negotiation: 'bg-orange-100 text-orange-700',
-  contract:    'bg-purple-100 text-purple-700',
-  payment:     'bg-cyan-100 text-cyan-700',
-  completed:   'bg-green-100 text-green-700',
-  cancelled:   'bg-gray-100 text-gray-500',
-}
-
-const statusLabels: Record<string, string> = {
-  new: 'Новая', showing: 'Показ', negotiation: 'Переговоры',
-  contract: 'Договор', payment: 'Оплата',
-  completed: 'Завершена', cancelled: 'Отменена',
-}
 
 export default async function DealPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params

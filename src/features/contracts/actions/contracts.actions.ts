@@ -81,3 +81,19 @@ export async function deleteContractAction(id: string) {
   revalidatePath('/contracts')
   redirect('/contracts')
 }
+
+export async function updateContractStatusAction(id: string, status: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Не авторизован' }
+
+  const valid = ['draft', 'generated', 'signed', 'completed', 'cancelled']
+  if (!valid.includes(status)) return { error: 'Недопустимый статус' }
+
+  const { error } = await supabase.from('contracts').update({ status }).eq('id', id)
+  if (error) return { error: error.message }
+
+  revalidatePath('/contracts')
+  revalidatePath(`/contracts/${id}`)
+  return { success: true }
+}

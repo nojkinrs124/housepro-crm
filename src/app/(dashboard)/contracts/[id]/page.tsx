@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { DeleteContractButton } from '@/features/contracts/components/DeleteContractButton'
+import { ContractStatusSelector } from '@/features/contracts/components/ContractStatusSelector'
 import { ArrowLeft, FileText, User, Home, Building2, Calendar, DollarSign, Edit } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -80,9 +81,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className={`text-sm px-3 py-1.5 rounded-xl font-medium ${statusColors[contract.status] ?? 'bg-gray-100'}`}>
-            {statusLabels[contract.status] ?? contract.status}
-          </span>
+          <ContractStatusSelector contractId={id} currentStatus={contract.status} />
           <Link href={`/contracts/${id}/edit`}
             className="flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-sm font-medium hover:bg-accent transition">
             <Edit className="w-4 h-4" />
