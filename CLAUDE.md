@@ -284,6 +284,21 @@ const data: Contact = {}
 **После каждой завершённой фазы работы:**
 
 ```bash
+# 1. ОБЯЗАТЕЛЬНАЯ проверка перед пушем — event handlers в Server Components
+python3 -c "
+import os, re
+for root, dirs, files in os.walk('src/app'):
+    for f in files:
+        if not f.endswith('.tsx'): continue
+        path = os.path.join(root, f)
+        content = open(path).read()
+        if content.split('\n')[0].strip() == \"'use client'\": continue
+        if re.search(r'on(Mouse|Click|Change|Submit|Drag|Drop)\w*\s*=', content):
+            print('❌ SERVER COMPONENT WITH HANDLERS:', path)
+"
+# Если вывод есть — исправить до пуша!
+
+# 2. Коммит и пуш
 git add -A
 git commit -m "feat: описание что сделано"
 git push origin main
