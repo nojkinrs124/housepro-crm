@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { Phone, MessageCircle, UserCheck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { convertLeadToClient } from '@/features/leads/actions/leads.actions'
@@ -27,12 +27,14 @@ export function LeadsKanban({ leads: initialLeads }: { leads: any[] }) {
   const [leads, setLeads] = useState<any[]>(initialLeads)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [draggedLead, setDraggedLead] = useState<any | null>(null)
+  const isDragging = useRef(false)
   const [dragOverCol, setDragOverCol] = useState<string | null>(null)
 
   const byStatus = (status: string) => leads.filter(l => l.status === status)
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleDragStart = (e: React.DragEvent, lead: any) => {
+    isDragging.current = true
     setDraggedLead(lead)
     e.dataTransfer.effectAllowed = 'move'
   }
@@ -66,6 +68,7 @@ export function LeadsKanban({ leads: initialLeads }: { leads: any[] }) {
     }
 
     setDraggedLead(null)
+    isDragging.current = false
   }
 
   const handleDragLeave = (e: React.DragEvent) => {
@@ -117,7 +120,7 @@ export function LeadsKanban({ leads: initialLeads }: { leads: any[] }) {
                       key={lead.id}
                       draggable
                       onDragStart={(e) => handleDragStart(e, lead)}
-                      onDragEnd={() => { setDraggedLead(null); setDragOverCol(null) }}
+                      onDragEnd={() => { setDraggedLead(null); setDragOverCol(null); isDragging.current = false }}
                       className={`bg-background border border-border rounded-xl p-3 space-y-2 hover:shadow-sm transition-all cursor-move select-none ${
                         draggedLead?.id === lead.id ? 'opacity-40 scale-95' : ''
                       }`}
@@ -125,7 +128,7 @@ export function LeadsKanban({ leads: initialLeads }: { leads: any[] }) {
                       {/* Name + source */}
                       <div>
                         <a href={`/leads/${lead.id}`}
-                          onClick={e => e.stopPropagation()}
+                          onClick={e => { if (isDragging.current) e.preventDefault() }}
                           className="text-sm font-semibold text-foreground hover:text-primary transition">
                           {lead.full_name || 'Без имени'}
                         </a>
