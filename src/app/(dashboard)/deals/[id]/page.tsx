@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { ArrowLeft, TrendingUp, User, Building2, Home, DollarSign, Edit } from 'lucide-react'
 import { DeleteDealButton } from '@/features/deals/components/DeleteDealButton'
 import { DealComments } from '@/features/deals/components/DealComments'
+import { DealStatusSelector } from '@/features/deals/components/DealStatusSelector'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
@@ -91,9 +92,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className={`text-sm px-3 py-1.5 rounded-xl font-medium ${statusColors[deal.status] ?? 'bg-gray-100'}`}>
-            {statusLabels[deal.status] ?? deal.status}
-          </span>
+          <DealStatusSelector dealId={id} currentStatus={deal.status} />
           <Link
             href={`/deals/${id}/edit`}
             className="flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-sm font-medium hover:bg-accent transition"

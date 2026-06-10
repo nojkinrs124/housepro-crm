@@ -58,17 +58,20 @@ export function PaymentStatusEditor({
       </button>
 
       {open && !loading && (
-        <div className="absolute top-full right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50 min-w-40">
-          {STATUS_OPTIONS.map(option => (
-            <button
-              key={option.value}
-              onClick={() => handleStatusChange(option.value)}
-              className="w-full px-3 py-2 text-left text-sm hover:bg-muted transition first:rounded-t-lg last:rounded-b-lg"
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute top-full right-0 mt-1 bg-card border border-border rounded-lg shadow-xl z-50 min-w-44 overflow-hidden">
+            {STATUS_OPTIONS.map(option => (
+              <button
+                key={option.value}
+                onClick={() => handleStatusChange(option.value)}
+                className="w-full px-3 py-2.5 text-left text-sm hover:bg-muted transition first:rounded-t-lg last:rounded-b-lg"
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </>
       )}
     </div>
   )

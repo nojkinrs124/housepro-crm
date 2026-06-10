@@ -117,7 +117,7 @@ export default async function PaymentsPage({
       </div>
 
       {/* Payment list */}
-      <div className="bg-white rounded-[20px] border border-slate-100 overflow-hidden" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+      <div className="bg-white rounded-[20px] border border-slate-100" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
         {!payments || payments.length === 0 ? (
           <div className="py-16 text-center">
             <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
@@ -131,7 +131,7 @@ export default async function PaymentsPage({
         ) : (
           <>
             {/* Desktop table */}
-            <div className="hidden md:block overflow-x-auto">
+            <div className="hidden md:block w-full overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-slate-100" style={{ background: '#F8FAFC' }}>

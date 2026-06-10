@@ -4,7 +4,8 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
-export async function createContractAction(formData: FormData) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function createContractAction(_prevState: any, formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -14,10 +15,8 @@ export async function createContractAction(formData: FormData) {
 
   const values = {
     contract_type,
-    // Новая схема — contacts
     owner_contact_id: (formData.get('owner_contact_id') as string) || null,
     client_contact_id: (formData.get('client_contact_id') as string) || null,
-    // Обратная совместимость
     client_id: (formData.get('client_contact_id') as string) || (formData.get('client_id') as string) || null,
     property_id: (formData.get('property_id') as string) || null,
     amount:     formData.get('amount')     ? Number(formData.get('amount'))     : null,
@@ -36,19 +35,20 @@ export async function createContractAction(formData: FormData) {
   redirect(`/contracts/${contract.id}`)
 }
 
-export async function updateContractAction(id: string, formData: FormData) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function updateContractAction(id: string, _prevState: any, formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
   const values = {
-    contract_type:      (formData.get('contract_type')      as string),
-    owner_contact_id:   (formData.get('owner_contact_id')   as string) || null,
-    client_contact_id:  (formData.get('client_contact_id')  as string) || null,
-    client_id:          (formData.get('client_contact_id')  as string) || (formData.get('client_id') as string) || null,
-    property_id:        (formData.get('property_id')        as string) || null,
-    amount:    formData.get('amount')  ? Number(formData.get('amount'))  : null,
-    deposit:   formData.get('deposit') ? Number(formData.get('deposit')) : null,
+    contract_type:     (formData.get('contract_type')     as string),
+    owner_contact_id:  (formData.get('owner_contact_id')  as string) || null,
+    client_contact_id: (formData.get('client_contact_id') as string) || null,
+    client_id:         (formData.get('client_contact_id') as string) || (formData.get('client_id') as string) || null,
+    property_id:       (formData.get('property_id')       as string) || null,
+    amount:    formData.get('amount')     ? Number(formData.get('amount'))     : null,
+    deposit:   formData.get('deposit')    ? Number(formData.get('deposit'))    : null,
     start_date:(formData.get('start_date') as string) || null,
     end_date:  (formData.get('end_date')   as string) || null,
     notes:     (formData.get('notes')      as string) || null,

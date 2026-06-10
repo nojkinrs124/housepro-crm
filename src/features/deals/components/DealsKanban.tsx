@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Building2, Home, User } from 'lucide-react'
 
@@ -10,6 +10,8 @@ export function DealsKanbanBoard({ deals: initialDeals }: { deals: any[] }) {
   const [deals, setDeals] = useState<any[]>(initialDeals)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [draggedDeal, setDraggedDeal] = useState<any | null>(null)
+  const [dragOverStatus, setDragOverStatus] = useState<string | null>(null)
+  const isDragging = useRef(false)
 
   const columns = [
     { status: 'new',         label: 'Новые',       color: 'border-t-blue-400' },
@@ -38,25 +40,38 @@ export function DealsKanbanBoard({ deals: initialDeals }: { deals: any[] }) {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleDragStart = (e: React.DragEvent, deal: any) => {
+    isDragging.current = true
     setDraggedDeal(deal)
     e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', deal.id)
   }
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = (e: React.DragEvent, status: string) => {
     e.preventDefault()
     e.dataTransfer.dropEffect = 'move'
+    setDragOverStatus(status)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    // Only clear if leaving the column entirely (not just a child element)
+    const rel = e.relatedTarget as Node | null
+    if (!e.currentTarget.contains(rel)) {
+      setDragOverStatus(null)
+    }
   }
 
   const handleDrop = async (e: React.DragEvent, newStatus: string) => {
     e.preventDefault()
+    setDragOverStatus(null)
     if (!draggedDeal) return
 
     if (draggedDeal.status === newStatus) {
       setDraggedDeal(null)
+      isDragging.current = false
       return
     }
 
-    // Optimistic update
+    const prevStatus = draggedDeal.status
     setDeals(prev => prev.map(d => d.id === draggedDeal.id ? { ...d, status: newStatus } : d))
 
     const supabase = createClient()
@@ -66,15 +81,25 @@ export function DealsKanbanBoard({ deals: initialDeals }: { deals: any[] }) {
       .eq('id', draggedDeal.id)
 
     if (error) {
-      // Rollback on error
-      setDeals(prev => prev.map(d => d.id === draggedDeal.id ? { ...d, status: draggedDeal.status } : d))
+      setDeals(prev => prev.map(d => d.id === draggedDeal.id ? { ...d, status: prevStatus } : d))
     }
 
     setDraggedDeal(null)
+    isDragging.current = false
   }
 
   const handleDragEnd = () => {
     setDraggedDeal(null)
+    setDragOverStatus(null)
+    isDragging.current = false
+  }
+
+  const handleCardClick = (e: React.MouseEvent, dealId: string) => {
+    if (isDragging.current) {
+      e.preventDefault()
+      return
+    }
+    window.location.href = `/deals/${dealId}`
   }
 
   return (
@@ -82,12 +107,14 @@ export function DealsKanbanBoard({ deals: initialDeals }: { deals: any[] }) {
       <div className="flex gap-4 min-w-max">
         {columns.map(col => {
           const colDeals = byStatus(col.status)
+          const isOver = dragOverStatus === col.status
           return (
             <div
               key={col.status}
-              className={`w-[82vw] sm:w-72 md:w-64 bg-card border-t-2 ${col.color} border border-border rounded-2xl flex flex-col`}
+              className={`w-[82vw] sm:w-72 md:w-64 border-t-2 ${col.color} border border-border rounded-2xl flex flex-col transition-colors ${isOver ? 'bg-accent/60 border-primary/30' : 'bg-card'}`}
               style={{ scrollSnapAlign: 'start' }}
-              onDragOver={handleDragOver}
+              onDragOver={(e) => handleDragOver(e, col.status)}
+              onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, col.status)}
             >
               <div className="p-4 border-b border-border flex items-center justify-between">
@@ -99,37 +126,34 @@ export function DealsKanbanBoard({ deals: initialDeals }: { deals: any[] }) {
 
               <div className="p-3 space-y-2 min-h-48 flex-1">
                 {colDeals.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground text-xs">Нет сделок</div>
+                  <div className={`text-center py-8 text-xs transition-colors ${isOver ? 'text-primary font-medium' : 'text-muted-foreground'}`}>
+                    {isOver ? 'Перетащите сюда' : 'Нет сделок'}
+                  </div>
                 ) : (
                   colDeals.map(deal => {
-                    // Поддерживаем как старый формат (client/owner), так и новый (contact)
                     const ownerContact = deal.owner_contact as { full_name?: string } | null
                     const clientContact = deal.client_contact as { full_name?: string } | null
                     const legacyClient = deal.client as { full_name?: string } | null
-                    const legacyOwner = deal.owner as { full_name?: string } | null
                     const property = deal.property as { title?: string; address?: string } | null
 
-                    const ownerName = ownerContact?.full_name || legacyOwner?.full_name
+                    const ownerName = ownerContact?.full_name
                     const clientName = clientContact?.full_name || legacyClient?.full_name
 
                     return (
-                      <a
+                      <div
                         key={deal.id}
-                        href={`/deals/${deal.id}`}
                         draggable
-                        onDragStart={(e) => { e.stopPropagation(); handleDragStart(e, deal) }}
+                        onDragStart={(e) => handleDragStart(e, deal)}
                         onDragEnd={handleDragEnd}
-                        onClick={(e) => { if (draggedDeal) e.preventDefault() }}
-                        className={`block bg-background border border-border rounded-xl p-3 space-y-2 hover:shadow-sm transition-all cursor-move ${
-                          draggedDeal?.id === deal.id ? 'opacity-50' : ''
+                        onClick={(e) => handleCardClick(e, deal.id)}
+                        className={`bg-background border border-border rounded-xl p-3 space-y-2 hover:shadow-sm transition-all cursor-move select-none ${
+                          draggedDeal?.id === deal.id ? 'opacity-40 scale-95' : ''
                         }`}
                       >
-                        {/* Тип */}
                         <span className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium ${dealTypeColors[deal.deal_type] ?? 'bg-gray-100 text-gray-600'}`}>
                           {dealTypeLabels[deal.deal_type] ?? deal.deal_type}
                         </span>
 
-                        {/* Собственник */}
                         {ownerName && (
                           <div className="flex items-center gap-1.5 text-xs">
                             <Building2 className="w-3 h-3 text-orange-400 shrink-0" />
@@ -137,7 +161,6 @@ export function DealsKanbanBoard({ deals: initialDeals }: { deals: any[] }) {
                           </div>
                         )}
 
-                        {/* Клиент */}
                         {clientName && (
                           <div className="flex items-center gap-1.5 text-xs">
                             <User className="w-3 h-3 text-blue-400 shrink-0" />
@@ -145,7 +168,6 @@ export function DealsKanbanBoard({ deals: initialDeals }: { deals: any[] }) {
                           </div>
                         )}
 
-                        {/* Объект */}
                         {property && (
                           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                             <Home className="w-3 h-3 shrink-0" />
@@ -153,13 +175,12 @@ export function DealsKanbanBoard({ deals: initialDeals }: { deals: any[] }) {
                           </div>
                         )}
 
-                        {/* Сумма */}
                         {deal.amount && (
                           <div className="text-xs font-medium text-foreground">
                             💰 {Number(deal.amount).toLocaleString('ru-RU')} ₽
                           </div>
                         )}
-                      </a>
+                      </div>
                     )
                   })
                 )}
