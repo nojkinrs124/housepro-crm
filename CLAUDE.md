@@ -382,3 +382,37 @@ grep -n "functionName" src/features/module/actions/module.actions.ts
 - Принимать архитектурные решения самостоятельно
 - Только production-ready код, никаких заглушек
 - Compact summary в конце сессии для экономии контекста
+
+---
+
+## Claude Skills (jeffallan/claude-skills v0.4.12)
+
+Установлены в `.claude/skills/` — 12 специализированных скилов для стека проекта.
+
+### Активные скилы
+
+| Скил | Когда активировать |
+|------|--------------------|
+| `nextjs-developer` | App Router, Server Components, Server Actions, Vercel деплой |
+| `react-expert` | React 19, хуки, состояние, производительность |
+| `typescript-pro` | Типы, generics, strict mode, Supabase types |
+| `postgres-pro` | SQL оптимизация, индексы, JSONB, PostgREST |
+| `fullstack-guardian` | Code review всего стека перед push |
+| `debugging-wizard` | Диагностика ошибок Vercel/Supabase/TS |
+| `secure-code-guardian` | RLS политики, auth, input validation |
+| `feature-forge` | Проектирование новых фич |
+| `api-designer` | REST endpoints, server actions API design |
+| `test-master` | Тесты для критичных модулей |
+| `code-reviewer` | Pre-push review |
+| `javascript-pro` | JS паттерны, async, performance |
+
+### Команды
+
+- `/common-ground` — синхронизация контекста проекта с Claude Code
+- `/intake` — intake новой фичи
+- `/project` — workflow управление
+
+### Использование
+
+Скилы активируются автоматически по контексту запроса в **Claude Code**.
+В этом чате (claude.ai) — читать SKILL.md вручную при необходимости.
