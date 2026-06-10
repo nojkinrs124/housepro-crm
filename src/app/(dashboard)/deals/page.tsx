@@ -1,4 +1,4 @@
-import { DealsKanbanBoard } from '@/features/deals/components/DealsKanban'
+import { DealsViewSwitcher } from '@/features/deals/components/DealsViewSwitcher'
 import { Plus, DollarSign, TrendingUp, XCircle, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
@@ -67,7 +67,7 @@ export default async function DealsPage() {
         })}
       </div>
 
-      <DealsKanbanBoard deals={deals ?? []} />
+      <DealsViewSwitcher deals={deals ?? []} />
     </div>
   )
 }
