@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -15,7 +15,8 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>
 
-export function LoginForm() {
+// Отдельный компонент для useSearchParams — требует Suspense boundary
+function LoginFormInner() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -107,5 +108,14 @@ export function LoginForm() {
         {isPending ? 'Вход...' : 'Войти'}
       </button>
     </form>
+  )
+}
+
+// Публичный экспорт — оборачивает в Suspense как требует Next.js
+export function LoginForm() {
+  return (
+    <Suspense fallback={<div className="h-[220px] animate-pulse bg-gray-100 rounded-xl" />}>
+      <LoginFormInner />
+    </Suspense>
   )
 }
