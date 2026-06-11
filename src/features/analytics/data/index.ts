@@ -110,13 +110,12 @@ async function fetchAnalyticsData(): Promise<AnalyticsRawData> {
 }
 
 // ─── Public cached export ─────────────────────────────────────────────────────
-// Кэш на 5 минут, инвалидируется тегами при мутациях
+// Кэш на 5 минут, инвалидируется через revalidatePath('/analytics', 'page') при мутациях
 
 export const getAnalyticsData = unstable_cache(
   fetchAnalyticsData,
   ['analytics-data'],
   {
     revalidate: 300, // 5 минут
-    tags: ['analytics', 'deals', 'payments', 'leads', 'tasks', 'contracts', 'properties'],
   }
 )

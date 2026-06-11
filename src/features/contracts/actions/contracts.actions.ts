@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidatePath, revalidateTag } from 'next/cache'
+import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { ContractSchema } from '@/lib/schemas'
@@ -26,7 +26,7 @@ export async function createContractAction(_prevState: any, formData: FormData) 
   if (error) return { error: error.message }
 
   revalidatePath('/contracts')
-  revalidateTag('analytics')
+  revalidatePath('/analytics', 'page')
   redirect(`/contracts/${contract.id}`)
 }
 
@@ -46,7 +46,7 @@ export async function updateContractAction(id: string, _prevState: any, formData
   if (error) return { error: error.message }
 
   revalidatePath('/contracts')
-  revalidateTag('analytics')
+  revalidatePath('/analytics', 'page')
   revalidatePath(`/contracts/${id}`)
   redirect(`/contracts/${id}`)
 }
@@ -67,7 +67,7 @@ export async function deleteContractAction(id: string) {
   if (error) return { error: error.message }
 
   revalidatePath('/contracts')
-  revalidateTag('analytics')
+  revalidatePath('/analytics', 'page')
   redirect('/contracts')
 }
 
@@ -83,7 +83,7 @@ export async function updateContractStatusAction(id: string, status: string) {
   if (error) return { error: error.message }
 
   revalidatePath('/contracts')
-  revalidateTag('analytics')
+  revalidatePath('/analytics', 'page')
   revalidatePath(`/contracts/${id}`)
   return { success: true }
 }
