@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -18,6 +19,8 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get('redirectTo') || '/dashboard'
 
   const {
     register,
@@ -33,6 +36,7 @@ export function LoginForm() {
       const formData = new FormData()
       formData.append('email', data.email)
       formData.append('password', data.password)
+      formData.append('redirectTo', redirectTo)
 
       const result = await login(formData)
       if (result?.error) {

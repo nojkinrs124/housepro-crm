@@ -19,7 +19,14 @@ export async function login(formData: FormData) {
   }
 
   revalidatePath('/', 'layout')
-  redirect('/dashboard')
+
+  const redirectTo = formData.get('redirectTo') as string | null
+  const safePath =
+    redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('//')
+      ? redirectTo
+      : '/dashboard'
+
+  redirect(safePath)
 }
 
 export async function logout() {
