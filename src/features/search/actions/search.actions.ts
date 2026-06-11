@@ -7,27 +7,27 @@ export interface SearchResult {
   title: string
   subtitle?: string
   href: string
-  type: 'client' | 'property' | 'contract' | 'task'
+  type: 'contact' | 'property' | 'contract' | 'task'
 }
 
 export interface SearchResults {
-  clients: SearchResult[]
+  contacts: SearchResult[]
   properties: SearchResult[]
   contracts: SearchResult[]
   tasks: SearchResult[]
 }
 
 export async function searchAction(query: string): Promise<SearchResults> {
-  const empty = { clients: [], properties: [], contracts: [], tasks: [] }
+  const empty = { contacts: [], properties: [], contracts: [], tasks: [] }
   if (!query || query.trim().length < 2) return empty
 
   const supabase = await createClient()
   const q = query.trim()
 
-  const [clientsRes, propertiesRes, contractsRes, tasksRes] = await Promise.all([
+  const [contactsRes, propertiesRes, contractsRes, tasksRes] = await Promise.all([
     supabase
-      .from('clients')
-      .select('id, full_name, phone, status')
+      .from('contacts')
+      .select('id, full_name, phone, role, status')
       .or(`full_name.ilike.%${q}%,phone.ilike.%${q}%`)
       .limit(5),
 
@@ -60,6 +60,10 @@ export async function searchAction(query: string): Promise<SearchResults> {
     todo: 'К выполнению', done: 'Готово',
   }
 
+  const roleLabels: Record<string, string> = {
+    client: 'Клиент', owner: 'Собственник', both: 'Клиент/Собственник',
+  }
+
   const typeLabels: Record<string, string> = {
     apartment: 'Квартира', house: 'Дом', commercial: 'Коммерция',
     office: 'Офис', warehouse: 'Склад', land: 'Участок',
@@ -70,12 +74,12 @@ export async function searchAction(query: string): Promise<SearchResults> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const clients: SearchResult[] = (clientsRes.data ?? []).map((c: any) => ({
+  const contacts: SearchResult[] = (contactsRes.data ?? []).map((c: any) => ({
     id: c.id,
-    type: 'client',
+    type: 'contact',
     title: c.full_name,
-    subtitle: [c.phone, statusLabels[c.status]].filter(Boolean).join(' · '),
-    href: `/clients/${c.id}`,
+    subtitle: [c.phone, roleLabels[c.role], statusLabels[c.status]].filter(Boolean).join(' · '),
+    href: `/contacts/${c.id}`,
   }))
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -105,5 +109,5 @@ export async function searchAction(query: string): Promise<SearchResults> {
     href: `/tasks`,
   }))
 
-  return { clients, properties, contracts, tasks }
+  return { contacts, properties, contracts, tasks }
 }

@@ -9,7 +9,7 @@ import type { SearchResult, SearchResults } from '@/features/search/actions/sear
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const GROUPS: { key: keyof SearchResults; label: string; Icon: React.ElementType; color: string }[] = [
-  { key: 'clients',    label: 'Клиенты',  Icon: Users,       color: 'text-blue-500' },
+  { key: 'contacts',    label: 'Клиенты',  Icon: Users,       color: 'text-blue-500' },
   { key: 'properties', label: 'Объекты',  Icon: Home,        color: 'text-emerald-500' },
   { key: 'contracts',  label: 'Договоры', Icon: FileText,    color: 'text-violet-500' },
   { key: 'tasks',      label: 'Задачи',   Icon: CheckSquare, color: 'text-orange-500' },
