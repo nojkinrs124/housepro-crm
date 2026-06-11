@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { ContractSchema } from '@/lib/schemas'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function createContractAction(_prevState: any, formData: FormData) {
@@ -10,25 +11,18 @@ export async function createContractAction(_prevState: any, formData: FormData) 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const contract_type = formData.get('contract_type') as string
-  if (!contract_type) return { error: 'Тип договора обязателен' }
-
-  const values = {
-    contract_type,
-    owner_contact_id: (formData.get('owner_contact_id') as string) || null,
-    client_contact_id: (formData.get('client_contact_id') as string) || null,
-    client_id: (formData.get('client_contact_id') as string) || (formData.get('client_id') as string) || null,
-    property_id: (formData.get('property_id') as string) || null,
-    amount:     formData.get('amount')     ? Number(formData.get('amount'))     : null,
-    deposit:    formData.get('deposit')    ? Number(formData.get('deposit'))    : null,
-    start_date: (formData.get('start_date') as string) || null,
-    end_date:   (formData.get('end_date')   as string) || null,
-    notes:      (formData.get('notes')      as string) || null,
-    status:     'draft' as const,
-    manager_id: user.id,
+  const parsed = ContractSchema.safeParse(Object.fromEntries(formData))
+  if (!parsed.success) {
+    const first = parsed.error.issues[0]
+    return { error: first.message, fields: parsed.error.flatten().fieldErrors }
   }
 
-  const { data: contract, error } = await supabase.from('contracts').insert(values).select().single()
+  const { data: contract, error } = await supabase
+    .from('contracts')
+    .insert({ ...parsed.data, status: 'draft', manager_id: user.id })
+    .select()
+    .single()
+
   if (error) return { error: error.message }
 
   revalidatePath('/contracts')
@@ -41,21 +35,13 @@ export async function updateContractAction(id: string, _prevState: any, formData
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const values = {
-    contract_type:     (formData.get('contract_type')     as string),
-    owner_contact_id:  (formData.get('owner_contact_id')  as string) || null,
-    client_contact_id: (formData.get('client_contact_id') as string) || null,
-    client_id:         (formData.get('client_contact_id') as string) || (formData.get('client_id') as string) || null,
-    property_id:       (formData.get('property_id')       as string) || null,
-    amount:    formData.get('amount')     ? Number(formData.get('amount'))     : null,
-    deposit:   formData.get('deposit')    ? Number(formData.get('deposit'))    : null,
-    start_date:(formData.get('start_date') as string) || null,
-    end_date:  (formData.get('end_date')   as string) || null,
-    notes:     (formData.get('notes')      as string) || null,
-    status:    (formData.get('status')     as string) || 'draft',
+  const parsed = ContractSchema.safeParse(Object.fromEntries(formData))
+  if (!parsed.success) {
+    const first = parsed.error.issues[0]
+    return { error: first.message, fields: parsed.error.flatten().fieldErrors }
   }
 
-  const { error } = await supabase.from('contracts').update(values).eq('id', id)
+  const { error } = await supabase.from('contracts').update(parsed.data).eq('id', id)
   if (error) return { error: error.message }
 
   revalidatePath('/contracts')

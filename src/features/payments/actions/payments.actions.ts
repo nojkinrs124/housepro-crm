@@ -3,34 +3,28 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { PaymentStatus } from '@/types/database'
+import { PaymentCreateSchema, PaymentUpdateSchema } from '@/lib/schemas'
 
 const VALID_PAYMENT_STATUSES: PaymentStatus[] = ['pending', 'paid', 'partial', 'overdue', 'cancelled']
 
 export async function createPaymentAction(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Не авторизован' }
 
-  if (!user) {
-    return { error: 'Не авторизован' }
+  const parsed = PaymentCreateSchema.safeParse(Object.fromEntries(formData))
+  if (!parsed.success) {
+    const first = parsed.error.issues[0]
+    return { error: first.message, fields: parsed.error.flatten().fieldErrors }
   }
 
-  const contract_id = formData.get('contract_id') as string | null
-  const amountRaw = formData.get('amount') as string
-  const payment_type = formData.get('payment_type') as string
-  const due_date = formData.get('due_date') as string | null
-  const notes = (formData.get('notes') as string)?.trim() || null
-
-  const amount = parseFloat(amountRaw)
-  if (!amountRaw || isNaN(amount) || amount <= 0) {
-    return { error: 'Укажите корректную сумму' }
-  }
-
+  const { contract_id, amount, payment_type, due_date, notes } = parsed.data
   const isOverdue = due_date ? new Date(due_date) < new Date() : false
 
   const payload = {
     amount,
     payment_type: payment_type || 'rent',
-    payment_status: isOverdue ? 'overdue' : 'pending' as PaymentStatus,
+    payment_status: (isOverdue ? 'overdue' : 'pending') as PaymentStatus,
     created_by: user.id,
     ...(contract_id && { contract_id }),
     ...(due_date && { due_date }),
@@ -51,25 +45,14 @@ export async function updatePaymentAction(paymentId: string, formData: FormData)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
 
-  const amountRaw = formData.get('amount') as string
-  const amount = parseFloat(amountRaw)
-  if (!amountRaw || isNaN(amount) || amount <= 0) {
-    return { error: 'Укажите корректную сумму' }
+  const parsed = PaymentUpdateSchema.safeParse(Object.fromEntries(formData))
+  if (!parsed.success) {
+    const first = parsed.error.issues[0]
+    return { error: first.message, fields: parsed.error.flatten().fieldErrors }
   }
 
-  const status = formData.get('payment_status') as string
-  if (!VALID_PAYMENT_STATUSES.includes(status as PaymentStatus)) {
-    return { error: `Недопустимый статус: ${status}` }
-  }
-
-  const payload: Record<string, unknown> = {
-    amount,
-    payment_type:   formData.get('payment_type') as string,
-    payment_status: status as PaymentStatus,
-    due_date:       (formData.get('due_date') as string) || null,
-    notes:          (formData.get('notes') as string)?.trim() || null,
-  }
-  if (status === 'paid') {
+  const payload: Record<string, unknown> = { ...parsed.data }
+  if (parsed.data.payment_status === 'paid') {
     payload.payment_date = new Date().toISOString()
   }
 
@@ -83,10 +66,7 @@ export async function updatePaymentAction(paymentId: string, formData: FormData)
 export async function markPaidAction(paymentId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return { error: 'Не авторизован' }
-  }
+  if (!user) return { error: 'Не авторизован' }
 
   const { data: updated, error } = await supabase
     .from('payments')
@@ -110,33 +90,22 @@ export async function markPaidAction(paymentId: string) {
 export async function updatePaymentStatusAction(paymentId: string, status: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return { error: 'Не авторизован' }
-  }
+  if (!user) return { error: 'Не авторизован' }
 
   if (!VALID_PAYMENT_STATUSES.includes(status as PaymentStatus)) {
     return { error: `Недопустимый статус платежа: ${status}` }
   }
 
-  const update: {
-    payment_status: PaymentStatus
-    payment_date?: string
-  } = {
+  const update: { payment_status: PaymentStatus; payment_date?: string } = {
     payment_status: status as PaymentStatus,
   }
-
   if (status === 'paid') {
     update.payment_date = new Date().toISOString()
   }
 
-  const { error } = await supabase
-    .from('payments')
-    .update(update)
-    .eq('id', paymentId)
-
+  const { error } = await supabase.from('payments').update(update).eq('id', paymentId)
   if (error) return { error: error.message }
-  
+
   revalidatePath('/payments')
   return { success: true }
 }
@@ -144,12 +113,8 @@ export async function updatePaymentStatusAction(paymentId: string, status: strin
 export async function deletePaymentAction(paymentId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Не авторизован' }
 
-  if (!user) {
-    return { error: 'Не авторизован' }
-  }
-
-  // Проверяем права доступа
   const { data: userRole } = await supabase
     .from('users')
     .select('role')
@@ -181,24 +146,14 @@ export async function getPaymentStats() {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    return {
-      totalPaid: 0,
-      paidThisMonth: 0,
-      pending: 0,
-      overdue: 0,
-      overdueCount: 0,
-    }
+    return { totalPaid: 0, paidThisMonth: 0, pending: 0, overdue: 0, overdueCount: 0 }
   }
 
   const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
 
   const [allResult, monthPaidResult, overdueResult] = await Promise.all([
     supabase.from('payments').select('amount, payment_status'),
-    supabase
-      .from('payments')
-      .select('amount')
-      .eq('payment_status', 'paid')
-      .gte('payment_date', monthStart),
+    supabase.from('payments').select('amount').eq('payment_status', 'paid').gte('payment_date', monthStart),
     supabase.from('payments').select('amount').eq('payment_status', 'overdue'),
   ])
 
