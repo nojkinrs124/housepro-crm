@@ -30,7 +30,7 @@ export async function PaymentsSection({ contractId }: { contractId: string }) {
 
   const { data: payments } = await supabase
     .from('payments')
-    .select('*')
+    .select('id, amount, payment_status, payment_type, payment_date, due_date, notes')
     .eq('contract_id', contractId)
     .order('due_date', { ascending: true, nullsFirst: false })
 

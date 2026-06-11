@@ -15,7 +15,7 @@ export default async function DashboardLayout({
   if (!user) redirect('/login')
 
   const [{ data: profile }, { count: unreadCount }] = await Promise.all([
-    supabase.from('users').select('*').eq('id', user.id).single(),
+    supabase.from('users').select('id, full_name, email, role, avatar_url, is_active, created_at').eq('id', user.id).single(),
     supabase.from('notifications')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', user.id)

@@ -24,7 +24,7 @@ export function PropertySelector({
   useEffect(() => {
     const loadProperties = async () => {
       const supabase = createClient()
-      const { data } = await supabase.from('properties').select('*').limit(50)
+      const { data } = await supabase.from('properties').select('id, title, address, property_type, status').limit(50)
       setProperties((data as Property[]) || [])
       setLoading(false)
     }

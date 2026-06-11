@@ -24,7 +24,7 @@ export function RelatedTasks({
 
       const { data } = await supabase
         .from('tasks')
-        .select('*')
+        .select('id, title, status, priority, deadline, assigned_to')
         .eq(field, entityId)
         .order('created_at', { ascending: false })
 
