@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useActionState } from 'react'
 import { Plus, X, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
 import { createPaymentAction } from '../actions/payments.actions'
 
@@ -16,27 +16,22 @@ const PAYMENT_TYPES = [
   { value: 'other',      label: 'Прочее' },
 ]
 
+type ActionState = { error?: string; success?: boolean } | null
+
+async function createPaymentBound(contractId: string, _prev: ActionState, formData: FormData): Promise<ActionState> {
+  formData.set('contract_id', contractId)
+  return createPaymentAction(formData)
+}
+
 export function AddPaymentForm({ contractId }: AddPaymentFormProps) {
   const [open, setOpen] = useState(false)
-  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
-  const [isPending, startTransition] = useTransition()
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    const fd = new FormData(e.currentTarget)
-    fd.set('contract_id', contractId)
-    setFeedback(null)
+  const boundAction = createPaymentBound.bind(null, contractId)
+  const [state, formAction, isPending] = useActionState(boundAction, null)
 
-    startTransition(async () => {
-      const result = await createPaymentAction(fd)
-      if (result.error) {
-        setFeedback({ type: 'error', msg: result.error })
-      } else {
-        setFeedback({ type: 'success', msg: 'Платёж добавлен' })
-        ;(e.target as HTMLFormElement).reset()
-        setTimeout(() => { setOpen(false); setFeedback(null) }, 1200)
-      }
-    })
+  // Закрываем после успеха
+  if (state?.success && open) {
+    setTimeout(() => setOpen(false), 1000)
   }
 
   if (!open) {
@@ -55,13 +50,15 @@ export function AddPaymentForm({ contractId }: AddPaymentFormProps) {
     <div className="border border-border rounded-xl p-4 bg-muted/20 space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-foreground">Новый платёж</p>
-        <button onClick={() => { setOpen(false); setFeedback(null) }}
-          className="text-muted-foreground hover:text-foreground transition-colors">
+        <button
+          onClick={() => setOpen(false)}
+          className="text-muted-foreground hover:text-foreground transition-colors"
+        >
           <X className="w-4 h-4" />
         </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-3">
+      <form action={formAction} className="space-y-3">
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
             <label className="text-xs text-muted-foreground">Сумма, ₽ *</label>
@@ -118,13 +115,16 @@ export function AddPaymentForm({ contractId }: AddPaymentFormProps) {
         </div>
 
         <div className="flex items-center justify-between pt-1">
-          {feedback && (
-            <div className={`flex items-center gap-1.5 text-xs ${feedback.type === 'success' ? 'text-green-600' : 'text-destructive'}`}>
-              {feedback.type === 'success'
-                ? <CheckCircle className="w-3.5 h-3.5" />
-                : <AlertCircle className="w-3.5 h-3.5" />
-              }
-              {feedback.msg}
+          {state?.error && (
+            <div className="flex items-center gap-1.5 text-xs text-destructive">
+              <AlertCircle className="w-3.5 h-3.5" />
+              {state.error}
+            </div>
+          )}
+          {state?.success && (
+            <div className="flex items-center gap-1.5 text-xs text-green-600">
+              <CheckCircle className="w-3.5 h-3.5" />
+              Платёж добавлен
             </div>
           )}
           <button
