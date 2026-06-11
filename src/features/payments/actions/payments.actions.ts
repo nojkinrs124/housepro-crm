@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import type { PaymentStatus } from '@/types/database'
 import { PaymentCreateSchema, PaymentUpdateSchema } from '@/lib/schemas'
 
@@ -36,6 +36,7 @@ export async function createPaymentAction(formData: FormData) {
 
   revalidatePath('/payments')
   if (contract_id) revalidatePath(`/contracts/${contract_id}`)
+  revalidateTag('analytics')
 
   return { success: true }
 }

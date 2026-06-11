@@ -1,4 +1,3 @@
-import { createClient } from '@/lib/supabase/server'
 import {
   TrendingUp, Banknote, Users, Home,
   AlertTriangle, CheckCircle2, Clock, FileText,
@@ -15,107 +14,28 @@ import {
   type PaymentMonthlyData,
   type DealTypeData,
 } from '@/features/analytics/components/AnalyticsCharts'
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function formatMoney(n: number) {
-  return new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(n)
-}
-
-function monthLabel(isoMonth: string) {
-  const d = new Date(isoMonth)
-  return d.toLocaleDateString('ru-RU', { month: 'short', year: '2-digit' })
-}
-
-function getLast12Months(): string[] {
-  const months: string[] = []
-  const now = new Date()
-  for (let i = 11; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-    months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`)
-  }
-  return months
-}
-
-// ─── Page ─────────────────────────────────────────────────────────────────────
+import {
+  getAnalyticsData,
+  getLast12Months,
+  formatMoney,
+  monthLabel,
+} from '@/features/analytics/data'
 
 export default async function AnalyticsPage() {
-  const supabase = await createClient()
+  const {
+    deals,
+    payments,
+    leads,
+    leadsConverted,
+    properties,
+    overduePayments,
+    overdueTasks,
+    contracts,
+  } = await getAnalyticsData()
+
   const last12 = getLast12Months()
-  const fromDate = `${last12[0]}-01`
 
-  const [
-    dealsResult,
-    paymentsResult,
-    leadsResult,
-    leadsConvertedResult,
-    propertiesResult,
-    overduePaymentsResult,
-    overdueTasksResult,
-    contractsResult,
-    contactsResult,
-  ] = await Promise.all([
-    // All deals last 12 months
-    supabase.from('deals')
-      .select('status, deal_type, amount, commission, created_at')
-      .gte('created_at', fromDate),
-
-    // Payments last 12 months
-    supabase.from('payments')
-      .select('payment_status, amount, payment_date, due_date, created_at')
-      .gte('created_at', fromDate),
-
-    // Leads last 12 months
-    supabase.from('leads')
-      .select('status, created_at')
-      .gte('created_at', fromDate),
-
-    // Leads that converted (have a deal)
-    supabase.from('leads')
-      .select('status, created_at')
-      .eq('status', 'closed')
-      .gte('created_at', fromDate),
-
-    // Properties overview
-    supabase.from('properties')
-      .select('status'),
-
-    // Overdue payments
-    supabase.from('payments')
-      .select('id, amount, due_date, contract:contracts(contract_number)')
-      .eq('payment_status', 'overdue')
-      .order('due_date', { ascending: true })
-      .limit(6),
-
-    // Overdue tasks
-    supabase.from('tasks')
-      .select('id, title, priority, deadline, assignee:users!tasks_assigned_to_fkey(full_name)')
-      .lt('deadline', new Date().toISOString())
-      .not('status', 'in', '(done,cancelled)')
-      .order('deadline', { ascending: true })
-      .limit(6),
-
-    // Contracts summary
-    supabase.from('contracts')
-      .select('status, contract_type'),
-
-    // Contacts summary
-    supabase.from('contacts')
-      .select('role, status, created_at')
-      .gte('created_at', fromDate),
-  ])
-
-  const deals = dealsResult.data ?? []
-  const payments = paymentsResult.data ?? []
-  const leads = leadsResult.data ?? []
-  const leadsConverted = leadsConvertedResult.data ?? []
-  const properties = propertiesResult.data ?? []
-  const overduePayments = overduePaymentsResult.data ?? []
-  const overdueTasks = overdueTasksResult.data ?? []
-  const contracts = contractsResult.data ?? []
-  const contacts = contactsResult.data ?? []
-
-  // ── KPI numbers ──────────────────────────────────────────────────────────────
+  // ── KPI ──────────────────────────────────────────────────────────────────────
 
   const totalRevenue = deals
     .filter(d => d.status === 'completed')
@@ -140,38 +60,29 @@ export default async function AnalyticsPage() {
     .reduce((s, p) => s + Number(p.amount ?? 0), 0)
 
   const availableProps = properties.filter(p => p.status === 'available').length
-  const rentedProps = properties.filter(p => p.status === 'rented').length
-  const soldProps = properties.filter(p => p.status === 'sold').length
-
+  const rentedProps    = properties.filter(p => p.status === 'rented').length
+  const soldProps      = properties.filter(p => p.status === 'sold').length
   const activeContracts = contracts.filter(c => c.status === 'signed').length
 
-  // ── Monthly deals chart data ──────────────────────────────────────────────────
+  // ── Chart data ────────────────────────────────────────────────────────────────
 
   const monthlyDeals: MonthlyDealsData[] = last12.map(m => {
-    const monthDeals = deals.filter(d => d.created_at?.startsWith(m))
+    const md = deals.filter(d => d.created_at?.startsWith(m))
     return {
       month: monthLabel(m),
-      count: monthDeals.length,
-      amount: monthDeals.reduce((s, d) => s + Number(d.amount ?? 0), 0),
-      commission: monthDeals.reduce((s, d) => s + Number(d.commission ?? 0), 0),
+      count: md.length,
+      amount: md.reduce((s, d) => s + Number(d.amount ?? 0), 0),
+      commission: md.reduce((s, d) => s + Number(d.commission ?? 0), 0),
     }
   })
 
-  // ── Funnel chart data ─────────────────────────────────────────────────────────
-
-  const funnelStages: FunnelData[] = [
-    { stage: 'Новые',      color: '#60A5FA' },
-    { stage: 'Показы',     color: '#FBBF24' },
-    { stage: 'Переговоры', color: '#F97316' },
-    { stage: 'Договор',    color: '#A78BFA' },
-    { stage: 'Оплата',     color: '#22D3EE' },
-    { stage: 'Завершено',  color: '#22C55E' },
-  ].map((s, i) => ({
-    ...s,
-    count: deals.filter(d => d.status === ['new', 'showing', 'negotiation', 'contract', 'payment', 'completed'][i]).length,
+  const funnelStages: FunnelData[] = (
+    ['new', 'showing', 'negotiation', 'contract', 'payment', 'completed'] as const
+  ).map((status, i) => ({
+    stage: ['Новые', 'Показы', 'Переговоры', 'Договор', 'Оплата', 'Завершено'][i],
+    color: ['#60A5FA', '#FBBF24', '#F97316', '#A78BFA', '#22D3EE', '#22C55E'][i],
+    count: deals.filter(d => d.status === status).length,
   }))
-
-  // ── Leads conversion monthly ──────────────────────────────────────────────────
 
   const leadsConversionData: LeadsConversionData[] = last12.map(m => ({
     month: monthLabel(m),
@@ -179,19 +90,15 @@ export default async function AnalyticsPage() {
     converted: leadsConverted.filter(l => l.created_at?.startsWith(m)).length,
   }))
 
-  // ── Payments monthly ──────────────────────────────────────────────────────────
-
   const paymentsMonthly: PaymentMonthlyData[] = last12.map(m => {
     const mp = payments.filter(p => p.created_at?.startsWith(m))
     return {
       month: monthLabel(m),
-      paid: mp.filter(p => p.payment_status === 'paid').reduce((s, p) => s + Number(p.amount ?? 0), 0),
+      paid:    mp.filter(p => p.payment_status === 'paid').reduce((s, p) => s + Number(p.amount ?? 0), 0),
       pending: mp.filter(p => p.payment_status === 'pending').reduce((s, p) => s + Number(p.amount ?? 0), 0),
       overdue: mp.filter(p => p.payment_status === 'overdue').reduce((s, p) => s + Number(p.amount ?? 0), 0),
     }
   })
-
-  // ── Deal types pie ────────────────────────────────────────────────────────────
 
   const dealTypeMap: Record<string, { name: string; color: string }> = {
     rent:       { name: 'Аренда',     color: '#16A34A' },
@@ -200,7 +107,6 @@ export default async function AnalyticsPage() {
     commercial: { name: 'Коммерция',  color: '#EA580C' },
     subrent:    { name: 'Субаренда',  color: '#0891B2' },
   }
-
   const dealTypeCounts: Record<string, number> = {}
   for (const d of deals) {
     dealTypeCounts[d.deal_type] = (dealTypeCounts[d.deal_type] ?? 0) + 1
@@ -213,8 +119,6 @@ export default async function AnalyticsPage() {
       color: dealTypeMap[k]?.color ?? '#94A3B8',
     }))
     .sort((a, b) => b.value - a.value)
-
-  // ── Priority colors ───────────────────────────────────────────────────────────
 
   const priorityBadge: Record<string, string> = {
     high: 'bg-red-100 text-red-700',
@@ -279,10 +183,10 @@ export default async function AnalyticsPage() {
       {/* Secondary KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Объектов свободно', value: availableProps, icon: <Home style={{ width: 16, height: 16 }} />, color: 'text-green-600 bg-green-50' },
-          { label: 'Сдано в аренду', value: rentedProps, icon: <Clock style={{ width: 16, height: 16 }} />, color: 'text-blue-600 bg-blue-50' },
-          { label: 'Продано объектов', value: soldProps, icon: <CheckCircle2 style={{ width: 16, height: 16 }} />, color: 'text-violet-600 bg-violet-50' },
-          { label: 'Активных договоров', value: activeContracts, icon: <FileText style={{ width: 16, height: 16 }} />, color: 'text-orange-600 bg-orange-50' },
+          { label: 'Объектов свободно',  value: availableProps,   icon: <Home style={{ width: 16, height: 16 }} />,         color: 'text-green-600 bg-green-50' },
+          { label: 'Сдано в аренду',     value: rentedProps,      icon: <Clock style={{ width: 16, height: 16 }} />,         color: 'text-blue-600 bg-blue-50' },
+          { label: 'Продано объектов',   value: soldProps,        icon: <CheckCircle2 style={{ width: 16, height: 16 }} />,  color: 'text-violet-600 bg-violet-50' },
+          { label: 'Активных договоров', value: activeContracts,  icon: <FileText style={{ width: 16, height: 16 }} />,      color: 'text-orange-600 bg-orange-50' },
         ].map(item => (
           <div key={item.label} className="bg-white rounded-2xl border border-[#E2E8F0] p-4 shadow-sm flex items-center gap-3">
             <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${item.color}`}>
@@ -310,7 +214,6 @@ export default async function AnalyticsPage() {
             </span>
           </div>
         </div>
-
         <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-sm">
           <h2 className="text-sm font-semibold text-[#111827] mb-4">Воронка сделок</h2>
           <DealFunnelChart data={funnelStages} />
@@ -323,11 +226,8 @@ export default async function AnalyticsPage() {
           <h2 className="text-sm font-semibold text-[#111827] mb-4">Платежи по месяцам</h2>
           <PaymentsMonthlyChart data={paymentsMonthly} />
         </div>
-
         <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-[#111827]">Типы сделок</h2>
-          </div>
+          <h2 className="text-sm font-semibold text-[#111827] mb-4">Типы сделок</h2>
           {dealTypePie.length > 0 ? (
             <DealTypePieChart data={dealTypePie} />
           ) : (
@@ -359,7 +259,6 @@ export default async function AnalyticsPage() {
               </span>
             )}
           </div>
-
           {overduePayments.length === 0 ? (
             <div className="flex items-center gap-2 p-3 rounded-xl bg-green-50 border border-green-200">
               <CheckCircle2 style={{ width: 16, height: 16, color: '#16A34A' }} />
@@ -404,7 +303,6 @@ export default async function AnalyticsPage() {
               </span>
             )}
           </div>
-
           {overdueTasks.length === 0 ? (
             <div className="flex items-center gap-2 p-3 rounded-xl bg-green-50 border border-green-200">
               <CheckCircle2 style={{ width: 16, height: 16, color: '#16A34A' }} />
