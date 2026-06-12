@@ -416,3 +416,84 @@ grep -n "functionName" src/features/module/actions/module.actions.ts
 
 Скилы активируются автоматически по контексту запроса в **Claude Code**.
 В этом чате (claude.ai) — читать SKILL.md вручную при необходимости.
+
+---
+
+## Подход к улучшениям проекта (IMPROVEMENTS workflow)
+
+В каждой новой сессии — после чтения CLAUDE.md — проверять `docs/IMPROVEMENTS.md` на открытые задачи.
+
+### Приоритеты
+
+| Приоритет | Описание | Действие |
+|-----------|----------|----------|
+| 🔴 P0 | Критично: безопасность, data corruption, build broken | Исправить немедленно до любой другой работы |
+| 🟠 P1 | Высокий: UX, производительность, архитектура | Следующие в очереди |
+| 🟡 P2 | Средний: качество кода, рефакторинг | После P1 |
+| 🔵 P3 | Долгосрочное: тесты, мониторинг, rate limiting | По возможности |
+
+### Workflow каждой сессии
+
+```
+1. git clone + npm install --legacy-peer-deps
+2. Прочитать CLAUDE.md (этот файл)
+3. Прочитать docs/IMPROVEMENTS.md — найти первый открытый пункт
+4. Работать по порядку P0 → P1 → P2 → P3
+5. npm run build локально перед каждым git push — только зелёный билд идёт в прод
+6. После завершения пункта — пометить ✅ в IMPROVEMENTS.md, запушить
+```
+
+### Правило локального билда (ОБЯЗАТЕЛЬНО)
+
+**Никогда не пушить без локальной проверки:**
+
+```bash
+npm run build
+# Должно завершиться:
+# ✓ Compiled successfully
+# ✓ Generating static pages (36/36)
+# Ноль Type error, ноль Ecmascript errors
+```
+
+Если билд упал — исправить до пуша. Не допускать красных деплоев на Vercel.
+
+### Анализ проекта через скилы
+
+Перед написанием кода активировать релевантные скилы из `.claude/skills/`:
+- Новая фича → `feature-forge` + профильный скил стека
+- Рефакторинг → `code-reviewer` + `fullstack-guardian`
+- БД изменения → `postgres-pro`
+- Безопасность → `secure-code-guardian`
+- Баг → `debugging-wizard`
+
+### Формат коммитов
+
+```
+feat(module): краткое описание
+
+- детали что сделано
+- Build: verified locally N/N pages, 0 errors
+```
+
+---
+
+## Статус улучшений (последнее обновление)
+
+| # | Задача | Статус |
+|---|--------|--------|
+| P0-1 | middleware.ts — защита роутов | ✅ |
+| P0-2 | Zod-валидация в core actions | ✅ |
+| P0-3 | Search: clients → contacts | ✅ |
+| P1-4 | loading.tsx + error.tsx | ✅ |
+| P1-5 | unstable_cache для analytics | ✅ |
+| P1-6 | useActionState для форм | ✅ |
+| P1-7 | RLS: public → authenticated | ✅ |
+| P2-8 | Типизация — автогенерация из Supabase | 🔵 P3 |
+| P2-9 | select('*') → явные поля | ✅ |
+| P2-10 | GIN-индексы pg_trgm | ✅ |
+| P2-11 | env.ts — валидация переменных | ✅ |
+| P2-12 | Analytics рефакторинг + shared utils | ✅ |
+| P3-13 | Тесты (Vitest) | ⬜ открыто |
+| P3-14 | Rate limiting (Upstash) | ⬜ открыто |
+| P3-15 | Мониторинг (Sentry) | ⬜ открыто |
+| P3-16 | next/image remotePatterns | ⬜ открыто |
