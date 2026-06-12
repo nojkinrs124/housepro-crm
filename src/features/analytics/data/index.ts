@@ -1,3 +1,4 @@
+import { formatMoney } from '@/lib/utils'
 import { unstable_cache } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 
@@ -24,14 +25,6 @@ export function getLast12Months(): string[] {
     months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`)
   }
   return months
-}
-
-export function formatMoney(n: number) {
-  return new Intl.NumberFormat('ru-RU', {
-    style: 'currency',
-    currency: 'RUB',
-    maximumFractionDigits: 0,
-  }).format(n)
 }
 
 export function monthLabel(isoMonth: string) {
@@ -119,3 +112,4 @@ export const getAnalyticsData = unstable_cache(
     revalidate: 300, // 5 минут
   }
 )
+

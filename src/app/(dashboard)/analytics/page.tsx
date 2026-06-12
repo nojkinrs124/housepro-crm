@@ -17,9 +17,9 @@ import {
 import {
   getAnalyticsData,
   getLast12Months,
-  formatMoney,
   monthLabel,
 } from '@/features/analytics/data'
+import { formatMoney } from '@/lib/utils'
 
 export default async function AnalyticsPage() {
   const {

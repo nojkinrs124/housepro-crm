@@ -1,5 +1,6 @@
 'use client'
 
+import { formatMoney } from '@/lib/utils'
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
@@ -41,7 +42,7 @@ export interface DealTypeData {
 
 // ─── Formatters ───────────────────────────────────────────────────────────────
 
-function formatMoney(v: number | string | undefined) {
+function formatMoneyCompact(v: number | string | undefined) {
   const n = Number(v ?? 0)
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}М ₽`
   if (n >= 1_000) return `${(n / 1_000).toFixed(0)}К ₽`
@@ -70,7 +71,7 @@ export function DealsAreaChart({ data }: { data: MonthlyDealsData[] }) {
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
         <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
-        <YAxis tickFormatter={formatMoney} tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} width={60} />
+        <YAxis tickFormatter={formatMoneyCompact} tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} width={60} />
         <Tooltip
           contentStyle={{ borderRadius: 12, border: '1px solid #E2E8F0', fontSize: 12 }}
           formatter={(v, name) => [moneyTooltip(v as number), name === 'amount' ? 'Сумма сделок' : 'Комиссия']}
@@ -133,7 +134,7 @@ export function PaymentsMonthlyChart({ data }: { data: PaymentMonthlyData[] }) {
       <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
         <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
-        <YAxis tickFormatter={formatMoney} tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} width={60} />
+        <YAxis tickFormatter={formatMoneyCompact} tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} width={60} />
         <Tooltip
           contentStyle={{ borderRadius: 12, border: '1px solid #E2E8F0', fontSize: 12 }}
           formatter={(v, name) => [moneyTooltip(v as number), PAYMENT_LABELS[name as string] ?? name]}
