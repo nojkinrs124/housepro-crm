@@ -2,7 +2,6 @@ import { createClient } from '@/lib/supabase/server'
 import { createPaymentAction } from '@/features/payments/actions/payments.actions'
 import { ArrowLeft, CreditCard } from 'lucide-react'
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
 
 export default async function NewPaymentPage({
   searchParams,
@@ -19,12 +18,6 @@ export default async function NewPaymentPage({
     .order('created_at', { ascending: false })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const contracts = rawContracts as any[] | null
-
-  async function handleSubmit(formData: FormData) {
-    'use server'
-    const result = await createPaymentAction(formData)
-    if (!result.error) redirect('/payments')
-  }
 
   const typeLabels = [
     { value: 'rent',       label: 'Аренда' },
@@ -53,7 +46,7 @@ export default async function NewPaymentPage({
         </div>
       </div>
 
-      <form action={handleSubmit} className="bg-card border border-border rounded-2xl p-6 space-y-5">
+      <form action={createPaymentAction} className="bg-card border border-border rounded-2xl p-6 space-y-5">
 
         {/* Contract */}
         <div className="space-y-1.5">

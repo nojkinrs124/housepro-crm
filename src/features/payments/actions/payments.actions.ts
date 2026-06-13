@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 import type { PaymentStatus } from '@/types/database'
 import { PaymentCreateSchema, PaymentUpdateSchema } from '@/lib/schemas'
 
@@ -38,7 +39,7 @@ export async function createPaymentAction(formData: FormData) {
   if (contract_id) revalidatePath(`/contracts/${contract_id}`)
   revalidatePath('/analytics', 'page')
 
-  return { success: true }
+  redirect('/payments')
 }
 
 export async function updatePaymentAction(paymentId: string, formData: FormData) {
