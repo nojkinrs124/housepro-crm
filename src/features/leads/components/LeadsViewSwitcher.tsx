@@ -1,21 +1,22 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { LayoutGrid, List, Search, X, ChevronDown } from 'lucide-react'
 import { LeadsKanban } from './LeadsKanban'
 import { LeadsListView } from './LeadsListView'
 import { motion, AnimatePresence } from 'framer-motion'
+import { usePersistedState } from '@/hooks/usePersistedFilters'
 
 type ViewMode = 'kanban' | 'list'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function LeadsViewSwitcher({ leads }: { leads: any[] }) {
-  const [view, setView] = useState<ViewMode>('kanban')
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [typeFilter, setTypeFilter] = useState<string>('all')
-  const [statusOpen, setStatusOpen] = useState(false)
-  const [typeOpen, setTypeOpen] = useState(false)
+  const [view, setView]               = usePersistedState<ViewMode>('leads:view', 'kanban')
+  const [search, setSearch]           = usePersistedState<string>('leads:search', '')
+  const [statusFilter, setStatusFilter] = usePersistedState<string>('leads:status', 'all')
+  const [typeFilter, setTypeFilter]   = usePersistedState<string>('leads:type', 'all')
+  const [statusOpen, setStatusOpen]   = React.useState(false)
+  const [typeOpen, setTypeOpen]       = React.useState(false)
 
   const statusOptions = [
     { value: 'all',       label: 'Все статусы' },
@@ -62,7 +63,6 @@ export function LeadsViewSwitcher({ leads }: { leads: any[] }) {
 
   return (
     <div className="space-y-4">
-      {/* Controls bar */}
       <div className="flex flex-wrap items-center gap-3">
         {/* Search */}
         <div className="relative flex-1 min-w-[200px] max-w-xs">
@@ -145,7 +145,6 @@ export function LeadsViewSwitcher({ leads }: { leads: any[] }) {
           </AnimatePresence>
         </div>
 
-        {/* Clear filters */}
         {hasFilters && (
           <motion.button
             initial={{ opacity: 0, scale: 0.9 }}
@@ -159,10 +158,8 @@ export function LeadsViewSwitcher({ leads }: { leads: any[] }) {
           </motion.button>
         )}
 
-        {/* Spacer */}
         <div className="flex-1" />
 
-        {/* View switcher */}
         <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-1">
           <button
             onClick={() => setView('kanban')}
@@ -181,18 +178,12 @@ export function LeadsViewSwitcher({ leads }: { leads: any[] }) {
         </div>
       </div>
 
-      {/* Results count when filtered */}
       {hasFilters && (
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-xs text-slate-500"
-        >
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-slate-500">
           Найдено: <span className="font-semibold text-[#111827]">{filteredLeads.length}</span> из {leads.length}
         </motion.p>
       )}
 
-      {/* View */}
       <AnimatePresence mode="wait">
         <motion.div
           key={view}

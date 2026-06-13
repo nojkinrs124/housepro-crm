@@ -1,40 +1,41 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { LayoutGrid, List, Search, X, ChevronDown } from 'lucide-react'
 import { DealsKanbanBoard } from './DealsKanban'
 import { DealsListView } from './DealsListView'
 import { motion, AnimatePresence } from 'framer-motion'
+import { usePersistedState } from '@/hooks/usePersistedFilters'
 
 type ViewMode = 'kanban' | 'list'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function DealsViewSwitcher({ deals }: { deals: any[] }) {
-  const [view, setView] = useState<ViewMode>('kanban')
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [typeFilter, setTypeFilter] = useState<string>('all')
-  const [statusOpen, setStatusOpen] = useState(false)
-  const [typeOpen, setTypeOpen] = useState(false)
+  const [view, setView]               = usePersistedState<ViewMode>('deals:view', 'kanban')
+  const [search, setSearch]           = usePersistedState<string>('deals:search', '')
+  const [statusFilter, setStatusFilter] = usePersistedState<string>('deals:status', 'all')
+  const [typeFilter, setTypeFilter]   = usePersistedState<string>('deals:type', 'all')
+  const [statusOpen, setStatusOpen]   = React.useState(false)
+  const [typeOpen, setTypeOpen]       = React.useState(false)
 
   const statusOptions = [
-    { value: 'all', label: 'Все статусы' },
-    { value: 'new', label: 'Новые' },
-    { value: 'showing', label: 'Показы' },
+    { value: 'all',         label: 'Все статусы' },
+    { value: 'new',         label: 'Новые' },
+    { value: 'showing',     label: 'Показы' },
     { value: 'negotiation', label: 'Переговоры' },
-    { value: 'contract', label: 'Договор' },
-    { value: 'payment', label: 'Оплата' },
-    { value: 'completed', label: 'Завершено' },
-    { value: 'cancelled', label: 'Отменено' },
+    { value: 'contract',    label: 'Договор' },
+    { value: 'payment',     label: 'Оплата' },
+    { value: 'completed',   label: 'Завершено' },
+    { value: 'cancelled',   label: 'Отменено' },
   ]
 
   const typeOptions = [
-    { value: 'all', label: 'Все типы' },
-    { value: 'rent', label: 'Аренда' },
-    { value: 'sale', label: 'Продажа' },
+    { value: 'all',        label: 'Все типы' },
+    { value: 'rent',       label: 'Аренда' },
+    { value: 'sale',       label: 'Продажа' },
     { value: 'management', label: 'Управление' },
     { value: 'commercial', label: 'Коммерция' },
-    { value: 'subrent', label: 'Субаренда' },
+    { value: 'subrent',    label: 'Субаренда' },
   ]
 
   const filteredDeals = useMemo(() => {
@@ -66,7 +67,6 @@ export function DealsViewSwitcher({ deals }: { deals: any[] }) {
 
   return (
     <div className="space-y-4">
-      {/* Controls bar */}
       <div className="flex flex-wrap items-center gap-3">
         {/* Search */}
         <div className="relative flex-1 min-w-[200px] max-w-xs">
@@ -149,7 +149,6 @@ export function DealsViewSwitcher({ deals }: { deals: any[] }) {
           </AnimatePresence>
         </div>
 
-        {/* Clear filters */}
         {hasFilters && (
           <motion.button
             initial={{ opacity: 0, scale: 0.9 }}
@@ -163,7 +162,6 @@ export function DealsViewSwitcher({ deals }: { deals: any[] }) {
           </motion.button>
         )}
 
-        {/* Spacer */}
         <div className="flex-1" />
 
         {/* View switcher */}
@@ -185,18 +183,12 @@ export function DealsViewSwitcher({ deals }: { deals: any[] }) {
         </div>
       </div>
 
-      {/* Results count when filtered */}
       {hasFilters && (
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-xs text-slate-500"
-        >
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-slate-500">
           Найдено: <span className="font-semibold text-[#111827]">{filteredDeals.length}</span> из {deals.length}
         </motion.p>
       )}
 
-      {/* View */}
       <AnimatePresence mode="wait">
         <motion.div
           key={view}

@@ -1,21 +1,22 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { LayoutGrid, List, Search, X, ChevronDown } from 'lucide-react'
 import { ContactCard } from '@/app/(dashboard)/contacts/ContactCard'
 import { ContactsListView } from './ContactsListView'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { Contact } from '@/types/database'
+import { usePersistedState } from '@/hooks/usePersistedFilters'
 
 type ViewMode = 'cards' | 'list'
 
 export function ContactsViewSwitcher({ contacts }: { contacts: Contact[] }) {
-  const [view, setView] = useState<ViewMode>('cards')
-  const [search, setSearch] = useState('')
-  const [roleFilter, setRoleFilter] = useState<string>('all')
-  const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [roleOpen, setRoleOpen] = useState(false)
-  const [statusOpen, setStatusOpen] = useState(false)
+  const [view, setView]               = usePersistedState<ViewMode>('contacts:view', 'cards')
+  const [search, setSearch]           = usePersistedState<string>('contacts:search', '')
+  const [roleFilter, setRoleFilter]   = usePersistedState<string>('contacts:role', 'all')
+  const [statusFilter, setStatusFilter] = usePersistedState<string>('contacts:status', 'all')
+  const [roleOpen, setRoleOpen]       = React.useState(false)
+  const [statusOpen, setStatusOpen]   = React.useState(false)
 
   const roleOptions = [
     { value: 'all',    label: 'Все роли' },
@@ -60,7 +61,6 @@ export function ContactsViewSwitcher({ contacts }: { contacts: Contact[] }) {
 
   return (
     <div className="space-y-4">
-      {/* Controls bar */}
       <div className="flex flex-wrap items-center gap-3">
         {/* Search */}
         <div className="relative flex-1 min-w-[200px] max-w-xs">
@@ -143,7 +143,6 @@ export function ContactsViewSwitcher({ contacts }: { contacts: Contact[] }) {
           </AnimatePresence>
         </div>
 
-        {/* Clear filters */}
         {hasFilters && (
           <motion.button
             initial={{ opacity: 0, scale: 0.9 }}
@@ -157,10 +156,8 @@ export function ContactsViewSwitcher({ contacts }: { contacts: Contact[] }) {
           </motion.button>
         )}
 
-        {/* Spacer */}
         <div className="flex-1" />
 
-        {/* View switcher */}
         <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-1">
           <button
             onClick={() => setView('cards')}
@@ -179,18 +176,12 @@ export function ContactsViewSwitcher({ contacts }: { contacts: Contact[] }) {
         </div>
       </div>
 
-      {/* Results count when filtered */}
       {hasFilters && (
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-xs text-slate-500"
-        >
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-slate-500">
           Найдено: <span className="font-semibold text-[#111827]">{filteredContacts.length}</span> из {contacts.length}
         </motion.p>
       )}
 
-      {/* View */}
       <AnimatePresence mode="wait">
         <motion.div
           key={view}
