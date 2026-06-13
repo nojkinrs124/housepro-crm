@@ -14,7 +14,7 @@ export default async function NewPaymentPage({
 
   const { data: rawContracts } = await supabase
     .from('contracts')
-    .select('id, contract_number, contract_type, client:clients(full_name)')
+    .select('id, contract_number, contract_type, client_contact:contacts!contracts_client_contact_id_fkey(full_name)')
     .in('status', ['draft', 'generated', 'signed'])
     .order('created_at', { ascending: false })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -68,7 +68,7 @@ export default async function NewPaymentPage({
             <option value="">Без договора</option>
             {(contracts ?? []).map((c: any) => {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const client = (c as any).client
+              const client = (c as any).client_contact
               return (
                 <option key={c.id} value={c.id}>
                   {c.contract_number} {client?.full_name ? `— ${client.full_name}` : ''}

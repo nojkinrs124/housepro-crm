@@ -27,7 +27,7 @@ export default async function EditPaymentPage({ params }: { params: Promise<{ id
 
   const { data: rawPayment } = await supabase
     .from('payments')
-    .select('*, contract:contracts(id, contract_number, client:clients(full_name))')
+    .select('*, contract:contracts(id, contract_number, client_contact:contacts!contracts_client_contact_id_fkey(full_name))')
     .eq('id', id)
     .single()
 
@@ -59,7 +59,7 @@ export default async function EditPaymentPage({ params }: { params: Promise<{ id
           {contract && (
             <p className="text-muted-foreground text-sm mt-0.5">
               {contract.contract_number ?? `Договор #${id.slice(0, 8)}`}
-              {contract.client?.full_name && ` · ${contract.client.full_name}`}
+              {contract.client_contact?.full_name && ` · ${contract.client_contact.full_name}`}
             </p>
           )}
         </div>

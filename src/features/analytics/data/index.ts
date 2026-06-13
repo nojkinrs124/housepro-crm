@@ -1,5 +1,3 @@
-import { formatMoney } from '@/lib/utils'
-import { unstable_cache } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -102,14 +100,7 @@ async function fetchAnalyticsData(): Promise<AnalyticsRawData> {
   }
 }
 
-// ─── Public cached export ─────────────────────────────────────────────────────
-// Кэш на 5 минут, инвалидируется через revalidatePath('/analytics', 'page') при мутациях
+// ─── Public export ────────────────────────────────────────────────────────────
 
-export const getAnalyticsData = unstable_cache(
-  fetchAnalyticsData,
-  ['analytics-data'],
-  {
-    revalidate: 300, // 5 минут
-  }
-)
+export const getAnalyticsData = fetchAnalyticsData
 
