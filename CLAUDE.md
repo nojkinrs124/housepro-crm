@@ -439,7 +439,8 @@ grep -n "functionName" src/features/module/actions/module.actions.ts
 2. Прочитать CLAUDE.md (этот файл)
 3. Прочитать docs/IMPROVEMENTS.md — найти первый открытый пункт
 4. Работать по порядку P0 → P1 → P2 → P3
-5. npm run build локально перед каждым git push — только зелёный билд идёт в прод
+5. npm test — все тесты должны быть зелёными перед пушем
+6. npm run build локально перед каждым git push — только зелёный билд идёт в прод
 6. После завершения пункта — пометить ✅ в IMPROVEMENTS.md, запушить
 ```
 
@@ -493,7 +494,7 @@ feat(module): краткое описание
 | P2-10 | GIN-индексы pg_trgm | ✅ |
 | P2-11 | env.ts — валидация переменных | ✅ |
 | P2-12 | Analytics рефакторинг + shared utils | ✅ |
-| P3-13 | Тесты (Vitest) | ⬜ открыто |
+| P3-13 | Тесты (Vitest) | ✅ |
 | P3-14 | Rate limiting (Upstash) | ⬜ открыто |
 | P3-15 | Мониторинг (Sentry) | ⬜ открыто |
 | P3-16 | next/image remotePatterns | ⬜ открыто |

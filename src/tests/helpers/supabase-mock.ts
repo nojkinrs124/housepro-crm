@@ -1,0 +1,60 @@
+import { vi } from 'vitest'
+
+/**
+ * Создаёт мок Supabase клиента.
+ * Позволяет задать возвращаемые данные / ошибки через chainable builder.
+ */
+export function createSupabaseMock(overrides: {
+  user?: { id: string; email: string } | null
+  data?: unknown
+  error?: { message: string } | null
+  single?: unknown
+}) {
+  const { user = { id: 'test-user-id', email: 'test@test.com' }, data = [], error = null, single } = overrides
+
+  const queryBuilder = {
+    select: vi.fn().mockReturnThis(),
+    insert: vi.fn().mockReturnThis(),
+    update: vi.fn().mockReturnThis(),
+    delete: vi.fn().mockReturnThis(),
+    upsert: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    neq: vi.fn().mockReturnThis(),
+    lt: vi.fn().mockReturnThis(),
+    lte: vi.fn().mockReturnThis(),
+    gt: vi.fn().mockReturnThis(),
+    gte: vi.fn().mockReturnThis(),
+    or: vi.fn().mockReturnThis(),
+    not: vi.fn().mockReturnThis(),
+    in: vi.fn().mockReturnThis(),
+    order: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    ilike: vi.fn().mockReturnThis(),
+    single: vi.fn().mockResolvedValue({ data: single ?? (Array.isArray(data) ? data[0] : data), error }),
+    then: undefined as unknown,
+  }
+
+  // Make the builder thenable so await works on it
+  queryBuilder.then = (resolve: (v: unknown) => void) =>
+    Promise.resolve({ data, error }).then(resolve)
+
+  const supabase = {
+    auth: {
+      getUser: vi.fn().mockResolvedValue({
+        data: { user },
+        error: null,
+      }),
+    },
+    from: vi.fn().mockReturnValue(queryBuilder),
+    _queryBuilder: queryBuilder,
+  }
+
+  return { supabase, queryBuilder }
+}
+
+/**
+ * Мок неавторизованного пользователя
+ */
+export function createUnauthorizedMock() {
+  return createSupabaseMock({ user: null })
+}
