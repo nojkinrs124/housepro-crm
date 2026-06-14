@@ -495,6 +495,6 @@ feat(module): краткое описание
 | P2-11 | env.ts — валидация переменных | ✅ |
 | P2-12 | Analytics рефакторинг + shared utils | ✅ |
 | P3-13 | Тесты (Vitest) | ✅ |
-| P3-14 | Rate limiting (Upstash) | ⬜ открыто |
-| P3-15 | Мониторинг (Sentry) | ⬜ открыто |
-| P3-16 | next/image remotePatterns | ⬜ открыто |
+| P3-14 | Rate limiting (in-memory) | ✅ |
+| P3-15 | Мониторинг (Sentry) | ✅ |
+| P3-16 | next/image remotePatterns | ✅ |

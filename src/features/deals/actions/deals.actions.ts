@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { DealSchema } from '@/lib/schemas'
+import { rateLimitCreate } from '@/lib/rate-limit'
 
 const VALID_DEAL_STATUSES = ['new', 'showing', 'negotiation', 'contract', 'payment', 'completed', 'cancelled']
 
@@ -11,6 +12,9 @@ export async function createDealAction(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+
+  const rl = rateLimitCreate(user.id, 'deal')
+  if (!rl.success) return { error: 'Слишком много запросов. Подождите минуту.' }
 
   const parsed = DealSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {

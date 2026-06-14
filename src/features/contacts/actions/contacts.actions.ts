@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { ContactSchema } from '@/lib/schemas'
+import { rateLimitCreate } from '@/lib/rate-limit'
 
 function parseContact(formData: FormData) {
   return ContactSchema.safeParse(Object.fromEntries(formData))
@@ -13,6 +14,9 @@ export async function createContactAction(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
+
+  const rl = rateLimitCreate(user.id, 'contact')
+  if (!rl.success) return { error: 'Слишком много запросов. Подождите минуту.' }
 
   const parsed = parseContact(formData)
   if (!parsed.success) {
@@ -36,6 +40,9 @@ export async function updateContactAction(contactId: string, formData: FormData)
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
+
+  const rl = rateLimitCreate(user.id, 'contact')
+  if (!rl.success) return { error: 'Слишком много запросов. Подождите минуту.' }
 
   const parsed = parseContact(formData)
   if (!parsed.success) {

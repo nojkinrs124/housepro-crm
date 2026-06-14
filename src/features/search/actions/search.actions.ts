@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { rateLimitSearch } from '@/lib/rate-limit'
 
 export interface SearchResult {
   id: string
@@ -22,6 +23,11 @@ export async function searchAction(query: string): Promise<SearchResults> {
   if (!query || query.trim().length < 2) return empty
 
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (user) {
+    const rl = rateLimitSearch(user.id)
+    if (!rl.success) return empty
+  }
   const q = query.trim()
 
   const [contactsRes, propertiesRes, contractsRes, tasksRes] = await Promise.all([
