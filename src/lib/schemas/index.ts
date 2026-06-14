@@ -10,7 +10,14 @@ const optPositiveNum = z
   .refine((v) => v === null || (!isNaN(v) && v > 0), { message: 'Укажите положительное число' })
   .nullable()
   .optional()
-const uuid = z.string().uuid().nullable().optional()
+const uuid = z
+  .string()
+  .nullable()
+  .optional()
+  .transform(v => (v === '' || v === null || v === undefined ? null : v))
+  .refine(v => v === null || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v), {
+    message: 'Некорректный UUID',
+  })
 
 // ─── Contact ──────────────────────────────────────────────────────────────────
 
