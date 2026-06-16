@@ -67,8 +67,8 @@
 @layer base {
   * { border-color: hsl(var(--border)); }
   body {
-    background-color: var(--hp-bg);
-    color: var(--hp-text);
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;

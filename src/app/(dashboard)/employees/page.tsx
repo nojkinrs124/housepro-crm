@@ -117,21 +117,21 @@ export default async function EmployeesPage() {
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-semibold text-[#111827] group-hover:text-[#16A34A] transition-colors text-sm">
+                    <div className="flex items-center gap-2 flex-wrap min-w-0">
+                      <p className="font-semibold text-[#111827] group-hover:text-[#16A34A] transition-colors text-sm truncate max-w-[200px] sm:max-w-none">
                         {emp.full_name}
                       </p>
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${roleColors[emp.role] ?? 'bg-gray-100'}`}>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ${roleColors[emp.role] ?? 'bg-gray-100'}`}>
                         {roleLabels[emp.role] ?? emp.role}
                       </span>
                       {!emp.is_active && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-red-100 text-red-600">
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-red-100 text-red-600 shrink-0">
                           Неактивен
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-[#64748B] mt-0.5">{emp.email}</p>
-                    {emp.phone && <p className="text-xs text-[#94A3B8]">{emp.phone}</p>}
+                    <p className="text-xs text-[#64748B] mt-0.5 truncate">{emp.email}</p>
+                    {emp.phone && <p className="text-xs text-[#94A3B8] truncate">{emp.phone}</p>}
                   </div>
 
                   {/* Stats */}

@@ -58,18 +58,18 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
             {emp.full_name?.charAt(0)?.toUpperCase() ?? '?'}
           </span>
         </div>
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-2xl font-bold text-foreground">{emp.full_name}</h1>
-            <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${roleColors[emp.role] ?? 'bg-gray-100'}`}>
+            <h1 className="text-2xl font-bold text-foreground truncate max-w-[200px] sm:max-w-none">{emp.full_name}</h1>
+            <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${roleColors[emp.role] ?? 'bg-gray-100'}`}>
               {roleLabels[emp.role] ?? emp.role}
             </span>
             {emp.is_active ? (
-              <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium bg-green-100 text-green-700">
+              <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium bg-green-100 text-green-700 shrink-0">
                 <CheckCircle className="w-3 h-3" /> Активен
               </span>
             ) : (
-              <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium bg-red-100 text-red-600">
+              <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium bg-red-100 text-red-600 shrink-0">
                 <XCircle className="w-3 h-3" /> Неактивен
               </span>
             )}
@@ -99,15 +99,15 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
       <div className="bg-card border border-border rounded-[20px] p-5 space-y-3">
         <h2 className="font-semibold text-foreground">Контакты</h2>
         {emp.email && (
-          <div className="flex items-center gap-3 text-sm">
-            <Mail className="w-4 h-4 text-muted-foreground" />
-            <a href={`mailto:${emp.email}`} className="text-foreground hover:text-primary transition">{emp.email}</a>
+          <div className="flex items-center gap-3 text-sm min-w-0">
+            <Mail className="w-4 h-4 text-muted-foreground shrink-0" />
+            <a href={`mailto:${emp.email}`} className="text-foreground hover:text-primary transition truncate">{emp.email}</a>
           </div>
         )}
         {emp.phone && (
-          <div className="flex items-center gap-3 text-sm">
-            <Phone className="w-4 h-4 text-muted-foreground" />
-            <a href={`tel:${emp.phone}`} className="text-foreground hover:text-primary transition">{emp.phone}</a>
+          <div className="flex items-center gap-3 text-sm min-w-0">
+            <Phone className="w-4 h-4 text-muted-foreground shrink-0" />
+            <a href={`tel:${emp.phone}`} className="text-foreground hover:text-primary transition truncate">{emp.phone}</a>
           </div>
         )}
       </div>

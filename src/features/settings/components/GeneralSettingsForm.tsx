@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
+import { useTheme } from 'next-themes'
 import { Globe, DollarSign, Clock, Calendar, Moon, CheckCircle, AlertCircle, Save, Loader2 } from 'lucide-react'
 import { updateGeneralSettingsAction, type GeneralSettings } from '@/features/settings/actions/general.actions'
 
@@ -56,6 +57,18 @@ export function GeneralSettingsForm({ settings }: { settings: GeneralSettings })
   const [feedback, setFeedback] = useState<Feedback>(null)
   const [pending, startTransition] = useTransition()
   const [theme, setTheme] = useState(settings.theme)
+  const { setTheme: applyTheme } = useTheme()
+
+  // Применяем сохранённую тему пользователя при первой загрузке страницы настроек
+  useEffect(() => {
+    applyTheme(settings.theme)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  function handleThemeClick(value: string) {
+    setTheme(value)
+    applyTheme(value)
+  }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -145,7 +158,7 @@ export function GeneralSettingsForm({ settings }: { settings: GeneralSettings })
             <button
               key={t.value}
               type="button"
-              onClick={() => setTheme(t.value)}
+              onClick={() => handleThemeClick(t.value)}
               className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
                 theme === t.value
                   ? 'border-primary bg-primary/5'
@@ -162,7 +175,7 @@ export function GeneralSettingsForm({ settings }: { settings: GeneralSettings })
             </button>
           ))}
         </div>
-        <p className="text-xs text-muted-foreground">Тема применяется к текущему браузеру</p>
+        <p className="text-xs text-muted-foreground">Тема применяется сразу и сохраняется в вашем профиле</p>
       </div>
 
       {/* Footer */}

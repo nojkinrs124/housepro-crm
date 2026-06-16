@@ -103,13 +103,13 @@ export default async function PaymentsPage({
       </div>
 
       {/* Filter tabs */}
-      <div className="flex items-center gap-1 p-1 rounded-xl w-fit bg-slate-100">
+      <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-1 sm:w-fit" style={{ scrollbarWidth: 'none' }}>
         {filters.map(f => {
           const isActive = (f.value === 'all' && !filterStatus) || filterStatus === f.value
           return (
             <Link key={f.value}
               href={f.value === 'all' ? '/payments' : `/payments?status=${f.value}`}
-              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${isActive ? 'bg-white text-[#111827] shadow-sm' : 'text-slate-500 hover:text-[#111827]'}`}>
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 whitespace-nowrap shrink-0 ${isActive ? 'bg-white text-[#111827] shadow-sm' : 'text-slate-500 hover:text-[#111827]'}`}>
               {f.label}
             </Link>
           )

@@ -118,11 +118,11 @@ export default async function NewDealPage({
           {/* Объект */}
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-foreground">Объект</label>
-            <div className="flex items-end gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-stretch gap-2">
               <select
                 name="property_id"
                 defaultValue={params.property_id ?? ''}
-                className="flex-1 h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer"
+                className="w-full sm:flex-1 sm:min-w-0 h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer"
               >
                 <option value="">Выберите объект</option>
                 {properties.map(p => (
@@ -132,7 +132,7 @@ export default async function NewDealPage({
               <Link
                 href="/properties/new"
                 target="_blank"
-                className="h-10 px-4 rounded-xl border border-primary/30 text-primary text-sm font-medium hover:bg-primary/10 transition flex items-center gap-2 whitespace-nowrap"
+                className="h-10 px-4 rounded-xl border border-primary/30 text-primary text-sm font-medium hover:bg-primary/10 transition flex items-center justify-center gap-2 whitespace-nowrap shrink-0"
               >
                 <Building2 className="w-4 h-4" />
                 Создать

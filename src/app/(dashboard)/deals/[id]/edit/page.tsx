@@ -143,8 +143,8 @@ export default async function EditDealPage({ params }: { params: Promise<{ id: s
 
           <div className="space-y-1.5">
             <label className={lbl}>Объект</label>
-            <div className="flex items-end gap-2">
-              <select name="property_id" defaultValue={deal.property_id ?? ''} className={`${sel} flex-1`}>
+            <div className="flex flex-col sm:flex-row sm:items-stretch gap-2">
+              <select name="property_id" defaultValue={deal.property_id ?? ''} className={`${sel} w-full sm:flex-1 sm:min-w-0`}>
                 <option value="">— не выбрано —</option>
                 {properties.map(p => (
                   <option key={p.id} value={p.id}>
@@ -153,7 +153,7 @@ export default async function EditDealPage({ params }: { params: Promise<{ id: s
                 ))}
               </select>
               <Link href="/properties/new" target="_blank"
-                className="h-10 px-4 rounded-xl border border-primary/30 text-primary text-sm font-medium hover:bg-primary/10 transition flex items-center gap-2 whitespace-nowrap">
+                className="h-10 px-4 rounded-xl border border-primary/30 text-primary text-sm font-medium hover:bg-primary/10 transition flex items-center justify-center gap-2 whitespace-nowrap shrink-0">
                 <Building2 className="w-4 h-4" />
                 Создать
               </Link>
