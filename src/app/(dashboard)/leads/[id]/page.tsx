@@ -131,7 +131,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
           {/* Контактная информация */}
           <div className="bg-card border border-border rounded-[20px] p-5">
             <h2 className="font-semibold text-foreground mb-4">Контактные данные</h2>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {lead.phone && (
                 <a href={`tel:${lead.phone}`}
                   className="flex items-center gap-3 p-3 bg-muted/30 rounded-xl hover:bg-accent transition">

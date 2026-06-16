@@ -95,7 +95,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
           {/* Parties */}
           <div className="bg-card border border-border rounded-[20px] p-5">
             <h2 className="font-semibold text-foreground mb-4">Стороны сделки</h2>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="p-4 bg-muted/30 rounded-xl">
                 <div className="flex items-center gap-2 mb-2">
                   <Building2 className="w-4 h-4 text-orange-500" />

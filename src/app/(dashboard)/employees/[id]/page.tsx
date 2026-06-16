@@ -81,7 +81,7 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
       </div>
 
       {/* Статистика */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         {[
           { label: 'Клиентов',  value: clientStats?.length ?? 0 },
           { label: 'Сделок',    value: dealStats?.length ?? 0 },
@@ -118,7 +118,7 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
           <h2 className="font-semibold text-foreground">Редактировать</h2>
 
           <form action={formAction(boundUpdate)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className={lbl}>Полное имя</label>
                 <input name="full_name" required defaultValue={emp.full_name ?? ''} className={inp} />

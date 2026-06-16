@@ -57,7 +57,7 @@ export default async function EditLeadPage({ params }: { params: Promise<{ id: s
             <label className={lbl}>Имя</label>
             <input name="full_name" defaultValue={l.full_name ?? ''} className={inp} />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
               { name: 'phone',    label: 'Телефон',  type: 'tel' },
               { name: 'email',    label: 'Email',    type: 'email' },
@@ -75,7 +75,7 @@ export default async function EditLeadPage({ params }: { params: Promise<{ id: s
         {/* Источник */}
         <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Источник и ответственный</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={lbl}>Источник</label>
               <select name="source" defaultValue={l.source ?? ''}
@@ -128,7 +128,7 @@ export default async function EditLeadPage({ params }: { params: Promise<{ id: s
               ))}
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={lbl}>Бюджет от (₽)</label>
               <input name="budget_min" type="number" defaultValue={l.budget_min ?? ''} className={inp} />

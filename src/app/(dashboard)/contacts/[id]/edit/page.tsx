@@ -37,7 +37,7 @@ export default async function EditContactPage({ params }: { params: Promise<{ id
             <label className={labelCls}>Полное имя *</label>
             <input type="text" name="full_name" required defaultValue={c.full_name} className={inputCls} />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={labelCls}>Роль *</label>
               <select name="role" required defaultValue={c.role}
@@ -67,7 +67,7 @@ export default async function EditContactPage({ params }: { params: Promise<{ id
         {/* Контакты */}
         <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold">Контактные данные</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
               { label: 'Телефон', name: 'phone', type: 'tel', val: c.phone },
               { label: 'Email', name: 'email', type: 'email', val: c.email },
@@ -85,7 +85,7 @@ export default async function EditContactPage({ params }: { params: Promise<{ id
         {/* Паспорт */}
         <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold">Паспортные данные</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={labelCls}>Серия</label>
               <input type="text" name="passport_series" defaultValue={c.passport_series ?? ''} placeholder="1234" className={inputCls} />
@@ -112,7 +112,7 @@ export default async function EditContactPage({ params }: { params: Promise<{ id
         {/* Адрес */}
         <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold">Адрес регистрации</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
               { label: 'Страна', name: 'country', placeholder: 'Россия', val: c.country },
               { label: 'Регион', name: 'region', placeholder: 'Московская область', val: c.region },

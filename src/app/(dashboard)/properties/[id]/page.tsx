@@ -139,7 +139,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
       {/* Price highlight */}
       {(p.price || p.deposit || p.management_fee) && (
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {p.price && (
             <div className="bg-green-50 border border-green-200 rounded-[20px] p-4 text-center">
               <p className="text-xs text-green-600 font-medium">Цена</p>
@@ -194,7 +194,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
               <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Layers className="w-4 h-4" /> Характеристики дома
               </h2>
-              <div className="grid grid-cols-2 gap-x-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
                 <div>
                   <Row label="Тип дома"       value={houseTypeLabels[p.house_type] ?? p.house_type} />
                   <Row label="Материал стен"  value={wallMaterialLabels[p.wall_material] ?? p.wall_material} />
@@ -214,7 +214,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
               <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Flame className="w-4 h-4" /> Коммуникации
               </h2>
-              <div className="grid grid-cols-2 gap-x-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
                 <div>
                   <Row label="Отопление"     value={heatingLabels[p.heating_type] ?? p.heating_type} />
                   <Row label="Водоснабжение" value={waterLabels[p.water_supply_type] ?? p.water_supply_type} />

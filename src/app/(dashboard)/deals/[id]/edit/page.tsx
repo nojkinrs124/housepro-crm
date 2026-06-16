@@ -56,7 +56,7 @@ export default async function EditDealPage({ params }: { params: Promise<{ id: s
         {/* Тип сделки */}
         <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Тип сделки</h2>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {[
               { value: 'rent',       label: '🏠 Аренда' },
               { value: 'sale',       label: '💰 Продажа' },
@@ -78,7 +78,7 @@ export default async function EditDealPage({ params }: { params: Promise<{ id: s
         {/* Статус */}
         <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Статус</h2>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {[
               { value: 'new',         label: '🔵 Новая' },
               { value: 'showing',     label: '👁 Показ' },
@@ -164,7 +164,7 @@ export default async function EditDealPage({ params }: { params: Promise<{ id: s
         {/* Финансы */}
         <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Финансы</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={lbl}>Сумма сделки (₽)</label>
               <input name="amount" type="number" defaultValue={deal.amount ?? ''}

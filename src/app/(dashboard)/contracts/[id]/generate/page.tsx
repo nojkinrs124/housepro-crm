@@ -84,7 +84,7 @@ export default async function GenerateContractPage({
       {/* Checklist */}
       <div className="bg-card border border-border rounded-[20px] p-5">
         <h2 className="font-semibold text-foreground mb-4">Проверка данных</h2>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {fields.map((field) => (
             <div key={field.label}
               className={`flex items-start gap-2.5 p-3 rounded-xl text-sm ${

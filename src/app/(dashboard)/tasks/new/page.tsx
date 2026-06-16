@@ -57,7 +57,7 @@ export default async function NewTaskPage({
               className="w-full px-4 py-3 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all resize-none" />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-foreground">Приоритет</label>
               <select name="priority" defaultValue="medium"
@@ -89,7 +89,7 @@ export default async function NewTaskPage({
         {/* Связи */}
         <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Привязать к</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-sm text-muted-foreground">Контакт</label>
               <select name="client_id" defaultValue={params.client_id ?? ''}

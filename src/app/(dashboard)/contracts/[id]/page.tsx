@@ -102,7 +102,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
           {/* Parties */}
           <div className="bg-card border border-border rounded-[20px] p-5">
             <h2 className="font-semibold text-foreground mb-4">Стороны договора</h2>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Собственник */}
               <div className="p-4 bg-muted/30 rounded-xl">
                 <div className="flex items-center gap-2 mb-2">
@@ -175,7 +175,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
           {/* Finance */}
           <div className="bg-card border border-border rounded-[20px] p-5">
             <h2 className="font-semibold text-foreground mb-4">Финансы</h2>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex items-center gap-3 p-4 bg-muted/30 rounded-xl">
                 <DollarSign className="w-5 h-5 text-emerald-600" />
                 <div>
@@ -200,7 +200,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
           {/* Dates */}
           <div className="bg-card border border-border rounded-[20px] p-5">
             <h2 className="font-semibold text-foreground mb-4">Сроки</h2>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex items-center gap-3">
                 <Calendar className="w-4 h-4 text-muted-foreground" />
                 <div>

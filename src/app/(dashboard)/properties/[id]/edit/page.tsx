@@ -50,7 +50,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
             <input name="address" required defaultValue={p.address ?? ''} className={inp} />
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className={lbl}>Тип объекта</label>
               <select name="property_type" defaultValue={p.property_type ?? 'apartment'} className={sel}>
@@ -87,7 +87,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
         {/* Параметры */}
         <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Параметры</h2>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
               { label: 'Площадь общая (м²)', name: 'area',           step: '0.1' },
               { label: 'Площадь жилая (м²)', name: 'living_area',    step: '0.1' },
@@ -108,7 +108,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
         {/* Дом */}
         <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Характеристики дома</h2>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className={lbl}>Тип дома</label>
               <select name="house_type" defaultValue={p.house_type ?? ''} className={sel}>
@@ -151,7 +151,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
         {/* Коммуникации */}
         <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Коммуникации</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={lbl}>Отопление</label>
               <select name="heating_type" defaultValue={p.heating_type ?? ''} className={sel}>
@@ -187,7 +187,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
         {/* Финансы */}
         <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Финансы</h2>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className={lbl}>Цена (₽)</label>
               <input type="number" name="price" defaultValue={p.price ?? ''} className={inp} />

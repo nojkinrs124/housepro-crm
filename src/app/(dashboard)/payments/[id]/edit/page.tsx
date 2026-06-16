@@ -81,7 +81,7 @@ export default async function EditPaymentPage({ params }: { params: Promise<{ id
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Тип */}
           <div>
             <label className={lbl}>Тип платежа</label>

@@ -48,7 +48,7 @@ export default function NewContactPage() {
         {/* Контакты */}
         <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Контактные данные</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-foreground">Телефон</label>
               <input type="tel" name="phone" placeholder="+7 (999) 123-45-67"
@@ -75,7 +75,7 @@ export default function NewContactPage() {
         {/* Паспорт */}
         <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Паспортные данные</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-foreground">Серия</label>
               <input type="text" name="passport_series" placeholder="1234"
@@ -107,7 +107,7 @@ export default function NewContactPage() {
         {/* Адрес */}
         <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Адрес регистрации</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-sm font-medium text-foreground">Страна</label>
               <input type="text" name="country" placeholder="Россия" defaultValue="Россия"

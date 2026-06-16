@@ -45,7 +45,7 @@ export default async function NewPropertyPage() {
             <input name="address" required placeholder="г. Москва, ул. Ленина, д. 15, кв. 32" className={inputCls} />
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-1.5">
               <label className={labelCls}>Тип объекта</label>
               <select name="property_type" defaultValue="apartment" className={selectCls}>
@@ -81,7 +81,7 @@ export default async function NewPropertyPage() {
         {/* Параметры */}
         <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Параметры</h2>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-1.5">
               <label className={labelCls}>Площадь общая (м²)</label>
               <input name="area" type="number" step="0.1" placeholder="65" className={inputCls} />
@@ -116,7 +116,7 @@ export default async function NewPropertyPage() {
         {/* Дом */}
         <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Характеристики дома</h2>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-1.5">
               <label className={labelCls}>Тип дома</label>
               <select name="house_type" className={selectCls}>
@@ -159,7 +159,7 @@ export default async function NewPropertyPage() {
         {/* Коммуникации */}
         <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Коммуникации</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className={labelCls}>Отопление</label>
               <select name="heating_type" className={selectCls}>
@@ -195,7 +195,7 @@ export default async function NewPropertyPage() {
         {/* Финансы */}
         <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Финансы</h2>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-1.5">
               <label className={labelCls}>Цена продажи / аренды (₽)</label>
               <input name="price" type="number" placeholder="5 000 000" className={inputCls} />

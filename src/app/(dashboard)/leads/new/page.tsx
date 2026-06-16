@@ -69,7 +69,7 @@ export default async function NewLeadPage() {
             <label className={lbl}>Имя</label>
             <input name="full_name" placeholder="Иван Иванов" className={inp} />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={lbl}>Телефон</label>
               <input name="phone" type="tel" placeholder="+7 (999) 999-99-99" className={inp} />
@@ -92,7 +92,7 @@ export default async function NewLeadPage() {
         {/* Источник и менеджер */}
         <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Источник</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={lbl}>Откуда пришёл <span className="text-destructive">*</span></label>
               <select name="source" required
@@ -150,7 +150,7 @@ export default async function NewLeadPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={lbl}>Бюджет от (₽)</label>
               <input name="budget_min" type="number" placeholder="30 000" className={inp} />

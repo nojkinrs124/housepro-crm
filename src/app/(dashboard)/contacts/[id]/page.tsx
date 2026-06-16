@@ -101,7 +101,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
           {/* Contacts */}
           <div className="bg-card border border-border rounded-[20px] p-5">
             <h2 className="font-semibold text-foreground mb-4">Контактные данные</h2>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {c.phone && (
                 <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-xl">
                   <Phone className="w-4 h-4 text-muted-foreground shrink-0" />
@@ -145,7 +145,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
           {hasPassport && (
             <div className="bg-card border border-border rounded-[20px] p-5">
               <h2 className="font-semibold text-foreground mb-4">Паспортные данные</h2>
-              <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 {(c.passport_series || c.passport_number) && (
                   <div>
                     <p className="text-xs text-muted-foreground">Серия и номер</p>

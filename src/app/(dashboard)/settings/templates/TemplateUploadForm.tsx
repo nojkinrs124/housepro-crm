@@ -40,7 +40,7 @@ export function TemplateUploadForm() {
       </h2>
 
       <form id="template-upload-form" action={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-foreground">Название шаблона</label>
             <input name="name" required placeholder="Договор аренды 2024"
