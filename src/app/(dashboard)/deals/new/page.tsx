@@ -45,7 +45,7 @@ export default async function NewDealPage({
       <form action={formAction(createDealAction)} className="space-y-4">
 
         {/* Тип сделки */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Тип сделки</h2>
           <div className="grid grid-cols-3 gap-2">
             {[
@@ -65,7 +65,7 @@ export default async function NewDealPage({
         </div>
 
         {/* Стороны */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-5">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-5">
           <h2 className="font-semibold text-foreground">Стороны сделки</h2>
 
           {/* Собственник — Сторона 1 */}
@@ -142,7 +142,7 @@ export default async function NewDealPage({
         </div>
 
         {/* Финансы */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Финансы</h2>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -159,7 +159,7 @@ export default async function NewDealPage({
         </div>
 
         {/* Примечания */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-3">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-3">
           <h2 className="font-semibold text-foreground">Примечания</h2>
           <textarea name="notes" rows={3} placeholder="Детали сделки, условия..."
             className="w-full px-4 py-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all resize-none" />

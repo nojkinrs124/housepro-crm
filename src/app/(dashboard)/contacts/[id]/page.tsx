@@ -99,7 +99,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
         <div className="lg:col-span-2 space-y-4">
 
           {/* Contacts */}
-          <div className="bg-card border border-border rounded-2xl p-5">
+          <div className="bg-card border border-border rounded-[20px] p-5">
             <h2 className="font-semibold text-foreground mb-4">Контактные данные</h2>
             <div className="grid grid-cols-2 gap-3">
               {c.phone && (
@@ -143,7 +143,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
 
           {/* Passport */}
           {hasPassport && (
-            <div className="bg-card border border-border rounded-2xl p-5">
+            <div className="bg-card border border-border rounded-[20px] p-5">
               <h2 className="font-semibold text-foreground mb-4">Паспортные данные</h2>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 {(c.passport_series || c.passport_number) && (
@@ -183,7 +183,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
 
           {/* Address */}
           {hasAddress && (
-            <div className="bg-card border border-border rounded-2xl p-5">
+            <div className="bg-card border border-border rounded-[20px] p-5">
               <h2 className="font-semibold text-foreground mb-3 flex items-center gap-2">
                 <MapPin className="w-4 h-4" />
                 Адрес регистрации
@@ -201,7 +201,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
           )}
 
           {/* Deals */}
-          <div className="bg-card border border-border rounded-2xl p-5">
+          <div className="bg-card border border-border rounded-[20px] p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-foreground flex items-center gap-2">
                 <TrendingUp className="w-4 h-4" />
@@ -236,7 +236,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
           </div>
 
           {/* Tasks */}
-          <div className="bg-card border border-border rounded-2xl p-5">
+          <div className="bg-card border border-border rounded-[20px] p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-foreground flex items-center gap-2">
                 <CheckSquare className="w-4 h-4" />
@@ -268,7 +268,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
 
         {/* Right column */}
         <div className="space-y-4">
-          <div className="bg-card border border-border rounded-2xl p-5">
+          <div className="bg-card border border-border rounded-[20px] p-5">
             <h2 className="font-semibold text-foreground mb-4">Информация</h2>
             <div className="space-y-3 text-sm">
               {c.birth_date && (
@@ -291,13 +291,13 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
           </div>
 
           {c.comment && (
-            <div className="bg-card border border-border rounded-2xl p-5">
+            <div className="bg-card border border-border rounded-[20px] p-5">
               <h2 className="font-semibold text-foreground mb-2">Комментарий</h2>
               <p className="text-sm text-muted-foreground whitespace-pre-wrap">{c.comment}</p>
             </div>
           )}
 
-          <div className="bg-card border border-border rounded-2xl p-4 space-y-2">
+          <div className="bg-card border border-border rounded-[20px] p-4 space-y-2">
             <Link href={`/deals/new?client_id=${id}`}
               className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-xl text-sm font-medium hover:bg-primary/20 transition">
               <TrendingUp className="w-4 h-4" />

@@ -31,7 +31,7 @@ export default async function EditContactPage({ params }: { params: Promise<{ id
       <form action={formAction(boundAction)} className="space-y-4">
 
         {/* Основное */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold">Основные данные</h2>
           <div>
             <label className={labelCls}>Полное имя *</label>
@@ -65,7 +65,7 @@ export default async function EditContactPage({ params }: { params: Promise<{ id
         </div>
 
         {/* Контакты */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold">Контактные данные</h2>
           <div className="grid grid-cols-2 gap-4">
             {[
@@ -83,7 +83,7 @@ export default async function EditContactPage({ params }: { params: Promise<{ id
         </div>
 
         {/* Паспорт */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold">Паспортные данные</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -110,7 +110,7 @@ export default async function EditContactPage({ params }: { params: Promise<{ id
         </div>
 
         {/* Адрес */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold">Адрес регистрации</h2>
           <div className="grid grid-cols-2 gap-4">
             {[
@@ -131,7 +131,7 @@ export default async function EditContactPage({ params }: { params: Promise<{ id
         </div>
 
         {/* Дополнительно */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold">Дополнительно</h2>
           <div>
             <label className={labelCls}>Источник</label>

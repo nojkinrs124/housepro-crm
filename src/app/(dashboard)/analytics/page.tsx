@@ -169,7 +169,7 @@ export default async function AnalyticsPage() {
             gradient: 'from-orange-500 to-orange-600',
           },
         ].map(card => (
-          <div key={card.label} className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-sm">
+          <div key={card.label} className="bg-white rounded-[20px] border border-[#E2E8F0] p-5 shadow-sm">
             <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center text-white mb-3`}>
               {card.icon}
             </div>
@@ -188,7 +188,7 @@ export default async function AnalyticsPage() {
           { label: 'Продано объектов',   value: soldProps,        icon: <CheckCircle2 style={{ width: 16, height: 16 }} />,  color: 'text-violet-600 bg-violet-50' },
           { label: 'Активных договоров', value: activeContracts,  icon: <FileText style={{ width: 16, height: 16 }} />,      color: 'text-orange-600 bg-orange-50' },
         ].map(item => (
-          <div key={item.label} className="bg-white rounded-2xl border border-[#E2E8F0] p-4 shadow-sm flex items-center gap-3">
+          <div key={item.label} className="bg-white rounded-[20px] border border-[#E2E8F0] p-4 shadow-sm flex items-center gap-3">
             <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${item.color}`}>
               {item.icon}
             </div>
@@ -202,7 +202,7 @@ export default async function AnalyticsPage() {
 
       {/* Charts row 1 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-sm">
+        <div className="bg-white rounded-[20px] border border-[#E2E8F0] p-5 shadow-sm">
           <h2 className="text-sm font-semibold text-[#111827] mb-4">Сумма и комиссия по сделкам</h2>
           <DealsAreaChart data={monthlyDeals} />
           <div className="flex items-center gap-4 mt-3">
@@ -214,7 +214,7 @@ export default async function AnalyticsPage() {
             </span>
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-sm">
+        <div className="bg-white rounded-[20px] border border-[#E2E8F0] p-5 shadow-sm">
           <h2 className="text-sm font-semibold text-[#111827] mb-4">Воронка сделок</h2>
           <DealFunnelChart data={funnelStages} />
         </div>
@@ -222,11 +222,11 @@ export default async function AnalyticsPage() {
 
       {/* Charts row 2 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-sm">
+        <div className="bg-white rounded-[20px] border border-[#E2E8F0] p-5 shadow-sm">
           <h2 className="text-sm font-semibold text-[#111827] mb-4">Платежи по месяцам</h2>
           <PaymentsMonthlyChart data={paymentsMonthly} />
         </div>
-        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-sm">
+        <div className="bg-white rounded-[20px] border border-[#E2E8F0] p-5 shadow-sm">
           <h2 className="text-sm font-semibold text-[#111827] mb-4">Типы сделок</h2>
           {dealTypePie.length > 0 ? (
             <DealTypePieChart data={dealTypePie} />
@@ -239,7 +239,7 @@ export default async function AnalyticsPage() {
       </div>
 
       {/* Chart row 3 */}
-      <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-sm">
+      <div className="bg-white rounded-[20px] border border-[#E2E8F0] p-5 shadow-sm">
         <h2 className="text-sm font-semibold text-[#111827] mb-4">Лиды и конверсия по месяцам</h2>
         <LeadsConversionChart data={leadsConversionData} />
       </div>
@@ -247,7 +247,7 @@ export default async function AnalyticsPage() {
       {/* Alerts row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Overdue payments */}
-        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-sm">
+        <div className="bg-white rounded-[20px] border border-[#E2E8F0] p-5 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-7 h-7 rounded-lg bg-red-100 flex items-center justify-center">
               <AlertTriangle style={{ width: 14, height: 14, color: '#DC2626' }} />
@@ -291,7 +291,7 @@ export default async function AnalyticsPage() {
         </div>
 
         {/* Overdue tasks */}
-        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-sm">
+        <div className="bg-white rounded-[20px] border border-[#E2E8F0] p-5 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-7 h-7 rounded-lg bg-orange-100 flex items-center justify-center">
               <Clock style={{ width: 14, height: 14, color: '#EA580C' }} />

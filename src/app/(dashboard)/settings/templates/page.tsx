@@ -25,18 +25,18 @@ export default async function TemplatesPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <Link href="/settings" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition">
-        <ArrowLeft className="w-4 h-4" />
+      <Link href="/settings" className="inline-flex items-center gap-2 text-sm font-medium text-[#64748B] hover:text-[#111827] transition-colors">
+        <ArrowLeft style={{ width: 16, height: 16 }} />
         Вернуться к настройкам
       </Link>
 
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
-          <FileText className="w-5 h-5 text-orange-600" />
+        <div className="w-11 h-11 rounded-[12px] flex items-center justify-center shrink-0 bg-orange-50">
+          <FileText className="text-orange-600" style={{ width: 20, height: 20 }} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Шаблоны документов</h1>
-          <p className="text-muted-foreground mt-1">DOCX-шаблоны для генерации договоров</p>
+          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Шаблоны документов</h1>
+          <p className="text-[#64748B] text-sm font-medium mt-0.5">DOCX-шаблоны для генерации договоров</p>
         </div>
       </div>
 
@@ -44,40 +44,42 @@ export default async function TemplatesPage() {
       <TemplateUploadForm />
 
       {/* Template list */}
-      <div className="bg-card border border-border rounded-2xl overflow-hidden">
-        <div className="p-4 border-b border-border">
-          <h2 className="font-semibold text-foreground">Загруженные шаблоны</h2>
+      <div className="bg-white rounded-[20px] border border-slate-100 overflow-hidden" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+        <div className="px-5 py-4 border-b border-slate-100">
+          <h2 className="font-bold text-[#111827] text-[15px]">Загруженные шаблоны</h2>
         </div>
         {!templates || templates.length === 0 ? (
-          <div className="p-8 text-center">
-            <FileText className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" />
-            <p className="text-muted-foreground text-sm">Шаблонов ещё нет</p>
-            <p className="text-muted-foreground text-xs mt-1">Загрузите первый DOCX-шаблон выше</p>
+          <div className="p-10 text-center">
+            <div className="w-14 h-14 rounded-[20px] flex items-center justify-center mx-auto mb-4 bg-orange-50">
+              <FileText style={{ width: 22, height: 22 }} className="text-orange-500" />
+            </div>
+            <p className="text-[#111827] font-semibold text-sm">Шаблонов ещё нет</p>
+            <p className="text-[#64748B] text-xs mt-1">Загрузите первый DOCX-шаблон выше</p>
           </div>
         ) : (
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-slate-100">
             {templates.map(t => (
-              <div key={t.id} className="flex items-center gap-4 p-4 hover:bg-accent/30 transition">
-                <div className="w-9 h-9 rounded-xl bg-orange-100 flex items-center justify-center shrink-0">
-                  <FileText className="w-4 h-4 text-orange-600" />
+              <div key={t.id} className="flex items-center gap-4 px-5 py-4 hover:bg-[#F8FAFC] transition-all duration-200">
+                <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center shrink-0">
+                  <FileText className="text-orange-600" style={{ width: 16, height: 16 }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-foreground truncate">{t.name}</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="font-semibold text-[#111827] text-sm truncate">{t.name}</p>
+                  <p className="text-xs text-[#64748B] mt-0.5">
                     {typeLabels[t.template_type] ?? t.template_type} · {new Date(t.created_at).toLocaleDateString('ru-RU')}
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                   {t.file_url && (
                     <a href={t.file_url} target="_blank" rel="noopener noreferrer"
-                      className="text-xs text-primary hover:underline px-3 py-1.5 border border-primary/20 rounded-lg transition hover:bg-primary/5">
+                      className="text-xs font-semibold text-[#16A34A] hover:underline px-3 py-1.5 border border-green-200 rounded-[10px] transition-colors hover:bg-green-50">
                       Скачать
                     </a>
                   )}
                   <form action={formAction(deleteTemplateAction.bind(null, t.id))}>
                     <button type="submit"
-                      className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition">
-                      <Trash2 className="w-4 h-4" />
+                      className="p-2 text-[#94A3B8] hover:text-red-600 hover:bg-red-50 rounded-[10px] transition-all duration-200">
+                      <Trash2 style={{ width: 16, height: 16 }} />
                     </button>
                   </form>
                 </div>
@@ -87,9 +89,9 @@ export default async function TemplatesPage() {
         )}
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
-        <p className="text-blue-900 text-sm font-medium">💡 Как использовать шаблоны</p>
-        <p className="text-blue-700 text-sm mt-1">
+      <div className="rounded-[16px] p-4" style={{ background: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)', border: '1px solid rgba(59,130,246,0.15)' }}>
+        <p className="text-blue-900 text-sm font-semibold">💡 Как использовать шаблоны</p>
+        <p className="text-blue-700 text-sm mt-1 leading-relaxed">
           В шаблоне используйте переменные в двойных фигурных скобках, например: {'{{'} CLIENT_NAME {'}}'}, {'{{'} CONTRACT_NUMBER {'}}'}, {'{{'} PRICE {'}}'}. 
           При генерации договора переменные автоматически заменятся на данные из базы.
         </p>

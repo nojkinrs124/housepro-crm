@@ -78,7 +78,7 @@ export function GeneralSettingsForm({ settings }: { settings: GeneralSettings })
     <form onSubmit={handleSubmit} className="space-y-5">
 
       {/* Language + Currency */}
-      <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+      <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
         <h2 className="font-semibold text-foreground flex items-center gap-2 text-sm">
           <Globe className="w-4 h-4 text-muted-foreground" />
           Язык и регион
@@ -106,7 +106,7 @@ export function GeneralSettingsForm({ settings }: { settings: GeneralSettings })
       </div>
 
       {/* Timezone + Date format */}
-      <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+      <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
         <h2 className="font-semibold text-foreground flex items-center gap-2 text-sm">
           <Clock className="w-4 h-4 text-muted-foreground" />
           Дата и время
@@ -134,7 +134,7 @@ export function GeneralSettingsForm({ settings }: { settings: GeneralSettings })
       </div>
 
       {/* Theme */}
-      <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+      <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
         <h2 className="font-semibold text-foreground flex items-center gap-2 text-sm">
           <Moon className="w-4 h-4 text-muted-foreground" />
           Тема оформления

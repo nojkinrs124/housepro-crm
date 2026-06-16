@@ -99,7 +99,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center shrink-0">
+          <div className="w-14 h-14 rounded-[20px] bg-emerald-100 flex items-center justify-center shrink-0">
             <Home className="w-7 h-7 text-emerald-600" />
           </div>
           <div>
@@ -132,7 +132,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
       </div>
 
       {/* Address */}
-      <div className="flex items-center gap-2 px-4 py-3 bg-card border border-border rounded-2xl">
+      <div className="flex items-center gap-2 px-4 py-3 bg-card border border-border rounded-[20px]">
         <MapPin className="w-4 h-4 text-muted-foreground shrink-0" />
         <span className="text-sm text-foreground">{p.address}</span>
       </div>
@@ -141,19 +141,19 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
       {(p.price || p.deposit || p.management_fee) && (
         <div className="grid grid-cols-3 gap-4">
           {p.price && (
-            <div className="bg-green-50 border border-green-200 rounded-2xl p-4 text-center">
+            <div className="bg-green-50 border border-green-200 rounded-[20px] p-4 text-center">
               <p className="text-xs text-green-600 font-medium">Цена</p>
               <p className="text-xl font-bold text-green-700 mt-1">{Number(p.price).toLocaleString('ru-RU')} ₽</p>
             </div>
           )}
           {p.deposit && (
-            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 text-center">
+            <div className="bg-blue-50 border border-blue-200 rounded-[20px] p-4 text-center">
               <p className="text-xs text-blue-600 font-medium">Депозит</p>
               <p className="text-xl font-bold text-blue-700 mt-1">{Number(p.deposit).toLocaleString('ru-RU')} ₽</p>
             </div>
           )}
           {p.management_fee && (
-            <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 text-center">
+            <div className="bg-orange-50 border border-orange-200 rounded-[20px] p-4 text-center">
               <p className="text-xs text-orange-600 font-medium">Комиссия управления</p>
               <p className="text-xl font-bold text-orange-700 mt-1">{Number(p.management_fee).toLocaleString('ru-RU')} ₽</p>
             </div>
@@ -166,7 +166,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
           {/* Параметры */}
           {(p.area || p.rooms || p.floor || p.total_floors || p.ceiling_height || p.living_area || p.kitchen_area) && (
-            <div className="bg-card border border-border rounded-2xl p-5">
+            <div className="bg-card border border-border rounded-[20px] p-5">
               <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Ruler className="w-4 h-4" /> Параметры
               </h2>
@@ -190,7 +190,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
           {/* Дом */}
           {(p.house_type || p.wall_material || p.year_built || p.has_elevator != null || p.has_parking != null) && (
-            <div className="bg-card border border-border rounded-2xl p-5">
+            <div className="bg-card border border-border rounded-[20px] p-5">
               <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Layers className="w-4 h-4" /> Характеристики дома
               </h2>
@@ -210,7 +210,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
           {/* Коммуникации */}
           {(p.heating_type || p.water_supply_type || p.has_internet != null || p.has_tv != null) && (
-            <div className="bg-card border border-border rounded-2xl p-5">
+            <div className="bg-card border border-border rounded-[20px] p-5">
               <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Flame className="w-4 h-4" /> Коммуникации
               </h2>
@@ -229,14 +229,14 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
           {/* Описание */}
           {p.description && (
-            <div className="bg-card border border-border rounded-2xl p-5">
+            <div className="bg-card border border-border rounded-[20px] p-5">
               <h2 className="font-semibold text-foreground mb-3">Описание</h2>
               <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{p.description}</p>
             </div>
           )}
 
           {/* Договоры */}
-          <div className="bg-card border border-border rounded-2xl p-5">
+          <div className="bg-card border border-border rounded-[20px] p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-foreground flex items-center gap-2">
                 <FileText className="w-4 h-4" /> Договоры
@@ -269,7 +269,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
           {/* Сделки */}
           {(deals?.length ?? 0) > 0 && (
-            <div className="bg-card border border-border rounded-2xl p-5">
+            <div className="bg-card border border-border rounded-[20px] p-5">
               <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                 <TrendingUp className="w-4 h-4" /> Сделки
               </h2>
@@ -294,7 +294,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
         {/* Right sidebar */}
         <div className="space-y-4">
-          <div className="bg-card border border-border rounded-2xl p-5">
+          <div className="bg-card border border-border rounded-[20px] p-5">
             <h2 className="font-semibold text-foreground mb-4">Информация</h2>
             <div className="space-y-0">
               <Row label="Менеджер"   value={manager?.full_name ?? '—'} />
@@ -305,7 +305,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
           </div>
 
           {/* Avito/CIAN hint */}
-          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-[20px] p-4">
             <p className="text-blue-900 text-sm font-medium">📢 Выгрузка на площадки</p>
             <p className="text-blue-700 text-xs mt-1 leading-relaxed">
               Объект содержит данные для Авито, ЦИАН и Домклик.
@@ -314,7 +314,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
           </div>
 
           {/* Quick actions */}
-          <div className="bg-card border border-border rounded-2xl p-4 space-y-2">
+          <div className="bg-card border border-border rounded-[20px] p-4 space-y-2">
             <Link href={`/deals/new?property_id=${id}`}
               className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-xl text-sm font-medium hover:bg-primary/20 transition">
               <TrendingUp className="w-4 h-4" /> Создать сделку

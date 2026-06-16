@@ -16,7 +16,7 @@ export default function NewEmployeePage() {
         <p className="text-muted-foreground mt-1">Создание нового пользователя в системе</p>
       </div>
 
-      <form action={formAction(createEmployeeAction)} className="bg-card border border-border rounded-2xl p-6 space-y-5">
+      <form action={formAction(createEmployeeAction)} className="bg-card border border-border rounded-[20px] p-6 space-y-5">
         <div>
           <label className="block text-sm font-medium text-foreground mb-2">
             Email

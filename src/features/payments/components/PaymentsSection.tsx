@@ -40,7 +40,7 @@ export async function PaymentsSection({ contractId }: { contractId: string }) {
   const totalOwed   = (payments ?? []).filter((p: any) => p.payment_status !== 'paid' && p.payment_status !== 'cancelled').reduce((s: number, p: any) => s + Number(p.amount), 0)
 
   return (
-    <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
+    <div className="bg-card border border-border rounded-[20px] p-5 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <CreditCard className="w-4 h-4 text-muted-foreground" />

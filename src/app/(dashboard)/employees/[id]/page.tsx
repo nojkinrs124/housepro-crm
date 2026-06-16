@@ -53,7 +53,7 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
 
       {/* Header */}
       <div className="flex items-center gap-4">
-        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+        <div className="w-16 h-16 rounded-[20px] bg-primary/10 flex items-center justify-center shrink-0">
           <span className="text-primary text-2xl font-bold">
             {emp.full_name?.charAt(0)?.toUpperCase() ?? '?'}
           </span>
@@ -88,7 +88,7 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
           { label: 'Договоров', value: contractStats?.length ?? 0 },
           { label: 'Задач',     value: taskStats?.length ?? 0 },
         ].map(s => (
-          <div key={s.label} className="bg-card border border-border rounded-2xl p-4 text-center">
+          <div key={s.label} className="bg-card border border-border rounded-[20px] p-4 text-center">
             <p className="text-2xl font-bold text-foreground">{s.value}</p>
             <p className="text-xs text-muted-foreground mt-0.5">{s.label}</p>
           </div>
@@ -96,7 +96,7 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
       </div>
 
       {/* Контакты */}
-      <div className="bg-card border border-border rounded-2xl p-5 space-y-3">
+      <div className="bg-card border border-border rounded-[20px] p-5 space-y-3">
         <h2 className="font-semibold text-foreground">Контакты</h2>
         {emp.email && (
           <div className="flex items-center gap-3 text-sm">
@@ -114,7 +114,7 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
 
       {/* Редактирование — только для admin */}
       {isAdmin && (
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-5">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-5">
           <h2 className="font-semibold text-foreground">Редактировать</h2>
 
           <form action={formAction(boundUpdate)} className="space-y-4">

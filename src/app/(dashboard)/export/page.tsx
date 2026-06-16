@@ -41,7 +41,7 @@ export default async function ExportPage() {
       </div>
 
       {/* Stats */}
-      <div className="flex items-center gap-3 p-4 bg-card border border-border rounded-2xl">
+      <div className="flex items-center gap-3 p-4 bg-card border border-border rounded-[20px]">
         <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
           <Home className="w-5 h-5 text-emerald-600" />
         </div>
@@ -52,7 +52,7 @@ export default async function ExportPage() {
       </div>
 
       {availableCount === 0 && (
-        <div className="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-2xl">
+        <div className="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-[20px]">
           <AlertCircle className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-medium text-yellow-900">Нет объектов для выгрузки</p>
@@ -66,7 +66,7 @@ export default async function ExportPage() {
       {/* Platforms */}
       <div className="grid md:grid-cols-2 gap-4">
         {platforms.map(p => (
-          <div key={p.name} className={`border rounded-2xl p-6 space-y-4 ${p.color}`}>
+          <div key={p.name} className={`border rounded-[20px] p-6 space-y-4 ${p.color}`}>
             <div className="flex items-center gap-3">
               <span className="text-2xl">{p.icon}</span>
               <div>
@@ -99,7 +99,7 @@ export default async function ExportPage() {
       </div>
 
       {/* Instructions */}
-      <div className="bg-card border border-border rounded-2xl p-6 space-y-3">
+      <div className="bg-card border border-border rounded-[20px] p-6 space-y-3">
         <h2 className="font-semibold text-foreground">Как использовать</h2>
         <ol className="space-y-2 text-sm text-muted-foreground list-decimal list-inside">
           <li>Убедитесь, что у объектов заполнены: название, адрес, цена, описание</li>

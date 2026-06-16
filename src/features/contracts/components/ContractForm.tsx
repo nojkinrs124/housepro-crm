@@ -66,7 +66,7 @@ export function ContractForm({
       )}
 
       {/* Тип договора */}
-      <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+      <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
         <h2 className="font-semibold text-foreground">Тип договора</h2>
         <div className="grid grid-cols-2 gap-2.5">
           {contractTypes.map(t => (
@@ -83,7 +83,7 @@ export function ContractForm({
 
       {/* Статус (только для edit) */}
       {mode === 'edit' && (
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-3">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-3">
           <h2 className="font-semibold text-foreground">Статус</h2>
           <select name="status" defaultValue={defaults.status ?? 'draft'} className={sel}>
             {statusOptions.map(o => (
@@ -94,7 +94,7 @@ export function ContractForm({
       )}
 
       {/* Стороны */}
-      <div className="bg-card border border-border rounded-2xl p-6 space-y-5">
+      <div className="bg-card border border-border rounded-[20px] p-6 space-y-5">
         <h2 className="font-semibold text-foreground">Стороны договора</h2>
 
         <div className="space-y-1.5">
@@ -151,7 +151,7 @@ export function ContractForm({
       </div>
 
       {/* Финансы и сроки */}
-      <div className="bg-card border border-border rounded-2xl p-6 space-y-5">
+      <div className="bg-card border border-border rounded-[20px] p-6 space-y-5">
         <h2 className="font-semibold text-foreground">Финансы и сроки</h2>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
@@ -178,7 +178,7 @@ export function ContractForm({
       </div>
 
       {/* Примечания */}
-      <div className="bg-card border border-border rounded-2xl p-6 space-y-3">
+      <div className="bg-card border border-border rounded-[20px] p-6 space-y-3">
         <h2 className="font-semibold text-foreground">Примечания</h2>
         <textarea name="notes" rows={3} placeholder="Дополнительные условия..."
           defaultValue={defaults.notes ?? ''}

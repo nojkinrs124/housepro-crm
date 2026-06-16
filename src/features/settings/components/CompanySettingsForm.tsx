@@ -113,7 +113,7 @@ export function CompanySettingsForm({ company, isAdmin }: { company: Company | n
 
   if (!isAdmin) {
     return (
-      <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-6 text-center">
+      <div className="bg-yellow-50 border border-yellow-200 rounded-[20px] p-6 text-center">
         <Building2 className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
         <p className="font-semibold text-yellow-900">Только для администраторов</p>
         <p className="text-sm text-yellow-700 mt-1">Управление данными компании доступно только администраторам системы.</p>
@@ -125,13 +125,13 @@ export function CompanySettingsForm({ company, isAdmin }: { company: Company | n
     <form onSubmit={handleSubmit} className="space-y-5">
 
       {/* Logo */}
-      <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+      <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
         <SectionHeader icon={Camera} title="Логотип компании" />
 
         <div className="flex items-center gap-5">
           {/* Logo preview */}
           <div className="relative shrink-0">
-            <div className="w-20 h-20 rounded-2xl border-2 border-dashed border-border bg-muted/30 flex items-center justify-center overflow-hidden">
+            <div className="w-20 h-20 rounded-[20px] border-2 border-dashed border-border bg-muted/30 flex items-center justify-center overflow-hidden">
               {logoSrc ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={logoSrc} alt="logo" className="w-full h-full object-contain p-1" />
@@ -140,7 +140,7 @@ export function CompanySettingsForm({ company, isAdmin }: { company: Company | n
               )}
             </div>
             {logoPending && (
-              <div className="absolute inset-0 rounded-2xl bg-background/70 flex items-center justify-center">
+              <div className="absolute inset-0 rounded-[20px] bg-background/70 flex items-center justify-center">
                 <Loader2 className="w-5 h-5 animate-spin text-primary" />
               </div>
             )}
@@ -218,7 +218,7 @@ export function CompanySettingsForm({ company, isAdmin }: { company: Company | n
       </div>
 
       {/* Basic info */}
-      <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+      <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
         <SectionHeader icon={Building2} title="Основная информация" />
 
         <div className="space-y-1.5">
@@ -292,7 +292,7 @@ export function CompanySettingsForm({ company, isAdmin }: { company: Company | n
       </div>
 
       {/* Requisites */}
-      <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+      <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
         <SectionHeader icon={FileText} title="Юридические реквизиты" />
 
         <div className="grid sm:grid-cols-2 gap-4">
@@ -331,7 +331,7 @@ export function CompanySettingsForm({ company, isAdmin }: { company: Company | n
       </div>
 
       {/* Bank details */}
-      <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+      <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
         <SectionHeader icon={Landmark} title="Банковские реквизиты" />
 
         <div className="space-y-1.5">

@@ -103,7 +103,7 @@ export function DealComments({ dealId, comments: initialComments, currentUserId 
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-sm">
+    <div className="bg-white rounded-[20px] border border-[#E2E8F0] p-5 shadow-sm">
       <div className="flex items-center gap-2 mb-5">
         <div className="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center">
           <MessageSquare style={{ width: 14, height: 14, color: '#2563EB' }} />

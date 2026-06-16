@@ -113,7 +113,7 @@ export function SecuritySettingsForm({
     <div className="space-y-5">
 
       {/* Account info */}
-      <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+      <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
         <h2 className="font-semibold text-foreground flex items-center gap-2 text-sm">
           <ShieldCheck className="w-4 h-4 text-muted-foreground" />
           Информация об аккаунте
@@ -153,7 +153,7 @@ export function SecuritySettingsForm({
       </div>
 
       {/* Change password */}
-      <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+      <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
         <h2 className="font-semibold text-foreground flex items-center gap-2 text-sm">
           <Lock className="w-4 h-4 text-muted-foreground" />
           Смена пароля
@@ -232,7 +232,7 @@ export function SecuritySettingsForm({
       </div>
 
       {/* 2FA — info block */}
-      <div className="bg-card border border-border rounded-2xl p-6 space-y-3">
+      <div className="bg-card border border-border rounded-[20px] p-6 space-y-3">
         <h2 className="font-semibold text-foreground flex items-center gap-2 text-sm">
           <Fingerprint className="w-4 h-4 text-muted-foreground" />
           Двухфакторная аутентификация
@@ -249,7 +249,7 @@ export function SecuritySettingsForm({
       </div>
 
       {/* Sessions / sign out all */}
-      <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+      <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
         <h2 className="font-semibold text-foreground flex items-center gap-2 text-sm">
           <LogOut className="w-4 h-4 text-muted-foreground" />
           Активные сессии

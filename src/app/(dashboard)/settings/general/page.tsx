@@ -16,19 +16,19 @@ export default async function GeneralSettingsPage() {
     <div className="max-w-2xl mx-auto space-y-6">
       <Link
         href="/settings"
-        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        className="inline-flex items-center gap-2 text-sm font-medium text-[#64748B] hover:text-[#111827] transition-colors"
       >
-        <ArrowLeft className="w-4 h-4" />
+        <ArrowLeft style={{ width: 16, height: 16 }} />
         Настройки
       </Link>
 
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-          <Settings className="w-5 h-5 text-gray-600" />
+        <div className="w-11 h-11 rounded-[12px] flex items-center justify-center shrink-0 bg-slate-100">
+          <Settings className="text-slate-600" style={{ width: 20, height: 20 }} />
         </div>
         <div>
-          <h1 className="text-[28px] font-bold text-foreground leading-tight">Общие настройки</h1>
-          <p className="text-sm text-muted-foreground">Язык, валюта, временная зона</p>
+          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Общие настройки</h1>
+          <p className="text-[#64748B] text-sm font-medium mt-0.5">Язык, валюта, временная зона</p>
         </div>
       </div>
 

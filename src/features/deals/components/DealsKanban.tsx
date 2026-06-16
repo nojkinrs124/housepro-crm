@@ -111,7 +111,7 @@ export function DealsKanbanBoard({ deals: initialDeals }: { deals: any[] }) {
           return (
             <div
               key={col.status}
-              className={`w-[82vw] sm:w-72 md:w-64 border-t-2 ${col.color} border border-border rounded-2xl flex flex-col transition-colors ${isOver ? 'bg-accent/60 border-primary/30' : 'bg-card'}`}
+              className={`w-[82vw] sm:w-72 md:w-64 border-t-2 ${col.color} border border-border rounded-[20px] flex flex-col transition-colors ${isOver ? 'bg-accent/60 border-primary/30' : 'bg-card'}`}
               style={{ scrollSnapAlign: 'start' }}
               onDragOver={(e) => handleDragOver(e, col.status)}
               onDragLeave={handleDragLeave}

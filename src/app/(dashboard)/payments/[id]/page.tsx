@@ -104,11 +104,11 @@ export default async function PaymentDetailPage({ params }: { params: Promise<{ 
       </Link>
 
       {/* Hero card */}
-      <div className="bg-white rounded-2xl border border-[#E2E8F0] overflow-hidden shadow-sm">
+      <div className="bg-white rounded-[20px] border border-[#E2E8F0] overflow-hidden shadow-sm">
         <div className={`bg-gradient-to-r ${statusGradient[safeStatus]} p-6 text-white`}>
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center">
+              <div className="w-14 h-14 rounded-[20px] bg-white/20 flex items-center justify-center">
                 {statusIcon[safeStatus]}
               </div>
               <div>
@@ -152,7 +152,7 @@ export default async function PaymentDetailPage({ params }: { params: Promise<{ 
         <div className="md:col-span-2 space-y-6">
           {/* Contract block */}
           {contract && (
-            <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-sm">
+            <div className="bg-white rounded-[20px] border border-[#E2E8F0] p-5 shadow-sm">
               <h2 className="text-sm font-semibold text-[#111827] mb-4">Договор</h2>
               <Link href={`/contracts/${contract.id}`}
                 className="flex items-center gap-3 p-3 rounded-xl border border-[#E2E8F0] hover:border-green-300 hover:bg-green-50/40 transition-all group mb-4">
@@ -228,7 +228,7 @@ export default async function PaymentDetailPage({ params }: { params: Promise<{ 
 
           {/* Notes */}
           {payment.notes && (
-            <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-sm">
+            <div className="bg-white rounded-[20px] border border-[#E2E8F0] p-5 shadow-sm">
               <h2 className="text-sm font-semibold text-[#111827] mb-3">Комментарий</h2>
               <p className="text-sm text-[#374151] leading-relaxed whitespace-pre-wrap">{payment.notes}</p>
             </div>
@@ -238,7 +238,7 @@ export default async function PaymentDetailPage({ params }: { params: Promise<{ 
         {/* Right: Actions */}
         <div className="space-y-4">
           {/* Quick actions */}
-          <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-sm space-y-2">
+          <div className="bg-white rounded-[20px] border border-[#E2E8F0] p-5 shadow-sm space-y-2">
             <h2 className="text-xs font-semibold text-[#64748B] uppercase tracking-wide mb-3">Действия</h2>
 
             {payment.payment_status !== 'paid' && payment.payment_status !== 'cancelled' && (
@@ -255,7 +255,7 @@ export default async function PaymentDetailPage({ params }: { params: Promise<{ 
           </div>
 
           {/* Status info */}
-          <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-sm">
+          <div className="bg-white rounded-[20px] border border-[#E2E8F0] p-5 shadow-sm">
             <h2 className="text-xs font-semibold text-[#64748B] uppercase tracking-wide mb-3">Информация</h2>
             <dl className="space-y-3">
               <div>

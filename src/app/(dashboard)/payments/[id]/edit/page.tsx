@@ -65,7 +65,7 @@ export default async function EditPaymentPage({ params }: { params: Promise<{ id
         </div>
       </div>
 
-      <form action={formAction(boundAction)} className="bg-card border border-border rounded-2xl p-6 space-y-5">
+      <form action={formAction(boundAction)} className="bg-card border border-border rounded-[20px] p-6 space-y-5">
 
         {/* Сумма */}
         <div>

@@ -93,11 +93,11 @@ export function ProfileForm({ user }: { user: UserType }) {
     <div className="space-y-6">
 
       {/* ── Avatar + basic info ── */}
-      <div className="bg-card border border-border rounded-2xl p-6">
+      <div className="bg-card border border-border rounded-[20px] p-6">
         <div className="flex items-start gap-5 mb-6">
           {/* Avatar */}
           <div className="relative shrink-0">
-            <div className="w-20 h-20 rounded-2xl bg-primary/10 overflow-hidden flex items-center justify-center">
+            <div className="w-20 h-20 rounded-[20px] bg-primary/10 overflow-hidden flex items-center justify-center">
               {avatarSrc ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={avatarSrc} alt="avatar" className="w-full h-full object-cover" />
@@ -205,7 +205,7 @@ export function ProfileForm({ user }: { user: UserType }) {
       </div>
 
       {/* ── Password ── */}
-      <div className="bg-card border border-border rounded-2xl p-6">
+      <div className="bg-card border border-border rounded-[20px] p-6">
         <h3 className="font-medium text-foreground flex items-center gap-2 text-sm mb-4">
           <Lock className="w-4 h-4 text-muted-foreground" />
           Смена пароля

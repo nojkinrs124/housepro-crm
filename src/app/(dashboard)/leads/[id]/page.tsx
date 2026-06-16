@@ -83,7 +83,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center shrink-0">
+          <div className="w-14 h-14 rounded-[20px] bg-blue-100 flex items-center justify-center shrink-0">
             <span className="text-blue-600 text-2xl font-bold">
               {lead.full_name?.charAt(0)?.toUpperCase() ?? '?'}
             </span>
@@ -129,7 +129,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
         <div className="lg:col-span-2 space-y-4">
 
           {/* Контактная информация */}
-          <div className="bg-card border border-border rounded-2xl p-5">
+          <div className="bg-card border border-border rounded-[20px] p-5">
             <h2 className="font-semibold text-foreground mb-4">Контактные данные</h2>
             <div className="grid grid-cols-2 gap-3">
               {lead.phone && (
@@ -175,7 +175,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
 
           {/* Критерии подбора */}
           {(lead.deal_type || lead.property_type || lead.budget_min || lead.budget_max || lead.rooms || lead.district || lead.area_min || lead.area_max) && (
-            <div className="bg-card border border-border rounded-2xl p-5">
+            <div className="bg-card border border-border rounded-[20px] p-5">
               <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Home className="w-4 h-4" />
                 Критерии подбора
@@ -232,14 +232,14 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
 
           {/* Комментарий */}
           {lead.comment && (
-            <div className="bg-card border border-border rounded-2xl p-5">
+            <div className="bg-card border border-border rounded-[20px] p-5">
               <h2 className="font-semibold text-foreground mb-2">Комментарий</h2>
               <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{lead.comment}</p>
             </div>
           )}
 
           {/* Активности */}
-          <div className="bg-card border border-border rounded-2xl p-5">
+          <div className="bg-card border border-border rounded-[20px] p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-foreground">История активности</h2>
               <span className="text-xs text-muted-foreground">{activities.length} записей</span>
@@ -299,13 +299,13 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
         <div className="space-y-4">
 
           {/* Статус */}
-          <div className="bg-card border border-border rounded-2xl p-5">
+          <div className="bg-card border border-border rounded-[20px] p-5">
             <h2 className="font-semibold text-foreground mb-3">Статус лида</h2>
             <LeadStatusSelect leadId={id} currentStatus={lead.status} />
           </div>
 
           {/* Детали */}
-          <div className="bg-card border border-border rounded-2xl p-5">
+          <div className="bg-card border border-border rounded-[20px] p-5">
             <h2 className="font-semibold text-foreground mb-4">Детали</h2>
             <div className="space-y-2.5 text-sm">
               {assignee?.full_name && (
@@ -340,7 +340,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
 
           {/* Быстрые действия */}
           {!isConverted && (
-            <div className="bg-card border border-border rounded-2xl p-4 space-y-2">
+            <div className="bg-card border border-border rounded-[20px] p-4 space-y-2">
               <Link href={`/deals/new?client_id=${id}`}
                 className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-xl text-sm font-medium hover:bg-primary/20 transition">
                 <Zap className="w-4 h-4" />

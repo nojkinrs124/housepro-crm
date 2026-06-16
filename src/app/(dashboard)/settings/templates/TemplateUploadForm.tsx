@@ -33,7 +33,7 @@ export function TemplateUploadForm() {
   }
 
   return (
-    <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+    <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
       <h2 className="font-semibold text-foreground flex items-center gap-2">
         <Upload className="w-4 h-4" />
         Загрузить шаблон

@@ -82,7 +82,7 @@ export default async function GenerateContractPage({
       </div>
 
       {/* Checklist */}
-      <div className="bg-card border border-border rounded-2xl p-5">
+      <div className="bg-card border border-border rounded-[20px] p-5">
         <h2 className="font-semibold text-foreground mb-4">Проверка данных</h2>
         <div className="grid grid-cols-2 gap-2">
           {fields.map((field) => (
@@ -119,7 +119,7 @@ export default async function GenerateContractPage({
       </div>
 
       {/* Generate */}
-      <div className="bg-card border border-border rounded-2xl p-5">
+      <div className="bg-card border border-border rounded-[20px] p-5">
         <h2 className="font-semibold text-foreground mb-4">Создать документ</h2>
         <div className="flex items-center gap-3 flex-wrap">
           <GenerateButton contractId={id} />
@@ -139,7 +139,7 @@ export default async function GenerateContractPage({
 
       {/* Versions */}
       {versions && versions.length > 0 && (
-        <div className="bg-card border border-border rounded-2xl p-5">
+        <div className="bg-card border border-border rounded-[20px] p-5">
           <h2 className="font-semibold text-foreground mb-4">История версий</h2>
           <div className="space-y-2">
             {versions.map((v) => (

@@ -37,7 +37,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
       <form action={formAction(boundAction)} className="space-y-4">
 
         {/* Основное */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Основные данные</h2>
 
           <div>
@@ -85,7 +85,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
         </div>
 
         {/* Параметры */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Параметры</h2>
           <div className="grid grid-cols-3 gap-4">
             {[
@@ -106,7 +106,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
         </div>
 
         {/* Дом */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Характеристики дома</h2>
           <div className="grid grid-cols-3 gap-4">
             <div>
@@ -149,7 +149,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
         </div>
 
         {/* Коммуникации */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Коммуникации</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -185,7 +185,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
         </div>
 
         {/* Финансы */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Финансы</h2>
           <div className="grid grid-cols-3 gap-4">
             <div>
@@ -208,7 +208,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
         </div>
 
         {/* Описание */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-3">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-3">
           <h2 className="font-semibold text-foreground">Описание</h2>
           <textarea name="description" rows={4} defaultValue={p.description ?? ''}
             placeholder="Описание для публикации на Авито, ЦИАН, Домклик..."

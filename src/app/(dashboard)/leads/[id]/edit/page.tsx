@@ -51,7 +51,7 @@ export default async function EditLeadPage({ params }: { params: Promise<{ id: s
       <form action={formAction(boundAction)} className="space-y-4">
 
         {/* Контакт */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Контакт</h2>
           <div>
             <label className={lbl}>Имя</label>
@@ -73,7 +73,7 @@ export default async function EditLeadPage({ params }: { params: Promise<{ id: s
         </div>
 
         {/* Источник */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Источник и ответственный</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -102,7 +102,7 @@ export default async function EditLeadPage({ params }: { params: Promise<{ id: s
         </div>
 
         {/* Критерии */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Критерии подбора</h2>
           <div>
             <label className={lbl}>Тип сделки</label>
@@ -161,7 +161,7 @@ export default async function EditLeadPage({ params }: { params: Promise<{ id: s
         </div>
 
         {/* Комментарий */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-3">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-3">
           <h2 className="font-semibold text-foreground">Комментарий</h2>
           <textarea name="comment" rows={3} defaultValue={l.comment ?? ''}
             className="w-full px-4 py-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none" />

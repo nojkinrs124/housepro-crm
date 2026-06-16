@@ -42,7 +42,7 @@ export default async function NewTaskPage({
       </div>
 
       <form action={formAction(createTaskAction)} className="space-y-4">
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-5">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-5">
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-foreground">
               Название <span className="text-destructive">*</span>
@@ -87,7 +87,7 @@ export default async function NewTaskPage({
         </div>
 
         {/* Связи */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Привязать к</h2>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">

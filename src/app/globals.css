@@ -4,62 +4,63 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 142 76% 36%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 88%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 142 76% 36%;
-    --radius: 0.5rem;
+    /* ── shadcn/ui tokens mapped to HousePro design system ── */
+    --background:         210 40% 98%;       /* #F8FAFC */
+    --foreground:         222 47% 11%;       /* #111827 */
+    --card:               0 0% 100%;         /* #FFFFFF */
+    --card-foreground:    222 47% 11%;
+    --popover:            0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary:            142 76% 36%;       /* #16A34A */
+    --primary-foreground: 0 0% 100%;
+    --secondary:          210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted:              210 40% 96%;
+    --muted-foreground:   215 16% 47%;       /* #64748B */
+    --accent:             210 40% 96%;
+    --accent-foreground:  222 47% 11%;
+    --destructive:        0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border:             214 32% 91%;       /* soft blue-grey */
+    --input:              214 32% 91%;
+    --ring:               142 76% 36%;
+    --radius:             0.75rem;           /* 12px — base radius for rounded-lg */
 
-    /* HousePro design tokens */
-    --hp-green: #16A34A;
-    --hp-green-light: #22C55E;
-    --hp-bg: #F8FAFC;
-    --hp-card: #FFFFFF;
-    --hp-text: #111827;
-    --hp-text-secondary: #64748B;
-    --hp-border: rgba(214, 219, 235, 0.7);
-    --hp-shadow-sm: 0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06);
-    --hp-shadow-md: 0 4px 16px rgba(0,0,0,0.06), 0 12px 40px rgba(0,0,0,0.08);
-    --hp-shadow-lg: 0 8px 32px rgba(0,0,0,0.10), 0 20px 60px rgba(0,0,0,0.12);
-    --hp-radius: 20px;
-    --hp-radius-sm: 12px;
+    /* ── HousePro design tokens (direct use) ── */
+    --hp-green:           #16A34A;
+    --hp-green-light:     #22C55E;
+    --hp-bg:              #F8FAFC;
+    --hp-card:            #FFFFFF;
+    --hp-text:            #111827;
+    --hp-text-secondary:  #64748B;
+    --hp-border:          rgba(214, 219, 235, 0.7);
+    --hp-shadow-sm:       0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06);
+    --hp-shadow-md:       0 4px 16px rgba(0,0,0,0.06), 0 12px 40px rgba(0,0,0,0.08);
+    --hp-shadow-lg:       0 8px 32px rgba(0,0,0,0.10), 0 20px 60px rgba(0,0,0,0.12);
+    --hp-radius:          20px;
+    --hp-radius-sm:       12px;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
+    --background:         222 47% 4%;
+    --foreground:         210 40% 98%;
+    --card:               222 47% 8%;
+    --card-foreground:    210 40% 98%;
+    --popover:            222 47% 8%;
     --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
+    --primary:            142 70% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary:          217 33% 17%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --muted:              217 33% 17%;
+    --muted-foreground:   215 20% 65%;
+    --accent:             217 33% 17%;
+    --accent-foreground:  210 40% 98%;
+    --destructive:        0 63% 31%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --border:             217 33% 17%;
+    --input:              217 33% 17%;
+    --ring:               142 70% 45%;
   }
 }
 
@@ -74,25 +75,188 @@
   }
 }
 
-/* Scrollbar styling */
+/* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(100,116,139,0.25); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(100,116,139,0.4); }
 
-/* HP Card utility */
+/* ── Base card ── */
 .hp-card {
   background: var(--hp-card);
   border-radius: var(--hp-radius);
   box-shadow: var(--hp-shadow-sm);
   border: 1px solid var(--hp-border);
 }
-
 .hp-card-hover {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
 .hp-card-hover:hover {
   box-shadow: var(--hp-shadow-md);
   transform: translateY(-2px);
+}
+
+/* ── Unified page heading ── */
+.hp-h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--hp-text);
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+.hp-h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--hp-text);
+  letter-spacing: -0.015em;
+}
+
+/* ── CTA button ── */
+.hp-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  color: #fff;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #16A34A 0%, #22C55E 100%);
+  box-shadow: 0 4px 16px rgba(22,163,74,0.35);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hp-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(22,163,74,0.45);
+}
+
+.hp-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  color: var(--hp-text);
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  background: #fff;
+  border: 1.5px solid rgba(214,219,235,0.9);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hp-btn-secondary:hover {
+  background: #F8FAFC;
+  border-color: rgba(22,163,74,0.3);
+  color: #16A34A;
+}
+
+/* ── Form card (used in new/edit pages) ── */
+.hp-form-card {
+  background: #fff;
+  border-radius: var(--hp-radius);
+  border: 1px solid rgba(214,219,235,0.7);
+  padding: 24px;
+  box-shadow: var(--hp-shadow-sm);
+}
+
+/* ── Form controls ── */
+.hp-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 16px;
+  border-radius: var(--hp-radius-sm);
+  border: 1.5px solid rgba(214,219,235,0.9);
+  background: #fff;
+  color: var(--hp-text);
+  font-size: 14px;
+  transition: all 0.15s ease;
+  outline: none;
+}
+.hp-input:focus {
+  border-color: #22C55E;
+  box-shadow: 0 0 0 3px rgba(34,197,94,0.10);
+}
+.hp-input::placeholder { color: #94A3B8; }
+
+.hp-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hp-text);
+  margin-bottom: 6px;
+}
+
+/* ── Back link ── */
+.hp-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--hp-text-secondary);
+  transition: color 0.15s;
+}
+.hp-back-link:hover { color: var(--hp-text); }
+
+/* ── Stats card mini ── */
+.hp-stat-card {
+  background: #fff;
+  border-radius: var(--hp-radius);
+  border: 1px solid rgba(214,219,235,0.6);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* ── Section header ── */
+.hp-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 0;
+}
+
+/* ── Empty state ── */
+.hp-empty {
+  text-align: center;
+  padding: 64px 24px;
+}
+
+/* ── Page icon header (used in form pages) ── */
+.hp-page-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--hp-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── Animations — uniform across all pages ── */
+.hp-lift {
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hp-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--hp-shadow-md);
+}
+
+/* ── Mobile: ensure readable tap targets ── */
+@media (max-width: 640px) {
+  .hp-btn-primary,
+  .hp-btn-secondary {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+  .hp-form-card {
+    padding: 16px;
+  }
+  .hp-h1 {
+    font-size: 24px;
+  }
 }

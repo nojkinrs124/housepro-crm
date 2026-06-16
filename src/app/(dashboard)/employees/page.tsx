@@ -7,8 +7,14 @@ const roleLabels: Record<string, string> = {
   agent: 'Риелтор', accountant: 'Бухгалтер',
 }
 const roleColors: Record<string, string> = {
-  admin: 'bg-red-100 text-red-700', manager: 'bg-blue-100 text-blue-700',
-  agent: 'bg-green-100 text-green-700', accountant: 'bg-purple-100 text-purple-700',
+  admin:      'bg-red-100/80 text-red-700',
+  manager:    'bg-blue-100/80 text-blue-700',
+  agent:      'bg-green-100/80 text-green-700',
+  accountant: 'bg-purple-100/80 text-purple-700',
+}
+const roleIconColors: Record<string, string> = {
+  admin: 'bg-red-50 text-red-600', manager: 'bg-blue-50 text-blue-600',
+  agent: 'bg-green-50 text-green-600', accountant: 'bg-purple-50 text-purple-600',
 }
 const roleIcons: Record<string, typeof Shield> = {
   admin: Shield, manager: UserCheck, agent: User, accountant: User,
@@ -22,10 +28,8 @@ export default async function EmployeesPage() {
     .select('id, full_name, email, role, phone, is_active, created_at')
     .order('created_at', { ascending: false })
 
-  // Считаем статистику для каждого
   const empIds = employees?.map(e => e.id) ?? []
-  const [{ data: clientStats }, { data: contractStats }, { data: dealStats }] = await Promise.all([
-    supabase.from('clients').select('manager_id').in('manager_id', empIds),
+  const [{ data: contractStats }, { data: dealStats }] = await Promise.all([
     supabase.from('contracts').select('manager_id').in('manager_id', empIds),
     supabase.from('deals').select('manager_id').in('manager_id', empIds),
   ])
@@ -34,95 +38,116 @@ export default async function EmployeesPage() {
     (arr ?? []).filter(x => x.manager_id === id).length
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Сотрудники</h1>
-          <p className="text-muted-foreground mt-1">{employees?.length ?? 0} сотрудников</p>
+          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Сотрудники</h1>
+          <p className="text-[#64748B] mt-1 text-sm font-medium">{employees?.length ?? 0} сотрудников</p>
         </div>
         <Link
           href="/employees/new"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition"
+          className="flex items-center gap-2 px-5 py-2.5 text-white rounded-[14px] text-sm font-bold transition-all hover:-translate-y-0.5"
+          style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}
         >
-          <Plus className="w-4 h-4" />
+          <Plus style={{ width: 16, height: 16 }} />
           Добавить
         </Link>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-4 gap-4">
-        {['admin', 'manager', 'agent', 'accountant'].map(role => {
+      {/* Role stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {(['admin', 'manager', 'agent', 'accountant'] as const).map(role => {
           const count = employees?.filter(e => e.role === role).length ?? 0
           const Icon = roleIcons[role]
           return (
-            <div key={role} className="bg-card border border-border rounded-2xl p-4">
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-2 ${roleColors[role].replace('text-', 'text-').replace('bg-', 'bg-')}`}>
-                <Icon className="w-4 h-4" />
+            <div key={role} className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm p-5 flex items-center gap-4">
+              <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${roleIconColors[role]}`}>
+                <Icon style={{ width: 20, height: 20 }} />
               </div>
-              <p className="text-xl font-bold text-foreground">{count}</p>
-              <p className="text-xs text-muted-foreground">{roleLabels[role]}</p>
+              <div>
+                <p className="text-2xl font-bold text-[#111827]">{count}</p>
+                <p className="text-xs text-[#64748B] font-medium mt-0.5">{roleLabels[role]}</p>
+              </div>
             </div>
           )
         })}
       </div>
 
-      {/* List */}
-      <div className="bg-card border border-border rounded-2xl overflow-hidden">
+      {/* Employees list */}
+      <div
+        className="bg-white rounded-[20px] border border-slate-100 overflow-hidden"
+        style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
+      >
         {!employees?.length ? (
           <div className="text-center py-16">
-            <Users className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-40" />
-            <p className="text-muted-foreground">Нет сотрудников</p>
+            <div className="w-14 h-14 rounded-[20px] flex items-center justify-center mx-auto mb-4"
+              style={{ background: 'linear-gradient(135deg, rgba(22,163,74,0.1), rgba(34,197,94,0.1))' }}>
+              <Users style={{ width: 24, height: 24, color: '#16A34A' }} />
+            </div>
+            <p className="text-[#111827] font-bold text-base">Сотрудников ещё нет</p>
+            <p className="text-[#64748B] text-sm mt-1">Добавьте первого сотрудника</p>
+            <Link href="/employees/new"
+              className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all"
+              style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+              <Plus style={{ width: 16, height: 16 }} />
+              Добавить
+            </Link>
           </div>
         ) : (
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-slate-100">
             {employees.map(emp => {
               const Icon = roleIcons[emp.role] ?? User
-              const clients = countBy(clientStats as { manager_id: string }[], emp.id)
-              const contracts = countBy(contractStats as { manager_id: string }[], emp.id)
               const deals = countBy(dealStats as { manager_id: string }[], emp.id)
+              const contracts = countBy(contractStats as { manager_id: string }[], emp.id)
 
               return (
-                <Link key={emp.id} href={`/employees/${emp.id}`} className="p-5 flex items-center gap-4 hover:bg-accent/30 transition-colors">
+                <Link
+                  key={emp.id}
+                  href={`/employees/${emp.id}`}
+                  className="flex items-center gap-4 px-6 py-4 hover:bg-[#F8FAFC] transition-all duration-200 group"
+                >
                   {/* Avatar */}
-                  <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
-                    <span className="text-primary text-lg font-bold">
-                      {emp.full_name?.charAt(0)?.toUpperCase() ?? '?'}
-                    </span>
+                  <div
+                    className="w-11 h-11 rounded-full flex items-center justify-center shrink-0 text-white text-sm font-bold"
+                    style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 2px 8px rgba(22,163,74,0.25)' }}
+                  >
+                    {emp.full_name?.charAt(0)?.toUpperCase() ?? '?'}
                   </div>
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-semibold text-foreground">{emp.full_name}</p>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${roleColors[emp.role] ?? 'bg-gray-100'}`}>
+                      <p className="font-semibold text-[#111827] group-hover:text-[#16A34A] transition-colors text-sm">
+                        {emp.full_name}
+                      </p>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${roleColors[emp.role] ?? 'bg-gray-100'}`}>
                         {roleLabels[emp.role] ?? emp.role}
                       </span>
                       {!emp.is_active && (
-                        <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-600">
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-red-100 text-red-600">
                           Неактивен
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground mt-0.5">{emp.email}</p>
-                    {emp.phone && <p className="text-sm text-muted-foreground">{emp.phone}</p>}
+                    <p className="text-xs text-[#64748B] mt-0.5">{emp.email}</p>
+                    {emp.phone && <p className="text-xs text-[#94A3B8]">{emp.phone}</p>}
                   </div>
 
                   {/* Stats */}
-                  <div className="flex items-center gap-6 shrink-0">
+                  <div className="hidden sm:flex items-center gap-6 shrink-0">
                     <div className="text-center">
-                      <p className="text-lg font-bold text-foreground">{clients}</p>
-                      <p className="text-xs text-muted-foreground">Клиентов</p>
+                      <p className="text-lg font-bold text-[#111827]">{deals}</p>
+                      <p className="text-[10px] text-[#64748B] font-medium">Сделок</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-lg font-bold text-foreground">{deals}</p>
-                      <p className="text-xs text-muted-foreground">Сделок</p>
+                      <p className="text-lg font-bold text-[#111827]">{contracts}</p>
+                      <p className="text-[10px] text-[#64748B] font-medium">Договоров</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-lg font-bold text-foreground">{contracts}</p>
-                      <p className="text-xs text-muted-foreground">Договоров</p>
-                    </div>
-                    <div className="text-center text-xs text-muted-foreground">
-                      <p>с {new Date(emp.created_at).toLocaleDateString('ru-RU', { month: 'short', year: 'numeric' })}</p>
+                      <p className="text-xs text-[#94A3B8] font-medium">
+                        с {new Date(emp.created_at).toLocaleDateString('ru-RU', { month: 'short', year: 'numeric' })}
+                      </p>
                     </div>
                   </div>
                 </Link>

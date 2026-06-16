@@ -18,7 +18,7 @@ export default function NewContactPage() {
 
       <form action={formAction(createContactAction)} className="space-y-4">
         {/* Основное */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Основные данные</h2>
 
           <div className="space-y-1.5">
@@ -46,7 +46,7 @@ export default function NewContactPage() {
         </div>
 
         {/* Контакты */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Контактные данные</h2>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -73,7 +73,7 @@ export default function NewContactPage() {
         </div>
 
         {/* Паспорт */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Паспортные данные</h2>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -105,7 +105,7 @@ export default function NewContactPage() {
         </div>
 
         {/* Адрес */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Адрес регистрации</h2>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -147,7 +147,7 @@ export default function NewContactPage() {
         </div>
 
         {/* Дополнительно */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Дополнительно</h2>
 
           <div className="space-y-1.5">

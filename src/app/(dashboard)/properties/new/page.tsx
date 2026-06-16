@@ -32,7 +32,7 @@ export default async function NewPropertyPage() {
       <form action={formAction(createPropertyAction)} className="space-y-4">
 
         {/* Основное */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Основные данные</h2>
 
           <div className="space-y-1.5">
@@ -79,7 +79,7 @@ export default async function NewPropertyPage() {
         </div>
 
         {/* Параметры */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Параметры</h2>
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1.5">
@@ -114,7 +114,7 @@ export default async function NewPropertyPage() {
         </div>
 
         {/* Дом */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Характеристики дома</h2>
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1.5">
@@ -157,7 +157,7 @@ export default async function NewPropertyPage() {
         </div>
 
         {/* Коммуникации */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Коммуникации</h2>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -193,7 +193,7 @@ export default async function NewPropertyPage() {
         </div>
 
         {/* Финансы */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Финансы</h2>
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1.5">
@@ -212,7 +212,7 @@ export default async function NewPropertyPage() {
         </div>
 
         {/* Описание */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-3">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-3">
           <h2 className="font-semibold text-foreground">Описание</h2>
           <textarea name="description" rows={4} placeholder="Описание объекта..."
             className="w-full px-4 py-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all resize-none" />

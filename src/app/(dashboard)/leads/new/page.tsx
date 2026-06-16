@@ -63,7 +63,7 @@ export default async function NewLeadPage() {
       <form action={formAction(createLeadAction)} className="space-y-4">
 
         {/* Контакт */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Контакт</h2>
           <div>
             <label className={lbl}>Имя</label>
@@ -90,7 +90,7 @@ export default async function NewLeadPage() {
         </div>
 
         {/* Источник и менеджер */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Источник</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -121,7 +121,7 @@ export default async function NewLeadPage() {
         </div>
 
         {/* Критерии подбора */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Что ищет клиент</h2>
 
           <div>
@@ -186,7 +186,7 @@ export default async function NewLeadPage() {
         </div>
 
         {/* Комментарий */}
-        <div className="bg-card border border-border rounded-2xl p-6 space-y-3">
+        <div className="bg-card border border-border rounded-[20px] p-6 space-y-3">
           <h2 className="font-semibold text-foreground">Комментарий</h2>
           <textarea name="comment" rows={3}
             placeholder="Что ищет клиент, особые пожелания, срочность..."
