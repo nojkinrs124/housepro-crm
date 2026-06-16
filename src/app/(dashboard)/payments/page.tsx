@@ -89,9 +89,9 @@ export default async function PaymentsPage({
           const Icon = card.Icon
           return (
             <div key={card.label} className="bg-white rounded-[20px] border border-slate-100 p-5 transition-all hover:-translate-y-0.5" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-medium text-[#64748B]">{card.label}</p>
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${card.iconCls}`}>
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <p className="text-xs font-medium text-[#64748B] min-w-0 leading-tight break-words">{card.label}</p>
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${card.iconCls}`}>
                   <Icon className={card.iconColor} style={{ width: 17, height: 17 }} />
                 </div>
               </div>

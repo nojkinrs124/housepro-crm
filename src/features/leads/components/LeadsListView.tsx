@@ -147,9 +147,9 @@ export function LeadsListView({ leads }: { leads: any[] }) {
 
           return (
             <Link key={lead.id} href={`/leads/${lead.id}`} className="block p-4 hover:bg-slate-50/60 transition-colors">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-semibold text-[#111827] truncate max-w-[200px]">{lead.full_name || '—'}</span>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium border ${statusColors[lead.status] ?? 'bg-gray-50 text-gray-500 border-gray-200'}`}>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <span className="text-sm font-semibold text-[#111827] truncate min-w-0 flex-1">{lead.full_name || '—'}</span>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium border whitespace-nowrap shrink-0 ${statusColors[lead.status] ?? 'bg-gray-50 text-gray-500 border-gray-200'}`}>
                   {statusLabels[lead.status] ?? lead.status}
                 </span>
               </div>

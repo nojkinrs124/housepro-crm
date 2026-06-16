@@ -39,7 +39,7 @@ export function LeadStatusSelect({ leadId, currentStatus }: { leadId: string; cu
             key={s.value}
             onClick={() => handleChange(s.value)}
             disabled={loading}
-            className={`px-2 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+            className={`px-2 py-1.5 rounded-lg text-xs font-medium border transition-all leading-tight break-words ${
               s.value === status
                 ? `${s.color} ring-1 ring-current`
                 : 'border-border text-muted-foreground hover:border-primary/40 hover:bg-accent'

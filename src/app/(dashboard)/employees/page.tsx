@@ -61,13 +61,13 @@ export default async function EmployeesPage() {
           const count = employees?.filter(e => e.role === role).length ?? 0
           const Icon = roleIcons[role]
           return (
-            <div key={role} className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm p-5 flex items-center gap-4">
+            <div key={role} className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm p-5 flex items-center gap-3 sm:gap-4">
               <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${roleIconColors[role]}`}>
                 <Icon style={{ width: 20, height: 20 }} />
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-2xl font-bold text-[#111827]">{count}</p>
-                <p className="text-xs text-[#64748B] font-medium mt-0.5">{roleLabels[role]}</p>
+                <p className="text-xs text-[#64748B] font-medium mt-0.5 leading-tight break-words">{roleLabels[role]}</p>
               </div>
             </div>
           )

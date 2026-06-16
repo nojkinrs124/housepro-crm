@@ -42,13 +42,13 @@ export default async function ContactsPage() {
         ].map(stat => {
           const Icon = stat.Icon
           return (
-            <div key={stat.label} className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm p-5 flex items-center gap-4">
+            <div key={stat.label} className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm p-5 flex items-center gap-3 sm:gap-4">
               <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${stat.iconCls}`}>
                 <Icon className={stat.iconColor} style={{ width: 20, height: 20 }} />
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-2xl font-bold text-[#111827]">{stat.value}</p>
-                <p className="text-xs text-[#64748B] font-medium mt-0.5">{stat.label}</p>
+                <p className="text-xs text-[#64748B] font-medium mt-0.5 leading-tight break-words">{stat.label}</p>
               </div>
             </div>
           )
