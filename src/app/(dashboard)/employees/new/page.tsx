@@ -6,17 +6,17 @@ import { formAction } from '@/lib/form-action'
 export default function NewEmployeePage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <Link href="/employees" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition">
+      <Link href="/employees" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft className="w-4 h-4" />
         Вернуться к сотрудникам
       </Link>
 
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Добавить сотрудника</h1>
+        <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Добавить сотрудника</h1>
         <p className="text-muted-foreground mt-1">Создание нового пользователя в системе</p>
       </div>
 
-      <form action={formAction(createEmployeeAction)} className="bg-card border border-border rounded-[20px] p-6 space-y-5">
+      <form action={formAction(createEmployeeAction)} className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-5">
         <div>
           <label className="block text-sm font-medium text-foreground mb-2">
             Email
@@ -74,7 +74,7 @@ export default function NewEmployeePage() {
 
         <button
           type="submit"
-          className="w-full px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition"
+          className="w-full px-4 py-2 rounded-[14px] text-white font-medium hover:-translate-y-0.5 transition" style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}
         >
           Добавить сотрудника
         </button>

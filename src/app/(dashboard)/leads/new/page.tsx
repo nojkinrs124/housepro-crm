@@ -45,7 +45,7 @@ export default async function NewLeadPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <Link href="/leads" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+      <Link href="/leads" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft className="w-4 h-4" />
         Назад к лидам
       </Link>
@@ -55,7 +55,7 @@ export default async function NewLeadPage() {
           <Zap className="w-5 h-5 text-blue-600" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Новый лид</h1>
+          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Новый лид</h1>
           <p className="text-muted-foreground text-sm">Входящее обращение от потенциального клиента</p>
         </div>
       </div>
@@ -63,7 +63,7 @@ export default async function NewLeadPage() {
       <form action={formAction(createLeadAction)} className="space-y-4">
 
         {/* Контакт */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Контакт</h2>
           <div>
             <label className={lbl}>Имя</label>
@@ -90,7 +90,7 @@ export default async function NewLeadPage() {
         </div>
 
         {/* Источник и менеджер */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Источник</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -121,7 +121,7 @@ export default async function NewLeadPage() {
         </div>
 
         {/* Критерии подбора */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Что ищет клиент</h2>
 
           <div>
@@ -186,7 +186,7 @@ export default async function NewLeadPage() {
         </div>
 
         {/* Комментарий */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-3">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-3">
           <h2 className="font-semibold text-foreground">Комментарий</h2>
           <textarea name="comment" rows={3}
             placeholder="Что ищет клиент, особые пожелания, срочность..."
@@ -195,12 +195,12 @@ export default async function NewLeadPage() {
 
         <div className="flex items-center gap-3">
           <button type="submit"
-            className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition-all">
+            className="flex items-center gap-2 px-6 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all" style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
             <Zap className="w-4 h-4" />
             Добавить лид
           </button>
           <Link href="/leads"
-            className="px-6 py-2.5 border border-border text-foreground rounded-xl text-sm font-medium hover:bg-accent transition-all">
+            className="px-6 py-2.5 border border-border text-foreground rounded-[14px] text-sm font-medium hover:bg-accent transition-all">
             Отмена
           </Link>
         </div>

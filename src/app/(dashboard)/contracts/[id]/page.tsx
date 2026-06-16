@@ -62,7 +62,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <Link href="/contracts" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+      <Link href="/contracts" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft className="w-4 h-4" />
         Все договоры
       </Link>
@@ -74,7 +74,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
             <FileText className="w-7 h-7 text-violet-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">
+            <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">
               {contract.contract_number ?? `Договор #${contract.id.slice(0, 8)}`}
             </h1>
             <p className="text-muted-foreground text-sm">{contractTypeLabels[contract.contract_type] ?? contract.contract_type}</p>
@@ -89,7 +89,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
           </Link>
           <DeleteContractButton contractId={id} />
           <Link href={`/contracts/${id}/generate`}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition">
+            className="flex items-center gap-2 px-4 py-2 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition" style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
             <FileText className="w-4 h-4" />
             Сформировать DOCX
           </Link>
@@ -100,7 +100,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
         <div className="lg:col-span-2 space-y-4">
 
           {/* Parties */}
-          <div className="bg-card border border-border rounded-[20px] p-5">
+          <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
             <h2 className="font-semibold text-foreground mb-4">Стороны договора</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Собственник */}
@@ -146,7 +146,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
           </div>
 
           {/* Property */}
-          <div className="bg-card border border-border rounded-[20px] p-5">
+          <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-foreground">Объект</h2>
               {!property && (
@@ -173,7 +173,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
           </div>
 
           {/* Finance */}
-          <div className="bg-card border border-border rounded-[20px] p-5">
+          <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
             <h2 className="font-semibold text-foreground mb-4">Финансы</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex items-center gap-3 p-4 bg-muted/30 rounded-xl">
@@ -198,7 +198,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
           </div>
 
           {/* Dates */}
-          <div className="bg-card border border-border rounded-[20px] p-5">
+          <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
             <h2 className="font-semibold text-foreground mb-4">Сроки</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex items-center gap-3">
@@ -223,7 +223,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
           </div>
 
           {contract.notes && (
-            <div className="bg-card border border-border rounded-[20px] p-5">
+            <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
               <h2 className="font-semibold text-foreground mb-3">Примечания</h2>
               <p className="text-sm text-foreground leading-relaxed">{contract.notes}</p>
             </div>
@@ -234,7 +234,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
 
         {/* Right sidebar */}
         <div className="space-y-4">
-          <div className="bg-card border border-border rounded-[20px] p-5">
+          <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
             <h2 className="font-semibold text-foreground mb-4">Информация</h2>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
@@ -257,7 +257,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
           </div>
 
           {/* Change status */}
-          <div className="bg-card border border-border rounded-[20px] p-5">
+          <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
             <h2 className="font-semibold text-foreground mb-3">Действия</h2>
             <div className="space-y-2">
               <Link href={`/contracts/new?duplicate=${id}`}

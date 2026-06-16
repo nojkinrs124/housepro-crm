@@ -18,20 +18,20 @@ export default async function EditContactPage({ params }: { params: Promise<{ id
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <Link href={`/contacts/${id}`} className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition">
+      <Link href={`/contacts/${id}`} className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft className="w-4 h-4" />
         Вернуться к контакту
       </Link>
 
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Редактировать контакт</h1>
+        <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Редактировать контакт</h1>
         <p className="text-muted-foreground mt-1">{c.full_name}</p>
       </div>
 
       <form action={formAction(boundAction)} className="space-y-4">
 
         {/* Основное */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
           <h2 className="font-semibold">Основные данные</h2>
           <div>
             <label className={labelCls}>Полное имя *</label>
@@ -65,7 +65,7 @@ export default async function EditContactPage({ params }: { params: Promise<{ id
         </div>
 
         {/* Контакты */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
           <h2 className="font-semibold">Контактные данные</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
@@ -83,7 +83,7 @@ export default async function EditContactPage({ params }: { params: Promise<{ id
         </div>
 
         {/* Паспорт */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
           <h2 className="font-semibold">Паспортные данные</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -110,7 +110,7 @@ export default async function EditContactPage({ params }: { params: Promise<{ id
         </div>
 
         {/* Адрес */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
           <h2 className="font-semibold">Адрес регистрации</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
@@ -131,7 +131,7 @@ export default async function EditContactPage({ params }: { params: Promise<{ id
         </div>
 
         {/* Дополнительно */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
           <h2 className="font-semibold">Дополнительно</h2>
           <div>
             <label className={labelCls}>Источник</label>
@@ -159,11 +159,11 @@ export default async function EditContactPage({ params }: { params: Promise<{ id
 
         <div className="flex items-center gap-3">
           <button type="submit"
-            className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition text-sm">
+            className="px-6 py-2.5 rounded-[14px] text-white font-medium hover:-translate-y-0.5 transition text-sm" style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
             Сохранить изменения
           </button>
           <Link href={`/contacts/${id}`}
-            className="px-6 py-2.5 border border-border text-foreground rounded-xl text-sm font-medium hover:bg-accent transition">
+            className="px-6 py-2.5 border border-border text-foreground rounded-[14px] text-sm font-medium hover:bg-accent transition">
             Отмена
           </Link>
         </div>

@@ -14,7 +14,7 @@ export default async function NewPropertyPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <Link href="/properties" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+      <Link href="/properties" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft className="w-4 h-4" />
         Назад к объектам
       </Link>
@@ -24,7 +24,7 @@ export default async function NewPropertyPage() {
           <Home className="w-5 h-5 text-emerald-600" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Новый объект</h1>
+          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Новый объект</h1>
           <p className="text-muted-foreground text-sm">Добавьте объект недвижимости</p>
         </div>
       </div>
@@ -32,7 +32,7 @@ export default async function NewPropertyPage() {
       <form action={formAction(createPropertyAction)} className="space-y-4">
 
         {/* Основное */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Основные данные</h2>
 
           <div className="space-y-1.5">
@@ -79,7 +79,7 @@ export default async function NewPropertyPage() {
         </div>
 
         {/* Параметры */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Параметры</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-1.5">
@@ -114,7 +114,7 @@ export default async function NewPropertyPage() {
         </div>
 
         {/* Дом */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Характеристики дома</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-1.5">
@@ -157,7 +157,7 @@ export default async function NewPropertyPage() {
         </div>
 
         {/* Коммуникации */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Коммуникации</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -193,7 +193,7 @@ export default async function NewPropertyPage() {
         </div>
 
         {/* Финансы */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Финансы</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-1.5">
@@ -212,7 +212,7 @@ export default async function NewPropertyPage() {
         </div>
 
         {/* Описание */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-3">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-3">
           <h2 className="font-semibold text-foreground">Описание</h2>
           <textarea name="description" rows={4} placeholder="Описание объекта..."
             className="w-full px-4 py-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all resize-none" />
@@ -220,12 +220,12 @@ export default async function NewPropertyPage() {
 
         <div className="flex items-center gap-3">
           <button type="submit"
-            className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition-all">
+            className="flex items-center gap-2 px-6 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all" style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
             <Home className="w-4 h-4" />
             Добавить объект
           </button>
           <Link href="/properties"
-            className="px-6 py-2.5 border border-border text-foreground rounded-xl text-sm font-medium hover:bg-accent transition-all">
+            className="px-6 py-2.5 border border-border text-foreground rounded-[14px] text-sm font-medium hover:bg-accent transition-all">
             Отмена
           </Link>
         </div>

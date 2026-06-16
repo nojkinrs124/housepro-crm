@@ -6,19 +6,19 @@ import { formAction } from '@/lib/form-action'
 export default function NewContactPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <Link href="/contacts" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition">
+      <Link href="/contacts" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft className="w-4 h-4" />
         Вернуться к контактам
       </Link>
 
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Добавить контакт</h1>
+        <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Добавить контакт</h1>
         <p className="text-muted-foreground mt-1">Клиент, собственник или оба</p>
       </div>
 
       <form action={formAction(createContactAction)} className="space-y-4">
         {/* Основное */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Основные данные</h2>
 
           <div className="space-y-1.5">
@@ -46,7 +46,7 @@ export default function NewContactPage() {
         </div>
 
         {/* Контакты */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Контактные данные</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -73,7 +73,7 @@ export default function NewContactPage() {
         </div>
 
         {/* Паспорт */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Паспортные данные</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -105,7 +105,7 @@ export default function NewContactPage() {
         </div>
 
         {/* Адрес */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Адрес регистрации</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -147,7 +147,7 @@ export default function NewContactPage() {
         </div>
 
         {/* Дополнительно */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Дополнительно</h2>
 
           <div className="space-y-1.5">
@@ -178,11 +178,11 @@ export default function NewContactPage() {
 
         <div className="flex items-center gap-3">
           <button type="submit"
-            className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition text-sm">
+            className="px-6 py-2.5 rounded-[14px] text-white font-medium hover:-translate-y-0.5 transition text-sm" style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
             Добавить контакт
           </button>
           <Link href="/contacts"
-            className="px-6 py-2.5 border border-border text-foreground rounded-xl text-sm font-medium hover:bg-accent transition">
+            className="px-6 py-2.5 border border-border text-foreground rounded-[14px] text-sm font-medium hover:bg-accent transition">
             Отмена
           </Link>
         </div>

@@ -24,20 +24,20 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <Link href={`/properties/${id}`} className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition">
+      <Link href={`/properties/${id}`} className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft className="w-4 h-4" />
         Вернуться к объекту
       </Link>
 
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Редактировать объект</h1>
+        <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Редактировать объект</h1>
         <p className="text-muted-foreground mt-1">{p.title}</p>
       </div>
 
       <form action={formAction(boundAction)} className="space-y-4">
 
         {/* Основное */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Основные данные</h2>
 
           <div>
@@ -85,7 +85,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
         </div>
 
         {/* Параметры */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Параметры</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
@@ -106,7 +106,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
         </div>
 
         {/* Дом */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Характеристики дома</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
@@ -149,7 +149,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
         </div>
 
         {/* Коммуникации */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Коммуникации</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -185,7 +185,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
         </div>
 
         {/* Финансы */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Финансы</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
@@ -208,7 +208,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
         </div>
 
         {/* Описание */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-3">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-3">
           <h2 className="font-semibold text-foreground">Описание</h2>
           <textarea name="description" rows={4} defaultValue={p.description ?? ''}
             placeholder="Описание для публикации на Авито, ЦИАН, Домклик..."
@@ -217,7 +217,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
 
         <div className="flex gap-3">
           <button type="submit"
-            className="flex-1 h-10 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition">
+            className="flex-1 h-10 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition" style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
             Сохранить изменения
           </button>
           <Link href={`/properties/${id}`}

@@ -33,7 +33,7 @@ export function TemplateUploadForm() {
   }
 
   return (
-    <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
+    <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
       <h2 className="font-semibold text-foreground flex items-center gap-2">
         <Upload className="w-4 h-4" />
         Загрузить шаблон
@@ -61,7 +61,7 @@ export function TemplateUploadForm() {
         <div className="space-y-1.5">
           <label className="text-sm font-medium text-foreground">DOCX файл</label>
           <input name="file" type="file" accept=".docx" required
-            className="w-full px-4 py-2 rounded-xl border border-input bg-background text-foreground text-sm file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 cursor-pointer" />
+            className="w-full px-4 py-2 rounded-xl border border-input bg-background text-foreground text-sm file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-green-600 file:text-white hover:file:bg-green-700 cursor-pointer" />
         </div>
 
         {result?.error && (
@@ -76,7 +76,8 @@ export function TemplateUploadForm() {
         )}
 
         <button type="submit" disabled={loading}
-          className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 disabled:opacity-60 transition-all">
+          className="flex items-center gap-2 px-6 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0 transition-all"
+          style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
           {loading ? 'Загрузка...' : 'Загрузить шаблон'}
         </button>

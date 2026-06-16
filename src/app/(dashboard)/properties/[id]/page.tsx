@@ -91,7 +91,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      <Link href="/properties" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+      <Link href="/properties" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft className="w-4 h-4" />
         Все объекты
       </Link>
@@ -103,7 +103,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
             <Home className="w-7 h-7 text-emerald-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">{p.title}</h1>
+            <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">{p.title}</h1>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
                 {typeLabels[p.property_type] ?? p.property_type}
@@ -119,20 +119,20 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <Link href={`/properties/${id}/edit`}
-            className="flex items-center gap-2 px-4 py-2 border border-border text-foreground rounded-xl text-sm font-medium hover:bg-accent transition">
+            className="flex items-center gap-2 px-4 py-2 border border-border text-foreground rounded-[14px] text-sm font-medium hover:bg-accent transition">
             <Edit className="w-4 h-4" />
             Редактировать
           </Link>
           <DeletePropertyButton propertyId={id} />
           <Link href={`/contracts/new?property_id=${id}`}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition">
+            className="px-4 py-2 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition" style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
             + Договор
           </Link>
         </div>
       </div>
 
       {/* Address */}
-      <div className="flex items-center gap-2 px-4 py-3 bg-card border border-border rounded-[20px]">
+      <div className="flex items-center gap-2 px-4 py-3 bg-white border border-slate-100 rounded-[20px] shadow-sm">
         <MapPin className="w-4 h-4 text-muted-foreground shrink-0" />
         <span className="text-sm text-foreground">{p.address}</span>
       </div>
@@ -166,7 +166,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
           {/* Параметры */}
           {(p.area || p.rooms || p.floor || p.total_floors || p.ceiling_height || p.living_area || p.kitchen_area) && (
-            <div className="bg-card border border-border rounded-[20px] p-5">
+            <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
               <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Ruler className="w-4 h-4" /> Параметры
               </h2>
@@ -190,7 +190,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
           {/* Дом */}
           {(p.house_type || p.wall_material || p.year_built || p.has_elevator != null || p.has_parking != null) && (
-            <div className="bg-card border border-border rounded-[20px] p-5">
+            <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
               <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Layers className="w-4 h-4" /> Характеристики дома
               </h2>
@@ -210,7 +210,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
           {/* Коммуникации */}
           {(p.heating_type || p.water_supply_type || p.has_internet != null || p.has_tv != null) && (
-            <div className="bg-card border border-border rounded-[20px] p-5">
+            <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
               <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Flame className="w-4 h-4" /> Коммуникации
               </h2>
@@ -229,14 +229,14 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
           {/* Описание */}
           {p.description && (
-            <div className="bg-card border border-border rounded-[20px] p-5">
+            <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
               <h2 className="font-semibold text-foreground mb-3">Описание</h2>
               <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{p.description}</p>
             </div>
           )}
 
           {/* Договоры */}
-          <div className="bg-card border border-border rounded-[20px] p-5">
+          <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-foreground flex items-center gap-2">
                 <FileText className="w-4 h-4" /> Договоры
@@ -269,7 +269,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
           {/* Сделки */}
           {(deals?.length ?? 0) > 0 && (
-            <div className="bg-card border border-border rounded-[20px] p-5">
+            <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
               <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                 <TrendingUp className="w-4 h-4" /> Сделки
               </h2>
@@ -294,7 +294,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
         {/* Right sidebar */}
         <div className="space-y-4">
-          <div className="bg-card border border-border rounded-[20px] p-5">
+          <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
             <h2 className="font-semibold text-foreground mb-4">Информация</h2>
             <div className="space-y-0">
               <Row label="Менеджер"   value={manager?.full_name ?? '—'} />
@@ -314,7 +314,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
           </div>
 
           {/* Quick actions */}
-          <div className="bg-card border border-border rounded-[20px] p-4 space-y-2">
+          <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-4 space-y-2">
             <Link href={`/deals/new?property_id=${id}`}
               className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-xl text-sm font-medium hover:bg-primary/20 transition">
               <TrendingUp className="w-4 h-4" /> Создать сделку

@@ -133,7 +133,7 @@ export default async function AnalyticsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-[#111827]">Аналитика</h1>
+        <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Аналитика</h1>
         <p className="text-sm text-[#64748B] mt-1">Данные за последние 12 месяцев</p>
       </div>
 

@@ -56,7 +56,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <Link href="/deals" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+      <Link href="/deals" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft className="w-4 h-4" />
         Все сделки
       </Link>
@@ -68,7 +68,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
             <TrendingUp className="w-7 h-7 text-green-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">
+            <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">
               {dealTypeLabels[deal.deal_type] ?? deal.deal_type}
             </h1>
             <p className="text-muted-foreground text-sm">
@@ -93,7 +93,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
         <div className="lg:col-span-2 space-y-4">
 
           {/* Parties */}
-          <div className="bg-card border border-border rounded-[20px] p-5">
+          <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
             <h2 className="font-semibold text-foreground mb-4">Стороны сделки</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="p-4 bg-muted/30 rounded-xl">
@@ -151,7 +151,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
           </div>
 
           {/* Property */}
-          <div className="bg-card border border-border rounded-[20px] p-5">
+          <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-foreground">Объект</h2>
               {!property && (
@@ -182,7 +182,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
 
           {/* Notes */}
           {deal.notes && (
-            <div className="bg-card border border-border rounded-[20px] p-5">
+            <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
               <h2 className="font-semibold text-foreground mb-3">Примечания</h2>
               <p className="text-sm text-foreground whitespace-pre-wrap">{deal.notes}</p>
             </div>
@@ -198,7 +198,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
 
         {/* Right column */}
         <div className="space-y-4">
-          <div className="bg-card border border-border rounded-[20px] p-5">
+          <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
             <h2 className="font-semibold text-foreground mb-4">Финансы</h2>
             <div className="space-y-3 text-sm">
               {deal.amount && (
@@ -222,7 +222,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
             </div>
           </div>
 
-          <div className="bg-card border border-border rounded-[20px] p-5">
+          <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
             <h2 className="font-semibold text-foreground mb-4">Информация</h2>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
@@ -237,7 +237,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
           </div>
 
           {/* Quick actions */}
-          <div className="bg-card border border-border rounded-[20px] p-4 space-y-2">
+          <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-4 space-y-2">
             <Link
               href={`/tasks/new?deal_id=${id}`}
               className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-border rounded-xl text-sm font-medium hover:bg-accent transition"

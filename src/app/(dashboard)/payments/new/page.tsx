@@ -40,7 +40,7 @@ export default async function NewPaymentPage({
           <CreditCard className="w-5 h-5 text-[#16A34A]" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-[#111827]">Новый платёж</h1>
+          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Новый платёж</h1>
           <p className="text-sm text-[#64748B]">Аренда, депозит, комиссия</p>
         </div>
       </div>

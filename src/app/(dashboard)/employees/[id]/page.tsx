@@ -46,7 +46,7 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <Link href="/employees" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition">
+      <Link href="/employees" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft className="w-4 h-4" />
         Все сотрудники
       </Link>
@@ -60,7 +60,7 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-2xl font-bold text-foreground truncate max-w-[200px] sm:max-w-none">{emp.full_name}</h1>
+            <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight truncate max-w-[200px] sm:max-w-none">{emp.full_name}</h1>
             <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${roleColors[emp.role] ?? 'bg-gray-100'}`}>
               {roleLabels[emp.role] ?? emp.role}
             </span>
@@ -88,7 +88,7 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
           { label: 'Договоров', value: contractStats?.length ?? 0 },
           { label: 'Задач',     value: taskStats?.length ?? 0 },
         ].map(s => (
-          <div key={s.label} className="bg-card border border-border rounded-[20px] p-4 text-center">
+          <div key={s.label} className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-4 text-center">
             <p className="text-2xl font-bold text-foreground">{s.value}</p>
             <p className="text-xs text-muted-foreground mt-0.5">{s.label}</p>
           </div>
@@ -96,7 +96,7 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
       </div>
 
       {/* Контакты */}
-      <div className="bg-card border border-border rounded-[20px] p-5 space-y-3">
+      <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5 space-y-3">
         <h2 className="font-semibold text-foreground">Контакты</h2>
         {emp.email && (
           <div className="flex items-center gap-3 text-sm min-w-0">
@@ -114,7 +114,7 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
 
       {/* Редактирование — только для admin */}
       {isAdmin && (
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-5">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-5">
           <h2 className="font-semibold text-foreground">Редактировать</h2>
 
           <form action={formAction(boundUpdate)} className="space-y-4">
@@ -139,7 +139,7 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
               </select>
             </div>
             <button type="submit"
-              className="w-full h-10 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition">
+              className="w-full h-10 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition" style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
               Сохранить изменения
             </button>
           </form>

@@ -24,7 +24,7 @@ export default async function NewContractPage({
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <Link href="/contracts" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+      <Link href="/contracts" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft className="w-4 h-4" />
         Назад к договорам
       </Link>
@@ -34,7 +34,7 @@ export default async function NewContractPage({
           <FileText className="w-5 h-5 text-violet-600" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Новый договор</h1>
+          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Новый договор</h1>
           <p className="text-muted-foreground text-sm">Укажите обе стороны из единой базы контактов</p>
         </div>
       </div>

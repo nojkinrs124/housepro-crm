@@ -26,7 +26,7 @@ export default async function NewTaskPage({
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <Link href="/tasks" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+      <Link href="/tasks" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft className="w-4 h-4" />
         Назад к задачам
       </Link>
@@ -36,13 +36,13 @@ export default async function NewTaskPage({
           <CheckSquare className="w-5 h-5 text-orange-600" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Новая задача</h1>
+          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Новая задача</h1>
           <p className="text-muted-foreground text-sm">Создайте задачу для команды</p>
         </div>
       </div>
 
       <form action={formAction(createTaskAction)} className="space-y-4">
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-5">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-5">
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-foreground">
               Название <span className="text-destructive">*</span>
@@ -87,7 +87,7 @@ export default async function NewTaskPage({
         </div>
 
         {/* Связи */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Привязать к</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -135,12 +135,12 @@ export default async function NewTaskPage({
 
         <div className="flex items-center gap-3">
           <button type="submit"
-            className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition-all">
+            className="flex items-center gap-2 px-6 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all" style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
             <CheckSquare className="w-4 h-4" />
             Создать задачу
           </button>
           <Link href="/tasks"
-            className="px-6 py-2.5 border border-border text-foreground rounded-xl text-sm font-medium hover:bg-accent transition-all">
+            className="px-6 py-2.5 border border-border text-foreground rounded-[14px] text-sm font-medium hover:bg-accent transition-all">
             Отмена
           </Link>
         </div>

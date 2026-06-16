@@ -25,7 +25,8 @@ export function GenerateButton({ contractId }: { contractId: string }) {
       <button
         onClick={handleGenerate}
         disabled={state === 'loading'}
-        className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+        className="flex items-center gap-2 px-5 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+        style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}
       >
         {state === 'loading' ? (
           <><Loader2 className="w-4 h-4 animate-spin" />Генерация...</>
@@ -36,7 +37,7 @@ export function GenerateButton({ contractId }: { contractId: string }) {
 
       {state === 'success' && result.docxUrl && (
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 text-sm text-green-700 bg-green-50 border border-green-200 px-3 py-2 rounded-xl">
+          <div className="flex items-center gap-1.5 text-sm text-green-700 bg-green-50 border border-green-200 px-3 py-2 rounded-[14px]">
             <CheckCircle2 className="w-4 h-4" />
             Версия {result.version} создана!
           </div>
@@ -44,7 +45,8 @@ export function GenerateButton({ contractId }: { contractId: string }) {
             href={result.docxUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-2.5 bg-green-600 text-white rounded-xl text-sm font-medium hover:bg-green-700 transition-all"
+            className="flex items-center gap-2 px-4 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all"
+            style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}
           >
             <Download className="w-4 h-4" />
             Скачать DOCX
@@ -53,7 +55,7 @@ export function GenerateButton({ contractId }: { contractId: string }) {
       )}
 
       {state === 'error' && (
-        <div className="flex items-center gap-1.5 text-sm text-red-700 bg-red-50 border border-red-200 px-3 py-2 rounded-xl">
+        <div className="flex items-center gap-1.5 text-sm text-red-700 bg-red-50 border border-red-200 px-3 py-2 rounded-[14px]">
           <AlertCircle className="w-4 h-4" />
           {result.error || 'Ошибка генерации'}
         </div>

@@ -27,7 +27,7 @@ export default async function NewDealPage({
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <Link href="/deals" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+      <Link href="/deals" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft className="w-4 h-4" />
         Назад к сделкам
       </Link>
@@ -37,7 +37,7 @@ export default async function NewDealPage({
           <TrendingUp className="w-5 h-5 text-green-600" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Новая сделка</h1>
+          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Новая сделка</h1>
           <p className="text-muted-foreground text-sm">Укажите обе стороны и объект</p>
         </div>
       </div>
@@ -45,7 +45,7 @@ export default async function NewDealPage({
       <form action={formAction(createDealAction)} className="space-y-4">
 
         {/* Тип сделки */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Тип сделки</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {[
@@ -65,7 +65,7 @@ export default async function NewDealPage({
         </div>
 
         {/* Стороны */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-5">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-5">
           <h2 className="font-semibold text-foreground">Стороны сделки</h2>
 
           {/* Собственник — Сторона 1 */}
@@ -142,7 +142,7 @@ export default async function NewDealPage({
         </div>
 
         {/* Финансы */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-4">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Финансы</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -159,7 +159,7 @@ export default async function NewDealPage({
         </div>
 
         {/* Примечания */}
-        <div className="bg-card border border-border rounded-[20px] p-6 space-y-3">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-3">
           <h2 className="font-semibold text-foreground">Примечания</h2>
           <textarea name="notes" rows={3} placeholder="Детали сделки, условия..."
             className="w-full px-4 py-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all resize-none" />
@@ -167,12 +167,12 @@ export default async function NewDealPage({
 
         <div className="flex items-center gap-3">
           <button type="submit"
-            className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition-all">
+            className="flex items-center gap-2 px-6 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all" style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
             <TrendingUp className="w-4 h-4" />
             Создать сделку
           </button>
           <Link href="/deals"
-            className="px-6 py-2.5 border border-border text-foreground rounded-xl text-sm font-medium hover:bg-accent transition-all">
+            className="px-6 py-2.5 border border-border text-foreground rounded-[14px] text-sm font-medium hover:bg-accent transition-all">
             Отмена
           </Link>
         </div>

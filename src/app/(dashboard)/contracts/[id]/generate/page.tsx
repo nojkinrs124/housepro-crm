@@ -64,7 +64,7 @@ export default async function GenerateContractPage({
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <Link href={`/contracts/${id}`}
-        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+        className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft className="w-4 h-4" />
         Назад к договору
       </Link>
@@ -74,7 +74,7 @@ export default async function GenerateContractPage({
           <Sparkles className="w-5 h-5 text-violet-600" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Генерация договора</h1>
+          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Генерация договора</h1>
           <p className="text-muted-foreground text-sm">
             {contract.contract_number} · {contractTypeLabels[contract.contract_type]}
           </p>
@@ -82,7 +82,7 @@ export default async function GenerateContractPage({
       </div>
 
       {/* Checklist */}
-      <div className="bg-card border border-border rounded-[20px] p-5">
+      <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
         <h2 className="font-semibold text-foreground mb-4">Проверка данных</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {fields.map((field) => (
@@ -119,7 +119,7 @@ export default async function GenerateContractPage({
       </div>
 
       {/* Generate */}
-      <div className="bg-card border border-border rounded-[20px] p-5">
+      <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
         <h2 className="font-semibold text-foreground mb-4">Создать документ</h2>
         <div className="flex items-center gap-3 flex-wrap">
           <GenerateButton contractId={id} />
@@ -128,7 +128,7 @@ export default async function GenerateContractPage({
               href={contract.generated_docx_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2.5 border border-border text-foreground rounded-xl text-sm font-medium hover:bg-accent transition-all"
+              className="flex items-center gap-2 px-4 py-2.5 border border-border text-foreground rounded-[14px] text-sm font-medium hover:bg-accent transition-all"
             >
               <Download className="w-4 h-4" />
               Скачать последний DOCX
@@ -139,7 +139,7 @@ export default async function GenerateContractPage({
 
       {/* Versions */}
       {versions && versions.length > 0 && (
-        <div className="bg-card border border-border rounded-[20px] p-5">
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
           <h2 className="font-semibold text-foreground mb-4">История версий</h2>
           <div className="space-y-2">
             {versions.map((v) => (

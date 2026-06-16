@@ -45,7 +45,7 @@ export default async function EditPaymentPage({ params }: { params: Promise<{ id
 
   return (
     <div className="max-w-xl mx-auto space-y-6">
-      <Link href="/payments" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition">
+      <Link href="/payments" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft className="w-4 h-4" />
         Вернуться к платежам
       </Link>
@@ -55,7 +55,7 @@ export default async function EditPaymentPage({ params }: { params: Promise<{ id
           <DollarSign className="w-5 h-5 text-green-600" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Редактировать платёж</h1>
+          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Редактировать платёж</h1>
           {contract && (
             <p className="text-muted-foreground text-sm mt-0.5">
               {contract.contract_number ?? `Договор #${id.slice(0, 8)}`}
@@ -65,7 +65,7 @@ export default async function EditPaymentPage({ params }: { params: Promise<{ id
         </div>
       </div>
 
-      <form action={formAction(boundAction)} className="bg-card border border-border rounded-[20px] p-6 space-y-5">
+      <form action={formAction(boundAction)} className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-5">
 
         {/* Сумма */}
         <div>
@@ -138,7 +138,7 @@ export default async function EditPaymentPage({ params }: { params: Promise<{ id
 
         <div className="flex gap-3">
           <button type="submit"
-            className="flex-1 h-10 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition">
+            className="flex-1 h-10 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition" style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
             Сохранить изменения
           </button>
           <Link href="/payments"
