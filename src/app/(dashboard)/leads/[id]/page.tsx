@@ -81,15 +81,15 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
       </Link>
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="flex items-center gap-4 min-w-0">
           <div className="w-14 h-14 rounded-[20px] bg-blue-100 flex items-center justify-center shrink-0">
             <span className="text-blue-600 text-2xl font-bold">
               {lead.full_name?.charAt(0)?.toUpperCase() ?? '?'}
             </span>
           </div>
-          <div>
-            <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">{lead.full_name || 'Без имени'}</h1>
+          <div className="min-w-0">
+            <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight break-words">{lead.full_name || 'Без имени'}</h1>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${statusColors[lead.status] ?? 'bg-gray-100'}`}>
                 {statusLabels[lead.status] ?? lead.status}
@@ -106,18 +106,18 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
           </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 flex-wrap shrink-0">
           {!isConverted && (
             <form action={formAction(convertLeadToClient.bind(null, id))}>
               <button type="submit"
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-xl text-sm font-medium hover:bg-green-700 transition">
+                className="flex items-center gap-2 px-4 py-2 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition whitespace-nowrap" style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
                 <UserCheck className="w-4 h-4" />
                 → Контакт
               </button>
             </form>
           )}
           <Link href={`/leads/${id}/edit`}
-            className="flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-sm font-medium hover:bg-accent transition">
+            className="flex items-center gap-2 px-4 py-2 border border-border rounded-[14px] text-sm font-medium hover:bg-accent transition whitespace-nowrap">
             <Edit className="w-4 h-4" />
             Изменить
           </Link>

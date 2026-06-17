@@ -97,13 +97,13 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
       </Link>
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="flex items-center gap-4 min-w-0">
           <div className="w-14 h-14 rounded-[20px] bg-emerald-100 flex items-center justify-center shrink-0">
             <Home className="w-7 h-7 text-emerald-600" />
           </div>
-          <div>
-            <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">{p.title}</h1>
+          <div className="min-w-0">
+            <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight break-words">{p.title}</h1>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
                 {typeLabels[p.property_type] ?? p.property_type}
@@ -117,15 +117,15 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 flex-wrap shrink-0">
           <Link href={`/properties/${id}/edit`}
-            className="flex items-center gap-2 px-4 py-2 border border-border text-foreground rounded-[14px] text-sm font-medium hover:bg-accent transition">
+            className="flex items-center gap-2 px-4 py-2 border border-border text-foreground rounded-[14px] text-sm font-medium hover:bg-accent transition whitespace-nowrap">
             <Edit className="w-4 h-4" />
             Редактировать
           </Link>
           <DeletePropertyButton propertyId={id} />
           <Link href={`/contracts/new?property_id=${id}`}
-            className="px-4 py-2 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition" style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+            className="px-4 py-2 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition whitespace-nowrap" style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
             + Договор
           </Link>
         </div>

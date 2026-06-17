@@ -57,7 +57,7 @@ export default async function NewDealPage({
             ].map(t => (
               <label key={t.value}
                 className="flex items-center gap-2 p-2.5 border border-border rounded-xl cursor-pointer hover:bg-accent transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5 text-sm">
-                <input type="radio" name="deal_type" value={t.value} defaultChecked={t.value === 'rent'} className="accent-primary" />
+                <input type="radio" name="deal_type" value={t.value} defaultChecked={t.value === 'rent'} className="w-4 h-4 shrink-0 accent-primary" />
                 {t.label}
               </label>
             ))}

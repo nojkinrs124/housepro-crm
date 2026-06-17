@@ -68,7 +68,7 @@ export default async function EditDealPage({ params }: { params: Promise<{ id: s
                 className="flex items-center gap-2 p-2.5 border border-border rounded-xl cursor-pointer hover:bg-accent transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5 text-sm">
                 <input type="radio" name="deal_type" value={t.value}
                   defaultChecked={deal.deal_type === t.value}
-                  className="accent-primary" />
+                  className="w-4 h-4 shrink-0 accent-primary" />
                 {t.label}
               </label>
             ))}
@@ -92,7 +92,7 @@ export default async function EditDealPage({ params }: { params: Promise<{ id: s
                 className="flex items-center gap-2 p-2.5 border border-border rounded-xl cursor-pointer hover:bg-accent transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5 text-sm">
                 <input type="radio" name="status" value={s.value}
                   defaultChecked={deal.status === s.value}
-                  className="accent-primary" />
+                  className="w-4 h-4 shrink-0 accent-primary" />
                 {s.label}
               </label>
             ))}

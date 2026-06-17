@@ -62,13 +62,13 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
       </Link>
 
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-[20px] bg-green-100 flex items-center justify-center">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="flex items-center gap-4 min-w-0">
+          <div className="w-14 h-14 rounded-[20px] bg-green-100 flex items-center justify-center shrink-0">
             <TrendingUp className="w-7 h-7 text-green-600" />
           </div>
-          <div>
-            <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">
+          <div className="min-w-0">
+            <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight break-words">
               {dealTypeLabels[deal.deal_type] ?? deal.deal_type}
             </h1>
             <p className="text-muted-foreground text-sm">
@@ -76,11 +76,11 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap shrink-0">
           <DealStatusSelector dealId={id} currentStatus={deal.status} />
           <Link
             href={`/deals/${id}/edit`}
-            className="flex items-center gap-2 px-4 py-2 border border-border rounded-xl text-sm font-medium hover:bg-accent transition"
+            className="flex items-center gap-2 px-4 py-2 border border-border rounded-[14px] text-sm font-medium hover:bg-accent transition whitespace-nowrap"
           >
             <Edit className="w-4 h-4" />
             Редактировать

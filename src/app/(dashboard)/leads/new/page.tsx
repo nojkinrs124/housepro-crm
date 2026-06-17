@@ -126,11 +126,11 @@ export default async function NewLeadPage() {
 
           <div>
             <label className={lbl}>Тип сделки</label>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {dealTypes.map(t => (
                 <label key={t.value}
                   className="flex items-center gap-2 px-3 py-2 border border-border rounded-xl cursor-pointer hover:bg-accent transition text-sm has-[:checked]:border-primary has-[:checked]:bg-primary/5">
-                  <input type="radio" name="deal_type" value={t.value} className="accent-primary" />
+                  <input type="radio" name="deal_type" value={t.value} className="w-4 h-4 shrink-0 accent-primary" />
                   {t.label}
                 </label>
               ))}
@@ -143,7 +143,7 @@ export default async function NewLeadPage() {
               {propertyTypes.map(t => (
                 <label key={t.value}
                   className="flex items-center gap-2 px-3 py-2 border border-border rounded-xl cursor-pointer hover:bg-accent transition text-sm has-[:checked]:border-primary has-[:checked]:bg-primary/5">
-                  <input type="radio" name="property_type" value={t.value} className="accent-primary" />
+                  <input type="radio" name="property_type" value={t.value} className="w-4 h-4 shrink-0 accent-primary" />
                   {t.label}
                 </label>
               ))}

@@ -107,18 +107,20 @@ export default async function PaymentDetailPage({ params }: { params: Promise<{ 
       <div className="bg-white rounded-[20px] border border-[#E2E8F0] overflow-hidden shadow-sm">
         <div className={`bg-gradient-to-r ${statusGradient[safeStatus]} p-6 text-white`}>
           <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-[20px] bg-white/20 flex items-center justify-center">
+            <div className="flex items-center gap-4 min-w-0">
+              <div className="w-14 h-14 rounded-[20px] bg-white/20 flex items-center justify-center shrink-0">
                 {statusIcon[safeStatus]}
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-white/70 text-sm font-medium">
                   {PAYMENT_TYPE_LABELS[payment.payment_type ?? ''] ?? payment.payment_type ?? 'Платёж'}
                 </p>
-                <p className="text-3xl font-bold tracking-tight">{formatMoney(payment.amount)}</p>
+                <p className="text-3xl font-bold tracking-tight break-words">{formatMoney(payment.amount)}</p>
               </div>
             </div>
-            <PaymentStatusBadge status={payment.payment_status ?? 'pending'} />
+            <div className="shrink-0">
+              <PaymentStatusBadge status={payment.payment_status ?? 'pending'} />
+            </div>
           </div>
         </div>
 

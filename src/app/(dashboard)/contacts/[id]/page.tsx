@@ -70,24 +70,24 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
       </Link>
 
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">{c.full_name}</h1>
-          <div className="flex items-center gap-2 mt-2">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight break-words">{c.full_name}</h1>
+          <div className="flex items-center gap-2 mt-2 flex-wrap">
             <span className="text-base">{roleLabels[c.role]}</span>
-            <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${statusInfo.color}`}>
+            <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${statusInfo.color}`}>
               {statusInfo.label}
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Link href={`/tasks/new?client_id=${id}`}
-            className="flex items-center gap-2 px-3 py-2 border border-border rounded-xl text-sm font-medium hover:bg-accent transition">
+            className="flex items-center gap-2 px-3 py-2 border border-border rounded-xl text-sm font-medium hover:bg-accent transition whitespace-nowrap">
             <Plus className="w-4 h-4" />
             Задача
           </Link>
           <Link href={`/contacts/${id}/edit`}
-            className="flex items-center gap-2 px-4 py-2 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition" style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+            className="flex items-center gap-2 px-4 py-2 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition whitespace-nowrap" style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
             <Edit className="w-4 h-4" />
             Редактировать
           </Link>

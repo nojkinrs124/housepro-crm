@@ -110,7 +110,7 @@ export default async function EditLeadPage({ params }: { params: Promise<{ id: s
               {dealTypes.map(t => (
                 <label key={t.value}
                   className="flex items-center gap-2 px-3 py-2 border border-border rounded-xl cursor-pointer hover:bg-accent transition text-sm has-[:checked]:border-primary has-[:checked]:bg-primary/5">
-                  <input type="radio" name="deal_type" value={t.value} defaultChecked={l.deal_type === t.value} className="accent-primary" />
+                  <input type="radio" name="deal_type" value={t.value} defaultChecked={l.deal_type === t.value} className="w-4 h-4 shrink-0 accent-primary" />
                   {t.label}
                 </label>
               ))}
@@ -122,7 +122,7 @@ export default async function EditLeadPage({ params }: { params: Promise<{ id: s
               {propertyTypes.map(t => (
                 <label key={t.value}
                   className="flex items-center gap-2 px-3 py-2 border border-border rounded-xl cursor-pointer hover:bg-accent transition text-sm has-[:checked]:border-primary has-[:checked]:bg-primary/5">
-                  <input type="radio" name="property_type" value={t.value} defaultChecked={l.property_type === t.value} className="accent-primary" />
+                  <input type="radio" name="property_type" value={t.value} defaultChecked={l.property_type === t.value} className="w-4 h-4 shrink-0 accent-primary" />
                   {t.label}
                 </label>
               ))}
