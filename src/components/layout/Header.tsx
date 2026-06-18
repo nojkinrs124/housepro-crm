@@ -42,7 +42,7 @@ export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCou
 
   return (
     <header
-      className="h-[68px] flex items-center px-5 gap-4 shrink-0 sticky top-0 z-30"
+      className="h-[68px] flex items-center px-5 gap-4 shrink-0 sticky top-0 z-30 overflow-x-hidden w-full"
       style={{
         background: 'rgba(248, 250, 252, 0.85)',
         backdropFilter: 'blur(20px)',

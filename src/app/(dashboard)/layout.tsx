@@ -27,10 +27,10 @@ export default async function DashboardLayout({
       {/* Desktop sidebar */}
       <Sidebar user={profile} />
 
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden w-0">
         <Header user={profile} unreadCount={unreadCount ?? 0} />
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto pb-24 md:pb-8">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden">
+          <div className="p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto pb-24 md:pb-8 w-full min-w-0">
             {children}
           </div>
         </main>
