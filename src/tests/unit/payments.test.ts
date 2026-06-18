@@ -12,7 +12,7 @@ describe('createPaymentAction', () => {
     vi.clearAllMocks()
   })
 
-  it('создаёт платёж с валидными данными', async () => {
+  it('создаёт платёж с валидными данными и перенаправляет на /payments', async () => {
     const { supabase } = createSupabaseMock({
       data: { id: 'pay-1', amount: 50000, payment_status: 'pending' },
       error: null,
@@ -24,8 +24,10 @@ describe('createPaymentAction', () => {
     formData.set('amount', '50000')
     formData.set('payment_type', 'rent')
 
-    const result = await createPaymentAction(formData)
-    expect(result).toEqual({ success: true })
+    // При успехе createPaymentAction вызывает redirect('/payments'), который
+    // в Next.js реализован через выброс специального исключения NEXT_REDIRECT —
+    // это нормальное поведение Server Action, а не ошибка.
+    await expect(createPaymentAction(formData)).rejects.toThrow('NEXT_REDIRECT:/payments')
     expect(supabase.from).toHaveBeenCalledWith('payments')
   })
 
