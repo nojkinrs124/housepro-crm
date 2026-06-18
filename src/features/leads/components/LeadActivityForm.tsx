@@ -59,20 +59,20 @@ export function LeadActivityForm({ leadId }: { leadId: string }) {
       {/* Описание */}
       <textarea name="content" rows={2}
         placeholder="Описание — что обсудили, о чём договорились..."
-        className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+        className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all resize-none"
       />
 
       {/* Результат */}
       <input name="result" type="text"
         placeholder="Результат (необязательно)"
-        className="w-full h-9 px-3 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+        className="w-full h-10 px-4 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
       />
 
       {/* Следующий контакт */}
       <div className="flex items-center gap-2">
         <label className="text-xs text-muted-foreground shrink-0">След. контакт:</label>
         <input name="scheduled_at" type="datetime-local"
-          className="flex-1 h-9 px-3 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+          className="flex-1 min-w-0 h-10 px-4 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
         />
       </div>
 
@@ -80,12 +80,13 @@ export function LeadActivityForm({ leadId }: { leadId: string }) {
 
       <div className="flex gap-2">
         <button type="submit" disabled={loading}
-          className="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-60 transition">
+          className="flex items-center gap-1.5 px-4 h-10 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0 transition-all"
+          style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
           {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
           Сохранить
         </button>
         <button type="button" onClick={() => setOpen(false)}
-          className="px-4 py-1.5 border border-border rounded-lg text-sm hover:bg-accent transition">
+          className="px-4 h-10 border border-border rounded-[14px] text-sm font-medium hover:bg-accent transition-all">
           Отмена
         </button>
       </div>

@@ -25,7 +25,7 @@ export default function NewEmployeePage() {
             type="email"
             name="email"
             required
-            className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+            className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
             placeholder="user@example.com"
           />
         </div>
@@ -38,7 +38,7 @@ export default function NewEmployeePage() {
             type="text"
             name="full_name"
             required
-            className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+            className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
             placeholder="Иван Иванов"
           />
         </div>
@@ -51,7 +51,7 @@ export default function NewEmployeePage() {
             name="role"
             required
             defaultValue="agent"
-            className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary"
+            className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all"
           >
             <option value="admin">Администратор</option>
             <option value="manager">Менеджер</option>
@@ -67,7 +67,7 @@ export default function NewEmployeePage() {
           <input
             type="tel"
             name="phone"
-            className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+            className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
             placeholder="+7 (999) 123-45-67"
           />
         </div>

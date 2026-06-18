@@ -75,7 +75,23 @@
   }
 }
 
-/* ── Scrollbar ── */
+/* ── Date/time inputs: prevent WebKit native control from overflowing container ── */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="week"] {
+  min-width: 0;
+  box-sizing: border-box;
+  -webkit-min-logical-width: 0;
+}
+input[type="date"]::-webkit-date-and-time-value {
+  text-align: left;
+  min-width: 0;
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+  margin-left: 4px;
+}
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(100,116,139,0.25); border-radius: 3px; }

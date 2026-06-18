@@ -13,7 +13,7 @@ export default async function EditContactPage({ params }: { params: Promise<{ id
 
   const boundAction = updateContactAction.bind(null, id)
 
-  const inputCls = "w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary text-sm"
+  const inputCls = "w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
   const labelCls = "block text-sm font-medium text-foreground mb-1.5"
 
   return (
@@ -41,7 +41,7 @@ export default async function EditContactPage({ params }: { params: Promise<{ id
             <div>
               <label className={labelCls}>Роль *</label>
               <select name="role" required defaultValue={c.role}
-                className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary text-sm">
+                className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all">
                 <option value="client">👥 Клиент</option>
                 <option value="owner">🏠 Собственник</option>
                 <option value="both">🔄 Клиент + Собственник</option>
@@ -50,7 +50,7 @@ export default async function EditContactPage({ params }: { params: Promise<{ id
             <div>
               <label className={labelCls}>Статус</label>
               <select name="status" defaultValue={c.status}
-                className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary text-sm">
+                className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all">
                 <option value="new">Новый</option>
                 <option value="active">Активный</option>
                 <option value="vip">VIP</option>
@@ -136,7 +136,7 @@ export default async function EditContactPage({ params }: { params: Promise<{ id
           <div>
             <label className={labelCls}>Источник</label>
             <select name="source" defaultValue={c.source ?? ''}
-              className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary text-sm">
+              className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all">
               <option value="">— не выбрано —</option>
               <option value="avito">Avito</option>
               <option value="cian">ЦИАН</option>
@@ -153,7 +153,7 @@ export default async function EditContactPage({ params }: { params: Promise<{ id
           <div>
             <label className={labelCls}>Комментарий</label>
             <textarea name="comment" rows={3} defaultValue={c.comment ?? ''}
-              className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary text-sm" />
+              className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all resize-none" />
           </div>
         </div>
 

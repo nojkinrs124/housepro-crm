@@ -69,14 +69,14 @@ export function AddPaymentForm({ contractId }: AddPaymentFormProps) {
               step="0.01"
               required
               placeholder="50 000"
-              className="w-full h-9 px-3 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+              className="w-full h-10 px-4 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
             />
           </div>
           <div className="space-y-1">
             <label className="text-xs text-muted-foreground">Тип</label>
             <select
               name="payment_type"
-              className="w-full h-9 px-3 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="w-full h-10 px-4 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all"
             >
               {PAYMENT_TYPES.map(t => (
                 <option key={t.value} value={t.value}>{t.label}</option>
@@ -91,7 +91,7 @@ export function AddPaymentForm({ contractId }: AddPaymentFormProps) {
             <input
               name="payment_date"
               type="date"
-              className="w-full h-9 px-3 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="w-full h-10 px-4 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
             />
           </div>
           <div className="space-y-1">
@@ -99,7 +99,7 @@ export function AddPaymentForm({ contractId }: AddPaymentFormProps) {
             <input
               name="due_date"
               type="date"
-              className="w-full h-9 px-3 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="w-full h-10 px-4 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
             />
           </div>
         </div>
@@ -110,7 +110,7 @@ export function AddPaymentForm({ contractId }: AddPaymentFormProps) {
             name="notes"
             type="text"
             placeholder="Комментарий..."
-            className="w-full h-9 px-3 rounded-lg border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+            className="w-full h-10 px-4 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
           />
         </div>
 
@@ -130,7 +130,8 @@ export function AddPaymentForm({ contractId }: AddPaymentFormProps) {
           <button
             type="submit"
             disabled={isPending}
-            className="ml-auto flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-60 transition-all"
+            className="ml-auto flex items-center gap-2 px-4 py-2 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0 transition-all"
+            style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}
           >
             {isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
             Добавить

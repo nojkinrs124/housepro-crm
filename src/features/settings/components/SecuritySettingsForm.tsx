@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation'
 
 type Feedback = { type: 'success' | 'error'; message: string } | null
 
-const inputCls = 'w-full h-10 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all'
+const inputCls = 'w-full h-10 px-4 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all'
 const labelCls = 'text-xs font-medium text-muted-foreground uppercase tracking-wide'
 
 function PasswordStrength({ password }: { password: string }) {

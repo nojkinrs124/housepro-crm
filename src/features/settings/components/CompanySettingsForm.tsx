@@ -32,7 +32,7 @@ type Company = {
 type Feedback = { type: 'success' | 'error'; message: string } | null
 
 const inputCls =
-  'w-full h-10 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all'
+  'w-full h-10 px-4 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all'
 const labelCls = 'text-xs font-medium text-muted-foreground uppercase tracking-wide'
 
 function SectionHeader({ icon: Icon, title }: { icon: React.ElementType; title: string }) {
@@ -239,7 +239,7 @@ export function CompanySettingsForm({ company, isAdmin }: { company: Company | n
             defaultValue={company?.description ?? ''}
             placeholder="Агентство недвижимости — продажа и аренда жилой и коммерческой недвижимости"
             rows={3}
-            className="w-full px-3 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none"
+            className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none"
           />
         </div>
 

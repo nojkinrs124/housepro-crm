@@ -151,7 +151,7 @@ export function ProfileForm({ user }: { user: UserType }) {
                 name="full_name"
                 defaultValue={user.full_name}
                 required
-                className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+                className="w-full h-10 px-4 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
               />
             </div>
             <div className="space-y-1.5">
@@ -163,7 +163,7 @@ export function ProfileForm({ user }: { user: UserType }) {
                 defaultValue={user.phone ?? ''}
                 type="tel"
                 placeholder="+7 (999) 000-00-00"
-                className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+                className="w-full h-10 px-4 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
               />
             </div>
           </div>
@@ -175,7 +175,7 @@ export function ProfileForm({ user }: { user: UserType }) {
             <input
               value={user.email}
               disabled
-              className="w-full h-10 px-3 rounded-xl border border-input bg-muted/50 text-sm text-muted-foreground cursor-not-allowed"
+              className="w-full h-10 px-4 rounded-xl border border-input bg-muted/50 text-sm text-muted-foreground cursor-not-allowed"
             />
             <p className="text-xs text-muted-foreground">Email изменить нельзя</p>
           </div>
@@ -223,7 +223,7 @@ export function ProfileForm({ user }: { user: UserType }) {
                 minLength={6}
                 required
                 placeholder="Минимум 6 символов"
-                className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+                className="w-full h-10 px-4 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
               />
             </div>
             <div className="space-y-1.5">
@@ -235,7 +235,7 @@ export function ProfileForm({ user }: { user: UserType }) {
                 type="password"
                 required
                 placeholder="Повторите пароль"
-                className="w-full h-10 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+                className="w-full h-10 px-4 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
               />
             </div>
           </div>

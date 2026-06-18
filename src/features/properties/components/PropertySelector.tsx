@@ -72,7 +72,7 @@ export function PropertySelector({
           value={selectedPropertyId || ''}
           onChange={(e) => onPropertySelect(e.target.value)}
           disabled={loading}
-          className="w-full px-4 py-2 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:border-primary disabled:opacity-50"
+          className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer disabled:opacity-50 transition-all"
         >
           <option value="">Выберите объект...</option>
           {properties.map((p) => (
@@ -87,20 +87,20 @@ export function PropertySelector({
         <button
           type="button"
           onClick={() => setShowCreate(true)}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-dashed border-primary/50 text-primary hover:bg-primary/5 transition text-sm font-medium"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-dashed border-primary/50 text-primary hover:bg-primary/5 transition text-sm font-medium"
         >
           <Plus className="w-4 h-4" />
           Создать новый объект
         </button>
       ) : (
-        <form onSubmit={handleCreateProperty} className="bg-muted p-4 rounded-lg space-y-3">
+        <form onSubmit={handleCreateProperty} className="bg-muted p-4 rounded-xl space-y-3">
           <input
             type="text"
             placeholder="Название объекта"
             value={newPropertyData.title}
             onChange={(e) => setNewPropertyData({ ...newPropertyData, title: e.target.value })}
             required
-            className="w-full px-3 py-1.5 rounded-lg border border-border bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+            className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
           />
 
           <input
@@ -109,13 +109,13 @@ export function PropertySelector({
             value={newPropertyData.address}
             onChange={(e) => setNewPropertyData({ ...newPropertyData, address: e.target.value })}
             required
-            className="w-full px-3 py-1.5 rounded-lg border border-border bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary"
+            className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
           />
 
           <select
             value={newPropertyData.property_type}
             onChange={(e) => setNewPropertyData({ ...newPropertyData, property_type: e.target.value as any })}
-            className="w-full px-3 py-1.5 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:border-primary"
+            className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all"
           >
             <option value="apartment">Квартира</option>
             <option value="house">Дом</option>
@@ -126,14 +126,15 @@ export function PropertySelector({
           <div className="flex gap-2">
             <button
               type="submit"
-              className="flex-1 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition"
+              className="flex-1 px-4 h-10 rounded-xl text-white text-sm font-bold hover:-translate-y-0.5 transition-all"
+              style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}
             >
               Создать
             </button>
             <button
               type="button"
               onClick={() => setShowCreate(false)}
-              className="flex-1 px-3 py-1.5 rounded-lg border border-border text-foreground text-sm font-medium hover:bg-muted transition"
+              className="flex-1 px-4 h-10 rounded-xl border border-input text-foreground text-sm font-medium hover:bg-muted transition"
             >
               Отмена
             </button>

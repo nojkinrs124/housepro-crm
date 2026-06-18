@@ -122,7 +122,7 @@ export default async function DashboardPage() {
   ]
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
 
       {/* Page Header */}
       <div className="flex items-start justify-between flex-wrap gap-4">
@@ -150,10 +150,10 @@ export default async function DashboardPage() {
       <DashboardKpiCards cards={kpiData} />
 
       {/* Finance + Funnel */}
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-2 gap-4">
 
         {/* Finance */}
-        <div className="bg-white rounded-[20px] border border-slate-100 p-6" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+        <div className="bg-white rounded-[20px] border border-slate-100 p-5 h-full flex flex-col" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="font-bold text-[#111827] text-[16px] tracking-tight">Финансы</h2>
@@ -220,7 +220,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Funnel */}
-        <div className="bg-white rounded-[20px] border border-slate-100 p-6" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+        <div className="bg-white rounded-[20px] border border-slate-100 p-5 h-full flex flex-col" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="font-bold text-[#111827] text-[16px] tracking-tight">Воронка сделок</h2>
@@ -258,10 +258,10 @@ export default async function DashboardPage() {
       </div>
 
       {/* 3-column */}
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid lg:grid-cols-3 gap-4">
 
         {/* Recent contacts */}
-        <div className="bg-white rounded-[20px] border border-slate-100 p-6" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+        <div className="bg-white rounded-[20px] border border-slate-100 p-5 h-full flex flex-col" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
           <div className="flex items-center justify-between mb-5">
             <h2 className="font-bold text-[#111827] text-[15px]">Последние контакты</h2>
             <Link href="/contacts" className="text-xs text-[#16A34A] font-semibold flex items-center gap-0.5 hover:underline">
@@ -301,7 +301,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Recent deals */}
-        <div className="bg-white rounded-[20px] border border-slate-100 p-6" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+        <div className="bg-white rounded-[20px] border border-slate-100 p-5 h-full flex flex-col" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
           <div className="flex items-center justify-between mb-5">
             <h2 className="font-bold text-[#111827] text-[15px]">Последние сделки</h2>
             <Link href="/deals" className="text-xs text-[#16A34A] font-semibold flex items-center gap-0.5 hover:underline">
@@ -342,7 +342,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* My tasks */}
-        <div className="bg-white rounded-[20px] border border-slate-100 p-6" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+        <div className="bg-white rounded-[20px] border border-slate-100 p-5 h-full flex flex-col" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
           <div className="flex items-center justify-between mb-5">
             <h2 className="font-bold text-[#111827] text-[15px]">Мои задачи</h2>
             <Link href="/tasks" className="text-xs text-[#16A34A] font-semibold flex items-center gap-0.5 hover:underline">
