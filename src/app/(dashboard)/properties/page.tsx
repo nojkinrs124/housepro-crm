@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { Home, Plus, Search, MapPin, Maximize2, DoorOpen, ArrowUpRight } from 'lucide-react'
+import { Home, Plus, Search, MapPin, Maximize2, DoorOpen, ArrowUpRight, LayoutGrid, List } from 'lucide-react'
 import Link from 'next/link'
 
 const typeLabels: Record<string, string> = {
@@ -9,18 +9,18 @@ const typeLabels: Record<string, string> = {
 const dealLabels: Record<string, string> = {
   rent: 'Аренда', sale: 'Продажа', management: 'Управление', subrent: 'Субаренда',
 }
-const statusConfig: Record<string, { label: string; bg: string; text: string; dot: string }> = {
-  available: { label: 'Свободен',     bg: 'rgba(255,255,255,0.92)', text: '#16A34A', dot: '#22C55E' },
-  reserved:  { label: 'Забронирован', bg: 'rgba(255,255,255,0.92)', text: '#D97706', dot: '#F59E0B' },
-  rented:    { label: 'Сдан',         bg: 'rgba(255,255,255,0.92)', text: '#2563EB', dot: '#3B82F6' },
-  sold:      { label: 'Продан',       bg: 'rgba(255,255,255,0.92)', text: '#64748B', dot: '#94A3B8' },
-  inactive:  { label: 'Неактивен',    bg: 'rgba(255,255,255,0.92)', text: '#DC2626', dot: '#EF4444' },
+const statusConfig: Record<string, { label: string; dot: string; badge: string }> = {
+  available: { label: 'Свободен',     dot: '#22C55E', badge: 'bg-green-50 text-green-700'   },
+  reserved:  { label: 'Забронирован', dot: '#F59E0B', badge: 'bg-amber-50 text-amber-700'   },
+  rented:    { label: 'Сдан',         dot: '#3B82F6', badge: 'bg-blue-50 text-blue-700'     },
+  sold:      { label: 'Продан',       dot: '#94A3B8', badge: 'bg-slate-100 text-slate-500'  },
+  inactive:  { label: 'Неактивен',    dot: '#EF4444', badge: 'bg-red-50 text-red-600'       },
 }
-const dealBadgeConfig: Record<string, { text: string; bg: string }> = {
-  rent:       { text: '#2563EB', bg: 'rgba(255,255,255,0.92)' },
-  sale:       { text: '#7C3AED', bg: 'rgba(255,255,255,0.92)' },
-  management: { text: '#D97706', bg: 'rgba(255,255,255,0.92)' },
-  subrent:    { text: '#16A34A', bg: 'rgba(255,255,255,0.92)' },
+const dealBadge: Record<string, string> = {
+  rent:       'bg-blue-50 text-blue-700',
+  sale:       'bg-violet-50 text-violet-700',
+  management: 'bg-amber-50 text-amber-700',
+  subrent:    'bg-green-50 text-green-700',
 }
 const placeholderImages: Record<string, string> = {
   apartment: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&h=360&fit=crop&auto=format',
@@ -34,28 +34,37 @@ const placeholderImages: Record<string, string> = {
 export default async function PropertiesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string; deal_type?: string }>
+  searchParams: Promise<{ search?: string; deal_type?: string; view?: string }>
 }) {
   const params = await searchParams
-  const supabase = await createClient()
+  const view = params.view === 'list' ? 'list' : 'grid'
 
+  const supabase = await createClient()
   let query = supabase
     .from('properties')
-    .select('id, title, property_type, deal_type, address, price, area, rooms, status, created_at')
+    .select('id, title, property_type, deal_type, address, price, area, rooms, status, floor, total_floors, created_at')
     .order('created_at', { ascending: false })
 
   if (params.search)    query = query.ilike('address', `%${params.search}%`)
   if (params.deal_type) query = query.eq('deal_type', params.deal_type)
 
-  const { data: properties, error } = await query.limit(50)
+  const { data: properties, error } = await query.limit(100)
   if (error) console.error('Properties error:', error.message)
+
+  // Build query string helper (preserves other params when switching view/filter)
+  const buildHref = (overrides: Record<string, string | undefined>) => {
+    const p = { search: params.search, deal_type: params.deal_type, view: view === 'list' ? 'list' : undefined, ...overrides }
+    const qs = Object.entries(p).filter(([, v]) => v).map(([k, v]) => `${k}=${encodeURIComponent(v!)}`).join('&')
+    return `/properties${qs ? `?${qs}` : ''}`
+  }
 
   return (
     <div className="space-y-6">
+
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight">Объекты недвижимости</h1>
+          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Объекты недвижимости</h1>
           <p className="text-[#64748B] mt-1 text-sm font-medium">{properties?.length ?? 0} объектов в базе</p>
         </div>
         <Link href="/properties/new"
@@ -66,10 +75,14 @@ export default async function PropertiesPage({
         </Link>
       </div>
 
-      {/* Filters */}
+      {/* Filters + view switcher */}
       <div className="bg-white rounded-[20px] border border-slate-100 p-4 flex flex-wrap gap-3 items-center"
         style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
-        <form method="get" className="flex-1 min-w-52">
+
+        {/* Search */}
+        <form method="get" className="flex-1 min-w-[200px]">
+          {params.deal_type && <input type="hidden" name="deal_type" value={params.deal_type} />}
+          {view === 'list' && <input type="hidden" name="view" value="list" />}
           <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400"
               style={{ width: 14, height: 14 }} />
@@ -81,8 +94,10 @@ export default async function PropertiesPage({
             />
           </div>
         </form>
+
+        {/* Deal type filters */}
         <div className="flex gap-2 flex-wrap">
-          <Link href="/properties"
+          <Link href={buildHref({ deal_type: undefined })}
             className="px-4 py-2 rounded-[12px] text-sm font-bold transition-all"
             style={!params.deal_type
               ? { background: 'linear-gradient(135deg, #16A34A, #22C55E)', color: '#fff' }
@@ -90,7 +105,7 @@ export default async function PropertiesPage({
             Все
           </Link>
           {Object.entries(dealLabels).map(([value, label]) => (
-            <Link key={value} href={`/properties?deal_type=${value}`}
+            <Link key={value} href={buildHref({ deal_type: value })}
               className="px-4 py-2 rounded-[12px] text-sm font-bold transition-all"
               style={params.deal_type === value
                 ? { background: 'linear-gradient(135deg, #16A34A, #22C55E)', color: '#fff' }
@@ -99,9 +114,23 @@ export default async function PropertiesPage({
             </Link>
           ))}
         </div>
+
+        {/* View switcher */}
+        <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-[12px] shrink-0 ml-auto">
+          <Link href={buildHref({ view: undefined })}
+            className={`w-9 h-9 flex items-center justify-center rounded-[10px] transition-all ${view === 'grid' ? 'bg-white shadow-sm text-[#111827]' : 'text-[#94A3B8] hover:text-[#64748B]'}`}
+            title="Карточки">
+            <LayoutGrid style={{ width: 16, height: 16 }} />
+          </Link>
+          <Link href={buildHref({ view: 'list' })}
+            className={`w-9 h-9 flex items-center justify-center rounded-[10px] transition-all ${view === 'list' ? 'bg-white shadow-sm text-[#111827]' : 'text-[#94A3B8] hover:text-[#64748B]'}`}
+            title="Список">
+            <List style={{ width: 16, height: 16 }} />
+          </Link>
+        </div>
       </div>
 
-      {/* Grid */}
+      {/* Empty state */}
       {!properties || properties.length === 0 ? (
         <div className="bg-white rounded-[20px] border border-slate-100 text-center py-24"
           style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
@@ -120,48 +149,41 @@ export default async function PropertiesPage({
             Добавить объект
           </Link>
         </div>
-      ) : (
+
+      ) : view === 'grid' ? (
+        /* ── GRID VIEW ─────────────────────────────────────────────────── */
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {properties.map(property => {
-            const status   = statusConfig[property.status]   ?? statusConfig.inactive
-            const dealCfg  = dealBadgeConfig[property.deal_type] ?? { text: '#64748B', bg: 'rgba(255,255,255,0.92)' }
-            const imgSrc   = placeholderImages[property.property_type] ?? placeholderImages.apartment
+            const status  = statusConfig[property.status]   ?? statusConfig.inactive
+            const imgSrc  = placeholderImages[property.property_type] ?? placeholderImages.apartment
+            const dealCfg = dealBadge[property.deal_type]
 
             return (
               <Link key={property.id} href={`/properties/${property.id}`}
                 className="group block bg-white rounded-[20px] border border-slate-100 overflow-hidden transition-all duration-300 hover:-translate-y-1"
-                style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
-              >
+                style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
                 {/* Photo */}
                 <div className="relative h-52 overflow-hidden bg-slate-100">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={imgSrc} alt={property.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
-                  {/* Gradient overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-
-                  {/* Status badge — top left */}
+                  {/* Status */}
                   <div className="absolute top-3 left-3">
-                    <span
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold backdrop-blur-md"
-                      style={{ background: status.bg, color: status.text }}
-                    >
+                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold backdrop-blur-md"
+                      style={{ background: 'rgba(255,255,255,0.92)', color: status.dot === '#22C55E' ? '#16A34A' : status.dot }}>
                       <span className="w-2 h-2 rounded-full" style={{ background: status.dot }} />
                       {status.label}
                     </span>
                   </div>
-
-                  {/* Deal type — top right */}
+                  {/* Deal type */}
                   <div className="absolute top-3 right-3">
-                    <span
-                      className="px-3 py-1.5 rounded-full text-[11px] font-bold backdrop-blur-md"
-                      style={{ background: dealCfg.bg, color: dealCfg.text }}
-                    >
+                    <span className="px-3 py-1.5 rounded-full text-[11px] font-bold backdrop-blur-md"
+                      style={{ background: 'rgba(255,255,255,0.92)', color: '#374151' }}>
                       {dealLabels[property.deal_type] ?? property.deal_type}
                     </span>
                   </div>
-
-                  {/* Price — bottom left over gradient */}
+                  {/* Price */}
                   {property.price && (
                     <div className="absolute bottom-3 left-4">
                       <span className="text-white font-bold text-xl drop-shadow-lg tracking-tight">
@@ -172,8 +194,7 @@ export default async function PropertiesPage({
                       )}
                     </div>
                   )}
-
-                  {/* Property type chip — bottom right */}
+                  {/* Type chip */}
                   <div className="absolute bottom-3 right-3">
                     <span className="px-2.5 py-1 rounded-full text-[10px] font-bold text-white/90 backdrop-blur-sm"
                       style={{ background: 'rgba(0,0,0,0.35)' }}>
@@ -181,21 +202,17 @@ export default async function PropertiesPage({
                     </span>
                   </div>
                 </div>
-
-                {/* Card body */}
+                {/* Body */}
                 <div className="p-4">
                   <h3 className="font-bold text-[#111827] text-[15px] leading-snug group-hover:text-[#16A34A] transition-colors mb-2">
                     {property.title}
                   </h3>
-
                   {property.address && (
                     <div className="flex items-center gap-1.5 text-xs text-[#64748B] mb-3">
                       <MapPin style={{ width: 12, height: 12, flexShrink: 0, color: '#94A3B8' }} />
                       <span className="truncate font-medium">{property.address}</span>
                     </div>
                   )}
-
-                  {/* Stats row */}
                   <div className="flex items-center gap-4 pt-3 border-t border-slate-100">
                     {property.area && (
                       <div className="flex items-center gap-1.5 text-xs text-[#64748B]">
@@ -226,7 +243,97 @@ export default async function PropertiesPage({
             )
           })}
         </div>
+
+      ) : (
+        /* ── LIST VIEW ─────────────────────────────────────────────────── */
+        <div className="bg-white rounded-[20px] border border-slate-100 overflow-hidden"
+          style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+          <div className="divide-y divide-slate-100">
+            {properties.map(property => {
+              const status = statusConfig[property.status] ?? statusConfig.inactive
+              const imgSrc = placeholderImages[property.property_type] ?? placeholderImages.apartment
+
+              return (
+                <Link key={property.id} href={`/properties/${property.id}`}
+                  className="flex items-center gap-4 px-5 py-4 hover:bg-[#F8FAFC] transition-all duration-200 group">
+
+                  {/* Thumbnail */}
+                  <div className="w-16 h-16 sm:w-20 sm:h-16 rounded-[14px] overflow-hidden shrink-0 bg-slate-100">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={imgSrc} alt={property.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  </div>
+
+                  {/* Main info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2 flex-wrap">
+                      <p className="font-semibold text-[#111827] text-sm group-hover:text-[#16A34A] transition-colors truncate">
+                        {property.title}
+                      </p>
+                      {property.price && (
+                        <p className="font-bold text-[#111827] text-sm shrink-0 whitespace-nowrap">
+                          {Number(property.price).toLocaleString('ru-RU')} ₽
+                          {property.deal_type === 'rent' && <span className="text-[#94A3B8] font-normal text-xs ml-1">/мес</span>}
+                        </p>
+                      )}
+                    </div>
+
+                    {property.address && (
+                      <div className="flex items-center gap-1 mt-1">
+                        <MapPin style={{ width: 11, height: 11, color: '#94A3B8', flexShrink: 0 }} />
+                        <p className="text-xs text-[#64748B] truncate">{property.address}</p>
+                      </div>
+                    )}
+
+                    {/* Tags row */}
+                    <div className="flex items-center gap-2 mt-2 flex-wrap">
+                      {/* Status */}
+                      <span className={`inline-flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-full font-bold ${status.badge}`}>
+                        <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: status.dot }} />
+                        {status.label}
+                      </span>
+                      {/* Deal type */}
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${dealBadge[property.deal_type] ?? 'bg-slate-100 text-slate-500'}`}>
+                        {dealLabels[property.deal_type] ?? property.deal_type}
+                      </span>
+                      {/* Property type */}
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-100 text-slate-500">
+                        {typeLabels[property.property_type] ?? property.property_type}
+                      </span>
+                      {/* Area */}
+                      {property.area && (
+                        <span className="text-[10px] text-[#94A3B8] font-medium">
+                          {property.area} м²
+                        </span>
+                      )}
+                      {/* Rooms */}
+                      {property.rooms && (
+                        <span className="text-[10px] text-[#94A3B8] font-medium">
+                          {property.rooms} комн.
+                        </span>
+                      )}
+                      {/* Floor */}
+                      {property.floor && (
+                        <span className="text-[10px] text-[#94A3B8] font-medium">
+                          {property.floor}{property.total_floors ? `/${property.total_floors}` : ''} эт.
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Arrow */}
+                  <div className="shrink-0 hidden sm:block">
+                    <div className="w-8 h-8 rounded-[10px] flex items-center justify-center bg-slate-50 text-[#94A3B8] group-hover:bg-green-600 group-hover:text-white transition-all">
+                      <ArrowUpRight style={{ width: 15, height: 15 }} />
+                    </div>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        </div>
       )}
+
     </div>
   )
 }
