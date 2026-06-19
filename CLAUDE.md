@@ -279,7 +279,554 @@ const data: Contact = {}
 
 ---
 
-## Git — обязательный workflow
+## 🎨 ВИЗУАЛЬНЫЙ СТАНДАРТ — ОБЯЗАТЕЛЕН ДЛЯ ВСЕХ НОВЫХ СТРАНИЦ И КОМПОНЕНТОВ
+
+> **Правило**: при создании любой новой страницы, формы, карточки или компонента — строго следовать этому разделу. Отклонения от стандарта не допускаются.
+
+---
+
+### Цветовая палитра и токены
+
+```tsx
+// ✅ ВСЕГДА использовать эти значения напрямую (хардкодом через inline style или Tailwind arbitrary)
+// НЕ использовать bg-primary, text-foreground, bg-card и другие shadcn-токены
+// в новом коде — они существуют в legacy-коде, их не трогать, но в новом не писать
+
+// Основные цвета
+'#111827'   // text — основной тёмный текст
+'#64748B'   // text secondary — подписи, лейблы
+'#94A3B8'   // text tertiary — плейсхолдеры, неактивное
+'#F8FAFC'   // background страницы
+'#FFFFFF'   // background карточек
+'#16A34A'   // brand green primary
+'#22C55E'   // brand green lighter
+
+// Границы и тени
+'rgba(214,219,235,0.7)'  // border карточек
+'0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)'   // shadow-sm карточек
+'0 4px 16px rgba(0,0,0,0.06), 0 12px 40px rgba(0,0,0,0.08)' // shadow-md hover
+
+// Градиент CTA-кнопки (зелёная)
+'linear-gradient(135deg, #16A34A, #22C55E)'
+'0 4px 16px rgba(22,163,74,0.35)'  // boxShadow для CTA-кнопки
+```
+
+---
+
+### Карточки-контейнеры
+
+**Стандартная карточка:**
+```tsx
+<div
+  className="bg-white rounded-[20px] border border-slate-100 p-5"
+  style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
+>
+  ...
+</div>
+```
+
+**Карточки в grid-строке (выровнять по высоте):**
+```tsx
+// На родительском grid
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+  {/* Карточки должны иметь h-full flex flex-col для равной высоты строки */}
+  <div className="bg-white rounded-[20px] border border-slate-100 p-5 h-full flex flex-col"
+    style={{ boxShadow: '...' }}>
+    ...
+  </div>
+</div>
+```
+
+**Правила карточек:**
+- Радиус: всегда `rounded-[20px]`
+- Padding: `p-5` (стандарт) — одинаково на всех страницах
+- Border: `border border-slate-100`
+- Shadow: всегда через inline `style` (Tailwind не умеет точные значения)
+- Вложенные карточки (секции внутри формы): `rounded-[20px]` тоже
+- Заголовок секции внутри карточки: `font-bold text-[#111827] text-[15px]`
+
+---
+
+### Заголовки страниц (H1)
+
+```tsx
+// ✅ ЕДИНСТВЕННЫЙ допустимый стандарт для главного заголовка страницы
+<h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">
+  Название страницы
+</h1>
+
+// Подзаголовок/описание под H1
+<p className="text-[#64748B] mt-1.5 text-sm font-medium">
+  Описание или количество записей
+</p>
+
+// Заголовок секции внутри карточки (H2)
+<h2 className="font-bold text-[#111827] text-[15px]">
+  Название секции
+</h2>
+```
+
+---
+
+### CTA-кнопки (главные действия — Создать, Сохранить, Добавить)
+
+```tsx
+// ✅ СТАНДАРТ: всегда градиент + inline style (Tailwind не поддерживает градиент)
+<button
+  type="submit"
+  className="flex items-center gap-2 px-5 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all"
+  style={{
+    background: 'linear-gradient(135deg, #16A34A, #22C55E)',
+    boxShadow: '0 4px 16px rgba(22,163,74,0.35)'
+  }}
+>
+  <Plus className="w-4 h-4" />
+  Создать
+</button>
+
+// Link-версия CTA (для href)
+<Link
+  href="/module/new"
+  className="flex items-center gap-2 px-5 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all"
+  style={{
+    background: 'linear-gradient(135deg, #16A34A, #22C55E)',
+    boxShadow: '0 4px 16px rgba(22,163,74,0.35)'
+  }}
+>
+  <Plus className="w-4 h-4" />
+  Добавить
+</Link>
+```
+
+**Вторичная кнопка (Отмена, Назад, Редактировать):**
+```tsx
+<Link
+  href="/module"
+  className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-[14px] text-sm font-semibold text-[#374151] hover:bg-slate-50 hover:border-slate-300 transition-all"
+>
+  Отмена
+</Link>
+```
+
+---
+
+### Поля форм (input, select, textarea)
+
+**ЕДИНСТВЕННЫЙ допустимый стандарт для всех полей:**
+
+```tsx
+// Лейбл
+<label className="block text-sm font-semibold text-[#111827] mb-1.5">
+  Название поля
+</label>
+
+// Input
+<input
+  type="text"
+  name="field"
+  placeholder="Подсказка"
+  className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+/>
+
+// Select
+<select
+  name="field"
+  className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all"
+>
+  <option value="">— выберите —</option>
+</select>
+
+// Textarea
+<textarea
+  name="field"
+  rows={3}
+  placeholder="Подсказка"
+  className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all resize-none"
+/>
+
+// Date input (min-width важен для iOS Safari)
+<input
+  type="date"
+  name="field"
+  className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+/>
+```
+
+**Правила полей:**
+- Высота: `h-10` (40px) для input и select — жёстко везде
+- Padding: `px-4` — жёстко везде (не px-3!)
+- Радиус: `rounded-xl` (12px) для полей, `rounded-[14px]` для кнопок
+- Граница: `border border-input`
+- Фокус: `focus:ring-2 focus:ring-primary/30` — везде
+- Переход: `transition-all` — везде
+- Select: всегда `cursor-pointer`
+
+---
+
+### Структура страницы-списка (list page)
+
+```tsx
+export default async function ModulePage() {
+  return (
+    <div className="space-y-6">
+
+      {/* 1. Шапка страницы */}
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">
+            Название раздела
+          </h1>
+          <p className="text-[#64748B] mt-1 text-sm font-medium">N записей</p>
+        </div>
+        <Link href="/module/new" className="flex items-center gap-2 px-5 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all"
+          style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+          <Plus style={{ width: 16, height: 16 }} />
+          Добавить
+        </Link>
+      </div>
+
+      {/* 2. Stat-карточки (опционально) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map(stat => (
+          <div key={stat.label} className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm p-5 flex items-center gap-3 sm:gap-4">
+            <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${stat.iconBg}`}>
+              <stat.Icon style={{ width: 20, height: 20 }} />
+            </div>
+            <div className="min-w-0"> {/* ← ОБЯЗАТЕЛЕН для предотвращения overflow */}
+              <p className="text-2xl font-bold text-[#111827]">{stat.value}</p>
+              <p className="text-xs text-[#64748B] font-medium mt-0.5 leading-tight break-words">
+                {stat.label}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* 3. Основная таблица/список */}
+      <div className="bg-white rounded-[20px] border border-slate-100 overflow-hidden"
+        style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+        {!items?.length ? (
+          /* Empty state */
+          <div className="text-center py-16">
+            <div className="w-14 h-14 rounded-[20px] flex items-center justify-center mx-auto mb-4"
+              style={{ background: 'linear-gradient(135deg, rgba(22,163,74,0.1), rgba(34,197,94,0.1))' }}>
+              <Icon style={{ width: 24, height: 24, color: '#16A34A' }} />
+            </div>
+            <p className="text-[#111827] font-bold text-base">Записей ещё нет</p>
+            <p className="text-[#64748B] text-sm mt-1">Добавьте первую запись</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-100">
+            {items.map(item => (
+              <Link key={item.id} href={`/module/${item.id}`}
+                className="flex items-center gap-4 px-6 py-4 hover:bg-[#F8FAFC] transition-all duration-200 group">
+                {/* контент строки */}
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+
+    </div>
+  )
+}
+```
+
+---
+
+### Структура страницы-формы (new/edit page)
+
+```tsx
+export default async function NewModulePage() {
+  return (
+    <div className="max-w-2xl mx-auto space-y-6">
+
+      {/* 1. Back link */}
+      <Link href="/module"
+        className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+        <ArrowLeft style={{ width: 16, height: 16 }} />
+        Вернуться к разделу
+      </Link>
+
+      {/* 2. Заголовок с иконкой */}
+      <div className="flex items-center gap-3">
+        <div className="w-11 h-11 rounded-[12px] flex items-center justify-center shrink-0 bg-green-50">
+          <Icon className="text-[#16A34A]" style={{ width: 20, height: 20 }} />
+        </div>
+        <div>
+          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">
+            Новая запись
+          </h1>
+          <p className="text-[#64748B] text-sm font-medium mt-0.5">Описание</p>
+        </div>
+      </div>
+
+      {/* 3. Форма с секциями */}
+      <form action={createAction}>
+        {/* Секция */}
+        <div className="bg-white rounded-[20px] border border-slate-100 p-5 space-y-4"
+          style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+          <h2 className="font-bold text-[#111827] text-[15px]">Основные данные</h2>
+
+          <div className="space-y-1.5">
+            <label className="block text-sm font-semibold text-[#111827]">Название *</label>
+            <input type="text" name="title"
+              className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+              placeholder="Введите название" />
+          </div>
+
+          {/* Сетка из нескольких полей — ВСЕГДА responsive */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="block text-sm font-semibold text-[#111827]">Поле 1</label>
+              <input type="text" name="field1"
+                className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="block text-sm font-semibold text-[#111827]">Поле 2</label>
+              <input type="text" name="field2"
+                className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all" />
+            </div>
+          </div>
+        </div>
+
+        {/* 4. Кнопки действий */}
+        <div className="flex items-center gap-3 pt-2">
+          <button type="submit"
+            className="flex items-center gap-2 px-6 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all"
+            style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+            Создать
+          </button>
+          <Link href="/module"
+            className="px-6 py-2.5 bg-white border border-slate-200 rounded-[14px] text-sm font-semibold text-[#374151] hover:bg-slate-50 transition-all">
+            Отмена
+          </Link>
+        </div>
+      </form>
+
+    </div>
+  )
+}
+```
+
+---
+
+### Структура детальной страницы ([id]/page.tsx)
+
+```tsx
+export default async function ModuleDetailPage() {
+  return (
+    <div className="max-w-4xl mx-auto space-y-6">
+
+      {/* 1. Back link */}
+      <Link href="/module"
+        className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+        <ArrowLeft style={{ width: 16, height: 16 }} />
+        Назад
+      </Link>
+
+      {/* 2. Шапка — ОБЯЗАТЕЛЬНО flex-col sm:flex-row (防止 overflow на мобилке) */}
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="flex items-center gap-4 min-w-0"> {/* ← min-w-0 обязателен */}
+          <div className="w-14 h-14 rounded-[20px] bg-green-100 flex items-center justify-center shrink-0">
+            <Icon className="w-7 h-7 text-green-600" />
+          </div>
+          <div className="min-w-0"> {/* ← min-w-0 обязателен */}
+            <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight break-words">
+              {item.title}
+            </h1>
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-green-100 text-green-700">
+                Статус
+              </span>
+            </div>
+          </div>
+        </div>
+        {/* Кнопки действий — flex-wrap + shrink-0 + whitespace-nowrap */}
+        <div className="flex items-center gap-2 flex-wrap shrink-0">
+          <Link href={`/module/${id}/edit`}
+            className="flex items-center gap-2 px-4 py-2 border border-border rounded-[14px] text-sm font-medium hover:bg-accent transition whitespace-nowrap">
+            <Edit className="w-4 h-4" />
+            Редактировать
+          </Link>
+          <DeleteButton itemId={id} />
+        </div>
+      </div>
+
+      {/* 3. Секции данных */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 space-y-4">
+          <div className="bg-white rounded-[20px] border border-slate-100 p-5 space-y-4"
+            style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+            <h2 className="font-bold text-[#111827] text-[15px]">Основная информация</h2>
+            {/* поля */}
+          </div>
+        </div>
+        <div className="space-y-4">
+          {/* боковые карточки */}
+        </div>
+      </div>
+
+    </div>
+  )
+}
+```
+
+---
+
+### Адаптивность — обязательные правила
+
+```tsx
+// ❌ ЗАПРЕЩЕНО — фиксированные сетки без breakpoint
+<div className="grid grid-cols-3 gap-4">   // сломается на мобилке
+
+// ✅ ОБЯЗАТЕЛЬНО — responsive сетки
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+// ❌ ЗАПРЕЩЕНО — flex без wrap на кнопках/бейджах
+<div className="flex gap-2">   // кнопки/бейджи могут выйти за экран
+
+// ✅ ОБЯЗАТЕЛЬНО — flex с wrap и shrink на длинном тексте
+<div className="flex items-center gap-2 flex-wrap">
+  <span className="flex-1 min-w-0 truncate">Длинное название...</span>
+  <span className="shrink-0 whitespace-nowrap">Бейдж</span>
+</div>
+
+// ❌ ЗАПРЕЩЕНО — шапка detail-страницы без переноса на мобилке
+<div className="flex items-start justify-between">
+
+// ✅ ОБЯЗАТЕЛЬНО — шапка detail-страницы
+<div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+```
+
+---
+
+### Stat-карточки в grid — защита от overflow
+
+```tsx
+// ❌ ЗАПРЕЩЕНО — текстовый блок без min-w-0 (вызывает overflow длинных слов)
+<div className="flex items-center gap-4">
+  <Icon />
+  <div>                          {/* ← нет min-w-0 */}
+    <p>{count}</p>
+    <p>{label}</p>               {/* "Администратор" выходит за рамку */}
+  </div>
+</div>
+
+// ✅ ОБЯЗАТЕЛЬНО
+<div className="flex items-center gap-3 sm:gap-4">
+  <Icon className="shrink-0" />
+  <div className="min-w-0">                    {/* ← ОБЯЗАТЕЛЕН */}
+    <p className="text-2xl font-bold text-[#111827]">{count}</p>
+    <p className="text-xs text-[#64748B] font-medium mt-0.5 leading-tight break-words">
+      {label}                                  {/* ← break-words ОБЯЗАТЕЛЕН */}
+    </p>
+  </div>
+</div>
+```
+
+---
+
+### Иконки в карточках и бейджах
+
+```tsx
+// Иконка-бокс (цветной квадрат с иконкой) — стандарт
+<div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 bg-green-50">
+  <Icon className="text-green-600" style={{ width: 20, height: 20 }} />
+</div>
+
+// Аватар-инициал
+<div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-white text-sm font-bold"
+  style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 2px 8px rgba(22,163,74,0.25)' }}>
+  {name?.charAt(0)?.toUpperCase() ?? '?'}
+</div>
+
+// Бейдж статуса
+<span className="text-xs px-2.5 py-1 rounded-full font-medium bg-green-100 text-green-700 shrink-0 whitespace-nowrap">
+  Активный
+</span>
+```
+
+---
+
+### Анимации — единый стандарт
+
+```tsx
+// Hover-подъём карточки
+className="... transition-all hover:-translate-y-0.5"
+
+// Hover-подъём CTA-кнопки (уже в стандарте кнопки выше)
+className="... hover:-translate-y-0.5 transition-all"
+
+// Transition на интерактивных элементах списка
+className="... hover:bg-[#F8FAFC] transition-all duration-200"
+
+// Framer Motion — только для dashboard KPI карточек и Kanban
+// Для обычных страниц не использовать — перегружает рендер
+```
+
+---
+
+### Горизонтальное переполнение (overflow) — запрещено
+
+```tsx
+// ❌ ЗАПРЕЩЕНО на любом detail-компоненте — кнопки выйдут за экран
+<div className="flex gap-2">
+  <button>Редактировать</button>
+  <button>Удалить</button>
+  <button>Сформировать DOCX</button>
+</div>
+
+// ✅ ОБЯЗАТЕЛЬНО — группа кнопок всегда с flex-wrap
+<div className="flex items-center gap-2 flex-wrap shrink-0">
+  <button className="whitespace-nowrap">Редактировать</button>
+  <button className="whitespace-nowrap">Удалить</button>
+</div>
+
+// Date inputs — НИКОГДА без min-w-0 (iOS Safari overflow)
+// Глобальное правило уже в globals.css, но для явности добавлять min-w-0
+<input type="date" className="w-full min-w-0 h-10 ..." />
+```
+
+---
+
+### Вертикальный ритм страниц
+
+```tsx
+// Корневой отступ между секциями — ВСЕГДА space-y-6
+<div className="space-y-6">
+
+// Отступ между полями в форме — space-y-4 или space-y-1.5 (label+input)
+<div className="space-y-4">
+  <div className="space-y-1.5">
+    <label>...</label>
+    <input ... />
+  </div>
+</div>
+
+// Gap в grid-сетке — gap-4
+<div className="grid ... gap-4">
+```
+
+---
+
+### Чеклист при создании новой страницы
+
+Перед push ОБЯЗАТЕЛЬНО проверить:
+
+- [ ] H1 — `text-[28px] font-bold text-[#111827] tracking-tight leading-tight`
+- [ ] Карточки — `rounded-[20px] border border-slate-100 p-5` + inline shadow
+- [ ] CTA-кнопка — градиент через inline `style`, `rounded-[14px]`, `font-bold`
+- [ ] Поля форм — `h-10 px-4 rounded-xl border border-input focus:ring-2 focus:ring-primary/30`
+- [ ] Сетки — `grid-cols-1 sm:grid-cols-N` (НЕ `grid-cols-N` без breakpoint)
+- [ ] Шапка detail — `flex flex-col sm:flex-row sm:justify-between gap-4`
+- [ ] Кнопки в шапке — `flex-wrap shrink-0 whitespace-nowrap`
+- [ ] Stat-карточки — `min-w-0` + `break-words` на текстовом блоке
+- [ ] Back link — `inline-flex items-center gap-2 text-sm font-medium text-muted-foreground`
+- [ ] `space-y-6` на корневом div страницы
+
+
 
 **После каждой завершённой фазы работы:**
 
