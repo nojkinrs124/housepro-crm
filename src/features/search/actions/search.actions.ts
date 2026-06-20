@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { rateLimitSearch } from '@/lib/rate-limit'
+import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
 
 export interface SearchResult {
   id: string
@@ -73,10 +74,7 @@ export async function searchAction(query: string): Promise<SearchResults> {
   const typeLabels: Record<string, string> = {
     apartment: 'Квартира', house: 'Дом', commercial: 'Коммерция',
     office: 'Офис', warehouse: 'Склад', land: 'Участок',
-    rent_apartment: 'Аренда квартиры', rent_commercial: 'Коммерческая аренда',
-    sale_apartment: 'Продажа квартиры', sale_house: 'Продажа дома',
-    property_management: 'Управление', sublease: 'Субаренда',
-    agency_contract: 'Агентский',
+    ...CONTRACT_TYPE_LABELS,
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

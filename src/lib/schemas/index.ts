@@ -162,11 +162,12 @@ export const ContractSchema = z.object({
     [
       'rent_apartment',
       'rent_commercial',
-      'sale_apartment',
-      'sale_house',
+      'sale',
+      'agency_owner',
+      'agency_client',
+      'agency_legal_entity',
       'property_management',
       'sublease',
-      'agency_contract',
     ],
     { message: 'Неверный тип договора' }
   ),
@@ -180,6 +181,7 @@ export const ContractSchema = z.object({
   client_representative_id: uuid,
   client_id: uuid,
   property_id: uuid,
+  base_contract_id: uuid,
   amount: optPositiveNum,
   deposit: optPositiveNum,
   start_date: optDate,

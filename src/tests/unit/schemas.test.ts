@@ -211,8 +211,9 @@ describe('ContractSchema', () => {
 
   it('принимает все допустимые типы договора', () => {
     const types = [
-      'rent_apartment', 'rent_commercial', 'sale_apartment',
-      'sale_house', 'property_management', 'sublease', 'agency_contract',
+      'rent_apartment', 'rent_commercial', 'sale',
+      'agency_owner', 'agency_client', 'agency_legal_entity',
+      'property_management', 'sublease',
     ]
     for (const t of types) {
       expect(ContractSchema.safeParse({ contract_type: t }).success).toBe(true)

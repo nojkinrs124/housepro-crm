@@ -1,13 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { FileText, Plus, Search } from 'lucide-react'
 import Link from 'next/link'
+import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
 
-const contractTypeLabels: Record<string, string> = {
-  rent_apartment: 'Аренда квартиры', rent_commercial: 'Коммерческая аренда',
-  sale_apartment: 'Продажа квартиры', sale_house: 'Продажа дома',
-  property_management: 'Управление', sublease: 'Субаренда',
-  agency_contract: 'Агентский договор',
-}
+const contractTypeLabels = CONTRACT_TYPE_LABELS
 const statusConfig: Record<string, { label: string; cls: string; dot: string }> = {
   draft:     { label: 'Черновик',  cls: 'bg-slate-50 text-slate-600',   dot: 'bg-slate-400' },
   generated: { label: 'Создан',    cls: 'bg-blue-50 text-blue-700',     dot: 'bg-blue-400' },

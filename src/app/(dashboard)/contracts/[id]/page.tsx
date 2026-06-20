@@ -5,16 +5,9 @@ import { ArrowLeft, FileText, User, Home, Building2, Calendar, DollarSign, Edit 
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { PaymentsSection } from '@/features/payments/components/PaymentsSection'
+import { CONTRACT_TYPE_LABELS, getContractTypeConfig } from '@/features/contracts/config/contract-types'
 
-const contractTypeLabels: Record<string, string> = {
-  rent_apartment: 'Аренда квартиры',
-  rent_commercial: 'Коммерческая аренда',
-  sale_apartment: 'Продажа квартиры',
-  sale_house: 'Продажа дома',
-  property_management: 'Управление недвижимостью',
-  sublease: 'Субаренда',
-  agency_contract: 'Агентский договор',
-}
+const contractTypeLabels = CONTRACT_TYPE_LABELS
 
 const statusColors: Record<string, string> = {
   draft: 'bg-gray-100 text-gray-600',
@@ -41,7 +34,8 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
       owner_contact:contacts!contracts_owner_contact_id_fkey(id, full_name, phone),
       client_contact:contacts!contracts_client_contact_id_fkey(id, full_name, phone),
       property:properties(id, title, address),
-      manager:users(full_name)
+      manager:users(full_name),
+      base_contract:contracts!contracts_base_contract_id_fkey(id, contract_number)
     `)
     .eq('id', id)
     .single()
@@ -49,6 +43,10 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
   const contract = rawContract as any
 
   if (!contract) notFound()
+
+  const { data: company } = await supabase.from('company_settings').select('name').limit(1).maybeSingle()
+  const typeConfig = getContractTypeConfig(contract.contract_type)
+  const baseContract = contract.base_contract as { id?: string; contract_number?: string } | null
 
   // Поддержка старого и нового формата
   const ownerContact  = contract.owner_contact  as { id?: string; full_name?: string; phone?: string } | null
@@ -103,13 +101,17 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
           <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
             <h2 className="font-semibold text-foreground mb-4">Стороны договора</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Собственник */}
+              {/* Сторона 1 */}
               <div className="p-4 bg-muted/30 rounded-xl">
                 <div className="flex items-center gap-2 mb-2">
                   <Building2 className="w-4 h-4 text-orange-500" />
-                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Собственник</span>
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+                    {typeConfig?.party1Label ?? 'Собственник'}
+                  </span>
                 </div>
-                {owner ? (
+                {typeConfig?.party1Role === 'agency' ? (
+                  <p className="text-sm font-medium text-foreground">{company?.name || 'HousePro'}</p>
+                ) : owner ? (
                   <div>
                     {ownerContact?.id ? (
                       <Link href={`/contacts/${ownerContact.id}`} className="text-sm font-medium text-primary hover:underline">
@@ -123,27 +125,56 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
                 ) : <p className="text-sm text-muted-foreground">Не указан</p>}
               </div>
 
-              {/* Клиент */}
+              {/* Сторона 2 */}
               <div className="p-4 bg-muted/30 rounded-xl">
                 <div className="flex items-center gap-2 mb-2">
                   <User className="w-4 h-4 text-blue-500" />
-                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Клиент</span>
+                  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+                    {typeConfig?.party2Label ?? 'Клиент'}
+                  </span>
                 </div>
-                {client ? (
-                  <div>
-                    {clientContact?.id ? (
-                      <Link href={`/contacts/${clientContact.id}`} className="text-sm font-medium text-primary hover:underline">
-                        {client.full_name}
-                      </Link>
-                    ) : (
-                      <p className="text-sm font-medium text-foreground">{client.full_name}</p>
-                    )}
-                    {client.phone && <p className="text-xs text-muted-foreground mt-0.5">{client.phone}</p>}
-                  </div>
+                {(typeConfig?.party2Role === 'owner' ? owner : client) ? (
+                  typeConfig?.party2Role === 'owner' ? (
+                    <div>
+                      {ownerContact?.id ? (
+                        <Link href={`/contacts/${ownerContact.id}`} className="text-sm font-medium text-primary hover:underline">
+                          {owner!.full_name}
+                        </Link>
+                      ) : (
+                        <p className="text-sm font-medium text-foreground">{owner!.full_name}</p>
+                      )}
+                      {owner!.phone && <p className="text-xs text-muted-foreground mt-0.5">{owner!.phone}</p>}
+                    </div>
+                  ) : (
+                    <div>
+                      {clientContact?.id ? (
+                        <Link href={`/contacts/${clientContact.id}`} className="text-sm font-medium text-primary hover:underline">
+                          {client!.full_name}
+                        </Link>
+                      ) : (
+                        <p className="text-sm font-medium text-foreground">{client!.full_name}</p>
+                      )}
+                      {client!.phone && <p className="text-xs text-muted-foreground mt-0.5">{client!.phone}</p>}
+                    </div>
+                  )
                 ) : <p className="text-sm text-muted-foreground">Не указан</p>}
               </div>
             </div>
           </div>
+
+          {/* Договор-основание (субаренда) */}
+          {typeConfig?.requiresBaseContract && (
+            <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
+              <h2 className="font-semibold text-foreground mb-3">Договор-основание</h2>
+              {baseContract?.id ? (
+                <Link href={`/contracts/${baseContract.id}`} className="text-sm font-medium text-primary hover:underline">
+                  {baseContract.contract_number ?? `#${baseContract.id.slice(0, 8)}`}
+                </Link>
+              ) : (
+                <p className="text-sm text-muted-foreground">Не указан</p>
+              )}
+            </div>
+          )}
 
           {/* Property */}
           <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">

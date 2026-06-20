@@ -3,16 +3,11 @@
 import { useState } from 'react'
 import { Upload, Loader2 } from 'lucide-react'
 import { uploadTemplateAction } from './templates.actions'
+import { CONTRACT_TYPES } from '@/features/contracts/config/contract-types'
 
 const typeOptions = [
-  { value: 'rent_apartment',     label: 'Аренда квартиры' },
-  { value: 'rent_commercial',    label: 'Коммерческая аренда' },
-  { value: 'sale_apartment',     label: 'Продажа квартиры' },
-  { value: 'sale_house',         label: 'Продажа дома' },
-  { value: 'property_management',label: 'Управление недвижимостью' },
-  { value: 'sublease',           label: 'Субаренда' },
-  { value: 'agency_contract',    label: 'Агентский договор' },
-  { value: 'other',              label: 'Другое' },
+  ...CONTRACT_TYPES.map(t => ({ value: t.value, label: t.shortLabel })),
+  { value: 'other', label: 'Другое' },
 ]
 
 export function TemplateUploadForm() {

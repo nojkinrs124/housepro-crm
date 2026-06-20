@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { Search, User, Home, TrendingUp, FileText, CheckSquare } from 'lucide-react'
 import Link from 'next/link'
+import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
 
 export default async function SearchPage({
   searchParams,
@@ -121,7 +122,7 @@ export default async function SearchPage({
                     <p className="text-sm font-medium text-foreground">
                       {c.contract_number ?? `#${c.id.slice(0, 8)}`}
                     </p>
-                    <span className="text-xs text-muted-foreground">{c.contract_type}</span>
+                    <span className="text-xs text-muted-foreground">{CONTRACT_TYPE_LABELS[c.contract_type] ?? c.contract_type}</span>
                   </Link>
                 ))}
               </div>

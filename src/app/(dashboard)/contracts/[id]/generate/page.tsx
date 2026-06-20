@@ -3,16 +3,9 @@ import { ArrowLeft, FileText, Download, Sparkles, CheckCircle2 } from 'lucide-re
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { GenerateButton } from './GenerateButton'
+import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
 
-const contractTypeLabels: Record<string, string> = {
-  rent_apartment: 'Договор аренды квартиры',
-  rent_commercial: 'Коммерческая аренда',
-  sale_apartment: 'Купля-продажа квартиры',
-  sale_house: 'Купля-продажа дома',
-  property_management: 'Управление недвижимостью',
-  sublease: 'Субаренда',
-  agency_contract: 'Агентский договор',
-}
+const contractTypeLabels = CONTRACT_TYPE_LABELS
 
 export default async function GenerateContractPage({
   params,

@@ -4,17 +4,9 @@ import Link from 'next/link'
 import { TemplateUploadForm } from './TemplateUploadForm'
 import { deleteTemplateAction } from './templates.actions'
 import { formAction } from '@/lib/form-action'
+import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
 
-const typeLabels: Record<string, string> = {
-  rent_apartment:     'Аренда квартиры',
-  rent_commercial:    'Коммерческая аренда',
-  sale_apartment:     'Продажа квартиры',
-  sale_house:         'Продажа дома',
-  property_management:'Управление',
-  sublease:           'Субаренда',
-  agency_contract:    'Агентский договор',
-  other:              'Другое',
-}
+const typeLabels: Record<string, string> = { ...CONTRACT_TYPE_LABELS, other: 'Другое' }
 
 export default async function TemplatesPage() {
   const supabase = await createClient()

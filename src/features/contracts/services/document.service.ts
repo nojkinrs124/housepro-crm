@@ -83,6 +83,22 @@ export interface ContractVariables {
   СЧЕТЧИК_ГВС: string
   СЧЕТЧИК_ХВС: string
 
+  // ── Исполнитель (Агентство, для агентских/субаренды/управления) ──
+  ИСПОЛНИТЕЛЬ_НАЗВАНИЕ: string
+  ИСПОЛНИТЕЛЬ_ИНН: string
+  ИСПОЛНИТЕЛЬ_ОГРН: string
+  ИСПОЛНИТЕЛЬ_КПП: string
+  ИСПОЛНИТЕЛЬ_АДРЕС: string
+  ИСПОЛНИТЕЛЬ_БАНК: string
+  ИСПОЛНИТЕЛЬ_РАСЧЕТНЫЙ_СЧЕТ: string
+  ИСПОЛНИТЕЛЬ_КОРР_СЧЕТ: string
+  ИСПОЛНИТЕЛЬ_БИК: string
+  ИСПОЛНИТЕЛЬ_ТЕЛЕФОН: string
+
+  // ── Договор-основание (для субаренды) ──
+  ОСНОВАНИЕ_НОМЕР_ДОГОВОРА: string
+  ОСНОВАНИЕ_ДАТА_ДОГОВОРА: string
+
   // ── Обратная совместимость (старые шаблоны) ───────────────
   CLIENT_NAME: string
   CLIENT_PHONE: string
@@ -216,12 +232,21 @@ export async function buildContractVariables(contractId: string): Promise<Contra
         full_name, position, basis_type, basis_details
       ),
       property:properties(title, address, area, rooms, floor),
-      manager:users(full_name)
+      manager:users(full_name),
+      base_contract:contracts!contracts_base_contract_id_fkey(contract_number, start_date, created_at)
     `)
     .eq('id', contractId)
     .single()
 
   if (!contract) throw new Error('Договор не найден')
+
+  const { data: company } = await supabase
+    .from('company_settings')
+    .select('name, inn, ogrn, kpp, address, bank_name, bank_account, corr_account, bik, phone')
+    .limit(1)
+    .maybeSingle()
+
+  const baseContract = contract.base_contract as Record<string, string> | null
 
   const client = contract.client as Record<string, string> | null
   const owner = contract.owner as Record<string, string> | null
@@ -325,6 +350,26 @@ export async function buildContractVariables(contractId: string): Promise<Contra
     СЧЕТЧИК_ГВС: '___',
     СЧЕТЧИК_ХВС: '___',
 
+    // ── Исполнитель (Агентство) ──
+    ИСПОЛНИТЕЛЬ_НАЗВАНИЕ: company?.name || 'ИП HousePro',
+    ИСПОЛНИТЕЛЬ_ИНН: company?.inn || '_______________',
+    ИСПОЛНИТЕЛЬ_ОГРН: company?.ogrn || '_______________',
+    ИСПОЛНИТЕЛЬ_КПП: company?.kpp || '_______________',
+    ИСПОЛНИТЕЛЬ_АДРЕС: company?.address || '_______________',
+    ИСПОЛНИТЕЛЬ_БАНК: company?.bank_name || '_______________',
+    ИСПОЛНИТЕЛЬ_РАСЧЕТНЫЙ_СЧЕТ: company?.bank_account || '_______________',
+    ИСПОЛНИТЕЛЬ_КОРР_СЧЕТ: company?.corr_account || '_______________',
+    ИСПОЛНИТЕЛЬ_БИК: company?.bik || '_______________',
+    ИСПОЛНИТЕЛЬ_ТЕЛЕФОН: company?.phone || '_______________',
+
+    // ── Договор-основание (субаренда) ──
+    ОСНОВАНИЕ_НОМЕР_ДОГОВОРА: baseContract?.contract_number || '_______________',
+    ОСНОВАНИЕ_ДАТА_ДОГОВОРА: baseContract?.start_date
+      ? formatDateRu(baseContract.start_date).full
+      : baseContract?.created_at
+        ? formatDateRu(baseContract.created_at).full
+        : '_______________',
+
     // ── Обратная совместимость ──
     CLIENT_NAME: client?.full_name || '_______________',
     CLIENT_PHONE: client?.phone || '_______________',
@@ -344,7 +389,7 @@ export async function buildContractVariables(contractId: string): Promise<Contra
     PRICE_WORDS: price > 0 ? numberToWords(price) : 'ноль рублей',
     DEPOSIT: deposit > 0 ? deposit.toLocaleString('ru-RU') : '0',
     DEPOSIT_WORDS: deposit > 0 ? numberToWords(deposit) : 'ноль рублей',
-    AGENCY_NAME: 'ИП HousePro',
+    AGENCY_NAME: company?.name || 'ИП HousePro',
     MANAGER_NAME: manager?.full_name || '_______________',
     DATE_DAY: today.day,
     DATE_MONTH: today.month,

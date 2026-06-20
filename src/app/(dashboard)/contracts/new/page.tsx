@@ -1,6 +1,6 @@
 import { createContractAction } from '@/features/contracts/actions/contracts.actions'
 import { ContractForm } from '@/features/contracts/components/ContractForm'
-import { createClient } from '@/lib/supabase/server'
+import { getContractFormData } from '@/features/contracts/data/contract-form-data'
 import { ArrowLeft, FileText } from 'lucide-react'
 import Link from 'next/link'
 
@@ -10,24 +10,8 @@ export default async function NewContractPage({
   searchParams: Promise<{ client_id?: string; owner_id?: string; property_id?: string }>
 }) {
   const params = await searchParams
-  const supabase = await createClient()
-
-  const [{ data: rawContacts }, { data: rawProperties }, { data: rawReps }] = await Promise.all([
-    supabase.from('contacts').select('id, full_name, phone, role, client_type').order('full_name'),
-    supabase.from('properties').select('id, title, address').order('title'),
-    supabase.from('contact_representatives').select('id, contact_id, full_name, position, is_primary').order('is_primary', { ascending: false }),
-  ])
-
-  const contacts = rawContacts ?? []
-  const properties = rawProperties ?? []
-  const owners  = contacts.filter(c => c.role === 'owner' || c.role === 'both')
-  const clients = contacts.filter(c => c.role === 'client' || c.role === 'both')
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const representativesByContact: Record<string, any[]> = {}
-  for (const r of rawReps ?? []) {
-    (representativesByContact[r.contact_id] ??= []).push(r)
-  }
+  const { owners, clients, properties, representativesByContact, baseContracts, companyName } =
+    await getContractFormData()
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -52,6 +36,8 @@ export default async function NewContractPage({
         clients={clients}
         representativesByContact={representativesByContact}
         properties={properties}
+        baseContracts={baseContracts}
+        companyName={companyName}
         backHref="/contracts"
         submitLabel="Создать договор"
         mode="create"

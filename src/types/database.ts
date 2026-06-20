@@ -11,11 +11,12 @@ export type PropertyStatus = 'available' | 'reserved' | 'rented' | 'sold' | 'ina
 export type ContractType =
   | 'rent_apartment'
   | 'rent_commercial'
-  | 'sale_apartment'
-  | 'sale_house'
+  | 'sale'
+  | 'agency_owner'
+  | 'agency_client'
+  | 'agency_legal_entity'
   | 'property_management'
   | 'sublease'
-  | 'agency_contract'
 
 export type ContractStatus = 'draft' | 'generated' | 'signed' | 'completed' | 'cancelled'
 
@@ -172,6 +173,7 @@ export interface Contract {
   owner_representative_id?: string
   client_representative_id?: string
   property_id?: string
+  base_contract_id?: string
   manager_id?: string
   start_date?: string
   end_date?: string

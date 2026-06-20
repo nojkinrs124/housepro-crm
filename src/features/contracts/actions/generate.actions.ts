@@ -7,6 +7,7 @@ import {
   generateDocxFromTemplate,
   uploadContractFile,
 } from '../services/document.service'
+import { CONTRACT_TYPE_MAP } from '../config/contract-types'
 
 export async function generateContractDocx(contractId: string) {
   const supabase = await createClient()
@@ -119,20 +120,8 @@ async function generateBasicDocx(
       .replace(/'/g, '&apos;')
   }
 
-  // Простой DOCX через XML
-  const typeNames: Record<string, string> = {
-    rent_apartment: 'ДОГОВОР НАЙМА ЖИЛОГО ПОМЕЩЕНИЯ',
-    rent_commercial: 'ДОГОВОР АРЕНДЫ НЕЖИЛОГО ПОМЕЩЕНИЯ',
-    sale_apartment: 'ДОГОВОР КУПЛИ-ПРОДАЖИ КВАРТИРЫ',
-    sale_house: 'ДОГОВОР КУПЛИ-ПРОДАЖИ ДОМА',
-    property_management: 'ДОГОВОР ДОВЕРИТЕЛЬНОГО УПРАВЛЕНИЯ',
-    sublease: 'ДОГОВОР СУБАРЕНДЫ',
-    agency_contract: 'АГЕНТСКИЙ ДОГОВОР',
-  }
-
-  const title = typeNames[contractType] || 'ДОГОВОР'
-
   // Используем экранированные переменные
+  const title = CONTRACT_TYPE_MAP[contractType]?.docTitle || 'ДОГОВОР'
   const xmlContent = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"
   xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex"

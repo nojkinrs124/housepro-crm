@@ -8,6 +8,7 @@ import {
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { FilesSection } from '@/features/files/components/FilesSection'
+import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
 
 const typeLabels: Record<string, string> = {
   apartment: 'Квартира', house: 'Дом', commercial: 'Коммерция',
@@ -40,11 +41,7 @@ const heatingLabels: Record<string, string> = {
 const waterLabels: Record<string, string> = {
   central: 'Центральное', well: 'Скважина/колодец', none: 'Нет',
 }
-const contractTypeLabels: Record<string, string> = {
-  rent_apartment: 'Аренда кв.', rent_commercial: 'Ком. аренда',
-  sale_apartment: 'Продажа кв.', sale_house: 'Продажа дома',
-  property_management: 'Управление', sublease: 'Субаренда', agency_contract: 'Агентский',
-}
+const contractTypeLabels = CONTRACT_TYPE_LABELS
 
 export default async function PropertyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
