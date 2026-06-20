@@ -4,15 +4,17 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { updateDealAction } from '@/features/deals/actions/deals.actions'
 import { formAction } from '@/lib/form-action'
+import { PartyContactSelect } from '@/features/contacts/components/PartyContactSelect'
 
 export default async function EditDealPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
 
-  const [{ data: rawDeal }, { data: rawContacts }, { data: rawProperties }] = await Promise.all([
+  const [{ data: rawDeal }, { data: rawContacts }, { data: rawProperties }, { data: rawReps }] = await Promise.all([
     supabase.from('deals').select('*').eq('id', id).single(),
-    supabase.from('contacts').select('id, full_name, phone, role').order('full_name'),
+    supabase.from('contacts').select('id, full_name, phone, role, client_type').order('full_name'),
     supabase.from('properties').select('id, title, address').order('title'),
+    supabase.from('contact_representatives').select('id, contact_id, full_name, position, is_primary').order('is_primary', { ascending: false }),
   ])
 
   if (!rawDeal) notFound()
@@ -24,6 +26,12 @@ export default async function EditDealPage({ params }: { params: Promise<{ id: s
 
   const owners  = contacts.filter(c => c.role === 'owner' || c.role === 'both')
   const clients = contacts.filter(c => c.role === 'client' || c.role === 'both')
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const representativesByContact: Record<string, any[]> = {}
+  for (const r of rawReps ?? []) {
+    (representativesByContact[r.contact_id] ??= []).push(r)
+  }
 
   const boundAction = updateDealAction.bind(null, id)
 
@@ -103,43 +111,29 @@ export default async function EditDealPage({ params }: { params: Promise<{ id: s
         <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-5">
           <h2 className="font-semibold text-foreground">Стороны сделки</h2>
 
-          <div className="space-y-1.5">
-            <label className={`${lbl} flex items-center gap-2`}>
-              <Building2 className="w-4 h-4 text-orange-500" />
-              Собственник (Сторона 1)
-            </label>
-            <select name="owner_contact_id" defaultValue={deal.owner_contact_id ?? ''} className={sel}>
-              <option value="">— не выбрано —</option>
-              {owners.map(o => (
-                <option key={o.id} value={o.id}>
-                  {o.full_name}{o.phone ? ` · ${o.phone}` : ''}
-                </option>
-              ))}
-            </select>
-            <p className="text-xs text-muted-foreground">
-              Нет нужного?{' '}
-              <Link href="/contacts/new" className="text-primary hover:underline">Добавить контакт →</Link>
-            </p>
-          </div>
+          <PartyContactSelect
+            label="Собственник (Сторона 1)"
+            icon={<Building2 className="w-4 h-4 text-orange-500" />}
+            contactFieldName="owner_contact_id"
+            representativeFieldName="owner_representative_id"
+            contacts={owners}
+            representativesByContact={representativesByContact}
+            defaultContactId={deal.owner_contact_id ?? ''}
+            defaultRepresentativeId={deal.owner_representative_id ?? ''}
+            placeholder="— не выбрано —"
+          />
 
-          <div className="space-y-1.5">
-            <label className={`${lbl} flex items-center gap-2`}>
-              <User className="w-4 h-4 text-blue-500" />
-              Клиент (Сторона 2)
-            </label>
-            <select name="client_contact_id" defaultValue={deal.client_contact_id ?? ''} className={sel}>
-              <option value="">— не выбрано —</option>
-              {clients.map(c => (
-                <option key={c.id} value={c.id}>
-                  {c.full_name}{c.phone ? ` · ${c.phone}` : ''}
-                </option>
-              ))}
-            </select>
-            <p className="text-xs text-muted-foreground">
-              Нет нужного?{' '}
-              <Link href="/contacts/new" className="text-primary hover:underline">Добавить контакт →</Link>
-            </p>
-          </div>
+          <PartyContactSelect
+            label="Клиент (Сторона 2)"
+            icon={<User className="w-4 h-4 text-blue-500" />}
+            contactFieldName="client_contact_id"
+            representativeFieldName="client_representative_id"
+            contacts={clients}
+            representativesByContact={representativesByContact}
+            defaultContactId={deal.client_contact_id ?? ''}
+            defaultRepresentativeId={deal.client_representative_id ?? ''}
+            placeholder="— не выбрано —"
+          />
 
           <div className="space-y-1.5">
             <label className={lbl}>Объект</label>

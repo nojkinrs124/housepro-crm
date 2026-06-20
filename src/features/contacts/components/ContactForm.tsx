@@ -1,0 +1,280 @@
+'use client'
+
+import { useState } from 'react'
+import Link from 'next/link'
+
+const inputCls = "w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+const selectCls = "w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all"
+const labelCls = "block text-sm font-medium text-foreground mb-1.5"
+const cardCls = "bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4"
+
+interface ContactFormDefaults {
+  full_name?: string
+  role?: string
+  status?: string
+  birth_date?: string | null
+  phone?: string | null
+  email?: string | null
+  telegram?: string | null
+  whatsapp?: string | null
+  client_type?: string
+  passport_series?: string | null
+  passport_number?: string | null
+  passport_issued_date?: string | null
+  passport_issued_by?: string | null
+  passport_department_code?: string | null
+  country?: string | null
+  region?: string | null
+  city?: string | null
+  street?: string | null
+  house_number?: string | null
+  building?: string | null
+  apartment?: string | null
+  company_name?: string | null
+  inn?: string | null
+  kpp?: string | null
+  ogrn?: string | null
+  legal_address?: string | null
+  bank_name?: string | null
+  bank_account?: string | null
+  corr_account?: string | null
+  bik?: string | null
+  source?: string | null
+  comment?: string | null
+}
+
+interface ContactFormProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  action: (formData: FormData) => void | Promise<void>
+  defaults?: ContactFormDefaults
+  backHref: string
+  submitLabel: string
+}
+
+export function ContactForm({ action, defaults = {}, backHref, submitLabel }: ContactFormProps) {
+  const [clientType, setClientType] = useState(defaults.client_type ?? 'individual')
+
+  return (
+    <form action={action} className="space-y-4">
+      {/* Тип лица */}
+      <div className={cardCls}>
+        <h2 className="font-semibold text-foreground">Тип контакта</h2>
+        <div className="grid grid-cols-2 gap-2.5">
+          <label className="flex items-center gap-3 p-3 border border-border rounded-xl cursor-pointer hover:bg-accent transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5 text-sm">
+            <input type="radio" name="client_type" value="individual"
+              checked={clientType === 'individual'}
+              onChange={() => setClientType('individual')}
+              className="accent-primary shrink-0" />
+            👤 Физическое лицо
+          </label>
+          <label className="flex items-center gap-3 p-3 border border-border rounded-xl cursor-pointer hover:bg-accent transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5 text-sm">
+            <input type="radio" name="client_type" value="legal_entity"
+              checked={clientType === 'legal_entity'}
+              onChange={() => setClientType('legal_entity')}
+              className="accent-primary shrink-0" />
+            🏢 Юридическое лицо
+          </label>
+        </div>
+      </div>
+
+      {/* Основное */}
+      <div className={cardCls}>
+        <h2 className="font-semibold text-foreground">Основные данные</h2>
+        <div>
+          <label className={labelCls}>{clientType === 'legal_entity' ? 'Контактное лицо (ФИО) *' : 'Полное имя *'}</label>
+          <input type="text" name="full_name" required defaultValue={defaults.full_name ?? ''}
+            placeholder={clientType === 'legal_entity' ? 'Иванов Иван Иванович' : 'Иван Иванович Иванов'}
+            className={inputCls} />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={labelCls}>Роль *</label>
+            <select name="role" required defaultValue={defaults.role ?? 'client'} className={selectCls}>
+              <option value="client">👥 Клиент</option>
+              <option value="owner">🏠 Собственник</option>
+              <option value="both">🔄 Клиент + Собственник</option>
+            </select>
+          </div>
+          {defaults.status !== undefined && (
+            <div>
+              <label className={labelCls}>Статус</label>
+              <select name="status" defaultValue={defaults.status ?? 'new'} className={selectCls}>
+                <option value="new">Новый</option>
+                <option value="active">Активный</option>
+                <option value="vip">VIP</option>
+                <option value="inactive">Неактивный</option>
+              </select>
+            </div>
+          )}
+        </div>
+        {clientType === 'individual' && (
+          <div>
+            <label className={labelCls}>Дата рождения</label>
+            <input type="date" name="birth_date" defaultValue={defaults.birth_date?.slice(0, 10) ?? ''} className={inputCls} />
+          </div>
+        )}
+      </div>
+
+      {/* Контакты */}
+      <div className={cardCls}>
+        <h2 className="font-semibold text-foreground">Контактные данные</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={labelCls}>Телефон</label>
+            <input type="tel" name="phone" defaultValue={defaults.phone ?? ''} placeholder="+7 (999) 123-45-67" className={inputCls} />
+          </div>
+          <div>
+            <label className={labelCls}>Email</label>
+            <input type="email" name="email" defaultValue={defaults.email ?? ''} placeholder="user@example.com" className={inputCls} />
+          </div>
+          <div>
+            <label className={labelCls}>Telegram</label>
+            <input type="text" name="telegram" defaultValue={defaults.telegram ?? ''} placeholder="@username" className={inputCls} />
+          </div>
+          <div>
+            <label className={labelCls}>WhatsApp</label>
+            <input type="text" name="whatsapp" defaultValue={defaults.whatsapp ?? ''} placeholder="+7 (999) 123-45-67" className={inputCls} />
+          </div>
+        </div>
+      </div>
+
+      {clientType === 'individual' ? (
+        <>
+          {/* Паспорт */}
+          <div className={cardCls}>
+            <h2 className="font-semibold text-foreground">Паспортные данные</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className={labelCls}>Серия</label>
+                <input type="text" name="passport_series" defaultValue={defaults.passport_series ?? ''} placeholder="1234" className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Номер</label>
+                <input type="text" name="passport_number" defaultValue={defaults.passport_number ?? ''} placeholder="567890" className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Дата выдачи</label>
+                <input type="date" name="passport_issued_date" defaultValue={defaults.passport_issued_date?.slice(0, 10) ?? ''} className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Код подразделения</label>
+                <input type="text" name="passport_department_code" defaultValue={defaults.passport_department_code ?? ''} placeholder="770-001" className={inputCls} />
+              </div>
+            </div>
+            <div>
+              <label className={labelCls}>Кем выдан</label>
+              <input type="text" name="passport_issued_by" defaultValue={defaults.passport_issued_by ?? ''} placeholder="ОВД Пресненского района г. Москвы" className={inputCls} />
+            </div>
+          </div>
+
+          {/* Адрес */}
+          <div className={cardCls}>
+            <h2 className="font-semibold text-foreground">Адрес регистрации</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[
+                { label: 'Страна', name: 'country', placeholder: 'Россия', val: defaults.country ?? 'Россия' },
+                { label: 'Регион', name: 'region', placeholder: 'Московская область', val: defaults.region },
+                { label: 'Город', name: 'city', placeholder: 'Москва', val: defaults.city },
+                { label: 'Улица', name: 'street', placeholder: 'ул. Ленина', val: defaults.street },
+                { label: 'Дом', name: 'house_number', placeholder: '15', val: defaults.house_number },
+                { label: 'Корпус', name: 'building', placeholder: '1', val: defaults.building },
+                { label: 'Квартира', name: 'apartment', placeholder: '42', val: defaults.apartment },
+              ].map(f => (
+                <div key={f.name}>
+                  <label className={labelCls}>{f.label}</label>
+                  <input type="text" name={f.name} defaultValue={f.val ?? ''} placeholder={f.placeholder} className={inputCls} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      ) : (
+        /* Реквизиты юрлица */
+        <div className={cardCls}>
+          <h2 className="font-semibold text-foreground">Реквизиты организации</h2>
+          <div>
+            <label className={labelCls}>Название организации *</label>
+            <input type="text" name="company_name" defaultValue={defaults.company_name ?? ''} placeholder='ООО "Ромашка"' className={inputCls} />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className={labelCls}>ИНН *</label>
+              <input type="text" name="inn" defaultValue={defaults.inn ?? ''} placeholder="7707083893" className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>КПП</label>
+              <input type="text" name="kpp" defaultValue={defaults.kpp ?? ''} placeholder="770701001" className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>ОГРН</label>
+              <input type="text" name="ogrn" defaultValue={defaults.ogrn ?? ''} placeholder="1027700132195" className={inputCls} />
+            </div>
+          </div>
+          <div>
+            <label className={labelCls}>Юридический адрес</label>
+            <input type="text" name="legal_address" defaultValue={defaults.legal_address ?? ''} placeholder="г. Москва, ул. Тверская, д. 1" className={inputCls} />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className={labelCls}>Банк</label>
+              <input type="text" name="bank_name" defaultValue={defaults.bank_name ?? ''} className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>БИК</label>
+              <input type="text" name="bik" defaultValue={defaults.bik ?? ''} className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Расчётный счёт</label>
+              <input type="text" name="bank_account" defaultValue={defaults.bank_account ?? ''} className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Корр. счёт</label>
+              <input type="text" name="corr_account" defaultValue={defaults.corr_account ?? ''} className={inputCls} />
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Поле «Контактное лицо» выше — это сотрудник, через которого вы общаетесь. Уполномоченных подписантов (с указанием доверенности) можно будет добавить на странице контакта после создания.
+          </p>
+        </div>
+      )}
+
+      {/* Дополнительно */}
+      <div className={cardCls}>
+        <h2 className="font-semibold text-foreground">Дополнительно</h2>
+        <div>
+          <label className={labelCls}>Источник</label>
+          <select name="source" defaultValue={defaults.source ?? ''} className={selectCls}>
+            <option value="">Выберите источник</option>
+            <option value="avito">Avito</option>
+            <option value="cian">ЦИАН</option>
+            <option value="domclick">Домклик</option>
+            <option value="instagram">Instagram</option>
+            <option value="vk">VK</option>
+            <option value="telegram">Telegram</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="phone">Звонок</option>
+            <option value="referral">Рекомендация</option>
+            <option value="other">Другое</option>
+          </select>
+        </div>
+        <div>
+          <label className={labelCls}>Комментарий</label>
+          <textarea name="comment" rows={3} defaultValue={defaults.comment ?? ''}
+            placeholder="Дополнительная информация о контакте..."
+            className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all resize-none" />
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <button type="submit"
+          className="px-6 py-2.5 rounded-[14px] text-white font-medium hover:-translate-y-0.5 transition text-sm"
+          style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+          {submitLabel}
+        </button>
+        <Link href={backHref} className="px-6 py-2.5 border border-border text-foreground rounded-[14px] text-sm font-medium hover:bg-accent transition">
+          Отмена
+        </Link>
+      </div>
+    </form>
+  )
+}

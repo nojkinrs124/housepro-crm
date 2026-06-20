@@ -11,6 +11,14 @@ export interface ContractVariables {
   ОРГАН_ВЫДАЧИ_ПАСПОРТА_АРЕНДОДАТЕЛЯ: string
   АДРЕС_РЕГИСТРАЦИИ_АРЕНДОДАТЕЛЯ: string
   ТЕЛЕФОН_АРЕНДОДАТЕЛЯ: string
+  НАЗВАНИЕ_ОРГАНИЗАЦИИ_АРЕНДОДАТЕЛЯ: string
+  ИНН_АРЕНДОДАТЕЛЯ: string
+  КПП_АРЕНДОДАТЕЛЯ: string
+  ОГРН_АРЕНДОДАТЕЛЯ: string
+  ЮР_АДРЕС_АРЕНДОДАТЕЛЯ: string
+  ФИО_ПРЕДСТАВИТЕЛЯ_АРЕНДОДАТЕЛЯ: string
+  ДОЛЖНОСТЬ_ПРЕДСТАВИТЕЛЯ_АРЕНДОДАТЕЛЯ: string
+  ОСНОВАНИЕ_ПРЕДСТАВИТЕЛЯ_АРЕНДОДАТЕЛЯ: string
 
   // ── Арендатор (Сторона 2) ─────────────────────────────────
   ФИО_АРЕНДАТОРА: string
@@ -18,6 +26,14 @@ export interface ContractVariables {
   ОРГАН_ВЫДАЧИ_ПАСПОРТА_АРЕНДАТОРА: string
   АДРЕС_РЕГИСТРАЦИИ_АРЕНДАТОРА: string
   ТЕЛЕФОН_АРЕНДАТОРА: string
+  НАЗВАНИЕ_ОРГАНИЗАЦИИ_АРЕНДАТОРА: string
+  ИНН_АРЕНДАТОРА: string
+  КПП_АРЕНДАТОРА: string
+  ОГРН_АРЕНДАТОРА: string
+  ЮР_АДРЕС_АРЕНДАТОРА: string
+  ФИО_ПРЕДСТАВИТЕЛЯ_АРЕНДАТОРА: string
+  ДОЛЖНОСТЬ_ПРЕДСТАВИТЕЛЯ_АРЕНДАТОРА: string
+  ОСНОВАНИЕ_ПРЕДСТАВИТЕЛЯ_АРЕНДАТОРА: string
 
   // ── Объект ────────────────────────────────────────────────
   АДРЕС_ЖИЛОГО_ПОМЕЩЕНИЯ: string
@@ -163,6 +179,19 @@ function buildAddress(contact: Record<string, string> | null): string {
   return parts.length > 0 ? parts.join(', ') : '_______________'
 }
 
+const basisLabels: Record<string, string> = {
+  charter: 'Устава',
+  power_of_attorney: 'Доверенности',
+  other: 'иного документа',
+}
+
+// "действующего на основании Доверенности № 12 от 01.03.2026"
+function buildBasis(rep: Record<string, string> | null): string {
+  if (!rep) return '_______________'
+  const label = basisLabels[rep.basis_type] ?? 'Устава'
+  return rep.basis_details ? `${label} ${rep.basis_details}` : label
+}
+
 export async function buildContractVariables(contractId: string): Promise<ContractVariables> {
   const supabase = await createClient()
 
@@ -172,11 +201,19 @@ export async function buildContractVariables(contractId: string): Promise<Contra
       *,
       client:contacts!contracts_client_contact_id_fkey(
         full_name, phone, passport, passport_series, passport_number,
-        passport_issued_by, region, city, street, house_number, apartment
+        passport_issued_by, region, city, street, house_number, apartment,
+        client_type, company_name, inn, kpp, ogrn, legal_address
       ),
       owner:contacts!contracts_owner_contact_id_fkey(
         full_name, phone, passport, passport_series, passport_number,
-        passport_issued_by, region, city, street, house_number, apartment
+        passport_issued_by, region, city, street, house_number, apartment,
+        client_type, company_name, inn, kpp, ogrn, legal_address
+      ),
+      owner_representative:contact_representatives!contracts_owner_representative_id_fkey(
+        full_name, position, basis_type, basis_details
+      ),
+      client_representative:contact_representatives!contracts_client_representative_id_fkey(
+        full_name, position, basis_type, basis_details
       ),
       property:properties(title, address, area, rooms, floor),
       manager:users(full_name)
@@ -188,6 +225,8 @@ export async function buildContractVariables(contractId: string): Promise<Contra
 
   const client = contract.client as Record<string, string> | null
   const owner = contract.owner as Record<string, string> | null
+  const ownerRep = contract.owner_representative as Record<string, string> | null
+  const clientRep = contract.client_representative as Record<string, string> | null
   const property = contract.property as Record<string, string | number> | null
   const manager = contract.manager as { full_name?: string } | null
 
@@ -214,6 +253,14 @@ export async function buildContractVariables(contractId: string): Promise<Contra
     ОРГАН_ВЫДАЧИ_ПАСПОРТА_АРЕНДОДАТЕЛЯ: owner?.passport_issued_by || '_______________',
     АДРЕС_РЕГИСТРАЦИИ_АРЕНДОДАТЕЛЯ: buildAddress(owner),
     ТЕЛЕФОН_АРЕНДОДАТЕЛЯ: owner?.phone || '_______________',
+    НАЗВАНИЕ_ОРГАНИЗАЦИИ_АРЕНДОДАТЕЛЯ: owner?.company_name || '_______________',
+    ИНН_АРЕНДОДАТЕЛЯ: owner?.inn || '_______________',
+    КПП_АРЕНДОДАТЕЛЯ: owner?.kpp || '_______________',
+    ОГРН_АРЕНДОДАТЕЛЯ: owner?.ogrn || '_______________',
+    ЮР_АДРЕС_АРЕНДОДАТЕЛЯ: owner?.legal_address || '_______________',
+    ФИО_ПРЕДСТАВИТЕЛЯ_АРЕНДОДАТЕЛЯ: ownerRep?.full_name || '_______________',
+    ДОЛЖНОСТЬ_ПРЕДСТАВИТЕЛЯ_АРЕНДОДАТЕЛЯ: ownerRep?.position || '_______________',
+    ОСНОВАНИЕ_ПРЕДСТАВИТЕЛЯ_АРЕНДОДАТЕЛЯ: buildBasis(ownerRep),
 
     // ── Арендатор ──
     ФИО_АРЕНДАТОРА: client?.full_name || '_______________',
@@ -221,6 +268,14 @@ export async function buildContractVariables(contractId: string): Promise<Contra
     ОРГАН_ВЫДАЧИ_ПАСПОРТА_АРЕНДАТОРА: client?.passport_issued_by || '_______________',
     АДРЕС_РЕГИСТРАЦИИ_АРЕНДАТОРА: buildAddress(client),
     ТЕЛЕФОН_АРЕНДАТОРА: client?.phone || '_______________',
+    НАЗВАНИЕ_ОРГАНИЗАЦИИ_АРЕНДАТОРА: client?.company_name || '_______________',
+    ИНН_АРЕНДАТОРА: client?.inn || '_______________',
+    КПП_АРЕНДАТОРА: client?.kpp || '_______________',
+    ОГРН_АРЕНДАТОРА: client?.ogrn || '_______________',
+    ЮР_АДРЕС_АРЕНДАТОРА: client?.legal_address || '_______________',
+    ФИО_ПРЕДСТАВИТЕЛЯ_АРЕНДАТОРА: clientRep?.full_name || '_______________',
+    ДОЛЖНОСТЬ_ПРЕДСТАВИТЕЛЯ_АРЕНДАТОРА: clientRep?.position || '_______________',
+    ОСНОВАНИЕ_ПРЕДСТАВИТЕЛЯ_АРЕНДАТОРА: buildBasis(clientRep),
 
     // ── Объект ──
     АДРЕС_ЖИЛОГО_ПОМЕЩЕНИЯ: (property?.address as string) || '_______________',

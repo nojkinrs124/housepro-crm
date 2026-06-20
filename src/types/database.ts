@@ -65,8 +65,32 @@ export interface Contact {
   comment?: string
   source?: string
   status: ContactStatus
+  // Тип лица и реквизиты юрлица
+  client_type?: 'individual' | 'legal_entity'
+  company_name?: string
+  inn?: string
+  kpp?: string
+  ogrn?: string
+  legal_address?: string
+  bank_name?: string
+  bank_account?: string
+  corr_account?: string
+  bik?: string
   created_at: string
   updated_at: string
+}
+
+export interface ContactRepresentative {
+  id: string
+  contact_id: string
+  full_name: string
+  position?: string
+  phone?: string
+  email?: string
+  basis_type: 'charter' | 'power_of_attorney' | 'other'
+  basis_details?: string
+  is_primary?: boolean
+  created_at: string
 }
 
 export interface Client {
@@ -143,6 +167,10 @@ export interface Contract {
   contract_number?: string
   contract_type: ContractType
   client_id?: string
+  owner_contact_id?: string
+  client_contact_id?: string
+  owner_representative_id?: string
+  client_representative_id?: string
   property_id?: string
   manager_id?: string
   start_date?: string
@@ -220,6 +248,8 @@ export interface Deal {
   property_id?: string
   owner_contact_id?: string
   client_contact_id?: string
+  owner_representative_id?: string
+  client_representative_id?: string
   amount?: number
   commission?: number
   notes?: string

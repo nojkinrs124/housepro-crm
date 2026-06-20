@@ -3,6 +3,7 @@ import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { updateContactAction } from '@/features/contacts/actions/contacts.actions'
+import { ContactForm } from '@/features/contacts/components/ContactForm'
 import { formAction } from '@/lib/form-action'
 
 export default async function EditContactPage({ params }: { params: Promise<{ id: string }> }) {
@@ -12,9 +13,6 @@ export default async function EditContactPage({ params }: { params: Promise<{ id
   if (!c) notFound()
 
   const boundAction = updateContactAction.bind(null, id)
-
-  const inputCls = "w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-  const labelCls = "block text-sm font-medium text-foreground mb-1.5"
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -28,146 +26,12 @@ export default async function EditContactPage({ params }: { params: Promise<{ id
         <p className="text-muted-foreground mt-1">{c.full_name}</p>
       </div>
 
-      <form action={formAction(boundAction)} className="space-y-4">
-
-        {/* Основное */}
-        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
-          <h2 className="font-semibold">Основные данные</h2>
-          <div>
-            <label className={labelCls}>Полное имя *</label>
-            <input type="text" name="full_name" required defaultValue={c.full_name} className={inputCls} />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className={labelCls}>Роль *</label>
-              <select name="role" required defaultValue={c.role}
-                className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all">
-                <option value="client">👥 Клиент</option>
-                <option value="owner">🏠 Собственник</option>
-                <option value="both">🔄 Клиент + Собственник</option>
-              </select>
-            </div>
-            <div>
-              <label className={labelCls}>Статус</label>
-              <select name="status" defaultValue={c.status}
-                className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all">
-                <option value="new">Новый</option>
-                <option value="active">Активный</option>
-                <option value="vip">VIP</option>
-                <option value="inactive">Неактивный</option>
-              </select>
-            </div>
-          </div>
-          <div>
-            <label className={labelCls}>Дата рождения</label>
-            <input type="date" name="birth_date" defaultValue={c.birth_date?.split('T')[0] ?? ''} className={inputCls} />
-          </div>
-        </div>
-
-        {/* Контакты */}
-        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
-          <h2 className="font-semibold">Контактные данные</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {[
-              { label: 'Телефон', name: 'phone', type: 'tel', val: c.phone },
-              { label: 'Email', name: 'email', type: 'email', val: c.email },
-              { label: 'Telegram', name: 'telegram', type: 'text', val: c.telegram },
-              { label: 'WhatsApp', name: 'whatsapp', type: 'text', val: c.whatsapp },
-            ].map(f => (
-              <div key={f.name}>
-                <label className={labelCls}>{f.label}</label>
-                <input type={f.type} name={f.name} defaultValue={f.val ?? ''} className={inputCls} />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Паспорт */}
-        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
-          <h2 className="font-semibold">Паспортные данные</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className={labelCls}>Серия</label>
-              <input type="text" name="passport_series" defaultValue={c.passport_series ?? ''} placeholder="1234" className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Номер</label>
-              <input type="text" name="passport_number" defaultValue={c.passport_number ?? ''} placeholder="567890" className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Дата выдачи</label>
-              <input type="date" name="passport_issued_date" defaultValue={c.passport_issued_date?.split('T')[0] ?? ''} className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Код подразделения</label>
-              <input type="text" name="passport_department_code" defaultValue={c.passport_department_code ?? ''} placeholder="770-001" className={inputCls} />
-            </div>
-          </div>
-          <div>
-            <label className={labelCls}>Кем выдан</label>
-            <input type="text" name="passport_issued_by" defaultValue={c.passport_issued_by ?? ''} placeholder="ОВД Пресненского района" className={inputCls} />
-          </div>
-        </div>
-
-        {/* Адрес */}
-        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
-          <h2 className="font-semibold">Адрес регистрации</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {[
-              { label: 'Страна', name: 'country', placeholder: 'Россия', val: c.country },
-              { label: 'Регион', name: 'region', placeholder: 'Московская область', val: c.region },
-              { label: 'Город', name: 'city', placeholder: 'Москва', val: c.city },
-              { label: 'Улица', name: 'street', placeholder: 'ул. Ленина', val: c.street },
-              { label: 'Дом', name: 'house_number', placeholder: '15', val: c.house_number },
-              { label: 'Корпус', name: 'building', placeholder: '1', val: c.building },
-              { label: 'Квартира', name: 'apartment', placeholder: '42', val: c.apartment },
-            ].map(f => (
-              <div key={f.name}>
-                <label className={labelCls}>{f.label}</label>
-                <input type="text" name={f.name} defaultValue={f.val ?? ''} placeholder={f.placeholder} className={inputCls} />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Дополнительно */}
-        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
-          <h2 className="font-semibold">Дополнительно</h2>
-          <div>
-            <label className={labelCls}>Источник</label>
-            <select name="source" defaultValue={c.source ?? ''}
-              className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all">
-              <option value="">— не выбрано —</option>
-              <option value="avito">Avito</option>
-              <option value="cian">ЦИАН</option>
-              <option value="domclick">Домклик</option>
-              <option value="instagram">Instagram</option>
-              <option value="vk">VK</option>
-              <option value="telegram">Telegram</option>
-              <option value="whatsapp">WhatsApp</option>
-              <option value="phone">Звонок</option>
-              <option value="referral">Рекомендация</option>
-              <option value="other">Другое</option>
-            </select>
-          </div>
-          <div>
-            <label className={labelCls}>Комментарий</label>
-            <textarea name="comment" rows={3} defaultValue={c.comment ?? ''}
-              className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all resize-none" />
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button type="submit"
-            className="px-6 py-2.5 rounded-[14px] text-white font-medium hover:-translate-y-0.5 transition text-sm" style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
-            Сохранить изменения
-          </button>
-          <Link href={`/contacts/${id}`}
-            className="px-6 py-2.5 border border-border text-foreground rounded-[14px] text-sm font-medium hover:bg-accent transition">
-            Отмена
-          </Link>
-        </div>
-      </form>
+      <ContactForm
+        action={formAction(boundAction)}
+        defaults={c}
+        backHref={`/contacts/${id}`}
+        submitLabel="Сохранить изменения"
+      />
     </div>
   )
 }

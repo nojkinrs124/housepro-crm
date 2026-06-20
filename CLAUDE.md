@@ -234,6 +234,7 @@ export async function createSomethingAction(formData: FormData) {
 | `contract_versions` | Версии договоров |
 | `clients` | Устаревшая, legacy (не использовать для новых фич) |
 | `owners` | Устаревшая, legacy (не использовать для новых фич) |
+| `contact_representatives` | Представители юрлица (директор/доверенное лицо), FK на `contacts.id` |
 
 **Важно**: `clients` и `owners` — legacy таблицы для обратной совместимости. Все новые фичи работают через `contacts`.
 
@@ -243,6 +244,21 @@ export async function createSomethingAction(formData: FormData) {
 type ContactRole = 'client' | 'owner' | 'both'
 type ContactStatus = 'new' | 'active' | 'vip' | 'inactive'
 ```
+
+### Физлицо / юрлицо (client_type)
+
+`contacts.client_type`: `'individual' | 'legal_entity'` (default `'individual'`). Применимо к любой роли (клиент и/или собственник).
+
+Физлицо использует существующие поля паспорта и адреса регистрации. Юрлицо использует: `company_name`, `inn`, `kpp`, `ogrn`, `legal_address`, `bank_name`, `bank_account`, `corr_account`, `bik`.
+
+Представители юрлица — отдельная таблица `contact_representatives` (1 контакт-юрлицо → N представителей), управляются с карточки контакта (`RepresentativesPanel`). На `contracts` и `deals` есть `owner_representative_id` / `client_representative_id` — фиксируют, кто конкретно подписывал именно эту сделку/договор от лица компании.
+
+Форма контакта (`ContactForm.tsx`) — переключатель типа реализован клиентским компонентом (radio + `useState`), сама форма по-прежнему отправляется через server action.
+
+Выбор стороны в договорах/сделках — переиспользуемый компонент `PartyContactSelect.tsx` (`src/features/contacts/components/`): при выборе контакта-юрлица показывает дополнительный select «Представитель», подгружая список из `representativesByContact` (передаётся со страницы).
+
+**Плейсхолдеры юрлица в генерации документов** (`document.service.ts`, для обеих сторон, суффикс `_АРЕНДОДАТЕЛЯ` / `_АРЕНДАТОРА`):
+`НАЗВАНИЕ_ОРГАНИЗАЦИИ_*`, `ИНН_*`, `КПП_*`, `ОГРН_*`, `ЮР_АДРЕС_*`, `ФИО_ПРЕДСТАВИТЕЛЯ_*`, `ДОЛЖНОСТЬ_ПРЕДСТАВИТЕЛЯ_*`, `ОСНОВАНИЕ_ПРЕДСТАВИТЕЛЯ_*` (например: «Доверенности № 12 от 01.03.2026»). Для физлиц эти поля заполнены `_______________`, для юрлиц — старые паспортные плейсхолдеры. Шаблоны .docx нужно дополнить этими полями вручную через настройки → шаблоны документов.
 
 ---
 

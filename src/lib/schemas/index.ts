@@ -21,8 +21,71 @@ const uuid = z
 
 // ─── Contact ──────────────────────────────────────────────────────────────────
 
-export const ContactSchema = z.object({
-  full_name: z.string().trim().min(1, 'Имя обязательно').max(200, 'Максимум 200 символов'),
+export const ContactSchema = z
+  .object({
+    full_name: z.string().trim().min(1, 'Имя обязательно').max(200, 'Максимум 200 символов'),
+    phone: optStr,
+    email: z
+      .string()
+      .trim()
+      .email('Введите корректный email')
+      .nullable()
+      .optional()
+      .or(z.literal(''))
+      .transform((v) => v || null),
+    telegram: optStr,
+    whatsapp: optStr,
+    birth_date: optDate,
+    role: z.enum(['client', 'owner', 'both'], { message: 'Неверная роль' }),
+    status: z.enum(['new', 'active', 'vip', 'inactive']).default('new'),
+    source: optStr,
+    comment: optStr,
+    // Тип лица
+    client_type: z.enum(['individual', 'legal_entity']).default('individual'),
+    // Паспорт (физлицо)
+    passport_series: optStr,
+    passport_number: optStr,
+    passport_issued_date: optDate,
+    passport_issued_by: optStr,
+    passport_department_code: optStr,
+    // Адрес регистрации (физлицо)
+    country: optStr,
+    region: optStr,
+    city: optStr,
+    street: optStr,
+    house_number: optStr,
+    building: optStr,
+    apartment: optStr,
+    // Реквизиты (юрлицо)
+    company_name: optStr,
+    inn: optStr,
+    kpp: optStr,
+    ogrn: optStr,
+    legal_address: optStr,
+    bank_name: optStr,
+    bank_account: optStr,
+    corr_account: optStr,
+    bik: optStr,
+  })
+  .superRefine((data, ctx) => {
+    if (data.client_type === 'legal_entity') {
+      if (!data.company_name) {
+        ctx.addIssue({ code: 'custom', path: ['company_name'], message: 'Укажите название организации' })
+      }
+      if (!data.inn) {
+        ctx.addIssue({ code: 'custom', path: ['inn'], message: 'Укажите ИНН' })
+      }
+    }
+  })
+
+export type ContactInput = z.infer<typeof ContactSchema>
+
+// ─── Representative (представитель юрлица) ────────────────────────────────────
+
+export const RepresentativeSchema = z.object({
+  contact_id: z.string().uuid('Некорректный контакт'),
+  full_name: z.string().trim().min(1, 'ФИО обязательно').max(200),
+  position: optStr,
   phone: optStr,
   email: z
     .string()
@@ -32,30 +95,15 @@ export const ContactSchema = z.object({
     .optional()
     .or(z.literal(''))
     .transform((v) => v || null),
-  telegram: optStr,
-  whatsapp: optStr,
-  birth_date: optDate,
-  role: z.enum(['client', 'owner', 'both'], { message: 'Неверная роль' }),
-  status: z.enum(['new', 'active', 'vip', 'inactive']).default('new'),
-  source: optStr,
-  comment: optStr,
-  // Паспорт
-  passport_series: optStr,
-  passport_number: optStr,
-  passport_issued_date: optDate,
-  passport_issued_by: optStr,
-  passport_department_code: optStr,
-  // Адрес
-  country: optStr,
-  region: optStr,
-  city: optStr,
-  street: optStr,
-  house_number: optStr,
-  building: optStr,
-  apartment: optStr,
+  basis_type: z.enum(['charter', 'power_of_attorney', 'other']).default('power_of_attorney'),
+  basis_details: optStr,
+  is_primary: z
+    .union([z.boolean(), z.string()])
+    .transform((v) => v === true || v === 'on' || v === 'true')
+    .optional(),
 })
 
-export type ContactInput = z.infer<typeof ContactSchema>
+export type RepresentativeInput = z.infer<typeof RepresentativeSchema>
 
 // ─── Deal ─────────────────────────────────────────────────────────────────────
 
@@ -68,6 +116,8 @@ export const DealSchema = z.object({
     .optional(),
   owner_contact_id: uuid,
   client_contact_id: uuid,
+  owner_representative_id: uuid,
+  client_representative_id: uuid,
   property_id: uuid,
   amount: optPositiveNum,
   commission: optPositiveNum,
@@ -126,6 +176,8 @@ export const ContractSchema = z.object({
     .default('draft'),
   owner_contact_id: uuid,
   client_contact_id: uuid,
+  owner_representative_id: uuid,
+  client_representative_id: uuid,
   client_id: uuid,
   property_id: uuid,
   amount: optPositiveNum,

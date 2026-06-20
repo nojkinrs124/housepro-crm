@@ -3,6 +3,7 @@
 import { useActionState } from 'react'
 import { FileText, Building2, User, Home, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import { PartyContactSelect, type PartyContact, type PartyRepresentative } from '@/features/contacts/components/PartyContactSelect'
 
 const contractTypes = [
   { value: 'rent_apartment',      label: '🏠 Аренда квартиры' },
@@ -22,14 +23,14 @@ const statusOptions = [
   { value: 'cancelled', label: 'Отменён' },
 ]
 
-interface Contact { id: string; full_name: string; phone?: string | null }
 interface Property { id: string; title: string; address?: string | null }
 
 interface ContractFormProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   action: (prevState: any, formData: FormData) => Promise<{ error?: string }>
-  owners: Contact[]
-  clients: Contact[]
+  owners: PartyContact[]
+  clients: PartyContact[]
+  representativesByContact: Record<string, PartyRepresentative[]>
   properties: Property[]
   backHref: string
   submitLabel: string
@@ -38,6 +39,8 @@ interface ContractFormProps {
     contract_type?: string
     owner_contact_id?: string
     client_contact_id?: string
+    owner_representative_id?: string
+    client_representative_id?: string
     property_id?: string
     amount?: number | null
     deposit?: number | null
@@ -49,7 +52,7 @@ interface ContractFormProps {
 }
 
 export function ContractForm({
-  action, owners, clients, properties, backHref, submitLabel, mode, defaults = {}
+  action, owners, clients, representativesByContact, properties, backHref, submitLabel, mode, defaults = {}
 }: ContractFormProps) {
   const [state, formAction, isPending] = useActionState(action, { error: undefined })
 
@@ -97,37 +100,29 @@ export function ContractForm({
       <div className="bg-card border border-border rounded-[20px] p-6 space-y-5">
         <h2 className="font-semibold text-foreground">Стороны договора</h2>
 
-        <div className="space-y-1.5">
-          <label className={lbl + ' flex items-center gap-2'}>
-            <Building2 className="w-4 h-4 text-orange-500" />
-            Собственник — Сторона 1
-          </label>
-          <select name="owner_contact_id" defaultValue={defaults.owner_contact_id ?? ''} className={sel}>
-            <option value="">Выберите собственника</option>
-            {owners.map(o => (
-              <option key={o.id} value={o.id}>{o.full_name}{o.phone ? ` · ${o.phone}` : ''}</option>
-            ))}
-          </select>
-          {owners.length === 0 && (
-            <p className="text-xs text-muted-foreground">
-              Нет контактов с ролью «Собственник».{' '}
-              <Link href="/contacts/new" className="text-primary hover:underline">Добавить →</Link>
-            </p>
-          )}
-        </div>
+        <PartyContactSelect
+          label="Собственник — Сторона 1"
+          icon={<Building2 className="w-4 h-4 text-orange-500" />}
+          contactFieldName="owner_contact_id"
+          representativeFieldName="owner_representative_id"
+          contacts={owners}
+          representativesByContact={representativesByContact}
+          defaultContactId={defaults.owner_contact_id ?? ''}
+          defaultRepresentativeId={defaults.owner_representative_id ?? ''}
+          placeholder="Выберите собственника"
+        />
 
-        <div className="space-y-1.5">
-          <label className={lbl + ' flex items-center gap-2'}>
-            <User className="w-4 h-4 text-blue-500" />
-            Клиент — Сторона 2
-          </label>
-          <select name="client_contact_id" defaultValue={defaults.client_contact_id ?? ''} className={sel}>
-            <option value="">Выберите клиента</option>
-            {clients.map(c => (
-              <option key={c.id} value={c.id}>{c.full_name}{c.phone ? ` · ${c.phone}` : ''}</option>
-            ))}
-          </select>
-        </div>
+        <PartyContactSelect
+          label="Клиент — Сторона 2"
+          icon={<User className="w-4 h-4 text-blue-500" />}
+          contactFieldName="client_contact_id"
+          representativeFieldName="client_representative_id"
+          contacts={clients}
+          representativesByContact={representativesByContact}
+          defaultContactId={defaults.client_contact_id ?? ''}
+          defaultRepresentativeId={defaults.client_representative_id ?? ''}
+          placeholder="Выберите клиента"
+        />
 
         <div className="space-y-1.5">
           <label className={lbl + ' flex items-center gap-2'}>

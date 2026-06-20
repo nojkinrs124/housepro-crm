@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { ContactSchema } from '@/lib/schemas'
+import { ContactSchema, RepresentativeSchema } from '@/lib/schemas'
 import { rateLimitCreate } from '@/lib/rate-limit'
 
 function parseContact(formData: FormData) {
@@ -72,4 +72,39 @@ export async function deleteContactAction(contactId: string) {
 
   revalidatePath('/contacts')
   redirect('/contacts')
+}
+
+// ─── Representatives ────────────────────────────────────────────────────────
+
+function parseRepresentative(formData: FormData) {
+  return RepresentativeSchema.safeParse(Object.fromEntries(formData))
+}
+
+export async function addRepresentativeAction(formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Не авторизован' }
+
+  const parsed = parseRepresentative(formData)
+  if (!parsed.success) {
+    const first = parsed.error.issues[0]
+    return { error: first.message, fields: parsed.error.flatten().fieldErrors }
+  }
+
+  const { error } = await supabase.from('contact_representatives').insert(parsed.data)
+  if (error) return { error: error.message }
+
+  revalidatePath(`/contacts/${parsed.data.contact_id}`)
+  redirect(`/contacts/${parsed.data.contact_id}`)
+}
+
+export async function deleteRepresentativeAction(representativeId: string, contactId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Не авторизован' }
+
+  const { error } = await supabase.from('contact_representatives').delete().eq('id', representativeId)
+  if (error) return { error: error.message }
+
+  revalidatePath(`/contacts/${contactId}`)
 }

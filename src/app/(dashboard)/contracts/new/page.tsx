@@ -12,15 +12,22 @@ export default async function NewContractPage({
   const params = await searchParams
   const supabase = await createClient()
 
-  const [{ data: rawContacts }, { data: rawProperties }] = await Promise.all([
-    supabase.from('contacts').select('id, full_name, phone, role').order('full_name'),
+  const [{ data: rawContacts }, { data: rawProperties }, { data: rawReps }] = await Promise.all([
+    supabase.from('contacts').select('id, full_name, phone, role, client_type').order('full_name'),
     supabase.from('properties').select('id, title, address').order('title'),
+    supabase.from('contact_representatives').select('id, contact_id, full_name, position, is_primary').order('is_primary', { ascending: false }),
   ])
 
   const contacts = rawContacts ?? []
   const properties = rawProperties ?? []
   const owners  = contacts.filter(c => c.role === 'owner' || c.role === 'both')
   const clients = contacts.filter(c => c.role === 'client' || c.role === 'both')
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const representativesByContact: Record<string, any[]> = {}
+  for (const r of rawReps ?? []) {
+    (representativesByContact[r.contact_id] ??= []).push(r)
+  }
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -43,6 +50,7 @@ export default async function NewContractPage({
         action={createContractAction}
         owners={owners}
         clients={clients}
+        representativesByContact={representativesByContact}
         properties={properties}
         backHref="/contracts"
         submitLabel="Создать договор"

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { ContactSchema, DealSchema, PaymentCreateSchema, ContractSchema } from '@/lib/schemas'
+import { ContactSchema, RepresentativeSchema, DealSchema, PaymentCreateSchema, ContractSchema } from '@/lib/schemas'
 
 describe('ContactSchema', () => {
   const valid = {
@@ -60,6 +60,65 @@ describe('ContactSchema', () => {
     const r = ContactSchema.safeParse({ ...valid })
     expect(r.success).toBe(true)
     if (r.success) expect(r.data.status).toBe('new')
+  })
+
+  it('ставит client_type individual по умолчанию', () => {
+    const r = ContactSchema.safeParse({ ...valid })
+    expect(r.success).toBe(true)
+    if (r.success) expect(r.data.client_type).toBe('individual')
+  })
+
+  it('требует company_name и inn для юрлица', () => {
+    const r = ContactSchema.safeParse({ ...valid, client_type: 'legal_entity' })
+    expect(r.success).toBe(false)
+    if (!r.success) {
+      const paths = r.error.issues.map(i => i.path.join('.'))
+      expect(paths).toContain('company_name')
+      expect(paths).toContain('inn')
+    }
+  })
+
+  it('принимает корректное юрлицо', () => {
+    const r = ContactSchema.safeParse({
+      ...valid,
+      client_type: 'legal_entity',
+      company_name: 'ООО "Ромашка"',
+      inn: '7707083893',
+    })
+    expect(r.success).toBe(true)
+  })
+})
+
+describe('RepresentativeSchema', () => {
+  const valid = {
+    contact_id: '11111111-1111-4111-8111-111111111111',
+    full_name: 'Иванов Иван Иванович',
+  }
+
+  it('принимает минимально валидные данные', () => {
+    expect(RepresentativeSchema.safeParse(valid).success).toBe(true)
+  })
+
+  it('отклоняет некорректный contact_id', () => {
+    const r = RepresentativeSchema.safeParse({ ...valid, contact_id: 'not-a-uuid' })
+    expect(r.success).toBe(false)
+  })
+
+  it('отклоняет пустое ФИО', () => {
+    const r = RepresentativeSchema.safeParse({ ...valid, full_name: '' })
+    expect(r.success).toBe(false)
+  })
+
+  it('ставит basis_type power_of_attorney по умолчанию', () => {
+    const r = RepresentativeSchema.safeParse(valid)
+    expect(r.success).toBe(true)
+    if (r.success) expect(r.data.basis_type).toBe('power_of_attorney')
+  })
+
+  it('трансформирует is_primary из чекбокса формы', () => {
+    const r = RepresentativeSchema.safeParse({ ...valid, is_primary: 'on' })
+    expect(r.success).toBe(true)
+    if (r.success) expect(r.data.is_primary).toBe(true)
   })
 })
 

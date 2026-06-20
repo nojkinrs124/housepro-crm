@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { ArrowLeft, Phone, Mail, MapPin, Edit, MessageCircle, CheckSquare, TrendingUp, FileText, Plus } from 'lucide-react'
 import { DeleteContactButton } from '@/features/contacts/components/DeleteContactButton'
+import { RepresentativesPanel } from '@/features/contacts/components/RepresentativesPanel'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Contact } from '@/types/database'
@@ -37,13 +38,14 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
   const { id } = await params
   const supabase = await createClient()
 
-  const [{ data: contact }, { data: rawTasks }, { data: rawDeals }] = await Promise.all([
+  const [{ data: contact }, { data: rawTasks }, { data: rawDeals }, { data: rawReps }] = await Promise.all([
     supabase.from('contacts').select('*').eq('id', id).single(),
     supabase.from('tasks').select('id, title, status, priority, deadline')
       .eq('client_id', id).order('created_at', { ascending: false }).limit(10),
     supabase.from('deals').select('id, deal_type, status, amount, created_at')
       .or(`owner_contact_id.eq.${id},client_contact_id.eq.${id}`)
       .order('created_at', { ascending: false }).limit(10),
+    supabase.from('contact_representatives').select('*').eq('contact_id', id).order('created_at'),
   ])
 
   if (!contact) notFound()
@@ -53,6 +55,9 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
   const tasks = rawTasks as any[] | null
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const deals = rawDeals as any[] | null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const representatives = (rawReps ?? []) as any[]
+  const isLegalEntity = c.client_type === 'legal_entity'
   const statusInfo = statusLabels[c.status] ?? statusLabels.new
 
   const dealTypeLabels: Record<string, string> = {
@@ -75,6 +80,11 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
           <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight break-words">{c.full_name}</h1>
           <div className="flex items-center gap-2 mt-2 flex-wrap">
             <span className="text-base">{roleLabels[c.role]}</span>
+            {c.client_type === 'legal_entity' && (
+              <span className="text-xs px-2.5 py-1 rounded-full font-medium shrink-0 bg-indigo-100 text-indigo-700">
+                🏢 Юр. лицо
+              </span>
+            )}
             <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${statusInfo.color}`}>
               {statusInfo.label}
             </span>
@@ -142,7 +152,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
           </div>
 
           {/* Passport */}
-          {hasPassport && (
+          {!isLegalEntity && hasPassport && (
             <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
               <h2 className="font-semibold text-foreground mb-4">Паспортные данные</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
@@ -182,7 +192,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
           )}
 
           {/* Address */}
-          {hasAddress && (
+          {!isLegalEntity && hasAddress && (
             <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
               <h2 className="font-semibold text-foreground mb-3 flex items-center gap-2">
                 <MapPin className="w-4 h-4" />
@@ -198,6 +208,74 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
                 ].filter(Boolean).join(', ')}
               </p>
             </div>
+          )}
+
+          {/* Company requisites */}
+          {isLegalEntity && (
+            <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
+              <h2 className="font-semibold text-foreground mb-4">Реквизиты организации</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                {c.company_name && (
+                  <div className="col-span-2">
+                    <p className="text-xs text-muted-foreground">Название</p>
+                    <p className="text-foreground font-medium">{c.company_name}</p>
+                  </div>
+                )}
+                {c.inn && (
+                  <div>
+                    <p className="text-xs text-muted-foreground">ИНН</p>
+                    <p className="font-mono text-foreground">{c.inn}</p>
+                  </div>
+                )}
+                {c.kpp && (
+                  <div>
+                    <p className="text-xs text-muted-foreground">КПП</p>
+                    <p className="font-mono text-foreground">{c.kpp}</p>
+                  </div>
+                )}
+                {c.ogrn && (
+                  <div>
+                    <p className="text-xs text-muted-foreground">ОГРН</p>
+                    <p className="font-mono text-foreground">{c.ogrn}</p>
+                  </div>
+                )}
+                {c.legal_address && (
+                  <div className="col-span-2">
+                    <p className="text-xs text-muted-foreground">Юридический адрес</p>
+                    <p className="text-foreground">{c.legal_address}</p>
+                  </div>
+                )}
+                {c.bank_name && (
+                  <div className="col-span-2">
+                    <p className="text-xs text-muted-foreground">Банк</p>
+                    <p className="text-foreground">{c.bank_name}</p>
+                  </div>
+                )}
+                {c.bank_account && (
+                  <div>
+                    <p className="text-xs text-muted-foreground">Расчётный счёт</p>
+                    <p className="font-mono text-foreground">{c.bank_account}</p>
+                  </div>
+                )}
+                {c.corr_account && (
+                  <div>
+                    <p className="text-xs text-muted-foreground">Корр. счёт</p>
+                    <p className="font-mono text-foreground">{c.corr_account}</p>
+                  </div>
+                )}
+                {c.bik && (
+                  <div>
+                    <p className="text-xs text-muted-foreground">БИК</p>
+                    <p className="font-mono text-foreground">{c.bik}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Representatives */}
+          {isLegalEntity && (
+            <RepresentativesPanel contactId={id} representatives={representatives} />
           )}
 
           {/* Deals */}
