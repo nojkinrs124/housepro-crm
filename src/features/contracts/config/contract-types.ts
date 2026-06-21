@@ -31,6 +31,16 @@ export interface ContractTypeConfig {
   requiresBaseContract?: boolean
   /** DOCX заголовок для базовой генерации без шаблона */
   docTitle: string
+
+  // ── Финансы и сроки ──
+  amountLabel: string
+  amountPlaceholder?: string
+  showDeposit: boolean
+  depositLabel?: string
+  /** 'range' — период (дата начала/окончания), 'single' — одна дата сделки */
+  dateMode: 'range' | 'single'
+  startDateLabel: string
+  endDateLabel?: string
 }
 
 export const CONTRACT_TYPES: ContractTypeConfig[] = [
@@ -46,6 +56,13 @@ export const CONTRACT_TYPES: ContractTypeConfig[] = [
     party2Label: 'Арендатор',
     propertyTypes: ['apartment', 'house'],
     docTitle: 'ДОГОВОР НАЙМА ЖИЛОГО ПОМЕЩЕНИЯ',
+    amountLabel: 'Арендная плата (₽/мес)',
+    amountPlaceholder: '50 000',
+    showDeposit: true,
+    depositLabel: 'Залог (₽)',
+    dateMode: 'range',
+    startDateLabel: 'Дата начала аренды',
+    endDateLabel: 'Дата окончания аренды',
   },
   {
     value: 'rent_commercial',
@@ -59,6 +76,13 @@ export const CONTRACT_TYPES: ContractTypeConfig[] = [
     party2Label: 'Арендатор',
     propertyTypes: ['commercial', 'office', 'warehouse', 'land'],
     docTitle: 'ДОГОВОР АРЕНДЫ НЕЖИЛОГО ПОМЕЩЕНИЯ',
+    amountLabel: 'Арендная плата (₽/мес)',
+    amountPlaceholder: '150 000',
+    showDeposit: true,
+    depositLabel: 'Обеспечительный платёж (₽)',
+    dateMode: 'range',
+    startDateLabel: 'Дата начала аренды',
+    endDateLabel: 'Дата окончания аренды',
   },
   {
     value: 'sale',
@@ -71,6 +95,12 @@ export const CONTRACT_TYPES: ContractTypeConfig[] = [
     party1Label: 'Продавец',
     party2Label: 'Покупатель',
     docTitle: 'ДОГОВОР КУПЛИ-ПРОДАЖИ НЕДВИЖИМОСТИ',
+    amountLabel: 'Цена продажи (₽)',
+    amountPlaceholder: '8 500 000',
+    showDeposit: true,
+    depositLabel: 'Задаток (₽)',
+    dateMode: 'single',
+    startDateLabel: 'Дата сделки',
   },
   {
     value: 'agency_owner',
@@ -83,6 +113,12 @@ export const CONTRACT_TYPES: ContractTypeConfig[] = [
     party1Label: 'Агентство (Исполнитель)',
     party2Label: 'Собственник (Принципал)',
     docTitle: 'АГЕНТСКИЙ ДОГОВОР С СОБСТВЕННИКОМ',
+    amountLabel: 'Вознаграждение агентства (₽)',
+    amountPlaceholder: '30 000',
+    showDeposit: false,
+    dateMode: 'range',
+    startDateLabel: 'Дата начала действия',
+    endDateLabel: 'Дата окончания действия',
   },
   {
     value: 'agency_client',
@@ -95,6 +131,12 @@ export const CONTRACT_TYPES: ContractTypeConfig[] = [
     party1Label: 'Агентство (Исполнитель)',
     party2Label: 'Заказчик',
     docTitle: 'АГЕНТСКИЙ ДОГОВОР С ЗАКАЗЧИКОМ',
+    amountLabel: 'Вознаграждение агентства (₽)',
+    amountPlaceholder: '50 000',
+    showDeposit: false,
+    dateMode: 'range',
+    startDateLabel: 'Дата начала действия',
+    endDateLabel: 'Дата окончания действия',
   },
   {
     value: 'agency_legal_entity',
@@ -108,6 +150,12 @@ export const CONTRACT_TYPES: ContractTypeConfig[] = [
     party2Label: 'Заказчик (юр. лицо)',
     requiresLegalEntity: true,
     docTitle: 'АГЕНТСКИЙ ДОГОВОР С ЮРИДИЧЕСКИМ ЛИЦОМ',
+    amountLabel: 'Вознаграждение агентства (₽)',
+    amountPlaceholder: '100 000',
+    showDeposit: false,
+    dateMode: 'range',
+    startDateLabel: 'Дата начала действия',
+    endDateLabel: 'Дата окончания действия',
   },
   {
     value: 'property_management',
@@ -120,6 +168,12 @@ export const CONTRACT_TYPES: ContractTypeConfig[] = [
     party1Label: 'Агентство (Управляющий)',
     party2Label: 'Собственник',
     docTitle: 'ДОГОВОР ДОВЕРИТЕЛЬНОГО УПРАВЛЕНИЯ',
+    amountLabel: 'Вознаграждение за управление (₽/мес)',
+    amountPlaceholder: '15 000',
+    showDeposit: false,
+    dateMode: 'range',
+    startDateLabel: 'Дата начала управления',
+    endDateLabel: 'Дата окончания управления',
   },
   {
     value: 'sublease',
@@ -133,6 +187,13 @@ export const CONTRACT_TYPES: ContractTypeConfig[] = [
     party2Label: 'Субарендатор',
     requiresBaseContract: true,
     docTitle: 'ДОГОВОР СУБАРЕНДЫ',
+    amountLabel: 'Субарендная плата (₽/мес)',
+    amountPlaceholder: '50 000',
+    showDeposit: true,
+    depositLabel: 'Залог (₽)',
+    dateMode: 'range',
+    startDateLabel: 'Дата начала субаренды',
+    endDateLabel: 'Дата окончания субаренды',
   },
 ]
 

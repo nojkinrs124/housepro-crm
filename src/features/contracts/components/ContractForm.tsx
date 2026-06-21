@@ -227,26 +227,38 @@ export function ContractForm({
       <div className="bg-card border border-border rounded-[20px] p-6 space-y-5">
         <h2 className="font-semibold text-foreground">Финансы и сроки</h2>
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1.5">
-            <label className={lbl}>Сумма (₽)</label>
-            <input name="amount" type="number" placeholder="50 000"
+          <div className={`space-y-1.5 ${config.showDeposit ? '' : 'col-span-2'}`}>
+            <label className={lbl}>{config.amountLabel}</label>
+            <input name="amount" type="number" placeholder={config.amountPlaceholder ?? '50 000'}
               defaultValue={defaults.amount ?? ''} className={inp} />
           </div>
-          <div className="space-y-1.5">
-            <label className={lbl}>Залог (₽)</label>
-            <input name="deposit" type="number" placeholder="50 000"
-              defaultValue={defaults.deposit ?? ''} className={inp} />
-          </div>
-          <div className="space-y-1.5">
-            <label className={lbl}>Дата начала</label>
-            <input name="start_date" type="date"
-              defaultValue={defaults.start_date ? defaults.start_date.slice(0, 10) : ''} className={inp} />
-          </div>
-          <div className="space-y-1.5">
-            <label className={lbl}>Дата окончания</label>
-            <input name="end_date" type="date"
-              defaultValue={defaults.end_date ? defaults.end_date.slice(0, 10) : ''} className={inp} />
-          </div>
+          {config.showDeposit && (
+            <div className="space-y-1.5">
+              <label className={lbl}>{config.depositLabel}</label>
+              <input name="deposit" type="number" placeholder="50 000"
+                defaultValue={defaults.deposit ?? ''} className={inp} />
+            </div>
+          )}
+          {config.dateMode === 'single' ? (
+            <div className="space-y-1.5 col-span-2">
+              <label className={lbl}>{config.startDateLabel}</label>
+              <input name="start_date" type="date"
+                defaultValue={defaults.start_date ? defaults.start_date.slice(0, 10) : ''} className={inp} />
+            </div>
+          ) : (
+            <>
+              <div className="space-y-1.5">
+                <label className={lbl}>{config.startDateLabel}</label>
+                <input name="start_date" type="date"
+                  defaultValue={defaults.start_date ? defaults.start_date.slice(0, 10) : ''} className={inp} />
+              </div>
+              <div className="space-y-1.5">
+                <label className={lbl}>{config.endDateLabel}</label>
+                <input name="end_date" type="date"
+                  defaultValue={defaults.end_date ? defaults.end_date.slice(0, 10) : ''} className={inp} />
+              </div>
+            </>
+          )}
         </div>
       </div>
 

@@ -3,7 +3,12 @@ import { z } from 'zod'
 // ─── Общие примитивы ─────────────────────────────────────────────────────────
 
 const optStr = z.string().trim().nullable().optional()
-const optDate = z.string().date().nullable().optional()
+const optDate = z
+  .string()
+  .nullable()
+  .optional()
+  .transform(v => (v === '' || v === null || v === undefined ? null : v))
+  .refine(v => v === null || /^\d{4}-\d{2}-\d{2}$/.test(v), { message: 'Некорректная дата' })
 const optPositiveNum = z
   .union([z.string(), z.number()])
   .transform((v) => (v === '' || v === null || v === undefined ? null : Number(v)))
