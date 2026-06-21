@@ -15,6 +15,7 @@ const statusOptions = [
   { value: 'cancelled', label: 'Отменён' },
 ]
 
+interface CompanyProfileOption { id: string; name: string; legalForm: string; isDefault: boolean }
 interface Property { id: string; title: string; address?: string | null; property_type?: string | null }
 interface BaseContractOption { id: string; label: string }
 
@@ -26,7 +27,7 @@ interface ContractFormProps {
   representativesByContact: Record<string, PartyRepresentative[]>
   properties: Property[]
   baseContracts: BaseContractOption[]
-  companyName: string
+  companyProfiles: CompanyProfileOption[]
   backHref: string
   submitLabel: string
   mode: 'create' | 'edit'
@@ -38,6 +39,7 @@ interface ContractFormProps {
     client_representative_id?: string
     property_id?: string
     base_contract_id?: string
+    company_profile_id?: string
     amount?: number | null
     deposit?: number | null
     start_date?: string | null
@@ -54,7 +56,7 @@ function fieldsForRole(role: ContractPartyRole) {
 }
 
 export function ContractForm({
-  action, owners, clients, representativesByContact, properties, baseContracts, companyName,
+  action, owners, clients, representativesByContact, properties, baseContracts, companyProfiles,
   backHref, submitLabel, mode, defaults = {}
 }: ContractFormProps) {
   const [state, formAction, isPending] = useActionState(action, { error: undefined })
@@ -139,12 +141,27 @@ export function ContractForm({
         <h2 className="font-semibold text-foreground">Стороны договора</h2>
 
         {config.party1Role === 'agency' ? (
-          <div className="flex items-center gap-3 p-3 rounded-xl border border-dashed border-border bg-accent/40">
-            <Briefcase className="w-4 h-4 text-violet-600 shrink-0" />
-            <div className="text-sm">
-              <div className="text-xs text-muted-foreground">{config.party1Label}</div>
-              <div className="font-medium text-foreground">{companyName}</div>
-            </div>
+          <div className="space-y-1.5">
+            <label className={lbl + ' flex items-center gap-2'}>
+              <Briefcase className="w-4 h-4 text-violet-600" />
+              {config.party1Label}
+            </label>
+            {companyProfiles.length > 0 ? (
+              <select name="company_profile_id"
+                defaultValue={defaults.company_profile_id || companyProfiles.find(p => p.isDefault)?.id || companyProfiles[0]?.id}
+                className={sel}>
+                {companyProfiles.map(p => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}{p.isDefault ? ' (по умолчанию)' : ''}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <div className="flex items-center gap-2 p-3 rounded-xl border border-dashed border-destructive/40 bg-destructive/5 text-sm text-destructive">
+                Нет ни одного профиля компании.{' '}
+                <Link href="/settings/company/new" target="_blank" className="underline font-medium">Создать</Link>
+              </div>
+            )}
           </div>
         ) : (
           <PartyContactSelect

@@ -8,7 +8,7 @@ export async function getContractFormData(excludeContractId?: string) {
     { data: rawProperties },
     { data: rawReps },
     { data: rawBaseContracts },
-    { data: company },
+    { data: rawCompanyProfiles },
   ] = await Promise.all([
     supabase.from('contacts').select('id, full_name, phone, role, client_type').order('full_name'),
     supabase.from('properties').select('id, title, address, property_type').order('title'),
@@ -18,7 +18,11 @@ export async function getContractFormData(excludeContractId?: string) {
       .select('id, contract_number, end_date, property:properties(address)')
       .in('contract_type', ['rent_apartment', 'rent_commercial'])
       .order('created_at', { ascending: false }),
-    supabase.from('company_settings').select('name').limit(1).maybeSingle(),
+    supabase
+      .from('company_settings')
+      .select('id, legal_form, name, is_default')
+      .order('is_default', { ascending: false })
+      .order('created_at', { ascending: true }),
   ])
 
   const contacts = rawContacts ?? []
@@ -42,7 +46,13 @@ export async function getContractFormData(excludeContractId?: string) {
       return { id: c.id, label: `${c.contract_number || `№${c.id.slice(0, 8)}`}${addressPart}${endPart}` }
     })
 
-  const companyName = company?.name || 'HousePro'
+  const companyProfiles = (rawCompanyProfiles ?? []).map((p) => ({
+    id: p.id as string,
+    name: (p.name as string) || 'Без названия',
+    legalForm: p.legal_form as string,
+    isDefault: !!p.is_default,
+  }))
+  const defaultCompanyProfileId = companyProfiles.find((p) => p.isDefault)?.id ?? companyProfiles[0]?.id ?? ''
 
-  return { owners, clients, properties, representativesByContact, baseContracts, companyName }
+  return { owners, clients, properties, representativesByContact, baseContracts, companyProfiles, defaultCompanyProfileId }
 }

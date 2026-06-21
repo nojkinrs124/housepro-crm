@@ -137,9 +137,9 @@ async function generateBasicDocx(
   <w:p><w:r><w:t xml:space="preserve">${escapeXml(vars.CITY)}, ${escapeXml(vars.CONTRACT_DATE)}</w:t></w:r></w:p>
   <w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>
   <w:p><w:r><w:t xml:space="preserve">Стороны договора:</w:t></w:r></w:p>
-  <w:p><w:r><w:t xml:space="preserve">Наниматель/Покупатель: ${escapeXml(vars.CLIENT_NAME)}</w:t></w:r></w:p>
-  <w:p><w:r><w:t xml:space="preserve">Паспорт: ${escapeXml(vars.CLIENT_PASSPORT)}</w:t></w:r></w:p>
-  <w:p><w:r><w:t xml:space="preserve">Телефон: ${escapeXml(vars.CLIENT_PHONE)}</w:t></w:r></w:p>
+  <w:p><w:r><w:t xml:space="preserve">Сторона договора: ${escapeXml(vars.PARTY2_NAME)}</w:t></w:r></w:p>
+  <w:p><w:r><w:t xml:space="preserve">Паспорт: ${escapeXml(vars.PARTY2_PASSPORT)}</w:t></w:r></w:p>
+  <w:p><w:r><w:t xml:space="preserve">Телефон: ${escapeXml(vars.PARTY2_PHONE)}</w:t></w:r></w:p>
   <w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>
   <w:p><w:r><w:t xml:space="preserve">Предмет договора:</w:t></w:r></w:p>
   <w:p><w:r><w:t xml:space="preserve">Объект: ${escapeXml(vars.PROPERTY_TITLE)}</w:t></w:r></w:p>
@@ -155,10 +155,10 @@ async function generateBasicDocx(
   ${vars.DEPOSIT !== '0' ? `<w:p><w:r><w:t xml:space="preserve">Залог: ${escapeXml(vars.DEPOSIT)} руб. (${escapeXml(vars.DEPOSIT_WORDS)})</w:t></w:r></w:p>` : ''}
   <w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>
   <w:p><w:pPr><w:jc w:val="left"/></w:pPr>
-    <w:r><w:t xml:space="preserve">Менеджер агентства: ${escapeXml(vars.MANAGER_NAME)}                    Подпись: _______________</w:t></w:r>
+    <w:r><w:t xml:space="preserve">Исполнитель: ${escapeXml(vars.ИСПОЛНИТЕЛЬ_НАЗВАНИЕ)}                    Подпись: _______________</w:t></w:r>
   </w:p>
   <w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>
-  <w:p><w:r><w:t xml:space="preserve">Клиент: ${escapeXml(vars.CLIENT_NAME)}                              Подпись: _______________</w:t></w:r></w:p>
+  <w:p><w:r><w:t xml:space="preserve">Сторона: ${escapeXml(vars.PARTY2_NAME)}                              Подпись: _______________</w:t></w:r></w:p>
   <w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="2160" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>
 </w:body>
 </w:document>`

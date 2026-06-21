@@ -85,6 +85,7 @@ export interface ContractVariables {
 
   // ── Исполнитель (Агентство, для агентских/субаренды/управления) ──
   ИСПОЛНИТЕЛЬ_НАЗВАНИЕ: string
+  ИСПОЛНИТЕЛЬ_ФОРМА: string
   ИСПОЛНИТЕЛЬ_ИНН: string
   ИСПОЛНИТЕЛЬ_ОГРН: string
   ИСПОЛНИТЕЛЬ_КПП: string
@@ -94,6 +95,11 @@ export interface ContractVariables {
   ИСПОЛНИТЕЛЬ_КОРР_СЧЕТ: string
   ИСПОЛНИТЕЛЬ_БИК: string
   ИСПОЛНИТЕЛЬ_ТЕЛЕФОН: string
+  ИСПОЛНИТЕЛЬ_ПОДПИСАНТ: string
+  ИСПОЛНИТЕЛЬ_ДОЛЖНОСТЬ: string
+  ИСПОЛНИТЕЛЬ_ОСНОВАНИЕ: string
+  ИСПОЛНИТЕЛЬ_ПАСПОРТ: string
+  ИСПОЛНИТЕЛЬ_ПАСПОРТ_ВЫДАН: string
 
   // ── Договор-основание (для субаренды) ──
   ОСНОВАНИЕ_НОМЕР_ДОГОВОРА: string
@@ -104,6 +110,9 @@ export interface ContractVariables {
   CLIENT_PHONE: string
   CLIENT_PASSPORT: string
   CLIENT_ADDRESS: string
+  PARTY2_NAME: string
+  PARTY2_PHONE: string
+  PARTY2_PASSPORT: string
   PROPERTY_ADDRESS: string
   PROPERTY_TITLE: string
   PROPERTY_AREA: string
@@ -240,11 +249,19 @@ export async function buildContractVariables(contractId: string): Promise<Contra
 
   if (!contract) throw new Error('Договор не найден')
 
-  const { data: company } = await supabase
-    .from('company_settings')
-    .select('name, inn, ogrn, kpp, address, bank_name, bank_account, corr_account, bik, phone')
-    .limit(1)
-    .maybeSingle()
+  let company: Record<string, string> | null = null
+  if (contract.company_profile_id) {
+    const { data } = await supabase.from('company_settings').select('*').eq('id', contract.company_profile_id).maybeSingle()
+    company = data
+  }
+  if (!company) {
+    const { data } = await supabase.from('company_settings').select('*').eq('is_default', true).maybeSingle()
+    company = data
+  }
+  if (!company) {
+    const { data } = await supabase.from('company_settings').select('*').order('created_at', { ascending: true }).limit(1).maybeSingle()
+    company = data
+  }
 
   const baseContract = contract.base_contract as Record<string, string> | null
 
@@ -270,6 +287,25 @@ export async function buildContractVariables(contractId: string): Promise<Contra
     const diff = (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth())
     if (diff > 0) monthsCount = String(diff)
   }
+
+  const legalFormLabels: Record<string, string> = { individual: 'Физическое лицо', ip: 'Индивидуальный предприниматель', ooo: 'Общество с ограниченной ответственностью' }
+  const companyLegalForm = company?.legal_form || 'ip'
+
+  const executorSignatory =
+    companyLegalForm === 'ooo' ? (company?.signatory_name || '_______________') : (company?.name || '_______________')
+  const executorPosition =
+    companyLegalForm === 'ooo' ? (company?.signatory_position || 'Генеральный директор')
+      : companyLegalForm === 'ip' ? 'Индивидуальный предприниматель'
+        : ''
+  const executorBasis =
+    companyLegalForm === 'ooo' ? (company?.signatory_basis || 'Устава')
+      : companyLegalForm === 'ip' ? (company?.signatory_basis || 'Свидетельства о государственной регистрации ИП')
+        : 'паспорта'
+  const executorPassport =
+    company?.passport_series && company?.passport_number ? `${company.passport_series} ${company.passport_number}` : '_______________'
+  const executorPassportIssued = company?.passport_issued_by
+    ? `${company.passport_issued_by}${company.passport_issued_date ? `, ${formatDateRu(company.passport_issued_date).full}` : ''}${company.passport_department_code ? `, код подразделения ${company.passport_department_code}` : ''}`
+    : '_______________'
 
   return {
     // ── Арендодатель ──
@@ -352,6 +388,7 @@ export async function buildContractVariables(contractId: string): Promise<Contra
 
     // ── Исполнитель (Агентство) ──
     ИСПОЛНИТЕЛЬ_НАЗВАНИЕ: company?.name || 'ИП HousePro',
+    ИСПОЛНИТЕЛЬ_ФОРМА: legalFormLabels[companyLegalForm] || 'Индивидуальный предприниматель',
     ИСПОЛНИТЕЛЬ_ИНН: company?.inn || '_______________',
     ИСПОЛНИТЕЛЬ_ОГРН: company?.ogrn || '_______________',
     ИСПОЛНИТЕЛЬ_КПП: company?.kpp || '_______________',
@@ -361,6 +398,11 @@ export async function buildContractVariables(contractId: string): Promise<Contra
     ИСПОЛНИТЕЛЬ_КОРР_СЧЕТ: company?.corr_account || '_______________',
     ИСПОЛНИТЕЛЬ_БИК: company?.bik || '_______________',
     ИСПОЛНИТЕЛЬ_ТЕЛЕФОН: company?.phone || '_______________',
+    ИСПОЛНИТЕЛЬ_ПОДПИСАНТ: executorSignatory,
+    ИСПОЛНИТЕЛЬ_ДОЛЖНОСТЬ: executorPosition,
+    ИСПОЛНИТЕЛЬ_ОСНОВАНИЕ: executorBasis,
+    ИСПОЛНИТЕЛЬ_ПАСПОРТ: executorPassport,
+    ИСПОЛНИТЕЛЬ_ПАСПОРТ_ВЫДАН: executorPassportIssued,
 
     // ── Договор-основание (субаренда) ──
     ОСНОВАНИЕ_НОМЕР_ДОГОВОРА: baseContract?.contract_number || '_______________',
@@ -375,6 +417,9 @@ export async function buildContractVariables(contractId: string): Promise<Contra
     CLIENT_PHONE: client?.phone || '_______________',
     CLIENT_PASSPORT: buildPassport(client),
     CLIENT_ADDRESS: buildAddress(client),
+    PARTY2_NAME: client?.full_name || owner?.full_name || '_______________',
+    PARTY2_PHONE: client?.phone || owner?.phone || '_______________',
+    PARTY2_PASSPORT: client ? buildPassport(client) : buildPassport(owner),
     PROPERTY_ADDRESS: (property?.address as string) || '_______________',
     PROPERTY_TITLE: (property?.title as string) || '_______________',
     PROPERTY_AREA: property?.area ? `${property.area} кв.м.` : '___',

@@ -174,6 +174,7 @@ export interface Contract {
   client_representative_id?: string
   property_id?: string
   base_contract_id?: string
+  company_profile_id?: string
   manager_id?: string
   start_date?: string
   end_date?: string

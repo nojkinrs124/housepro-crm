@@ -19,7 +19,7 @@ export default async function EditContractPage({ params }: { params: Promise<{ i
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const c = rawContract as any
-  const { owners, clients, properties, representativesByContact, baseContracts, companyName } = formData
+  const { owners, clients, properties, representativesByContact, baseContracts, companyProfiles } = formData
 
   const boundAction = updateContractAction.bind(null, id)
 
@@ -47,7 +47,7 @@ export default async function EditContractPage({ params }: { params: Promise<{ i
         representativesByContact={representativesByContact}
         properties={properties}
         baseContracts={baseContracts}
-        companyName={companyName}
+        companyProfiles={companyProfiles}
         backHref={`/contracts/${id}`}
         submitLabel="Сохранить изменения"
         mode="edit"
@@ -59,6 +59,7 @@ export default async function EditContractPage({ params }: { params: Promise<{ i
           client_representative_id: c.client_representative_id ?? undefined,
           property_id:       c.property_id ?? undefined,
           base_contract_id:  c.base_contract_id ?? undefined,
+          company_profile_id: c.company_profile_id ?? undefined,
           amount:            c.amount,
           deposit:           c.deposit,
           start_date:        c.start_date,

@@ -44,7 +44,15 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
 
   if (!contract) notFound()
 
-  const { data: company } = await supabase.from('company_settings').select('name').limit(1).maybeSingle()
+  let company: { name?: string } | null = null
+  if (contract.company_profile_id) {
+    const { data } = await supabase.from('company_settings').select('name').eq('id', contract.company_profile_id).maybeSingle()
+    company = data
+  }
+  if (!company) {
+    const { data } = await supabase.from('company_settings').select('name').eq('is_default', true).maybeSingle()
+    company = data
+  }
   const typeConfig = getContractTypeConfig(contract.contract_type)
   const baseContract = contract.base_contract as { id?: string; contract_number?: string } | null
 

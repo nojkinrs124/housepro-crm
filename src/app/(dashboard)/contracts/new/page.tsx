@@ -10,7 +10,7 @@ export default async function NewContractPage({
   searchParams: Promise<{ client_id?: string; owner_id?: string; property_id?: string }>
 }) {
   const params = await searchParams
-  const { owners, clients, properties, representativesByContact, baseContracts, companyName } =
+  const { owners, clients, properties, representativesByContact, baseContracts, companyProfiles, defaultCompanyProfileId } =
     await getContractFormData()
 
   return (
@@ -37,7 +37,7 @@ export default async function NewContractPage({
         representativesByContact={representativesByContact}
         properties={properties}
         baseContracts={baseContracts}
-        companyName={companyName}
+        companyProfiles={companyProfiles}
         backHref="/contracts"
         submitLabel="Создать договор"
         mode="create"
@@ -45,6 +45,7 @@ export default async function NewContractPage({
           owner_contact_id: params.owner_id,
           client_contact_id: params.client_id,
           property_id: params.property_id,
+          company_profile_id: defaultCompanyProfileId,
         }}
       />
     </div>

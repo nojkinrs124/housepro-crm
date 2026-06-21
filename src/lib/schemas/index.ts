@@ -187,6 +187,7 @@ export const ContractSchema = z.object({
   client_id: uuid,
   property_id: uuid,
   base_contract_id: uuid,
+  company_profile_id: uuid,
   amount: optPositiveNum,
   deposit: optPositiveNum,
   start_date: optDate,
