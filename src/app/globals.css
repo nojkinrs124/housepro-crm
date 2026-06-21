@@ -280,3 +280,15 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     font-size: 24px;
   }
 }
+
+/* ── Sidebar (тёмный вариант) — дышащее свечение за лого ── */
+@keyframes sidebar-glow-breathe {
+  0%, 100% { transform: scale(0.85); opacity: 0.35; }
+  50%      { transform: scale(1.15); opacity: 0.7; }
+}
+.sidebar-logo-glow {
+  animation: sidebar-glow-breathe 5s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-logo-glow { animation: none; opacity: 0.5; }
+}
