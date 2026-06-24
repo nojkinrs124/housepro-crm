@@ -294,3 +294,80 @@ export interface Payment {
   contract?: Contract
   created_by_user?: User
 }
+
+// ─── Accounting Module ────────────────────────────────────────────────────────
+
+export type AccountingTransactionType = 'income' | 'expense'
+export type AccountingTransactionStatus = 'planned' | 'completed' | 'cancelled'
+export type AccountingPaymentMethod = 'cash' | 'bank' | 'card' | 'other'
+export type AccountingFrequency = 'daily' | 'weekly' | 'monthly' | 'yearly'
+
+export interface AccountingCategory {
+  id: string
+  name: string
+  type: AccountingTransactionType
+  color: string
+  icon: string
+  is_system: boolean
+  sort_order: number
+  created_at: string
+  created_by?: string
+}
+
+export interface AccountingRecurringRule {
+  id: string
+  name: string
+  type: AccountingTransactionType
+  amount: number
+  category_id?: string
+  frequency: AccountingFrequency
+  day_of_month?: number
+  start_date: string
+  end_date?: string
+  employee_id?: string
+  notes?: string
+  is_active: boolean
+  last_generated_date?: string
+  created_at: string
+  created_by?: string
+  // Relations
+  category?: AccountingCategory
+  employee?: User
+}
+
+export interface AccountingTransaction {
+  id: string
+  type: AccountingTransactionType
+  amount: number
+  category_id?: string
+  date: string
+  description?: string
+  status: AccountingTransactionStatus
+  payment_method?: AccountingPaymentMethod
+  due_date?: string
+  contract_id?: string
+  deal_id?: string
+  contact_id?: string
+  employee_id?: string
+  recurring_rule_id?: string
+  legacy_payment_id?: string
+  created_at: string
+  created_by?: string
+  // Relations
+  category?: AccountingCategory
+  contract?: { id: string; contract_number?: string; contract_type?: string }
+  deal?: { id: string; deal_type?: string }
+  contact?: { id: string; full_name: string }
+  employee?: User
+}
+
+export interface AccountingStats {
+  totalIncome: number
+  totalExpense: number
+  profit: number
+  incomeThisMonth: number
+  expenseThisMonth: number
+  profitThisMonth: number
+  plannedIncome: number
+  plannedExpense: number
+}
