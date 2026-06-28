@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { DeleteContractButton } from '@/features/contracts/components/DeleteContractButton'
 import { ContractStatusSelector } from '@/features/contracts/components/ContractStatusSelector'
+import { ContractVersionHistory } from '@/features/contracts/components/ContractVersionHistory'
 import { ArrowLeft, FileText, User, Home, Building2, Calendar, DollarSign, Edit } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -53,6 +54,15 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
     const { data } = await supabase.from('company_settings').select('name').eq('is_default', true).maybeSingle()
     company = data
   }
+
+  // История версий
+  const { data: contractVersions } = await supabase
+    .from('contract_versions')
+    .select(`id, version, created_at, note, docx_url, version_data, created_by,
+             author:users!contract_versions_created_by_fkey(full_name)`)
+    .eq('contract_id', id)
+    .order('version', { ascending: false })
+
   const typeConfig = getContractTypeConfig(contract.contract_type)
   const baseContract = contract.base_contract as { id?: string; contract_number?: string } | null
 
@@ -269,6 +279,15 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
           )}
           {/* Payments */}
           <PaymentsSection contractId={id} />
+
+          {/* Version history */}
+          {contractVersions && contractVersions.length > 0 && (
+            <ContractVersionHistory
+              contractId={id}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              versions={contractVersions as any}
+            />
+          )}
         </div>
 
         {/* Right sidebar */}

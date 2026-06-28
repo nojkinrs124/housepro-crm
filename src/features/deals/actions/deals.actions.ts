@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { DealSchema } from '@/lib/schemas'
 import { rateLimitCreate } from '@/lib/rate-limit'
 import { requireOrgId } from '@/lib/org'
+import { writeAuditLog } from '@/lib/audit'
 
 const VALID_DEAL_STATUSES = ['new', 'showing', 'negotiation', 'contract', 'payment', 'completed', 'cancelled']
 
@@ -26,13 +27,19 @@ export async function createDealAction(formData: FormData) {
     return { error: first.message, fields: parsed.error.flatten().fieldErrors }
   }
 
-  const { error } = await supabase.from('deals').insert({
+  const { data: deal, error } = await supabase.from('deals').insert({
     ...parsed.data,
     status: 'new',
     manager_id: user.id,
     organization_id: orgId,
-  })
+  }).select('id').single()
   if (error) return { error: error.message }
+
+  await writeAuditLog({
+    userId: user.id, orgId,
+    action: 'create', entityType: 'deal',
+    entityId: deal.id, entityLabel: `Сделка (${parsed.data.deal_type})`,
+  })
 
   revalidatePath('/deals')
   revalidatePath('/analytics', 'page')

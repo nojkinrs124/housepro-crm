@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import { ContactSchema, RepresentativeSchema } from '@/lib/schemas'
 import { rateLimitCreate } from '@/lib/rate-limit'
 import { requireOrgId } from '@/lib/org'
+import { writeAuditLog } from '@/lib/audit'
 
 function parseContact(formData: FormData) {
   return ContactSchema.safeParse(Object.fromEntries(formData))
@@ -36,6 +37,12 @@ export async function createContactAction(formData: FormData) {
 
   if (error) return { error: error.message }
 
+  await writeAuditLog({
+    userId: user.id, orgId,
+    action: 'create', entityType: 'contact',
+    entityId: data.id, entityLabel: parsed.data.full_name ?? 'Контакт',
+  })
+
   revalidatePath('/contacts')
   redirect(`/contacts/${data.id}`)
 }
@@ -47,6 +54,9 @@ export async function updateContactAction(contactId: string, formData: FormData)
 
   const rl = rateLimitCreate(user.id, 'contact')
   if (!rl.success) return { error: 'Слишком много запросов. Подождите минуту.' }
+
+  const orgId = await requireOrgId().catch(() => null)
+  if (!orgId) return { error: 'Организация не найдена' }
 
   const parsed = parseContact(formData)
   if (!parsed.success) {
@@ -61,6 +71,12 @@ export async function updateContactAction(contactId: string, formData: FormData)
 
   if (error) return { error: error.message }
 
+  await writeAuditLog({
+    userId: user.id, orgId,
+    action: 'update', entityType: 'contact',
+    entityId: contactId, entityLabel: parsed.data.full_name ?? 'Контакт',
+  })
+
   revalidatePath('/contacts')
   revalidatePath(`/contacts/${contactId}`)
   redirect(`/contacts/${contactId}`)
@@ -71,8 +87,18 @@ export async function deleteContactAction(contactId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
 
+  const orgId = await requireOrgId().catch(() => null)
+
   const { error } = await supabase.from('contacts').delete().eq('id', contactId)
   if (error) return { error: error.message }
+
+  if (orgId) {
+    await writeAuditLog({
+      userId: user.id, orgId,
+      action: 'delete', entityType: 'contact',
+      entityId: contactId, entityLabel: 'Контакт',
+    })
+  }
 
   revalidatePath('/contacts')
   redirect('/contacts')
