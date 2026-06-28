@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { DealSchema } from '@/lib/schemas'
 import { rateLimitCreate } from '@/lib/rate-limit'
+import { requireOrgId } from '@/lib/org'
 
 const VALID_DEAL_STATUSES = ['new', 'showing', 'negotiation', 'contract', 'payment', 'completed', 'cancelled']
 
@@ -16,6 +17,9 @@ export async function createDealAction(formData: FormData) {
   const rl = rateLimitCreate(user.id, 'deal')
   if (!rl.success) return { error: 'Слишком много запросов. Подождите минуту.' }
 
+  const orgId = await requireOrgId().catch(() => null)
+  if (!orgId) return { error: 'Организация не найдена' }
+
   const parsed = DealSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
     const first = parsed.error.issues[0]
@@ -26,6 +30,7 @@ export async function createDealAction(formData: FormData) {
     ...parsed.data,
     status: 'new',
     manager_id: user.id,
+    organization_id: orgId,
   })
   if (error) return { error: error.message }
 

@@ -69,6 +69,10 @@ export async function createCompanyProfileAction(_prevState: unknown, formData: 
   if ('error' in auth) return { error: auth.error }
   const { supabase } = auth
 
+  const { requireOrgId } = await import('@/lib/org')
+  const orgId = await requireOrgId().catch(() => null)
+  if (!orgId) return { error: 'Организация не найдена' }
+
   const values = readProfileValues(formData)
   const validationError = validateProfileValues(values)
   if (validationError) return { error: validationError }
@@ -85,7 +89,7 @@ export async function createCompanyProfileAction(_prevState: unknown, formData: 
 
   const { data: created, error } = await supabase
     .from('company_settings')
-    .insert({ ...values, is_default: makeDefault })
+    .insert({ ...values, is_default: makeDefault, organization_id: orgId })
     .select('id')
     .single()
 

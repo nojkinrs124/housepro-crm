@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import type { PaymentStatus } from '@/types/database'
 import { PaymentCreateSchema, PaymentUpdateSchema } from '@/lib/schemas'
+import { requireOrgId } from '@/lib/org'
 
 const VALID_PAYMENT_STATUSES: PaymentStatus[] = ['pending', 'paid', 'partial', 'overdue', 'cancelled']
 
@@ -12,6 +13,9 @@ export async function createPaymentAction(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
+
+  const orgId = await requireOrgId().catch(() => null)
+  if (!orgId) return { error: 'Организация не найдена' }
 
   const parsed = PaymentCreateSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
@@ -27,6 +31,7 @@ export async function createPaymentAction(formData: FormData) {
     payment_type: payment_type || 'rent',
     payment_status: (isOverdue ? 'overdue' : 'pending') as PaymentStatus,
     created_by: user.id,
+    organization_id: orgId,
     ...(contract_id && { contract_id }),
     ...(due_date && { due_date }),
     ...(notes && { notes }),

@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { requireOrgId } from '@/lib/org'
 
 function extractPropertyFields(formData: FormData) {
   return {
@@ -47,6 +48,9 @@ export async function createPropertyAction(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  const orgId = await requireOrgId().catch(() => null)
+  if (!orgId) return { error: 'Организация не найдена' }
+
   const fields = extractPropertyFields(formData)
 
   if (!fields.title?.trim() || !fields.address?.trim()) {
@@ -56,6 +60,7 @@ export async function createPropertyAction(formData: FormData) {
   const { data: property, error } = await supabase.from('properties').insert({
     ...fields,
     manager_id: user.id,
+    organization_id: orgId,
   }).select().single()
 
   if (error) return { error: error.message }

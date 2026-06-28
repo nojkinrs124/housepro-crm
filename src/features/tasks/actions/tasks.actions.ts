@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { requireOrgId } from '@/lib/org'
 
 const VALID_TASK_STATUSES = ['todo', 'in_progress', 'done', 'cancelled']
 const VALID_TASK_PRIORITIES = ['low', 'medium', 'high']
@@ -11,6 +12,9 @@ export async function createTaskAction(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+
+  const orgId = await requireOrgId().catch(() => null)
+  if (!orgId) return { error: 'Организация не найдена' }
 
   const priority = formData.get('priority') as string
   if (!VALID_TASK_PRIORITIES.includes(priority)) {
@@ -25,7 +29,6 @@ export async function createTaskAction(formData: FormData) {
     status: 'todo' as const,
     created_by: user.id,
     assigned_to: formData.get('assigned_to') as string || user.id,
-    // Relationships
     lead_id: formData.get('lead_id') as string || null,
     client_id: formData.get('client_id') as string || null,
     owner_id: formData.get('owner_id') as string || null,
@@ -33,6 +36,7 @@ export async function createTaskAction(formData: FormData) {
     property_id: formData.get('property_id') as string || null,
     contract_id: formData.get('contract_id') as string || null,
     payment_id: formData.get('payment_id') as string || null,
+    organization_id: orgId,
   }
 
   if (!values.title) {

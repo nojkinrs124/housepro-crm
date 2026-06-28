@@ -3,11 +3,15 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { AccountingTransactionType } from '@/types/database'
+import { requireOrgId } from '@/lib/org'
 
 export async function createCategoryAction(_prevState: unknown, formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
+
+  const orgId = await requireOrgId().catch(() => null)
+  if (!orgId) return { error: 'Организация не найдена' }
 
   const name  = (formData.get('name') as string)?.trim()
   const type  = formData.get('type') as AccountingTransactionType
@@ -19,7 +23,7 @@ export async function createCategoryAction(_prevState: unknown, formData: FormDa
 
   const { error } = await supabase
     .from('accounting_categories')
-    .insert({ name, type, color, icon, is_system: false, created_by: user.id })
+    .insert({ name, type, color, icon, is_system: false, created_by: user.id, organization_id: orgId })
 
   if (error) return { error: error.message }
 

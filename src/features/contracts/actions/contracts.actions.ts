@@ -4,12 +4,16 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { ContractSchema } from '@/lib/schemas'
+import { requireOrgId } from '@/lib/org'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function createContractAction(_prevState: any, formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+
+  const orgId = await requireOrgId().catch(() => null)
+  if (!orgId) return { error: 'Организация не найдена' }
 
   const parsed = ContractSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
@@ -19,7 +23,7 @@ export async function createContractAction(_prevState: any, formData: FormData) 
 
   const { data: contract, error } = await supabase
     .from('contracts')
-    .insert({ ...parsed.data, status: 'draft', manager_id: user.id })
+    .insert({ ...parsed.data, status: 'draft', manager_id: user.id, organization_id: orgId })
     .select()
     .single()
 

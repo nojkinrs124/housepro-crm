@@ -146,6 +146,10 @@ export async function createTransactionAction(_prevState: unknown, formData: For
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
 
+  const { requireOrgId } = await import('@/lib/org')
+  const orgId = await requireOrgId().catch(() => null)
+  if (!orgId) return { error: 'Организация не найдена' }
+
   const type       = formData.get('type') as AccountingTransactionType
   const rawAmount  = formData.get('amount')
   const amount     = parseAmount(rawAmount)
@@ -170,6 +174,7 @@ export async function createTransactionAction(_prevState: unknown, formData: For
     date,
     status,
     created_by: user.id,
+    organization_id: orgId,
     ...(categoryId  && { category_id:     categoryId }),
     ...(description && { description }),
     ...(method      && { payment_method:  method }),

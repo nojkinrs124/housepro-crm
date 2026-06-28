@@ -8,11 +8,15 @@ import {
   uploadContractFile,
 } from '../services/document.service'
 import { CONTRACT_TYPE_MAP } from '../config/contract-types'
+import { requireOrgId } from '@/lib/org'
 
 export async function generateContractDocx(contractId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
+
+  const orgId = await requireOrgId().catch(() => null)
+  if (!orgId) return { error: 'Организация не найдена' }
 
   try {
     // 1. Получаем данные договора
@@ -95,6 +99,7 @@ export async function generateContractDocx(contractId: string) {
       entity_type: 'contract',
       entity_id: contractId,
       new_data: { version: nextVersion, docx_url: docxUrl },
+      organization_id: orgId,
     })
 
     revalidatePath(`/contracts/${contractId}`)

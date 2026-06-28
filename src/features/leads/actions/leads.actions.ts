@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { requireOrgId } from '@/lib/org'
 
 const VALID_STATUSES = ['new','contacted','showing','searching','converted','closed','interested','rejected']
 
@@ -33,11 +34,14 @@ export async function createLeadAction(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  const orgId = await requireOrgId().catch(() => null)
+  if (!orgId) return { error: 'Организация не найдена' }
+
   const fields = extractLeadFields(formData, user.id)
 
   const { data: lead, error } = await supabase
     .from('leads')
-    .insert({ ...fields, status: 'new' })
+    .insert({ ...fields, status: 'new', organization_id: orgId })
     .select()
     .single()
 
@@ -89,6 +93,9 @@ export async function addLeadActivityAction(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
 
+  const orgId = await requireOrgId().catch(() => null)
+  if (!orgId) return { error: 'Организация не найдена' }
+
   const lead_id = formData.get('lead_id') as string
   const type    = formData.get('type') as string
   const content = (formData.get('content') as string)?.trim() || null
@@ -99,11 +106,11 @@ export async function addLeadActivityAction(formData: FormData) {
 
   const { error } = await supabase.from('lead_activities').insert({
     lead_id, user_id: user.id, type, content, result, scheduled_at,
+    organization_id: orgId,
   })
 
   if (error) return { error: error.message }
 
-  // Обновляем next_contact_at если указано время следующего контакта
   if (scheduled_at) {
     await supabase.from('leads').update({
       next_contact_at: scheduled_at,
@@ -119,6 +126,9 @@ export async function convertLeadToClient(id: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
+
+  const orgId = await requireOrgId().catch(() => null)
+  if (!orgId) return { error: 'Организация не найдена' }
 
   const { data: lead } = await supabase.from('leads').select('*').eq('id', id).single()
   if (!lead) return { error: 'Лид не найден' }
@@ -138,6 +148,7 @@ export async function convertLeadToClient(id: string) {
       comment:   l.comment  || null,
       role:   'client',
       status: 'new',
+      organization_id: orgId,
     })
     .select()
     .single()

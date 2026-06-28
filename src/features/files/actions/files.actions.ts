@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { FileRecord } from '@/types/database'
 import { validateUploadedFile } from '@/lib/validate-file'
+import { requireOrgId } from '@/lib/org'
 
 const BUCKET = 'documents'
 const MAX_FILE_SIZE = 20 * 1024 * 1024 // 20 МБ
@@ -15,6 +16,9 @@ export async function uploadFileAction(formData: FormData) {
   if (!user) {
     return { error: 'Не авторизован' }
   }
+
+  const orgId = await requireOrgId().catch(() => null)
+  if (!orgId) return { error: 'Организация не найдена' }
 
   const file = formData.get('file') as File | null
   const clientId = (formData.get('client_id') as string) || null
@@ -58,6 +62,7 @@ export async function uploadFileAction(formData: FormData) {
     file_url: data.publicUrl,
     file_type: file.type || `application/${ext}`,
     uploaded_by: user.id,
+    organization_id: orgId,
     ...(clientId && { client_id: clientId }),
     ...(propertyId && { property_id: propertyId }),
     ...(contractId && { contract_id: contractId }),

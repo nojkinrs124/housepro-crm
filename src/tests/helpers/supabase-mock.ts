@@ -1,5 +1,9 @@
 import { vi } from 'vitest'
 
+// Base64-encoded JWT payload: {"org_id":"test-org-id"}
+const FAKE_JWT_PAYLOAD = Buffer.from(JSON.stringify({ org_id: 'test-org-id' })).toString('base64')
+const FAKE_ACCESS_TOKEN = `header.${FAKE_JWT_PAYLOAD}.signature`
+
 /**
  * Создаёт мок Supabase клиента.
  * Позволяет задать возвращаемые данные / ошибки через chainable builder.
@@ -42,6 +46,14 @@ export function createSupabaseMock(overrides: {
     auth: {
       getUser: vi.fn().mockResolvedValue({
         data: { user },
+        error: null,
+      }),
+      getSession: vi.fn().mockResolvedValue({
+        data: {
+          session: user
+            ? { access_token: FAKE_ACCESS_TOKEN, user }
+            : null,
+        },
         error: null,
       }),
     },

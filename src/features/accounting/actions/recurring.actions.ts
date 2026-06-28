@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { AccountingTransactionType, AccountingFrequency } from '@/types/database'
+import { requireOrgId } from '@/lib/org'
 
 function parseAmount(raw: unknown): number | null {
   const v = String(raw ?? '').replace(/\s/g, '').replace(',', '.')
@@ -14,6 +15,9 @@ export async function createRecurringRuleAction(_prevState: unknown, formData: F
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
+
+  const orgId = await requireOrgId().catch(() => null)
+  if (!orgId) return { error: 'Организация не найдена' }
 
   const name        = (formData.get('name') as string)?.trim()
   const type        = formData.get('type') as AccountingTransactionType
@@ -35,6 +39,7 @@ export async function createRecurringRuleAction(_prevState: unknown, formData: F
     .insert({
       name, type, amount, frequency,
       start_date: startDate,
+      organization_id: orgId,
       ...(categoryId   && { category_id:  categoryId }),
       ...(dayOfMonth   && { day_of_month: dayOfMonth }),
       ...(endDate      && { end_date:     endDate }),
@@ -59,6 +64,7 @@ export async function createRecurringRuleAction(_prevState: unknown, formData: F
       status:             'completed',
       description:        name,
       created_by:         user.id,
+      organization_id:    orgId,
     })
     await supabase
       .from('accounting_recurring_rules')
@@ -128,6 +134,9 @@ export async function generateRecurringTransactionsAction() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
 
+  const orgId = await requireOrgId().catch(() => null)
+  if (!orgId) return { error: 'Организация не найдена' }
+
   const today = new Date().toISOString().slice(0, 10)
 
   const { data: rules } = await supabase
@@ -159,6 +168,7 @@ export async function generateRecurringTransactionsAction() {
         description:        rule.name,
         status:             'planned',
         created_by:         user.id,
+        organization_id:    orgId,
       })
       await supabase
         .from('accounting_recurring_rules')

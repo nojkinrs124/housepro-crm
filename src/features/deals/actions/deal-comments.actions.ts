@@ -2,11 +2,15 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { requireOrgId } from '@/lib/org'
 
 export async function addDealCommentAction(dealId: string, formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
+
+  const orgId = await requireOrgId().catch(() => null)
+  if (!orgId) return { error: 'Организация не найдена' }
 
   const body = (formData.get('body') as string)?.trim()
   if (!body) return { error: 'Комментарий не может быть пустым' }
@@ -16,6 +20,7 @@ export async function addDealCommentAction(dealId: string, formData: FormData) {
     deal_id: dealId,
     author_id: user.id,
     body,
+    organization_id: orgId,
   })
 
   if (error) return { error: error.message }
@@ -29,7 +34,6 @@ export async function deleteDealCommentAction(commentId: string, dealId: string)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
 
-  // Only author can delete
   const { error } = await supabase
     .from('deal_comments')
     .delete()

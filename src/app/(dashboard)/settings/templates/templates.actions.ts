@@ -2,11 +2,15 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { requireOrgId } from '@/lib/org'
 
 export async function uploadTemplateAction(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
+
+  const orgId = await requireOrgId().catch(() => null)
+  if (!orgId) return { error: 'Организация не найдена' }
 
   const name = (formData.get('name') as string)?.trim()
   const template_type = formData.get('template_type') as string
@@ -25,7 +29,6 @@ export async function uploadTemplateAction(formData: FormData) {
     .upload(path, buffer, { contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', upsert: false })
 
   if (uploadError) {
-    // Try to create bucket if it doesn't exist
     return { error: `Ошибка загрузки: ${uploadError.message}` }
   }
 
@@ -39,6 +42,7 @@ export async function uploadTemplateAction(formData: FormData) {
     file_url: urlData?.signedUrl ?? path,
     storage_path: path,
     created_by: user.id,
+    organization_id: orgId,
   })
 
   if (dbError) return { error: dbError.message }

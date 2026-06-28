@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { ContactSchema, RepresentativeSchema } from '@/lib/schemas'
 import { rateLimitCreate } from '@/lib/rate-limit'
+import { requireOrgId } from '@/lib/org'
 
 function parseContact(formData: FormData) {
   return ContactSchema.safeParse(Object.fromEntries(formData))
@@ -18,6 +19,9 @@ export async function createContactAction(formData: FormData) {
   const rl = rateLimitCreate(user.id, 'contact')
   if (!rl.success) return { error: 'Слишком много запросов. Подождите минуту.' }
 
+  const orgId = await requireOrgId().catch(() => null)
+  if (!orgId) return { error: 'Организация не найдена' }
+
   const parsed = parseContact(formData)
   if (!parsed.success) {
     const first = parsed.error.issues[0]
@@ -26,7 +30,7 @@ export async function createContactAction(formData: FormData) {
 
   const { data, error } = await supabase
     .from('contacts')
-    .insert(parsed.data)
+    .insert({ ...parsed.data, organization_id: orgId })
     .select()
     .single()
 

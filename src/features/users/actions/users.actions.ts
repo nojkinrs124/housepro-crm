@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { UserRole } from '@/types/database'
+import { requireOrgId } from '@/lib/org'
 
 const VALID_ROLES: UserRole[] = ['admin', 'manager', 'agent', 'accountant']
 
@@ -13,6 +14,9 @@ export async function createEmployeeAction(formData: FormData) {
   if (!user) {
     return { error: 'Не авторизован' }
   }
+
+  const orgId = await requireOrgId().catch(() => null)
+  if (!orgId) return { error: 'Организация не найдена' }
 
   // Check admin role
   const { data: profile } = await supabase
@@ -44,6 +48,7 @@ export async function createEmployeeAction(formData: FormData) {
     role: role as UserRole,
     phone,
     is_active: true,
+    organization_id: orgId,
   }
 
   const { error } = await supabase.from('users').insert(payload)
