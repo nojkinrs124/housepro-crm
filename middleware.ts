@@ -6,6 +6,7 @@ const PUBLIC_PATHS = [
   '/auth/callback',
   '/auth/reset-password',
   '/api/public',
+  '/c/',
 ]
 
 export async function middleware(request: NextRequest) {

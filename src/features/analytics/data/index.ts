@@ -32,10 +32,11 @@ export function monthLabel(isoMonth: string) {
 
 // ─── Cached fetcher ───────────────────────────────────────────────────────────
 
-async function fetchAnalyticsData(): Promise<AnalyticsRawData> {
+async function fetchAnalyticsData(from?: string, to?: string): Promise<AnalyticsRawData> {
   const supabase = await createClient()
   const last12 = getLast12Months()
-  const fromDate = `${last12[0]}-01`
+  const fromDate = from ?? `${last12[0]}-01`
+  const toDate   = to   ? `${to}T23:59:59` : undefined
 
   const [
     dealsResult,
@@ -50,23 +51,27 @@ async function fetchAnalyticsData(): Promise<AnalyticsRawData> {
     supabase
       .from('deals')
       .select('status, deal_type, amount, commission, created_at')
-      .gte('created_at', fromDate),
+      .gte('created_at', fromDate)
+      .lte('created_at', toDate ?? new Date().toISOString()),
 
     supabase
       .from('payments')
       .select('payment_status, amount, payment_date, due_date, created_at')
-      .gte('created_at', fromDate),
+      .gte('created_at', fromDate)
+      .lte('created_at', toDate ?? new Date().toISOString()),
 
     supabase
       .from('leads')
       .select('status, created_at')
-      .gte('created_at', fromDate),
+      .gte('created_at', fromDate)
+      .lte('created_at', toDate ?? new Date().toISOString()),
 
     supabase
       .from('leads')
       .select('status, created_at')
       .eq('status', 'closed')
-      .gte('created_at', fromDate),
+      .gte('created_at', fromDate)
+      .lte('created_at', toDate ?? new Date().toISOString()),
 
     supabase.from('properties').select('status'),
 

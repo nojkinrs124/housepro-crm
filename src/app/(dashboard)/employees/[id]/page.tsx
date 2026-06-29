@@ -25,13 +25,24 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
 
   if (!emp) notFound()
 
-  // Статистика
-  const [{ data: clientStats }, { data: dealStats }, { data: contractStats }, { data: taskStats }] = await Promise.all([
+  // Статистика + KPI
+  const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
+
+  const [{ data: clientStats }, { data: dealStats }, { data: contractStats }, { data: taskStats },
+         monthDeals, monthCompleted, { data: commissionData }] = await Promise.all([
     supabase.from('clients').select('id', { count: 'exact', head: true }).eq('manager_id', id),
     supabase.from('deals').select('id', { count: 'exact', head: true }).eq('manager_id', id),
     supabase.from('contracts').select('id', { count: 'exact', head: true }).eq('manager_id', id),
     supabase.from('tasks').select('id', { count: 'exact', head: true }).eq('assigned_to', id),
+    supabase.from('deals').select('id', { count: 'exact', head: true }).eq('manager_id', id).gte('created_at', monthStart),
+    supabase.from('deals').select('id', { count: 'exact', head: true }).eq('manager_id', id).eq('status', 'completed').gte('created_at', monthStart),
+    supabase.from('deals').select('commission').eq('manager_id', id).eq('status', 'completed').gte('created_at', monthStart),
   ])
+
+  const totalCommission = (commissionData ?? []).reduce((s: number, d: { commission: number | null }) => s + Number(d.commission ?? 0), 0)
+  const conversionRate  = (monthDeals.count ?? 0) > 0
+    ? Math.round(((monthCompleted.count ?? 0) / (monthDeals.count ?? 1)) * 100)
+    : 0
 
   // Текущий пользователь — для проверки прав
   const { data: currentUserProfile } = await supabase
@@ -80,19 +91,38 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
         </div>
       </div>
 
-      {/* Статистика */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      {/* Общая статистика */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: 'Клиентов',  value: clientStats?.length ?? 0 },
-          { label: 'Сделок',    value: dealStats?.length ?? 0 },
-          { label: 'Договоров', value: contractStats?.length ?? 0 },
-          { label: 'Задач',     value: taskStats?.length ?? 0 },
+          { label: 'Клиентов',  value: clientStats?.length ?? 0,  sub: 'всего' },
+          { label: 'Сделок',    value: dealStats?.length ?? 0,     sub: 'всего' },
+          { label: 'Договоров', value: contractStats?.length ?? 0, sub: 'всего' },
+          { label: 'Задач',     value: taskStats?.length ?? 0,     sub: 'назначено' },
         ].map(s => (
           <div key={s.label} className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-4 text-center">
             <p className="text-2xl font-bold text-foreground">{s.value}</p>
             <p className="text-xs text-muted-foreground mt-0.5">{s.label}</p>
+            <p className="text-xs text-muted-foreground/60">{s.sub}</p>
           </div>
         ))}
+      </div>
+
+      {/* KPI текущего месяца */}
+      <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
+        <h2 className="font-semibold text-foreground mb-4">KPI за текущий месяц</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {[
+            { label: 'Сделок открыто',  value: monthDeals.count ?? 0,     color: 'text-blue-600',    bg: 'bg-blue-50'    },
+            { label: 'Сделок закрыто',  value: monthCompleted.count ?? 0, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+            { label: 'Конверсия',        value: `${conversionRate}%`,      color: 'text-violet-600',  bg: 'bg-violet-50'  },
+            { label: 'Комиссия',         value: totalCommission > 0 ? `${(totalCommission / 1000).toFixed(0)}к ₽` : '—', color: 'text-amber-600', bg: 'bg-amber-50' },
+          ].map(k => (
+            <div key={k.label} className={`${k.bg} rounded-xl p-4 text-center`}>
+              <p className={`text-2xl font-bold ${k.color}`}>{k.value}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{k.label}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Контакты */}

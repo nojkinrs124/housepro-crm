@@ -1,0 +1,67 @@
+'use client'
+
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useCallback } from 'react'
+import { Calendar } from 'lucide-react'
+
+interface Props {
+  from?: string
+  to?: string
+}
+
+const PRESETS = [
+  { label: '7 дней',  days: 7  },
+  { label: '30 дней', days: 30 },
+  { label: '90 дней', days: 90 },
+  { label: 'Год',     days: 365 },
+]
+
+export function DateRangePicker({ from, to }: Props) {
+  const router = useRouter()
+  const params = useSearchParams()
+
+  const push = useCallback((f: string, t: string) => {
+    const sp = new URLSearchParams(params.toString())
+    sp.set('from', f)
+    sp.set('to', t)
+    router.push(`/analytics?${sp.toString()}`)
+  }, [router, params])
+
+  function applyPreset(days: number) {
+    const t = new Date()
+    const f = new Date(t)
+    f.setDate(f.getDate() - days)
+    push(f.toISOString().slice(0, 10), t.toISOString().slice(0, 10))
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {PRESETS.map(p => (
+        <button
+          key={p.days}
+          onClick={() => applyPreset(p.days)}
+          className="px-3 py-1.5 text-xs font-medium rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:border-primary/40 transition-colors"
+        >
+          {p.label}
+        </button>
+      ))}
+
+      <div className="flex items-center gap-1.5 ml-2">
+        <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
+        <input
+          type="date"
+          defaultValue={from}
+          onChange={e => push(e.target.value, to ?? new Date().toISOString().slice(0, 10))}
+          className="text-xs px-2 py-1.5 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/30"
+        />
+        <span className="text-muted-foreground text-xs">—</span>
+        <input
+          type="date"
+          defaultValue={to}
+          onChange={e => push(from ?? '', e.target.value)}
+          className="text-xs px-2 py-1.5 border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-primary/30"
+        />
+      </div>
+    </div>
+  )
+}

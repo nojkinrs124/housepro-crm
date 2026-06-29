@@ -20,8 +20,15 @@ import {
   monthLabel,
 } from '@/features/analytics/data'
 import { formatMoney } from '@/lib/utils'
+import { DateRangePicker } from '@/features/analytics/components/DateRangePicker'
 
-export default async function AnalyticsPage() {
+export default async function AnalyticsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ from?: string; to?: string }>
+}) {
+  const { from, to } = await searchParams
+
   const {
     deals,
     payments,
@@ -31,7 +38,7 @@ export default async function AnalyticsPage() {
     overduePayments,
     overdueTasks,
     contracts,
-  } = await getAnalyticsData()
+  } = await getAnalyticsData(from, to)
 
   const last12 = getLast12Months()
 
@@ -132,9 +139,14 @@ export default async function AnalyticsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Аналитика</h1>
-        <p className="text-sm text-[#64748B] mt-1">Данные за последние 12 месяцев</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Аналитика</h1>
+          <p className="text-sm text-[#64748B] mt-1">
+            {from && to ? `${from} — ${to}` : 'Данные за последние 12 месяцев'}
+          </p>
+        </div>
+        <DateRangePicker from={from} to={to} />
       </div>
 
       {/* KPI Cards */}

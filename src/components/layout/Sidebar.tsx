@@ -6,6 +6,7 @@ import {
   Building2, LayoutDashboard, Users, Home, FileText, BookOpen,
   CheckSquare, Settings, LogOut, ChevronLeft, ChevronRight,
   Zap, TrendingUp, UserCog, Download, BarChart2, X, Menu,
+  Eye, FolderOpen,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
@@ -14,18 +15,20 @@ import { logout } from '@/features/auth/actions/auth.actions'
 import type { User } from '@/types/database'
 
 const navigation = [
-  { name: 'Дашборд',     href: '/dashboard',  icon: LayoutDashboard, section: null },
-  { name: 'Лиды',        href: '/leads',      icon: Zap,             section: 'Продажи' },
-  { name: 'Сделки',      href: '/deals',      icon: TrendingUp,      section: null },
-  { name: 'Контакты',    href: '/contacts',   icon: Users,           section: null },
-  { name: 'Объекты',     href: '/properties', icon: Home,            section: 'База' },
-  { name: 'Договоры',    href: '/contracts',  icon: FileText,        section: null },
-  { name: 'Задачи',      href: '/tasks',      icon: CheckSquare,     section: 'Управление' },
-  { name: 'Бухгалтерия', href: '/accounting',  icon: BookOpen,        section: null },
-  { name: 'Аналитика',   href: '/analytics',  icon: BarChart2,       section: null },
-  { name: 'Экспорт',     href: '/export',     icon: Download,        section: 'Система' },
-  { name: 'Сотрудники',  href: '/employees',  icon: UserCog,         section: null },
-  { name: 'Настройки',   href: '/settings',   icon: Settings,        section: null },
+  { name: 'Дашборд',     href: '/dashboard',    icon: LayoutDashboard, section: null },
+  { name: 'Лиды',        href: '/leads',         icon: Zap,             section: 'Продажи' },
+  { name: 'Сделки',      href: '/deals',         icon: TrendingUp,      section: null },
+  { name: 'Контакты',    href: '/contacts',      icon: Users,           section: null },
+  { name: 'Объекты',     href: '/properties',    icon: Home,            section: 'База' },
+  { name: 'Показы',      href: '/showings',      icon: Eye,             section: null },
+  { name: 'Подборки',    href: '/collections',   icon: FolderOpen,      section: null },
+  { name: 'Договоры',    href: '/contracts',     icon: FileText,        section: null },
+  { name: 'Задачи',      href: '/tasks',         icon: CheckSquare,     section: 'Управление' },
+  { name: 'Бухгалтерия', href: '/accounting',    icon: BookOpen,        section: null },
+  { name: 'Аналитика',   href: '/analytics',     icon: BarChart2,       section: null },
+  { name: 'Экспорт',     href: '/export',        icon: Download,        section: 'Система' },
+  { name: 'Сотрудники',  href: '/employees',     icon: UserCog,         section: null },
+  { name: 'Настройки',   href: '/settings',      icon: Settings,        section: null },
 ]
 
 const roleLabels: Record<string, string> = {
