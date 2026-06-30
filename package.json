@@ -28,6 +28,7 @@
     "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-toast": "^1.2.15",
     "@sentry/nextjs": "^10.57.0",
+    "@stripe/stripe-js": "^9.8.0",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.106.1",
     "class-variance-authority": "^0.7.1",
@@ -43,6 +44,7 @@
     "react-hook-form": "^7.76.0",
     "recharts": "^3.8.1",
     "sonner": "^2.0.7",
+    "stripe": "^22.3.0",
     "tailwind-merge": "^3.6.0",
     "zod": "^4.4.3"
   },

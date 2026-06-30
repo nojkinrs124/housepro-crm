@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { Settings, Building2, Bell, Shield, Database, ChevronRight, ScrollText } from 'lucide-react'
+import { Settings, Building2, Bell, Shield, Database, ChevronRight, ScrollText, CreditCard } from 'lucide-react'
 import Link from 'next/link'
 
 const roleLabels: Record<string, string> = {
@@ -85,6 +85,14 @@ export default async function SettingsPage() {
             iconBg: 'bg-green-50',
             iconColor: 'text-green-600',
             href: '/settings/security',
+          },
+          {
+            icon: CreditCard,
+            title: 'Тарифы и оплата',
+            desc: 'Управление подпиской и тарифом',
+            iconBg: 'bg-blue-50',
+            iconColor: 'text-blue-600',
+            href: '/settings/billing',
           },
           {
             icon: ScrollText,

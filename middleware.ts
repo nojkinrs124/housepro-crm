@@ -6,6 +6,9 @@ const PUBLIC_PATHS = [
   '/auth/callback',
   '/auth/reset-password',
   '/api/public',
+  '/api/onboarding',
+  '/api/billing',
+  '/api/stripe',
   '/c/',
 ]
 
@@ -55,6 +58,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|api/stripe|api/export).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/).*)',
   ],
 }

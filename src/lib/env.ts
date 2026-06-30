@@ -20,8 +20,12 @@ Copy .env.local.example to .env.local and fill in the value.`
 }
 
 export const env = {
-  supabaseUrl: requireEnv("NEXT_PUBLIC_SUPABASE_URL"),
-  supabaseAnonKey: requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+  supabaseUrl:             requireEnv('NEXT_PUBLIC_SUPABASE_URL'),
+  supabaseAnonKey:         requireEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
+  stripeSecretKey:         requireEnv('STRIPE_SECRET_KEY'),
+  stripeWebhookSecret:     requireEnv('STRIPE_WEBHOOK_SECRET'),
+  stripePublishableKey:    requireEnv('NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY'),
+  siteUrl:                 process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
 } as const
 
 export type Env = typeof env

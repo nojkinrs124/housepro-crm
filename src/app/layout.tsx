@@ -6,6 +6,19 @@ import { ThemeProvider } from '@/components/theme-provider'
 export const metadata: Metadata = {
   title: 'HousePro CRM',
   description: 'CRM система для агентства недвижимости HousePro',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'HousePro',
+  },
+  other: {
+    'mobile-web-app-capable': 'yes',
+  },
+}
+
+export const viewport = {
+  themeColor: '#16A34A',
 }
 
 export default function RootLayout({

@@ -29,9 +29,15 @@ jobs:
         env:
           NEXT_PUBLIC_SUPABASE_URL: 'https://placeholder.supabase.co'
           NEXT_PUBLIC_SUPABASE_ANON_KEY: 'placeholder'
+          STRIPE_SECRET_KEY: 'sk_test_placeholder'
+          STRIPE_WEBHOOK_SECRET: 'whsec_placeholder'
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: 'pk_test_placeholder'
 
       - name: Build
         run: npm run build
         env:
           NEXT_PUBLIC_SUPABASE_URL: 'https://placeholder.supabase.co'
           NEXT_PUBLIC_SUPABASE_ANON_KEY: 'placeholder'
+          STRIPE_SECRET_KEY: 'sk_test_placeholder'
+          STRIPE_WEBHOOK_SECRET: 'whsec_placeholder'
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: 'pk_test_placeholder'

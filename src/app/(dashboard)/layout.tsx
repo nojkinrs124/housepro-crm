@@ -14,6 +14,27 @@ export default async function DashboardLayout({
 
   if (!user) redirect('/login')
 
+  // Onboarding check — redirect new orgs to setup wizard
+  const { data: orgMembership } = await supabase
+    .from('organization_members')
+    .select('organization_id')
+    .eq('user_id', user.id)
+    .eq('is_active', true)
+    .limit(1)
+    .single()
+
+  if (orgMembership?.organization_id) {
+    const { data: org } = await supabase
+      .from('organizations')
+      .select('onboarding_completed')
+      .eq('id', orgMembership.organization_id)
+      .single()
+
+    if (org && !org.onboarding_completed) {
+      redirect('/onboarding')
+    }
+  }
+
   const [{ data: profile }, { count: unreadCount }] = await Promise.all([
     supabase.from('users').select('id, full_name, email, role, avatar_url, is_active, created_at').eq('id', user.id).single(),
     supabase.from('notifications')
