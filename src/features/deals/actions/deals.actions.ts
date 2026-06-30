@@ -7,6 +7,7 @@ import { DealSchema } from '@/lib/schemas'
 import { rateLimitCreate } from '@/lib/rate-limit'
 import { requireOrgId } from '@/lib/org'
 import { writeAuditLog } from '@/lib/audit'
+import { dispatchWebhook } from '@/lib/webhooks'
 
 const VALID_DEAL_STATUSES = ['new', 'showing', 'negotiation', 'contract', 'payment', 'completed', 'cancelled']
 
@@ -39,6 +40,10 @@ export async function createDealAction(formData: FormData) {
     userId: user.id, orgId,
     action: 'create', entityType: 'deal',
     entityId: deal.id, entityLabel: `Сделка (${parsed.data.deal_type})`,
+  })
+
+  dispatchWebhook(orgId, 'deal.created', {
+    id: deal.id, deal_type: parsed.data.deal_type, amount: parsed.data.amount,
   })
 
   revalidatePath('/deals')

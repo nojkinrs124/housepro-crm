@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { Settings, Building2, Bell, Shield, Database, ChevronRight, ScrollText, CreditCard } from 'lucide-react'
+import { Settings, Building2, Bell, Shield, Database, ChevronRight, ScrollText, CreditCard, Key, Webhook } from 'lucide-react'
 import Link from 'next/link'
 
 const roleLabels: Record<string, string> = {
@@ -101,6 +101,22 @@ export default async function SettingsPage() {
             iconBg: 'bg-amber-50',
             iconColor: 'text-amber-600',
             href: '/settings/audit',
+          },
+          {
+            icon: Key,
+            title: 'API ключи',
+            desc: 'Доступ для интеграций',
+            iconBg: 'bg-indigo-50',
+            iconColor: 'text-indigo-600',
+            href: '/settings/api',
+          },
+          {
+            icon: Webhook,
+            title: 'Вебхуки',
+            desc: 'Уведомления о событиях в реальном времени',
+            iconBg: 'bg-cyan-50',
+            iconColor: 'text-cyan-600',
+            href: '/settings/webhooks',
           },
           {
             icon: Database,

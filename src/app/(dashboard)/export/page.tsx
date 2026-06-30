@@ -121,6 +121,37 @@ export default async function ExportPage() {
         ))}
       </div>
 
+      {/* CSV / 1C export */}
+      <div className="bg-white rounded-[20px] border border-slate-100 p-6 space-y-4" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0 bg-violet-50">
+            <FileText className="text-violet-600" style={{ width: 16, height: 16 }} />
+          </div>
+          <div>
+            <h2 className="font-bold text-[#111827] text-[15px]">Экспорт CSV (для 1С)</h2>
+            <p className="text-xs text-[#64748B] mt-0.5">UTF-8 с BOM, разделитель «;»</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {[
+            { label: 'Контакты',     url: '/api/export/contacts' },
+            { label: 'Сделки',       url: '/api/export/deals' },
+            { label: 'Договоры',     url: '/api/export/contracts' },
+            { label: 'Бухгалтерия',  url: '/api/export/accounting' },
+          ].map(item => (
+            <a
+              key={item.url}
+              href={item.url}
+              className="flex items-center justify-center gap-1.5 py-2.5 px-3 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 transition-colors"
+            >
+              <Download className="w-3.5 h-3.5" />
+              {item.label}
+            </a>
+          ))}
+        </div>
+      </div>
+
       {/* Instructions */}
       <div className="bg-white rounded-[20px] border border-slate-100 p-6 space-y-4" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
         <div className="flex items-center gap-3">

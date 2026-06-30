@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { requireOrgId } from '@/lib/org'
+import { dispatchWebhook } from '@/lib/webhooks'
 
 const VALID_STATUSES = ['new','contacted','showing','searching','converted','closed','interested','rejected']
 
@@ -46,6 +47,10 @@ export async function createLeadAction(formData: FormData) {
     .single()
 
   if (error) return { error: error.message }
+
+  dispatchWebhook(orgId, 'lead.created', {
+    id: lead.id, full_name: lead.full_name, phone: lead.phone, source: lead.source,
+  })
 
   revalidatePath('/leads')
   redirect(`/leads/${lead.id}`)
