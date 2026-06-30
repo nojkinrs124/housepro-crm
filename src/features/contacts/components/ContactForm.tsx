@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useActionState } from 'react'
 import Link from 'next/link'
+import { AlertCircle } from 'lucide-react'
 
 const inputCls = "w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
 const selectCls = "w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all"
@@ -43,9 +44,10 @@ interface ContactFormDefaults {
   comment?: string | null
 }
 
+type ActionState = { error?: string; fields?: Record<string, string[] | undefined> } | null
+
 interface ContactFormProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  action: (formData: FormData) => void | Promise<void>
+  action: (prevState: ActionState, formData: FormData) => ActionState | Promise<ActionState>
   defaults?: ContactFormDefaults
   backHref: string
   submitLabel: string
@@ -53,9 +55,16 @@ interface ContactFormProps {
 
 export function ContactForm({ action, defaults = {}, backHref, submitLabel }: ContactFormProps) {
   const [clientType, setClientType] = useState(defaults.client_type ?? 'individual')
+  const [state, formAction, isPending] = useActionState(action, null)
 
   return (
-    <form action={action} className="space-y-4">
+    <form action={formAction} className="space-y-4">
+      {state?.error && (
+        <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          {state.error}
+        </div>
+      )}
       {/* Тип лица */}
       <div className={cardCls}>
         <h2 className="font-semibold text-foreground">Тип контакта</h2>
@@ -266,10 +275,10 @@ export function ContactForm({ action, defaults = {}, backHref, submitLabel }: Co
       </div>
 
       <div className="flex items-center gap-3">
-        <button type="submit"
-          className="px-6 py-2.5 rounded-[14px] text-white font-medium hover:-translate-y-0.5 transition text-sm"
+        <button type="submit" disabled={isPending}
+          className="px-6 py-2.5 rounded-[14px] text-white font-medium hover:-translate-y-0.5 transition text-sm disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
           style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
-          {submitLabel}
+          {isPending ? 'Сохранение…' : submitLabel}
         </button>
         <Link href={backHref} className="px-6 py-2.5 border border-border text-foreground rounded-[14px] text-sm font-medium hover:bg-accent transition">
           Отмена

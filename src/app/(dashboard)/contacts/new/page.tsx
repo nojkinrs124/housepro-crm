@@ -2,7 +2,6 @@ import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { createContactAction } from '@/features/contacts/actions/contacts.actions'
 import { ContactForm } from '@/features/contacts/components/ContactForm'
-import { formAction } from '@/lib/form-action'
 
 export default function NewContactPage() {
   return (
@@ -18,7 +17,7 @@ export default function NewContactPage() {
       </div>
 
       <ContactForm
-        action={formAction(createContactAction)}
+        action={createContactAction}
         backHref="/contacts"
         submitLabel="Добавить контакт"
       />

@@ -12,7 +12,7 @@ function parseContact(formData: FormData) {
   return ContactSchema.safeParse(Object.fromEntries(formData))
 }
 
-export async function createContactAction(formData: FormData) {
+export async function createContactAction(_prevState: unknown, formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
@@ -47,7 +47,7 @@ export async function createContactAction(formData: FormData) {
   redirect(`/contacts/${data.id}`)
 }
 
-export async function updateContactAction(contactId: string, formData: FormData) {
+export async function updateContactAction(contactId: string, _prevState: unknown, formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }

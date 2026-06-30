@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { updateContactAction } from '@/features/contacts/actions/contacts.actions'
 import { ContactForm } from '@/features/contacts/components/ContactForm'
-import { formAction } from '@/lib/form-action'
 
 export default async function EditContactPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -27,7 +26,7 @@ export default async function EditContactPage({ params }: { params: Promise<{ id
       </div>
 
       <ContactForm
-        action={formAction(boundAction)}
+        action={boundAction}
         defaults={c}
         backHref={`/contacts/${id}`}
         submitLabel="Сохранить изменения"
