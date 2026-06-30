@@ -2,10 +2,12 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { authenticateApiKey, hasScope } from '@/lib/api-auth'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+function getSupabaseAdmin() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -14,6 +16,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   if (!hasScope(auth.scopes, 'read')) {
     return NextResponse.json({ error: 'Insufficient scope' }, { status: 403 })
   }
+
+  const supabaseAdmin = getSupabaseAdmin()
 
   const { data, error } = await supabaseAdmin
     .from('contacts')
@@ -41,6 +45,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     if (f in body) updates[f] = body[f]
   }
 
+  const supabaseAdmin = getSupabaseAdmin()
+
   const { data, error } = await supabaseAdmin
     .from('contacts')
     .update({ ...updates, updated_at: new Date().toISOString() })
@@ -60,6 +66,8 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   if (!hasScope(auth.scopes, 'write')) {
     return NextResponse.json({ error: 'Insufficient scope (write required)' }, { status: 403 })
   }
+
+  const supabaseAdmin = getSupabaseAdmin()
 
   const { error } = await supabaseAdmin
     .from('contacts')

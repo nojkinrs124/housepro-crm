@@ -3,10 +3,12 @@ import { createClient } from '@supabase/supabase-js'
 import { authenticateApiKey, hasScope } from '@/lib/api-auth'
 import { dispatchWebhook } from '@/lib/webhooks'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+function getSupabaseAdmin() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 export async function GET(request: Request) {
   const auth = await authenticateApiKey(request)
@@ -14,6 +16,8 @@ export async function GET(request: Request) {
   if (!hasScope(auth.scopes, 'read')) {
     return NextResponse.json({ error: 'Insufficient scope' }, { status: 403 })
   }
+
+  const supabaseAdmin = getSupabaseAdmin()
 
   const { searchParams } = new URL(request.url)
   const limit  = Math.min(Number(searchParams.get('limit') ?? 50), 200)
@@ -41,6 +45,8 @@ export async function POST(request: Request) {
   if (!hasScope(auth.scopes, 'write')) {
     return NextResponse.json({ error: 'Insufficient scope (write required)' }, { status: 403 })
   }
+
+  const supabaseAdmin = getSupabaseAdmin()
 
   const body = await request.json()
   if (!body.full_name?.trim() && !body.phone?.trim()) {

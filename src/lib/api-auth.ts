@@ -1,10 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
 import { createHash } from 'crypto'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+function getSupabaseAdmin() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 export interface ApiAuthResult {
   orgId?:  string
@@ -21,6 +23,7 @@ export async function authenticateApiKey(request: Request): Promise<ApiAuthResul
 
   const apiKey  = authHeader.replace('Bearer ', '')
   const keyHash = createHash('sha256').update(apiKey).digest('hex')
+  const supabaseAdmin = getSupabaseAdmin()
 
   const { data: key } = await supabaseAdmin
     .from('api_keys')
