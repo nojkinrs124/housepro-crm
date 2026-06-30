@@ -3,7 +3,7 @@ import { ArrowLeft, TrendingUp, Building2, User } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { updateDealAction } from '@/features/deals/actions/deals.actions'
-import { formAction } from '@/lib/form-action'
+import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { PartyContactSelect } from '@/features/contacts/components/PartyContactSelect'
 
 export default async function EditDealPage({ params }: { params: Promise<{ id: string }> }) {
@@ -59,7 +59,7 @@ export default async function EditDealPage({ params }: { params: Promise<{ id: s
         </div>
       </div>
 
-      <form action={formAction(boundAction)} className="space-y-4">
+      <ServerActionForm action={boundAction} className="space-y-4">
 
         {/* Тип сделки */}
         <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
@@ -191,7 +191,7 @@ export default async function EditDealPage({ params }: { params: Promise<{ id: s
             Отмена
           </Link>
         </div>
-      </form>
+      </ServerActionForm>
     </div>
   )
 }

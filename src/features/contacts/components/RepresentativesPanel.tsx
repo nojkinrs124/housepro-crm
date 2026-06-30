@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Trash2, Plus, UserCircle2 } from 'lucide-react'
+import { Trash2, Plus, UserCircle2, AlertCircle } from 'lucide-react'
 import { addRepresentativeAction, deleteRepresentativeAction } from '@/features/contacts/actions/contacts.actions'
-import { formAction } from '@/lib/form-action'
+import { ServerActionForm } from '@/components/forms/ServerActionForm'
 
 interface Representative {
   id: string
@@ -24,10 +24,13 @@ const basisLabels: Record<string, string> = {
 
 export function RepresentativesPanel({ contactId, representatives }: { contactId: string; representatives: Representative[] }) {
   const [showForm, setShowForm] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   async function handleDelete(repId: string) {
     if (!confirm('Удалить представителя?')) return
-    await deleteRepresentativeAction(repId, contactId)
+    setDeleteError(null)
+    const result = await deleteRepresentativeAction(repId, contactId)
+    if (result?.error) setDeleteError(result.error)
   }
 
   return (
@@ -42,6 +45,13 @@ export function RepresentativesPanel({ contactId, representatives }: { contactId
           {showForm ? 'Скрыть' : 'Добавить'}
         </button>
       </div>
+
+      {deleteError && (
+        <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 mb-3">
+          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+          {deleteError}
+        </div>
+      )}
 
       {representatives.length === 0 && !showForm && (
         <p className="text-sm text-muted-foreground">Представители не добавлены</p>
@@ -71,7 +81,7 @@ export function RepresentativesPanel({ contactId, representatives }: { contactId
       )}
 
       {showForm && (
-        <form action={formAction(addRepresentativeAction)} className="space-y-3 pt-3 border-t border-slate-100">
+        <ServerActionForm action={addRepresentativeAction} className="space-y-3 pt-3 border-t border-slate-100">
           <input type="hidden" name="contact_id" value={contactId} />
           <div>
             <label className="text-xs font-medium text-foreground">ФИО *</label>
@@ -120,7 +130,7 @@ export function RepresentativesPanel({ contactId, representatives }: { contactId
             style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)' }}>
             Сохранить представителя
           </button>
-        </form>
+        </ServerActionForm>
       )}
     </div>
   )

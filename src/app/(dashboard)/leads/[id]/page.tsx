@@ -6,7 +6,7 @@ import { convertLeadToClient } from '@/features/leads/actions/leads.actions'
 import { DeleteLeadButton } from '@/features/leads/components/DeleteLeadButton'
 import { LeadActivityForm } from '@/features/leads/components/LeadActivityForm'
 import { LeadStatusSelect } from '@/features/leads/components/LeadStatusSelect'
-import { formAction } from '@/lib/form-action'
+import { ServerActionForm } from '@/components/forms/ServerActionForm'
 
 const sourceLabels: Record<string, string> = {
   avito: '🟡 Авито', cian: '🟢 ЦИАН', domclick: '🔵 Домклик',
@@ -108,13 +108,13 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
 
         <div className="flex items-center gap-2 flex-wrap shrink-0">
           {!isConverted && (
-            <form action={formAction(convertLeadToClient.bind(null, id))}>
+            <ServerActionForm action={convertLeadToClient.bind(null, id)}>
               <button type="submit"
                 className="flex items-center gap-2 px-4 py-2 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition whitespace-nowrap" style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
                 <UserCheck className="w-4 h-4" />
                 → Контакт
               </button>
-            </form>
+            </ServerActionForm>
           )}
           <Link href={`/leads/${id}/edit`}
             className="flex items-center gap-2 px-4 py-2 border border-border rounded-[14px] text-sm font-medium hover:bg-accent transition whitespace-nowrap">

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { updateCompanyProfileAction, deleteCompanyProfileAction } from '@/features/settings/actions/company.actions'
 import { CompanyProfileForm } from '@/features/settings/components/CompanyProfileForm'
-import { formAction } from '@/lib/form-action'
+import { ServerActionForm } from '@/components/forms/ServerActionForm'
 
 export default async function EditCompanyProfilePage({
   params, searchParams,
@@ -39,13 +39,13 @@ export default async function EditCompanyProfilePage({
             <p className="text-muted-foreground text-sm">Реквизиты профиля</p>
           </div>
         </div>
-        <form action={formAction(boundDelete)}>
+        <ServerActionForm action={boundDelete}>
           <button type="submit"
             className="flex items-center gap-2 px-4 py-2.5 border border-red-200 text-red-600 rounded-xl text-sm font-medium hover:bg-red-50 transition-all shrink-0">
             <Trash2 className="w-4 h-4" />
             Удалить
           </button>
-        </form>
+        </ServerActionForm>
       </div>
 
       {created === '1' && (

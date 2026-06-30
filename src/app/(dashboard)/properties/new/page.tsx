@@ -2,7 +2,7 @@ import { createPropertyAction } from '@/features/properties/actions/properties.a
 import { createClient } from '@/lib/supabase/server'
 import { ArrowLeft, Home } from 'lucide-react'
 import Link from 'next/link'
-import { formAction } from '@/lib/form-action'
+import { ServerActionForm } from '@/components/forms/ServerActionForm'
 
 export default async function NewPropertyPage() {
   const supabase = await createClient()
@@ -29,7 +29,7 @@ export default async function NewPropertyPage() {
         </div>
       </div>
 
-      <form action={formAction(createPropertyAction)} className="space-y-4">
+      <ServerActionForm action={createPropertyAction} className="space-y-4">
 
         {/* Основное */}
         <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
@@ -229,7 +229,7 @@ export default async function NewPropertyPage() {
             Отмена
           </Link>
         </div>
-      </form>
+      </ServerActionForm>
     </div>
   )
 }

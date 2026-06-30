@@ -3,7 +3,7 @@ import { ArrowLeft, DollarSign } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { updatePaymentAction } from '@/features/payments/actions/payments.actions'
-import { formAction } from '@/lib/form-action'
+import { ServerActionForm } from '@/components/forms/ServerActionForm'
 
 const typeOptions = [
   { value: 'rent',       label: 'Аренда' },
@@ -65,7 +65,7 @@ export default async function EditPaymentPage({ params }: { params: Promise<{ id
         </div>
       </div>
 
-      <form action={formAction(boundAction)} className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-5">
+      <ServerActionForm action={boundAction} className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-5">
 
         {/* Сумма */}
         <div>
@@ -146,7 +146,7 @@ export default async function EditPaymentPage({ params }: { params: Promise<{ id
             Отмена
           </Link>
         </div>
-      </form>
+      </ServerActionForm>
     </div>
   )
 }

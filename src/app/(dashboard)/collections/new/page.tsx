@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { createCollectionAction } from '@/features/collections/actions/collections.actions'
-import { formAction } from '@/lib/form-action'
+import { ServerActionForm } from '@/components/forms/ServerActionForm'
 
 export default async function NewCollectionPage() {
   const supabase = await createClient()
@@ -26,7 +26,7 @@ export default async function NewCollectionPage() {
         <h1 className="text-xl font-bold">Новая подборка</h1>
       </div>
 
-      <form action={formAction(createCollectionAction)} className="bg-white border border-slate-100 rounded-2xl shadow-sm p-6 space-y-5">
+      <ServerActionForm action={createCollectionAction} className="bg-white border border-slate-100 rounded-2xl shadow-sm p-6 space-y-5">
         <div>
           <label className="block text-sm font-medium text-foreground mb-1.5">
             Название <span className="text-red-500">*</span>
@@ -67,7 +67,7 @@ export default async function NewCollectionPage() {
             Отмена
           </Link>
         </div>
-      </form>
+      </ServerActionForm>
     </div>
   )
 }

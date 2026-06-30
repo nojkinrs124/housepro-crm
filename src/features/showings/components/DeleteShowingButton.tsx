@@ -1,11 +1,11 @@
 'use client'
 
 import { deleteShowingAction } from '@/features/showings/actions/showings.actions'
-import { formAction } from '@/lib/form-action'
+import { ServerActionForm } from '@/components/forms/ServerActionForm'
 
 export function DeleteShowingButton({ id }: { id: string }) {
   return (
-    <form action={formAction(deleteShowingAction.bind(null, id))}>
+    <ServerActionForm action={deleteShowingAction.bind(null, id)}>
       <button
         type="submit"
         onClick={(e) => { if (!confirm('Удалить показ? Это действие нельзя отменить.')) e.preventDefault() }}
@@ -13,6 +13,6 @@ export function DeleteShowingButton({ id }: { id: string }) {
       >
         Удалить показ
       </button>
-    </form>
+    </ServerActionForm>
   )
 }

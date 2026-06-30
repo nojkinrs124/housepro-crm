@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { createShowingAction } from '@/features/showings/actions/showings.actions'
-import { formAction } from '@/lib/form-action'
+import { ServerActionForm } from '@/components/forms/ServerActionForm'
 
 export default async function NewShowingPage() {
   const supabase = await createClient()
@@ -28,7 +28,7 @@ export default async function NewShowingPage() {
         </div>
       </div>
 
-      <form action={formAction(createShowingAction)} className="bg-white border border-slate-100 rounded-2xl shadow-sm p-6 space-y-5">
+      <ServerActionForm action={createShowingAction} className="bg-white border border-slate-100 rounded-2xl shadow-sm p-6 space-y-5">
         {/* Property */}
         <div>
           <label className="block text-sm font-medium text-foreground mb-1.5">Объект</label>
@@ -124,7 +124,7 @@ export default async function NewShowingPage() {
             Отмена
           </Link>
         </div>
-      </form>
+      </ServerActionForm>
     </div>
   )
 }

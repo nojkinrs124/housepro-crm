@@ -9,7 +9,7 @@ import {
   deleteCollectionAction,
 } from '@/features/collections/actions/collections.actions'
 import { DeleteCollectionButton } from '@/features/collections/components/DeleteCollectionButton'
-import { formAction } from '@/lib/form-action'
+import { ServerActionForm } from '@/components/forms/ServerActionForm'
 
 export default async function CollectionDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -61,7 +61,7 @@ export default async function CollectionDetailPage({ params }: { params: Promise
         </div>
 
         <div className="flex items-center gap-2">
-          <form action={formAction(togglePublic)}>
+          <ServerActionForm action={togglePublic}>
             <button
               type="submit"
               className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border transition-colors ${
@@ -72,7 +72,7 @@ export default async function CollectionDetailPage({ params }: { params: Promise
             >
               {col.is_public ? <><Globe className="w-3.5 h-3.5" />Публичная</> : <><Lock className="w-3.5 h-3.5" />Приватная</>}
             </button>
-          </form>
+          </ServerActionForm>
           <DeleteCollectionButton id={id} />
         </div>
       </div>
@@ -126,11 +126,11 @@ export default async function CollectionDetailPage({ params }: { params: Promise
                     <p className="text-xs text-muted-foreground mt-1 italic">{item.agent_note}</p>
                   )}
                 </div>
-                <form action={formAction(removePropertyFromCollectionAction.bind(null, id, item.property?.id))}>
+                <ServerActionForm action={removePropertyFromCollectionAction.bind(null, id, item.property?.id)}>
                   <button type="submit" className="p-1.5 text-muted-foreground hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors flex-shrink-0">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
-                </form>
+                </ServerActionForm>
               </div>
             ))
           )}
@@ -146,7 +146,7 @@ export default async function CollectionDetailPage({ params }: { params: Promise
               <p className="text-sm text-muted-foreground text-center py-8">Нет доступных объектов</p>
             ) : (
               availableToAdd.map(p => (
-                <form key={p.id} action={formAction(addPropertyToCollectionAction.bind(null, id, p.id))}>
+                <ServerActionForm key={p.id} action={addPropertyToCollectionAction.bind(null, id, p.id)}>
                   <button
                     type="submit"
                     className="w-full flex items-start justify-between gap-2 p-3 bg-white border border-slate-100 rounded-xl text-left hover:border-primary/40 hover:shadow-sm transition-all group"
@@ -157,7 +157,7 @@ export default async function CollectionDetailPage({ params }: { params: Promise
                     </div>
                     <Plus className="w-4 h-4 text-muted-foreground group-hover:text-primary flex-shrink-0 mt-0.5 transition-colors" />
                   </button>
-                </form>
+                </ServerActionForm>
               ))
             )}
           </div>

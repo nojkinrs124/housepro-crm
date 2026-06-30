@@ -3,7 +3,7 @@ import { ArrowLeft, FileText, Upload, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { TemplateUploadForm } from './TemplateUploadForm'
 import { deleteTemplateAction } from './templates.actions'
-import { formAction } from '@/lib/form-action'
+import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
 
 const typeLabels: Record<string, string> = { ...CONTRACT_TYPE_LABELS, other: 'Другое' }
@@ -68,12 +68,12 @@ export default async function TemplatesPage() {
                       Скачать
                     </a>
                   )}
-                  <form action={formAction(deleteTemplateAction.bind(null, t.id))}>
+                  <ServerActionForm action={deleteTemplateAction.bind(null, t.id)}>
                     <button type="submit"
                       className="p-2 text-[#94A3B8] hover:text-red-600 hover:bg-red-50 rounded-[10px] transition-all duration-200">
                       <Trash2 style={{ width: 16, height: 16 }} />
                     </button>
-                  </form>
+                  </ServerActionForm>
                 </div>
               </div>
             ))}

@@ -6,7 +6,7 @@ import { ShowingStatusBadge } from '@/features/showings/components/ShowingStatus
 import { ShowingResultForm } from '@/features/showings/components/ShowingResultForm'
 import { DeleteShowingButton } from '@/features/showings/components/DeleteShowingButton'
 import { deleteShowingAction, updateShowingStatusAction } from '@/features/showings/actions/showings.actions'
-import { formAction } from '@/lib/form-action'
+import { ServerActionForm } from '@/components/forms/ServerActionForm'
 
 export default async function ShowingDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -54,12 +54,12 @@ export default async function ShowingDetailPage({ params }: { params: Promise<{ 
         </div>
 
         {showing.status !== 'cancelled' && (
-          <form action={formAction(cancelAction)}>
+          <ServerActionForm action={cancelAction}>
             <button type="submit" className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-slate-200 text-slate-500 rounded-lg hover:bg-slate-50 hover:text-red-600 hover:border-red-200 transition-colors">
               <Trash2 className="w-3.5 h-3.5" />
               Отменить показ
             </button>
-          </form>
+          </ServerActionForm>
         )}
       </div>
 

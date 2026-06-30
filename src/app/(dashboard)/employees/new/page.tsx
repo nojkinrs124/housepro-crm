@@ -1,7 +1,7 @@
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { createEmployeeAction } from '@/features/users/actions/users.actions'
-import { formAction } from '@/lib/form-action'
+import { ServerActionForm } from '@/components/forms/ServerActionForm'
 
 export default function NewEmployeePage() {
   return (
@@ -16,7 +16,7 @@ export default function NewEmployeePage() {
         <p className="text-muted-foreground mt-1">Создание нового пользователя в системе</p>
       </div>
 
-      <form action={formAction(createEmployeeAction)} className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-5">
+      <ServerActionForm action={createEmployeeAction} className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-5">
         <div>
           <label className="block text-sm font-medium text-foreground mb-2">
             Email
@@ -78,7 +78,7 @@ export default function NewEmployeePage() {
         >
           Добавить сотрудника
         </button>
-      </form>
+      </ServerActionForm>
     </div>
   )
 }

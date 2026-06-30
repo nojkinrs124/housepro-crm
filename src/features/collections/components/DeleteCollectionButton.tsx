@@ -1,12 +1,12 @@
 'use client'
 
 import { deleteCollectionAction } from '@/features/collections/actions/collections.actions'
-import { formAction } from '@/lib/form-action'
+import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { Trash2 } from 'lucide-react'
 
 export function DeleteCollectionButton({ id }: { id: string }) {
   return (
-    <form action={formAction(deleteCollectionAction.bind(null, id))}>
+    <ServerActionForm action={deleteCollectionAction.bind(null, id)}>
       <button
         type="submit"
         onClick={(e) => { if (!confirm('Удалить подборку?')) e.preventDefault() }}
@@ -14,6 +14,6 @@ export function DeleteCollectionButton({ id }: { id: string }) {
       >
         <Trash2 className="w-4 h-4" />
       </button>
-    </form>
+    </ServerActionForm>
   )
 }

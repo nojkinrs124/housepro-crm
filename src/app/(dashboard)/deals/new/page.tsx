@@ -2,7 +2,7 @@ import { createDealAction } from '@/features/deals/actions/deals.actions'
 import { createClient } from '@/lib/supabase/server'
 import { ArrowLeft, TrendingUp, User, Building2 } from 'lucide-react'
 import Link from 'next/link'
-import { formAction } from '@/lib/form-action'
+import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { PartyContactSelect } from '@/features/contacts/components/PartyContactSelect'
 
 export default async function NewDealPage({
@@ -50,7 +50,7 @@ export default async function NewDealPage({
         </div>
       </div>
 
-      <form action={formAction(createDealAction)} className="space-y-4">
+      <ServerActionForm action={createDealAction} className="space-y-4">
 
         {/* Тип сделки */}
         <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
@@ -160,7 +160,7 @@ export default async function NewDealPage({
             Отмена
           </Link>
         </div>
-      </form>
+      </ServerActionForm>
     </div>
   )
 }
