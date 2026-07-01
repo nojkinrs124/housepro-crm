@@ -6,7 +6,7 @@ export default async function PublicCollectionPage({ params }: { params: Promise
   const { token } = await params
   const supabase = await createClient()
 
-  const { data: col } = await supabase
+  const { data: col, error: colError } = await supabase
     .from('property_collections')
     .select(`id, title, created_at,
              items:collection_items(sort_order, agent_note,
@@ -15,6 +15,9 @@ export default async function PublicCollectionPage({ params }: { params: Promise
     .eq('is_public', true)
     .single()
 
+  if (colError && colError.code !== 'PGRST116') {
+    throw new Error(`Не удалось загрузить подборку: ${colError.message}`)
+  }
   if (!col) notFound()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

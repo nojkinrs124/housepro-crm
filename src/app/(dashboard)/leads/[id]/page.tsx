@@ -51,7 +51,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
   const { id } = await params
   const supabase = await createClient()
 
-  const [{ data: rawLead }, { data: rawActivities }] = await Promise.all([
+  const [{ data: rawLead, error: leadError }, { data: rawActivities }] = await Promise.all([
     supabase.from('leads')
       .select('*, assignee:users!leads_assigned_to_fkey(full_name)')
       .eq('id', id)
@@ -62,6 +62,9 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
       .order('created_at', { ascending: false }),
   ])
 
+  if (leadError && leadError.code !== 'PGRST116') {
+    throw new Error(`Не удалось загрузить лид: ${leadError.message}`)
+  }
   if (!rawLead) notFound()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

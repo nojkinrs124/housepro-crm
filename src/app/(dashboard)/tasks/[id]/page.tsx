@@ -36,7 +36,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: task } = await supabase
+  const { data: task, error: taskError } = await supabase
     .from('tasks')
     .select(`
       *,
@@ -50,6 +50,9 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
     .eq('id', id)
     .single()
 
+  if (taskError && taskError.code !== 'PGRST116') {
+    throw new Error(`Не удалось загрузить задачу: ${taskError.message}`)
+  }
   if (!task) notFound()
 
   const { data: currentUserData } = await supabase

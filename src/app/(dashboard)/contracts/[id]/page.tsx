@@ -28,7 +28,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
   const supabase = await createClient()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: rawContract } = await supabase
+  const { data: rawContract, error: contractError } = await supabase
     .from('contracts')
     .select(`*,
       client:clients(full_name, phone),
@@ -40,6 +40,15 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
     `)
     .eq('id', id)
     .single()
+
+  // PGRST116 = "не найдено ни одной строки" — это настоящий 404, ведём себя как обычно.
+  // Любая ДРУГАЯ ошибка (напр. "Could not find a relationship..." при рассинхроне
+  // schema cache PostgREST после ALTER TABLE, либо сетевая/конфигурационная ошибка)
+  // должна быть видна, а не молча превращаться в 404 — иначе такие баги невозможно
+  // отличить от реально отсутствующей записи ни в логах, ни в Sentry.
+  if (contractError && contractError.code !== 'PGRST116') {
+    throw new Error(`Не удалось загрузить договор: ${contractError.message}`)
+  }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const contract = rawContract as any
 

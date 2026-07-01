@@ -15,7 +15,7 @@ export default async function GenerateContractPage({
   const { id } = await params
   const supabase = await createClient()
 
-  const { data: contract } = await supabase
+  const { data: contract, error: contractError } = await supabase
     .from('contracts')
     .select(`
       *,
@@ -26,6 +26,9 @@ export default async function GenerateContractPage({
     .eq('id', id)
     .single()
 
+  if (contractError && contractError.code !== 'PGRST116') {
+    throw new Error(`Не удалось загрузить договор: ${contractError.message}`)
+  }
   if (!contract) notFound()
 
   const { data: versions } = await supabase

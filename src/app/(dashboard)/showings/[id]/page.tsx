@@ -14,7 +14,7 @@ export default async function ShowingDetailPage({ params }: { params: Promise<{ 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: raw } = await supabase
+  const { data: raw, error: rawError } = await supabase
     .from('showings')
     .select(`
       *,
@@ -25,6 +25,9 @@ export default async function ShowingDetailPage({ params }: { params: Promise<{ 
     .eq('id', id)
     .single()
 
+  if (rawError && rawError.code !== 'PGRST116') {
+    throw new Error(`Не удалось загрузить показ: ${rawError.message}`)
+  }
   if (!raw) notFound()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const showing = raw as any

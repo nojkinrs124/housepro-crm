@@ -48,12 +48,15 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
   const supabase = await createClient()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: property } = await supabase
+  const { data: property, error: propertyError } = await supabase
     .from('properties')
     .select('*, manager:users(full_name)')
     .eq('id', id)
     .single()
 
+  if (propertyError && propertyError.code !== 'PGRST116') {
+    throw new Error(`Не удалось загрузить объект: ${propertyError.message}`)
+  }
   if (!property) notFound()
 
   const [{ data: contracts }, { data: deals }] = await Promise.all([

@@ -40,6 +40,9 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const deal = dealResult.data as any
+  if (dealResult.error && dealResult.error.code !== 'PGRST116') {
+    throw new Error(`Не удалось загрузить сделку: ${dealResult.error.message}`)
+  }
   if (!deal) notFound()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

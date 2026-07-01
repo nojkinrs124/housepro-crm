@@ -26,7 +26,7 @@ export default async function TransactionDetailPage({
   const { id } = await params
   const supabase = await createClient()
 
-  const { data: raw } = await supabase
+  const { data: raw, error: rawError } = await supabase
     .from('accounting_transactions')
     .select(`
       id, type, amount, date, description, status, payment_method, due_date,
@@ -40,6 +40,9 @@ export default async function TransactionDetailPage({
     .eq('id', id)
     .single()
 
+  if (rawError && rawError.code !== 'PGRST116') {
+    throw new Error(`Не удалось загрузить операцию: ${rawError.message}`)
+  }
   if (!raw) notFound()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const t = raw as any

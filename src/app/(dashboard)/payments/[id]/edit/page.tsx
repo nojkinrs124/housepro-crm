@@ -25,12 +25,15 @@ export default async function EditPaymentPage({ params }: { params: Promise<{ id
   const { id } = await params
   const supabase = await createClient()
 
-  const { data: rawPayment } = await supabase
+  const { data: rawPayment, error: rawPaymentError } = await supabase
     .from('payments')
     .select('*, contract:contracts(id, contract_number, client_contact:contacts!contracts_client_contact_id_fkey(full_name))')
     .eq('id', id)
     .single()
 
+  if (rawPaymentError && rawPaymentError.code !== 'PGRST116') {
+    throw new Error(`Не удалось загрузить платёж: ${rawPaymentError.message}`)
+  }
   if (!rawPayment) notFound()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
