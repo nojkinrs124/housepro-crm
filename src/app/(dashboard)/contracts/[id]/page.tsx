@@ -35,8 +35,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
       owner_contact:contacts!contracts_owner_contact_id_fkey(id, full_name, phone),
       client_contact:contacts!contracts_client_contact_id_fkey(id, full_name, phone),
       property:properties(id, title, address),
-      manager:users(full_name),
-      base_contract:contracts!contracts_base_contract_id_fkey(id, contract_number)
+      manager:users(full_name)
     `)
     .eq('id', id)
     .single()
@@ -53,6 +52,21 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
   const contract = rawContract as any
 
   if (!contract) notFound()
+
+  // base_contract — self-referencing FK (contracts.base_contract_id -> contracts.id).
+  // PostgREST не всегда надёжно резолвит embed для self-join даже с явным hint'ом
+  // на constraint (наблюдали 'Could not find a relationship between contracts and
+  // contracts in the schema cache' несмотря на то, что сам constraint существует
+  // в БД) — поэтому получаем отдельным простым запросом вместо embed.
+  let baseContract: { id: string; contract_number: string | null } | null = null
+  if (contract.base_contract_id) {
+    const { data } = await supabase
+      .from('contracts')
+      .select('id, contract_number')
+      .eq('id', contract.base_contract_id)
+      .maybeSingle()
+    baseContract = data
+  }
 
   let company: { name?: string } | null = null
   if (contract.company_profile_id) {
@@ -73,7 +87,6 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
     .order('version', { ascending: false })
 
   const typeConfig = getContractTypeConfig(contract.contract_type)
-  const baseContract = contract.base_contract as { id?: string; contract_number?: string } | null
 
   // Поддержка старого и нового формата
   const ownerContact  = contract.owner_contact  as { id?: string; full_name?: string; phone?: string } | null

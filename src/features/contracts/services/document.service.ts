@@ -220,7 +220,7 @@ function buildBasis(rep: Record<string, string> | null): string {
 export async function buildContractVariables(contractId: string): Promise<ContractVariables> {
   const supabase = await createClient()
 
-  const { data: contract } = await supabase
+  const { data: contract, error: contractError } = await supabase
     .from('contracts')
     .select(`
       *,
@@ -241,13 +241,26 @@ export async function buildContractVariables(contractId: string): Promise<Contra
         full_name, position, basis_type, basis_details
       ),
       property:properties(title, address, area, rooms, floor),
-      manager:users(full_name),
-      base_contract:contracts!contracts_base_contract_id_fkey(contract_number, start_date, created_at)
+      manager:users(full_name)
     `)
     .eq('id', contractId)
     .single()
 
+  if (contractError) throw new Error(`Не удалось загрузить договор: ${contractError.message}`)
   if (!contract) throw new Error('Договор не найден')
+
+  // base_contract — self-referencing FK (contracts.base_contract_id -> contracts.id).
+  // PostgREST ненадёжно резолвит embed для self-join даже с явным hint'ом на
+  // constraint — получаем отдельным запросом вместо embed (см. contracts/[id]/page.tsx).
+  let baseContract: Record<string, string> | null = null
+  if (contract.base_contract_id) {
+    const { data } = await supabase
+      .from('contracts')
+      .select('contract_number, start_date, created_at')
+      .eq('id', contract.base_contract_id)
+      .maybeSingle()
+    baseContract = data
+  }
 
   let company: Record<string, string> | null = null
   if (contract.company_profile_id) {
@@ -262,8 +275,6 @@ export async function buildContractVariables(contractId: string): Promise<Contra
     const { data } = await supabase.from('company_settings').select('*').order('created_at', { ascending: true }).limit(1).maybeSingle()
     company = data
   }
-
-  const baseContract = contract.base_contract as Record<string, string> | null
 
   const client = contract.client as Record<string, string> | null
   const owner = contract.owner as Record<string, string> | null
