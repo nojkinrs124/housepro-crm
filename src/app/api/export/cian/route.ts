@@ -1,6 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
+// КРИТИЧНО: этот роут отдаёт данные, специфичные для конкретной организации/пользователя
+// (RLS или ручная фильтрация по organization_id). Next.js по умолчанию может закэшировать
+// GET Route Handler и отдать один и тот же ответ разным пользователям/организациям по
+// одному URL — это утечка данных между тенантами. force-dynamic отключает это кэширование.
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   const supabase = await createClient()
   const { data: properties } = await supabase

@@ -4,7 +4,11 @@ import { createHash } from 'crypto'
 function getSupabaseAdmin() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    // no-store: этот клиент на service role (обходит RLS) — кэширование его
+    // ответов на уровне Next.js Data Cache means one org's data could be
+    // served to another org's request on a matching URL. Недопустимо.
+    { global: { fetch: (url, options = {}) => fetch(url, { ...options, cache: 'no-store' }) } }
   )
 }
 
