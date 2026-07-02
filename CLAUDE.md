@@ -847,19 +847,12 @@ className="... hover:bg-[#F8FAFC] transition-all duration-200"
 **После каждой завершённой фазы работы:**
 
 ```bash
-# 1. ОБЯЗАТЕЛЬНАЯ проверка перед пушем — event handlers в Server Components
-python3 -c "
-import os, re
-for root, dirs, files in os.walk('src/app'):
-    for f in files:
-        if not f.endswith('.tsx'): continue
-        path = os.path.join(root, f)
-        content = open(path).read()
-        if content.split('\n')[0].strip() == \"'use client'\": continue
-        if re.search(r'on(Mouse|Click|Change|Submit|Drag|Drop)\w*\s*=', content):
-            print('❌ SERVER COMPONENT WITH HANDLERS:', path)
-"
-# Если вывод есть — исправить до пуша!
+# 1. ОБЯЗАТЕЛЬНАЯ проверка перед пушем — единый скрипт:
+#    tsc --noEmit → event handlers в Server Components →
+#    импорт функций из 'use client' файлов в серверные файлы (см. ниже) →
+#    npm run build → npm test
+npm run check
+# Если хоть один шаг красный (❌) — пуш запрещён, пока не исправлено.
 
 # 2. Коммит и пуш
 git add -A
@@ -868,6 +861,28 @@ git push origin main
 ```
 
 Без push изменения потеряются при смене сессии. **Без исключений.**
+
+### `npm run check` — что именно проверяет (scripts/pre-push-check.mjs)
+
+Одного `tsc --noEmit` и даже `next build` НЕДОСТАТОЧНО: страницы с
+`export const dynamic = 'force-dynamic'` или использующие `cookies()`
+Next.js помечает как `ƒ Dynamic` и НЕ выполняет их тело во время сборки —
+поэтому ошибка типа «функция из клиентского компонента вызвана на
+сервере» проходит мимо `tsc` и мимо `build`, и всплывает только в
+реальном запросе в проде (баг с `toExtraFieldsDefaults`, июль 2026).
+
+Скрипт добавляет статическую проверку границы client/server: находит все
+файлы с `'use client'`, собирает их "функциональные" экспорты (имена с
+маленькой буквы — не React-компоненты, которые PascalCase), и проверяет,
+что ни один серверный файл не импортирует такую функцию напрямую (можно
+только рендерить PascalCase-компоненты как JSX). При нарушении — понятная
+ошибка с указанием файла и что куда вынести (обычно — в отдельный файл
+без `'use client'`, см. `src/features/contracts/utils/rent-apartment-data.ts`
+как образец: чистые типы/функции отдельно от React-компонента).
+
+Тот же скрипт (`npm run check`) гоняется и в GitHub Actions CI
+(`.github/workflows/ci.yml`) — так что даже если проверка перед пушем
+пропущена вручную, PR/push в main будет отмечен красным на GitHub.
 
 ---
 
