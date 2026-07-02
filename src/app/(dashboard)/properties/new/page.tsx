@@ -192,6 +192,16 @@ export default async function NewPropertyPage() {
           </div>
         </div>
 
+        {/* Право собственности */}
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
+          <h2 className="font-semibold text-foreground">Право собственности</h2>
+          <div className="space-y-1.5">
+            <label className={labelCls}>Документ-основание</label>
+            <input name="ownership_basis" placeholder="Выписка из ЕГРН № ... от ..." className={inputCls} />
+            <p className="text-xs text-muted-foreground">Подставляется в договоры найма/аренды по этому объекту.</p>
+          </div>
+        </div>
+
         {/* Финансы */}
         <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
           <h2 className="font-semibold text-foreground">Финансы</h2>

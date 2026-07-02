@@ -78,10 +78,19 @@ export interface ContractVariables {
   ГОД_ДОГОВОРА: string
   ДЕНЬ_АКТА: string
   МЕСЯЦ_АКТА: string
+  ГОД_АКТА: string
   'КОЛ-ВО_КЛЮЧЕЙ': string
   'СЧЕТЧИК_ЭЛК-ВО': string
   СЧЕТЧИК_ГВС: string
   СЧЕТЧИК_ХВС: string
+  ОПИСЬ_ИМУЩЕСТВА: string
+
+  // ── Акт возврата (Приложение №2) ──────────────────────────
+  ДЕНЬ_ВОЗВРАТА: string
+  МЕСЯЦ_ВОЗВРАТА: string
+  ГОД_ВОЗВРАТА: string
+  'КОЛ-ВО_КЛЮЧЕЙ_ВОЗВРАТ': string
+  ПРЕТЕНЗИИ_ПРИ_ВОЗВРАТЕ: string
 
   // ── Исполнитель (Агентство, для агентских/субаренды/управления) ──
   ИСПОЛНИТЕЛЬ_НАЗВАНИЕ: string
@@ -240,7 +249,7 @@ export async function buildContractVariables(contractId: string): Promise<Contra
       client_representative:contact_representatives!contracts_client_representative_id_fkey(
         full_name, position, basis_type, basis_details
       ),
-      property:properties(title, address, area, rooms, floor),
+      property:properties(title, address, area, rooms, floor, ownership_basis),
       manager:users(full_name)
     `)
     .eq('id', contractId)
@@ -299,6 +308,28 @@ export async function buildContractVariables(contractId: string): Promise<Contra
     if (diff > 0) monthsCount = String(diff)
   }
 
+  // Поля, специфичные для найма жилого помещения — см. RentApartmentDataSchema
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const td = (contract.contract_type_data ?? {}) as Record<string, any>
+
+  const cohabitantsText = Array.isArray(td.cohabitants) && td.cohabitants.length > 0
+    ? td.cohabitants.map((c: { full_name?: string; passport?: string }) =>
+        `${c.full_name || '_______________'}${c.passport ? `, паспорт ${c.passport}` : ''}`).join('; ')
+    : '_______________'
+
+  const inventoryText = Array.isArray(td.inventory_items) && td.inventory_items.length > 0
+    ? td.inventory_items.map((it: { name?: string; qty?: number; unit_price?: number; condition?: string }, idx: number) => {
+        const parts = [it.name || '—']
+        if (it.qty) parts.push(`${it.qty} шт.`)
+        if (it.unit_price) parts.push(`${it.unit_price.toLocaleString('ru-RU')} ₽`)
+        if (it.condition) parts.push(it.condition)
+        return `${idx + 1}. ${parts.join(', ')}`
+      }).join('\n')
+    : '_______________'
+
+  const handoverDate = td.handover_date ? formatDateRu(td.handover_date) : today
+  const returnDate = td.return_date ? formatDateRu(td.return_date) : null
+
   const legalFormLabels: Record<string, string> = { individual: 'Физическое лицо', ip: 'Индивидуальный предприниматель', ooo: 'Общество с ограниченной ответственностью' }
   const companyLegalForm = company?.legal_form || 'ip'
 
@@ -352,50 +383,59 @@ export async function buildContractVariables(contractId: string): Promise<Contra
     // ── Объект ──
     АДРЕС_ЖИЛОГО_ПОМЕЩЕНИЯ: (property?.address as string) || '_______________',
     ПЛОЩАДЬ: property?.area ? String(property.area) : '___',
-    ДОКУМЕНТ_ПРАВА_СОБСТВЕННОСТИ: '_______________',
+    ДОКУМЕНТ_ПРАВА_СОБСТВЕННОСТИ: (property?.ownership_basis as string) || '_______________',
 
     // ── Проживающие ──
-    'ФИО_И_ПАСПОРТ_ПРОЖИВАЮЩИХ': '_______________',
-    'КОЛ-ВО_ДЕТЕЙ': '___',
+    'ФИО_И_ПАСПОРТ_ПРОЖИВАЮЩИХ': cohabitantsText,
+    'КОЛ-ВО_ДЕТЕЙ': td.children_count != null ? String(td.children_count) : '0',
 
     // ── Животные ──
-    'ЖИВОТНЫЕ_ЗАПРЕЩ_РАЗРЕШ': 'запрещено',
-    ЖИВОТНЫЕ_ВИД: '___',
-    'ЖИВОТНЫЕ_КОЛ-ВО': '___',
+    'ЖИВОТНЫЕ_ЗАПРЕЩ_РАЗРЕШ': td.pets_allowed ? 'разрешено' : 'запрещено',
+    ЖИВОТНЫЕ_ВИД: td.pets_species || '___',
+    'ЖИВОТНЫЕ_КОЛ-ВО': td.pets_count != null ? String(td.pets_count) : '___',
 
     // ── Сроки ──
     'КОЛ-ВО_МЕСЯЦЕВ': monthsCount,
     ДЕНЬ_НАЧАЛА: startDate.day,
     МЕСЯЦ_НАЧАЛА: startDate.month,
     ГОД_НАЧАЛА: startDate.year,
-    СРОК_УВЕДОМЛЕНИЯ_О_НЕПРОДЛЕНИИ: '1',
-    СРОК_УВЕДОМЛЕНИЯ_О_РАСТОРЖЕНИИ: '30',
-    НЕУСТОЙКА_ЗА_ДЕНЬ: '1000',
-    СРОК_УВЕДОМЛЕНИЯ_О_ПРОВЕРКЕ: '1',
+    СРОК_УВЕДОМЛЕНИЯ_О_НЕПРОДЛЕНИИ: td.renewal_notice_months != null ? String(td.renewal_notice_months) : '1',
+    СРОК_УВЕДОМЛЕНИЯ_О_РАСТОРЖЕНИИ: td.termination_notice_days != null ? String(td.termination_notice_days) : '30',
+    НЕУСТОЙКА_ЗА_ДЕНЬ: td.late_return_penalty_per_day != null ? String(td.late_return_penalty_per_day) : '1000',
+    СРОК_УВЕДОМЛЕНИЯ_О_ПРОВЕРКЕ: td.landlord_access_notice_days != null ? String(td.landlord_access_notice_days) : '1',
 
     // ── Финансы ──
     РАЗМЕР_АРЕНДНОЙ_ПЛАТЫ: price > 0 ? price.toLocaleString('ru-RU') : '_______________',
-    'ВХОДИТ_ИЛИ_НЕ_ВХОДИТ': 'не входит',
-    ПЕРЕЧЕНЬ_КОММУНАЛЬНЫХ_УСЛУГ: 'электроэнергия, холодная и горячая вода',
-    'КТО_ОПЛАЧИВАЕТ_ИНТЕРНЕТ_КОНСЬЕРЖ': 'Арендатор',
+    'ВХОДИТ_ИЛИ_НЕ_ВХОДИТ': td.utilities_included_in_rent ? 'входит' : 'не входит',
+    ПЕРЕЧЕНЬ_КОММУНАЛЬНЫХ_УСЛУГ: td.utilities_paid_by_tenant || 'электроэнергия, холодная и горячая вода',
+    'КТО_ОПЛАЧИВАЕТ_ИНТЕРНЕТ_КОНСЬЕРЖ': td.concierge_internet_payer === 'landlord' ? 'Арендодатель' : 'Арендатор',
     РАЗМЕР_ОБЕСПЕЧИТЕЛЬНОГО_ПЛАТЕЖА: deposit > 0 ? deposit.toLocaleString('ru-RU') : '0',
 
     // ── Дата договора ──
     ДЕНЬ: today.day,
     МЕСЯЦ: today.month,
     ГОД: today.year,
-    'КОЛ-ВО_ЭКЗЕМПЛЯРОВ': '2',
+    'КОЛ-ВО_ЭКЗЕМПЛЯРОВ': td.copies_count != null ? String(td.copies_count) : '2',
 
     // ── Акт передачи ──
     ДЕНЬ_ДОГОВОРА: today.day,
     МЕСЯЦ_ДОГОВОРА: today.month,
     ГОД_ДОГОВОРА: today.year,
-    ДЕНЬ_АКТА: today.day,
-    МЕСЯЦ_АКТА: today.month,
-    'КОЛ-ВО_КЛЮЧЕЙ': '2',
-    'СЧЕТЧИК_ЭЛК-ВО': '___',
-    СЧЕТЧИК_ГВС: '___',
-    СЧЕТЧИК_ХВС: '___',
+    ДЕНЬ_АКТА: handoverDate.day,
+    МЕСЯЦ_АКТА: handoverDate.month,
+    ГОД_АКТА: handoverDate.year,
+    'КОЛ-ВО_КЛЮЧЕЙ': td.handover_keys_count != null ? String(td.handover_keys_count) : '2',
+    'СЧЕТЧИК_ЭЛК-ВО': td.electricity_meter_reading || '___',
+    СЧЕТЧИК_ГВС: td.hot_water_meter_reading || '___',
+    СЧЕТЧИК_ХВС: td.cold_water_meter_reading || '___',
+    ОПИСЬ_ИМУЩЕСТВА: inventoryText,
+
+    // ── Акт возврата ──
+    ДЕНЬ_ВОЗВРАТА: returnDate?.day ?? '___',
+    МЕСЯЦ_ВОЗВРАТА: returnDate?.month ?? '___',
+    ГОД_ВОЗВРАТА: returnDate?.year ?? '___',
+    'КОЛ-ВО_КЛЮЧЕЙ_ВОЗВРАТ': td.return_keys_count != null ? String(td.return_keys_count) : '___',
+    ПРЕТЕНЗИИ_ПРИ_ВОЗВРАТЕ: td.return_claims || 'Претензий не имеется',
 
     // ── Исполнитель (Агентство) ──
     ИСПОЛНИТЕЛЬ_НАЗВАНИЕ: company?.name || 'ИП HousePro',

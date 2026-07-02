@@ -149,6 +149,8 @@ export interface Property {
   // Financial
   management_fee?: number
   utilities_included?: string
+  // Ownership
+  ownership_basis?: string
   // Content
   description?: string
   photo_urls?: string[]
@@ -180,6 +182,9 @@ export interface Contract {
   end_date?: string
   amount?: number
   deposit?: number
+  // Данные, специфичные для типа договора (сейчас используется только rent_apartment) —
+  // см. RentApartmentDataSchema в src/lib/schemas/index.ts
+  contract_type_data?: Record<string, unknown>
   status: ContractStatus
   generated_docx_url?: string
   generated_pdf_url?: string

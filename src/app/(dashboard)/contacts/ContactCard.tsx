@@ -130,12 +130,12 @@ export function ContactCard({ contact, idx }: ContactCardProps) {
               </a>
             </>
           )}
-          <Link href={`/deals/new?contact=${contact.id}`}
+          <Link href={`/deals/new?contact_id=${contact.id}`}
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-[10px] text-[11px] font-bold bg-violet-50 text-violet-700 hover:bg-violet-100 transition-all hover:scale-105 border border-violet-100">
             <TrendingUp style={{ width: 11, height: 11 }} />
             Сделка
           </Link>
-          <Link href={`/contracts/new?contact=${contact.id}`}
+          <Link href={`/contracts/new?contact_id=${contact.id}`}
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-[10px] text-[11px] font-bold bg-orange-50 text-orange-700 hover:bg-orange-100 transition-all hover:scale-105 border border-orange-100">
             <FileText style={{ width: 11, height: 11 }} />
             Договор

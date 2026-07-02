@@ -285,7 +285,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
                 <TrendingUp className="w-4 h-4" />
                 Сделки
               </h2>
-              <Link href={`/deals/new?client_id=${id}`}
+              <Link href={`/deals/new?contact_id=${id}`}
                 className="text-xs text-primary hover:underline">+ Новая сделка</Link>
             </div>
             {!deals || deals.length === 0 ? (
@@ -376,12 +376,12 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
           )}
 
           <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-4 space-y-2">
-            <Link href={`/deals/new?client_id=${id}`}
+            <Link href={`/deals/new?contact_id=${id}`}
               className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-xl text-sm font-medium hover:bg-primary/20 transition">
               <TrendingUp className="w-4 h-4" />
               Создать сделку
             </Link>
-            <Link href={`/contracts/new?client_id=${id}`}
+            <Link href={`/contracts/new?contact_id=${id}`}
               className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-border rounded-xl text-sm font-medium hover:bg-accent transition">
               <FileText className="w-4 h-4" />
               Создать договор

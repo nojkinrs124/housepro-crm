@@ -40,6 +40,9 @@ function extractPropertyFields(formData: FormData) {
     // Coordinates
     district:          (formData.get('district') as string) || null,
     utilities_included:(formData.get('utilities_included') as string) || null,
+    // Документ-основание права собственности (напр. "Выписка из ЕГРН №... от ...")
+    // — подставляется в договоры найма/аренды по этому объекту.
+    ownership_basis:   (formData.get('ownership_basis') as string)?.trim() || null,
   }
 }
 

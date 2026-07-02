@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { updateContractAction } from '@/features/contracts/actions/contracts.actions'
 import { ContractForm } from '@/features/contracts/components/ContractForm'
+import { toExtraFieldsDefaults } from '@/features/contracts/components/RentApartmentExtraFields'
 import { getContractFormData } from '@/features/contracts/data/contract-form-data'
 
 export default async function EditContractPage({ params }: { params: Promise<{ id: string }> }) {
@@ -66,6 +67,7 @@ export default async function EditContractPage({ params }: { params: Promise<{ i
           end_date:          c.end_date,
           notes:             c.notes,
           status:            c.status,
+          contract_type_data: toExtraFieldsDefaults(c.contract_type_data),
         }}
       />
     </div>

@@ -8,7 +8,9 @@ import { PartyContactSelect } from '@/features/contacts/components/PartyContactS
 export default async function NewDealPage({
   searchParams,
 }: {
-  searchParams: Promise<{ client_id?: string; property_id?: string }>
+  // contact_id — универсальный параметр (роль определяется автоматически по contacts.role).
+  // client_id оставлен для обратной совместимости со старыми ссылками.
+  searchParams: Promise<{ contact_id?: string; client_id?: string; property_id?: string }>
 }) {
   const params = await searchParams
   const supabase = await createClient()
@@ -32,6 +34,20 @@ export default async function NewDealPage({
   for (const r of rawReps ?? []) {
     (representativesByContact[r.contact_id] ??= []).push(r)
   }
+
+  // Авто-подстановка стороны по роли контакта, из которого создаётся сделка.
+  const sourceContactId = params.contact_id ?? params.client_id
+  const sourceContact = sourceContactId ? contacts.find(c => c.id === sourceContactId) : undefined
+
+  // При role === 'both' однозначно определить сторону нельзя — по умолчанию считаем клиентом
+  // (это самый частый случай перехода "создать сделку" с карточки контакта).
+  const ownerDefaultId = sourceContact?.role === 'owner' ? sourceContact.id : ''
+  const clientDefaultId = sourceContact?.role === 'client' || sourceContact?.role === 'both'
+    ? sourceContact.id
+    : (!sourceContact && params.client_id ? params.client_id : '')
+
+  const primaryRepFor = (contactId: string) =>
+    (representativesByContact[contactId] ?? []).find(r => r.is_primary)?.id ?? ''
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -84,6 +100,8 @@ export default async function NewDealPage({
             representativeFieldName="owner_representative_id"
             contacts={owners}
             representativesByContact={representativesByContact}
+            defaultContactId={ownerDefaultId}
+            defaultRepresentativeId={ownerDefaultId ? primaryRepFor(ownerDefaultId) : ''}
             placeholder="Выберите собственника"
           />
 
@@ -95,7 +113,8 @@ export default async function NewDealPage({
             representativeFieldName="client_representative_id"
             contacts={clients}
             representativesByContact={representativesByContact}
-            defaultContactId={params.client_id ?? ''}
+            defaultContactId={clientDefaultId}
+            defaultRepresentativeId={clientDefaultId ? primaryRepFor(clientDefaultId) : ''}
             placeholder="Выберите клиента"
           />
 

@@ -130,14 +130,14 @@ export function ContactsListView({ contacts }: { contacts: Contact[] }) {
                         </a>
                       )}
                       <Link
-                        href={`/deals/new?contact=${contact.id}`}
+                        href={`/deals/new?contact_id=${contact.id}`}
                         className="p-1.5 rounded-lg bg-violet-50 text-violet-700 hover:bg-violet-100 transition-colors"
                         title="Создать сделку"
                       >
                         <TrendingUp className="w-3.5 h-3.5" />
                       </Link>
                       <Link
-                        href={`/contracts/new?contact=${contact.id}`}
+                        href={`/contracts/new?contact_id=${contact.id}`}
                         className="p-1.5 rounded-lg bg-orange-50 text-orange-700 hover:bg-orange-100 transition-colors"
                         title="Создать договор"
                       >

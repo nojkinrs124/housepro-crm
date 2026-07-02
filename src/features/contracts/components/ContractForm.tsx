@@ -6,6 +6,7 @@ import { FileText, Building2, User, Home, Briefcase, Link2 } from 'lucide-react'
 import Link from 'next/link'
 import { PartyContactSelect, type PartyContact, type PartyRepresentative } from '@/features/contacts/components/PartyContactSelect'
 import { CONTRACT_TYPES, CONTRACT_TYPE_MAP, type ContractPartyRole } from '../config/contract-types'
+import { RentApartmentExtraFields, type RentApartmentExtraData } from './RentApartmentExtraFields'
 
 const statusOptions = [
   { value: 'draft',     label: 'Черновик' },
@@ -46,6 +47,7 @@ interface ContractFormProps {
     end_date?: string | null
     notes?: string | null
     status?: string
+    contract_type_data?: Partial<RentApartmentExtraData>
   }
 }
 
@@ -278,6 +280,11 @@ export function ContractForm({
           )}
         </div>
       </div>
+
+      {/* Поля, специфичные для найма жилого помещения */}
+      {selectedType === 'rent_apartment' && (
+        <RentApartmentExtraFields defaultValue={defaults.contract_type_data} />
+      )}
 
       {/* Примечания */}
       <div className="bg-card border border-border rounded-[20px] p-6 space-y-3">

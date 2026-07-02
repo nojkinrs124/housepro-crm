@@ -196,3 +196,56 @@ export const ContractSchema = z.object({
 })
 
 export type ContractInput = z.infer<typeof ContractSchema>
+
+// ─── Contract type-specific data (сейчас только rent_apartment) ───────────────
+
+const optNonNegNum = z
+  .union([z.string(), z.number()])
+  .transform(v => (v === '' || v === null || v === undefined ? null : Number(v)))
+  .refine(v => v === null || (!isNaN(v) && v >= 0), { message: 'Укажите неотрицательное число' })
+  .nullable()
+  .optional()
+
+const optBool = z
+  .union([z.boolean(), z.string()])
+  .transform(v => v === true || v === 'true' || v === 'on')
+  .optional()
+
+export const CohabitantSchema = z.object({
+  full_name: z.string().trim().min(1),
+  passport: optStr,
+})
+
+export const InventoryItemSchema = z.object({
+  name: z.string().trim().min(1),
+  qty: optNonNegNum,
+  unit_price: optNonNegNum,
+  condition: optStr,
+})
+
+export const RentApartmentDataSchema = z.object({
+  cohabitants: z.array(CohabitantSchema).default([]),
+  children_count: optNonNegNum,
+  pets_allowed: optBool,
+  pets_species: optStr,
+  pets_count: optNonNegNum,
+  renewal_notice_months: optNonNegNum,
+  termination_notice_days: optNonNegNum,
+  late_return_penalty_per_day: optNonNegNum,
+  landlord_access_notice_days: optNonNegNum,
+  utilities_included_in_rent: optBool,
+  utilities_paid_by_tenant: optStr,
+  concierge_internet_payer: z.enum(['tenant', 'landlord']).optional(),
+  copies_count: optNonNegNum,
+  handover_date: optDate,
+  handover_keys_count: optNonNegNum,
+  electricity_meter_reading: optStr,
+  hot_water_meter_reading: optStr,
+  cold_water_meter_reading: optStr,
+  inventory_items: z.array(InventoryItemSchema).default([]),
+  return_date: optDate,
+  return_keys_count: optNonNegNum,
+  return_claims: optStr,
+})
+
+export type RentApartmentDataInput = z.infer<typeof RentApartmentDataSchema>

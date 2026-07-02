@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { ContactSchema, RepresentativeSchema, DealSchema, PaymentCreateSchema, ContractSchema } from '@/lib/schemas'
+import { ContactSchema, RepresentativeSchema, DealSchema, PaymentCreateSchema, ContractSchema, RentApartmentDataSchema } from '@/lib/schemas'
 
 describe('ContactSchema', () => {
   const valid = {
@@ -224,5 +224,45 @@ describe('ContractSchema', () => {
     const r = ContractSchema.safeParse(valid)
     expect(r.success).toBe(true)
     if (r.success) expect(r.data.status).toBe('draft')
+  })
+})
+
+describe('RentApartmentDataSchema', () => {
+  it('принимает пустой объект (все поля опциональны)', () => {
+    expect(RentApartmentDataSchema.safeParse({}).success).toBe(true)
+  })
+
+  it('нормализует пустой объект к значениям по умолчанию для массивов', () => {
+    const r = RentApartmentDataSchema.safeParse({})
+    expect(r.success).toBe(true)
+    if (r.success) {
+      expect(r.data.cohabitants).toEqual([])
+      expect(r.data.inventory_items).toEqual([])
+    }
+  })
+
+  it('принимает список проживающих и опись имущества', () => {
+    const r = RentApartmentDataSchema.safeParse({
+      cohabitants: [{ full_name: 'Иванов Иван', passport: '1234 567890' }],
+      inventory_items: [{ name: 'Диван', qty: 1, unit_price: 30000, condition: 'хорошее' }],
+      pets_allowed: true,
+      pets_species: 'кошка',
+    })
+    expect(r.success).toBe(true)
+    if (r.success) {
+      expect(r.data.cohabitants[0].full_name).toBe('Иванов Иван')
+      expect(r.data.inventory_items[0].name).toBe('Диван')
+      expect(r.data.pets_allowed).toBe(true)
+    }
+  })
+
+  it('отклоняет проживающего без ФИО', () => {
+    const r = RentApartmentDataSchema.safeParse({ cohabitants: [{ full_name: '' }] })
+    expect(r.success).toBe(false)
+  })
+
+  it('приводит concierge_internet_payer только к допустимым значениям', () => {
+    expect(RentApartmentDataSchema.safeParse({ concierge_internet_payer: 'tenant' }).success).toBe(true)
+    expect(RentApartmentDataSchema.safeParse({ concierge_internet_payer: 'someone_else' }).success).toBe(false)
   })
 })

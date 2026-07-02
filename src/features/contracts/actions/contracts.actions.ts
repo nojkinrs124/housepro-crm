@@ -3,9 +3,28 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { ContractSchema } from '@/lib/schemas'
+import { ContractSchema, RentApartmentDataSchema } from '@/lib/schemas'
 import { requireOrgId } from '@/lib/org'
 import { writeAuditLog } from '@/lib/audit'
+
+// Собирает и валидирует contract_type_data из формы.
+// Поле contract_type_data_json — hidden input с JSON-строкой (см. RentApartmentExtraFields.tsx).
+function parseContractTypeData(contractType: string, formData: FormData): Record<string, unknown> {
+  if (contractType !== 'rent_apartment') return {}
+
+  const raw = formData.get('contract_type_data_json')
+  let parsed: unknown = {}
+  if (typeof raw === 'string' && raw.trim()) {
+    try {
+      parsed = JSON.parse(raw)
+    } catch {
+      parsed = {}
+    }
+  }
+
+  const result = RentApartmentDataSchema.safeParse(parsed)
+  return result.success ? result.data : {}
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function createContractAction(_prevState: any, formData: FormData) {
@@ -22,9 +41,17 @@ export async function createContractAction(_prevState: any, formData: FormData) 
     return { error: first.message, fields: parsed.error.flatten().fieldErrors }
   }
 
+  const contractTypeData = parseContractTypeData(parsed.data.contract_type, formData)
+
   const { data: contract, error } = await supabase
     .from('contracts')
-    .insert({ ...parsed.data, status: 'draft', manager_id: user.id, organization_id: orgId })
+    .insert({
+      ...parsed.data,
+      contract_type_data: contractTypeData,
+      status: 'draft',
+      manager_id: user.id,
+      organization_id: orgId,
+    })
     .select()
     .single()
 
@@ -73,7 +100,12 @@ export async function updateContractAction(id: string, _prevState: any, formData
     })
   }
 
-  const { error } = await supabase.from('contracts').update(parsed.data).eq('id', id)
+  const contractTypeData = parseContractTypeData(parsed.data.contract_type, formData)
+
+  const { error } = await supabase
+    .from('contracts')
+    .update({ ...parsed.data, contract_type_data: contractTypeData })
+    .eq('id', id)
   if (error) return { error: error.message }
 
   await writeAuditLog({
