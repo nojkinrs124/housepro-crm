@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { updateContractAction } from '@/features/contracts/actions/contracts.actions'
 import { ContractForm } from '@/features/contracts/components/ContractForm'
-import { toExtraFieldsDefaults } from '@/features/contracts/components/RentApartmentExtraFields'
+import { toExtraFieldsDefaults } from '@/features/contracts/utils/rent-apartment-data'
 import { getContractFormData } from '@/features/contracts/data/contract-form-data'
 
 export default async function EditContractPage({ params }: { params: Promise<{ id: string }> }) {
