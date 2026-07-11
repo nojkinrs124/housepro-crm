@@ -72,6 +72,33 @@ export async function createPropertyAction(formData: FormData) {
   redirect(`/properties/${property.id}`)
 }
 
+// Быстрое создание (модалка, без редиректа) — используется в QuickCreateModal
+export async function createPropertyQuickAction(formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Не авторизован' }
+
+  const orgId = await requireOrgId().catch(() => null)
+  if (!orgId) return { error: 'Организация не найдена' }
+
+  const fields = extractPropertyFields(formData)
+
+  if (!fields.title?.trim() || !fields.address?.trim()) {
+    return { error: 'Название и адрес обязательны' }
+  }
+
+  const { data: property, error } = await supabase.from('properties').insert({
+    ...fields,
+    manager_id: user.id,
+    organization_id: orgId,
+  }).select('id, title, address, property_type').single()
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/properties')
+  return { data: property }
+}
+
 export async function updatePropertyAction(id: string, formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

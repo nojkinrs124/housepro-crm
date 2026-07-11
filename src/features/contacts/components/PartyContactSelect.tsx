@@ -2,6 +2,9 @@
 
 import { useState, type ReactNode } from 'react'
 import Link from 'next/link'
+import { Plus } from 'lucide-react'
+import { QuickCreateModal } from '@/components/ui/QuickCreateModal'
+import { QuickCreateContactForm } from './QuickCreateContactForm'
 
 export interface PartyContact {
   id: string
@@ -27,15 +30,20 @@ interface PartyContactSelectProps {
   defaultContactId?: string
   defaultRepresentativeId?: string
   placeholder: string
+  /** Роль, с которой будет создан новый контакт из модалки быстрого создания */
+  quickCreateRole?: 'owner' | 'client' | 'both'
 }
 
 const sel = 'w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all'
 
 export function PartyContactSelect({
   label, icon, contactFieldName, representativeFieldName,
-  contacts, representativesByContact, defaultContactId = '', defaultRepresentativeId = '', placeholder,
+  contacts: initialContacts, representativesByContact, defaultContactId = '', defaultRepresentativeId = '', placeholder,
+  quickCreateRole = 'both',
 }: PartyContactSelectProps) {
+  const [contacts, setContacts] = useState(initialContacts)
   const [contactId, setContactId] = useState(defaultContactId)
+  const [showQuickCreate, setShowQuickCreate] = useState(false)
   const selected = contacts.find(c => c.id === contactId)
   const isLegalEntity = selected?.client_type === 'legal_entity'
   const reps = contactId ? (representativesByContact[contactId] ?? []) : []
@@ -59,10 +67,33 @@ export function PartyContactSelect({
           </option>
         ))}
       </select>
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-muted-foreground flex items-center gap-1">
         Нет нужного?{' '}
-        <Link href="/contacts/new" className="text-primary hover:underline">Добавить контакт →</Link>
+        <button
+          type="button"
+          onClick={() => setShowQuickCreate(true)}
+          className="text-primary hover:underline inline-flex items-center gap-1"
+        >
+          <Plus className="w-3 h-3" />
+          Создать контакт
+        </button>
+        {' '}или{' '}
+        <Link href="/contacts/new" target="_blank" className="text-primary hover:underline">открыть форму →</Link>
       </p>
+
+      {showQuickCreate && (
+        <QuickCreateModal title={`Новый контакт — ${label}`} onClose={() => setShowQuickCreate(false)}>
+          <QuickCreateContactForm
+            role={quickCreateRole}
+            onCancel={() => setShowQuickCreate(false)}
+            onCreated={(contact) => {
+              setContacts(prev => [...prev, contact])
+              setContactId(contact.id)
+              setShowQuickCreate(false)
+            }}
+          />
+        </QuickCreateModal>
+      )}
 
       {isLegalEntity && (
         <div className="mt-2 pl-3 border-l-2 border-primary/20 space-y-1.5">

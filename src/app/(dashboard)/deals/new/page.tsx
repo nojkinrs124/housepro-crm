@@ -4,6 +4,7 @@ import { ArrowLeft, TrendingUp, User, Building2 } from 'lucide-react'
 import Link from 'next/link'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { PartyContactSelect } from '@/features/contacts/components/PartyContactSelect'
+import { PropertySelectField } from '@/features/properties/components/PropertySelectField'
 
 export default async function NewDealPage({
   searchParams,
@@ -103,6 +104,7 @@ export default async function NewDealPage({
             defaultContactId={ownerDefaultId}
             defaultRepresentativeId={ownerDefaultId ? primaryRepFor(ownerDefaultId) : ''}
             placeholder="Выберите собственника"
+            quickCreateRole="owner"
           />
 
           {/* Клиент — Сторона 2 */}
@@ -116,32 +118,11 @@ export default async function NewDealPage({
             defaultContactId={clientDefaultId}
             defaultRepresentativeId={clientDefaultId ? primaryRepFor(clientDefaultId) : ''}
             placeholder="Выберите клиента"
+            quickCreateRole="client"
           />
 
           {/* Объект */}
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">Объект</label>
-            <div className="flex flex-col sm:flex-row sm:items-stretch gap-2">
-              <select
-                name="property_id"
-                defaultValue={params.property_id ?? ''}
-                className="w-full sm:flex-1 sm:min-w-0 h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer"
-              >
-                <option value="">Выберите объект</option>
-                {properties.map(p => (
-                  <option key={p.id} value={p.id}>{p.title}{p.address ? ` — ${p.address}` : ''}</option>
-                ))}
-              </select>
-              <Link
-                href="/properties/new"
-                target="_blank"
-                className="h-10 px-4 rounded-xl border border-primary/30 text-primary text-sm font-medium hover:bg-primary/10 transition flex items-center justify-center gap-2 whitespace-nowrap shrink-0"
-              >
-                <Building2 className="w-4 h-4" />
-                Создать
-              </Link>
-            </div>
-          </div>
+          <PropertySelectField properties={properties} defaultPropertyId={params.property_id ?? ''} />
         </div>
 
         {/* Финансы */}

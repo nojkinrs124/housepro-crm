@@ -104,6 +104,43 @@ export async function deleteContactAction(contactId: string) {
   redirect('/contacts')
 }
 
+// ─── Быстрое создание (модалка, без редиректа) ──────────────────────────────
+
+export async function createContactQuickAction(formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Не авторизован' }
+
+  const rl = rateLimitCreate(user.id, 'contact')
+  if (!rl.success) return { error: 'Слишком много запросов. Подождите минуту.' }
+
+  const orgId = await requireOrgId().catch(() => null)
+  if (!orgId) return { error: 'Организация не найдена' }
+
+  const parsed = parseContact(formData)
+  if (!parsed.success) {
+    const first = parsed.error.issues[0]
+    return { error: first.message, fields: parsed.error.flatten().fieldErrors }
+  }
+
+  const { data, error } = await supabase
+    .from('contacts')
+    .insert({ ...parsed.data, organization_id: orgId })
+    .select('id, full_name, phone, role, client_type')
+    .single()
+
+  if (error) return { error: error.message }
+
+  await writeAuditLog({
+    userId: user.id, orgId,
+    action: 'create', entityType: 'contact',
+    entityId: data.id, entityLabel: parsed.data.full_name ?? 'Контакт',
+  })
+
+  revalidatePath('/contacts')
+  return { data }
+}
+
 // ─── Representatives ────────────────────────────────────────────────────────
 
 function parseRepresentative(formData: FormData) {
