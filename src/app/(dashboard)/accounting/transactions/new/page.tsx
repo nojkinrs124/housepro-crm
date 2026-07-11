@@ -27,12 +27,12 @@ export default async function NewTransactionPage() {
       <div>
         <Link
           href="/accounting"
-          className="inline-flex items-center gap-2 text-sm font-medium text-[#64748B] hover:text-[#111827] transition-colors mb-4"
+          className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-4"
         >
           <ArrowLeft className="w-4 h-4" />
           Бухгалтерия
         </Link>
-        <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">
+        <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">
           Новая транзакция
         </h1>
       </div>

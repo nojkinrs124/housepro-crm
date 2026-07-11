@@ -21,7 +21,7 @@ export default async function EditContactPage({ params }: { params: Promise<{ id
       </Link>
 
       <div>
-        <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Редактировать контакт</h1>
+        <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Редактировать контакт</h1>
         <p className="text-muted-foreground mt-1">{c.full_name}</p>
       </div>
 

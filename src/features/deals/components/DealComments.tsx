@@ -36,7 +36,7 @@ function Avatar({ name, url }: { name: string; url?: string | null }) {
   if (url) {
     return (
       <img src={url} alt={name}
-        className="w-9 h-9 rounded-full object-cover border border-[#E2E8F0] shrink-0" />
+        className="w-9 h-9 rounded-full object-cover border border-border shrink-0" />
     )
   }
   const initials = name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase()
@@ -103,12 +103,12 @@ export function DealComments({ dealId, comments: initialComments, currentUserId 
   }
 
   return (
-    <div className="bg-white rounded-[20px] border border-[#E2E8F0] p-5 shadow-sm">
+    <div className="bg-white rounded-[20px] border border-border p-5 shadow-sm">
       <div className="flex items-center gap-2 mb-5">
         <div className="w-7 h-7 rounded-lg bg-blue-100 flex items-center justify-center">
           <MessageSquare style={{ width: 14, height: 14, color: '#2563EB' }} />
         </div>
-        <h2 className="text-sm font-semibold text-[#111827]">Комментарии</h2>
+        <h2 className="text-sm font-semibold text-foreground">Комментарии</h2>
         {comments.length > 0 && (
           <span className="ml-auto text-xs font-semibold bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">
             {comments.length}
@@ -119,7 +119,7 @@ export function DealComments({ dealId, comments: initialComments, currentUserId 
       {/* Comment list */}
       <div className="space-y-4 mb-5">
         {comments.length === 0 && (
-          <p className="text-sm text-[#94A3B8] py-2">Комментариев пока нет</p>
+          <p className="text-sm text-slate-400 py-2">Комментариев пока нет</p>
         )}
         {comments.map(comment => (
           <div key={comment.id} className="flex items-start gap-3 group">
@@ -129,12 +129,12 @@ export function DealComments({ dealId, comments: initialComments, currentUserId 
             />
             <div className="flex-1 min-w-0">
               <div className="flex items-baseline gap-2 mb-1">
-                <span className="text-sm font-semibold text-[#111827]">
+                <span className="text-sm font-semibold text-foreground">
                   {comment.author?.full_name ?? 'Пользователь'}
                 </span>
-                <span className="text-xs text-[#94A3B8]">{formatDate(comment.created_at)}</span>
+                <span className="text-xs text-slate-400">{formatDate(comment.created_at)}</span>
               </div>
-              <div className="bg-[#F8FAFC] rounded-xl px-4 py-3 border border-[#E2E8F0]">
+              <div className="bg-background rounded-xl px-4 py-3 border border-border">
                 <p className="text-sm text-[#374151] whitespace-pre-wrap leading-relaxed">{comment.body}</p>
               </div>
             </div>
@@ -142,7 +142,7 @@ export function DealComments({ dealId, comments: initialComments, currentUserId 
               <button
                 onClick={() => handleDelete(comment.id)}
                 disabled={deletingId === comment.id}
-                className="opacity-0 group-hover:opacity-100 transition-opacity mt-1 p-1.5 text-[#94A3B8] hover:text-red-500 hover:bg-red-50 rounded-lg disabled:opacity-30"
+                className="opacity-0 group-hover:opacity-100 transition-opacity mt-1 p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg disabled:opacity-30"
                 title="Удалить комментарий"
               >
                 <Trash2 style={{ width: 14, height: 14 }} />
@@ -161,7 +161,7 @@ export function DealComments({ dealId, comments: initialComments, currentUserId 
           placeholder="Напишите комментарий… (Ctrl+Enter для отправки)"
           onKeyDown={handleKeyDown}
           onChange={autoResize}
-          className="flex-1 resize-none rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 py-2.5 text-sm text-[#111827] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-green-100 transition-all overflow-hidden"
+          className="flex-1 resize-none rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-slate-400 focus:outline-none focus:border-[#16A34A] focus:ring-2 focus:ring-green-100 transition-all overflow-hidden"
           style={{ minHeight: 42, maxHeight: 160 }}
           disabled={isPending}
           maxLength={2000}
@@ -174,7 +174,7 @@ export function DealComments({ dealId, comments: initialComments, currentUserId 
           <Send style={{ width: 16, height: 16 }} />
         </button>
       </form>
-      <p className="text-xs text-[#94A3B8] mt-1.5">Ctrl+Enter для отправки</p>
+      <p className="text-xs text-slate-400 mt-1.5">Ctrl+Enter для отправки</p>
     </div>
   )
 }

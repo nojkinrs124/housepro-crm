@@ -112,7 +112,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
             <FileText className="w-7 h-7 text-violet-600" />
           </div>
           <div className="min-w-0">
-            <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight break-words">
+            <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight break-words">
               {contract.contract_number ?? `Договор #${contract.id.slice(0, 8)}`}
             </h1>
             <p className="text-muted-foreground text-sm">{contractTypeLabels[contract.contract_type] ?? contract.contract_type}</p>
@@ -127,7 +127,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
           </Link>
           <DeleteContractButton contractId={id} />
           <Link href={`/contracts/${id}/generate`}
-            className="flex items-center gap-2 px-4 py-2 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition whitespace-nowrap" style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+            className="flex items-center gap-2 px-4 py-2 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition whitespace-nowrap" style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
             <FileText className="w-4 h-4" />
             Сформировать DOCX
           </Link>

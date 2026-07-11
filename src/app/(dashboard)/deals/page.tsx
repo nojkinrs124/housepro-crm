@@ -2,6 +2,8 @@ import { DealsViewSwitcher } from '@/features/deals/components/DealsViewSwitcher
 import { Plus, DollarSign, TrendingUp, XCircle, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { PageHeader } from '@/components/layout/PageHeader'
+import { buttonVariants } from '@/components/ui/button'
 
 export default async function DealsPage() {
   const supabase = await createClient()
@@ -29,20 +31,16 @@ export default async function DealsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Сделки</h1>
-          <p className="text-[#64748B] mt-1 text-sm">
-            {activeDealCount} активных{totalAmount > 0 ? ` · ${totalAmount.toLocaleString('ru-RU')} ₽ завершено` : ''}
-          </p>
-        </div>
-        <Link href="/deals/new"
-          className="flex items-center gap-2 px-4 py-2.5 text-white rounded-xl text-sm font-semibold"
-          style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
-          <Plus style={{ width: 16, height: 16 }} />
-          Новая сделка
-        </Link>
-      </div>
+      <PageHeader
+        title="Сделки"
+        subtitle={`${activeDealCount} активных${totalAmount > 0 ? ` · ${totalAmount.toLocaleString('ru-RU')} ₽ завершено` : ''}`}
+        actions={
+          <Link href="/deals/new" className={buttonVariants({ size: 'sm' })} style={{ background: 'var(--hp-gradient-primary)' }}>
+            <Plus style={{ width: 16, height: 16 }} />
+            Новая сделка
+          </Link>
+        }
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -59,8 +57,8 @@ export default async function DealsPage() {
                 <Icon className={stat.iconColor} style={{ width: 20, height: 20 }} />
               </div>
               <div className="min-w-0">
-                <p className="text-2xl font-bold text-[#111827]">{stat.value}</p>
-                <p className="text-xs text-[#64748B] font-medium mt-0.5 leading-tight break-words">{stat.label}</p>
+                <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                <p className="text-xs text-muted-foreground font-medium mt-0.5 leading-tight break-words">{stat.label}</p>
               </div>
             </div>
           )

@@ -71,7 +71,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
             <TrendingUp className="w-7 h-7 text-green-600" />
           </div>
           <div className="min-w-0">
-            <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight break-words">
+            <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight break-words">
               {dealTypeLabels[deal.deal_type] ?? deal.deal_type}
             </h1>
             <p className="text-muted-foreground text-sm">

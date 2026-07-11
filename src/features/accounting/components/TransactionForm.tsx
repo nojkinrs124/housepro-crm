@@ -40,7 +40,7 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
         className="bg-white rounded-[20px] border border-slate-100 p-5"
         style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
       >
-        <h2 className="font-bold text-[#111827] text-[15px] mb-4">Тип операции</h2>
+        <h2 className="font-bold text-foreground text-[15px] mb-4">Тип операции</h2>
         <div className="grid grid-cols-2 gap-3">
           {(['income', 'expense'] as const).map(t => (
             <label
@@ -66,7 +66,7 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
                 <p className={`text-sm font-bold ${t === 'income' ? 'text-green-700' : 'text-red-600'}`}>
                   {t === 'income' ? 'Доход' : 'Расход'}
                 </p>
-                <p className="text-xs text-[#64748B]">
+                <p className="text-xs text-muted-foreground">
                   {t === 'income' ? 'Поступление средств' : 'Списание средств'}
                 </p>
               </div>
@@ -80,10 +80,10 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
         className="bg-white rounded-[20px] border border-slate-100 p-5"
         style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
       >
-        <h2 className="font-bold text-[#111827] text-[15px] mb-4">Основное</h2>
+        <h2 className="font-bold text-foreground text-[15px] mb-4">Основное</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="block text-sm font-semibold text-[#111827]">Сумма (₽) *</label>
+            <label className="block text-sm font-semibold text-foreground">Сумма (₽) *</label>
             <input
               type="text"
               name="amount"
@@ -94,7 +94,7 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
             />
           </div>
           <div className="space-y-1.5">
-            <label className="block text-sm font-semibold text-[#111827]">Дата *</label>
+            <label className="block text-sm font-semibold text-foreground">Дата *</label>
             <input
               type="date"
               name="date"
@@ -103,7 +103,7 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
             />
           </div>
           <div className="space-y-1.5">
-            <label className="block text-sm font-semibold text-[#111827]">Статус</label>
+            <label className="block text-sm font-semibold text-foreground">Статус</label>
             <select
               name="status"
               defaultValue={transaction?.status ?? 'completed'}
@@ -115,7 +115,7 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="block text-sm font-semibold text-[#111827]">Способ оплаты</label>
+            <label className="block text-sm font-semibold text-foreground">Способ оплаты</label>
             <select
               name="payment_method"
               defaultValue={transaction?.payment_method ?? ''}
@@ -131,7 +131,7 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
         </div>
 
         <div className="mt-4 space-y-1.5">
-          <label className="block text-sm font-semibold text-[#111827]">Описание</label>
+          <label className="block text-sm font-semibold text-foreground">Описание</label>
           <textarea
             name="description"
             rows={2}
@@ -147,10 +147,10 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
         className="bg-white rounded-[20px] border border-slate-100 p-5"
         style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
       >
-        <h2 className="font-bold text-[#111827] text-[15px] mb-4">Категория</h2>
+        <h2 className="font-bold text-foreground text-[15px] mb-4">Категория</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="block text-sm font-semibold text-[#111827]">Категория дохода</label>
+            <label className="block text-sm font-semibold text-foreground">Категория дохода</label>
             <select
               name="category_id"
               defaultValue={transaction?.category_id ?? ''}
@@ -162,10 +162,10 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
-            <p className="text-xs text-[#94A3B8]">Для операций типа «Доход»</p>
+            <p className="text-xs text-slate-400">Для операций типа «Доход»</p>
           </div>
           <div className="space-y-1.5">
-            <label className="block text-sm font-semibold text-[#111827]">Категория расхода</label>
+            <label className="block text-sm font-semibold text-foreground">Категория расхода</label>
             <select
               name="category_id"
               defaultValue={transaction?.category_id ?? ''}
@@ -177,7 +177,7 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
-            <p className="text-xs text-[#94A3B8]">Для операций типа «Расход»</p>
+            <p className="text-xs text-slate-400">Для операций типа «Расход»</p>
           </div>
         </div>
       </div>
@@ -187,10 +187,10 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
         className="bg-white rounded-[20px] border border-slate-100 p-5"
         style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
       >
-        <h2 className="font-bold text-[#111827] text-[15px] mb-4">Привязки</h2>
+        <h2 className="font-bold text-foreground text-[15px] mb-4">Привязки</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className="block text-sm font-semibold text-[#111827]">Договор</label>
+            <label className="block text-sm font-semibold text-foreground">Договор</label>
             <select
               name="contract_id"
               defaultValue={transaction?.contract_id ?? ''}
@@ -205,7 +205,7 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="block text-sm font-semibold text-[#111827]">Сделка</label>
+            <label className="block text-sm font-semibold text-foreground">Сделка</label>
             <select
               name="deal_id"
               defaultValue={transaction?.deal_id ?? ''}
@@ -218,7 +218,7 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
             </select>
           </div>
           <div className="space-y-1.5 sm:col-span-2">
-            <label className="block text-sm font-semibold text-[#111827]">Сотрудник (для зарплат)</label>
+            <label className="block text-sm font-semibold text-foreground">Сотрудник (для зарплат)</label>
             <select
               name="employee_id"
               defaultValue={transaction?.employee_id ?? ''}
@@ -246,7 +246,7 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
           disabled={isPending}
           className="flex items-center gap-2 px-5 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all disabled:opacity-60"
           style={{
-            background: 'linear-gradient(135deg, #16A34A, #22C55E)',
+            background: 'var(--hp-gradient-primary)',
             boxShadow: '0 4px 16px rgba(22,163,74,0.35)',
           }}
         >

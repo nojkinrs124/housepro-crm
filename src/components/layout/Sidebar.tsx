@@ -87,7 +87,7 @@ function SidebarContent({
                   <div className="px-3 pt-4 pb-1.5">
                     <span className={cn(
                       'text-[10px] font-bold uppercase tracking-[0.08em]',
-                      dark ? 'text-slate-600' : 'text-[#94A3B8]'
+                      dark ? 'text-slate-600' : 'text-slate-400'
                     )}>
                       {item.section}
                     </span>
@@ -111,7 +111,7 @@ function SidebarContent({
                     collapsed ? 'px-2.5 py-2.5 justify-center' : 'px-3 py-2.5',
                     isActive
                       ? (dark ? 'text-[#4ADE80]' : 'text-[#16A34A]')
-                      : (dark ? 'text-slate-400 hover:text-slate-200' : 'text-[#64748B] hover:text-[#111827] hover:bg-[#F1F5F9]')
+                      : (dark ? 'text-slate-400 hover:text-slate-200' : 'text-muted-foreground hover:text-foreground hover:bg-[#F1F5F9]')
                   )}
                 >
                   {/* Анимированная активная «таблетка» — единый layoutId плавно перемещается между пунктами */}
@@ -133,7 +133,7 @@ function SidebarContent({
                       'shrink-0 relative transition-transform duration-200 group-hover:scale-110',
                       isActive
                         ? (dark ? 'text-[#4ADE80]' : 'text-[#16A34A]')
-                        : (dark ? 'text-slate-500 group-hover:text-slate-300' : 'text-[#94A3B8] group-hover:text-[#64748B]')
+                        : (dark ? 'text-slate-500 group-hover:text-slate-300' : 'text-slate-400 group-hover:text-muted-foreground')
                     )}
                     style={{ width: 17, height: 17 }}
                   />
@@ -184,13 +184,13 @@ function SidebarContent({
               ) : (
                 <div
                   className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-white text-sm font-bold"
-                  style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 2px 8px rgba(22,163,74,0.3)' }}
+                  style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 2px 8px rgba(22,163,74,0.3)' }}
                 >
                   {user?.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <p className={cn('text-sm font-semibold truncate leading-tight', dark ? 'text-white' : 'text-[#111827]')}>
+                <p className={cn('text-sm font-semibold truncate leading-tight', dark ? 'text-white' : 'text-foreground')}>
                   {user?.full_name ?? 'Сотрудник'}
                 </p>
                 <span className={cn(
@@ -206,7 +206,7 @@ function SidebarContent({
                 type="submit"
                 className={cn(
                   'w-full flex items-center gap-2.5 px-3 py-2 text-sm rounded-xl transition-all duration-200 font-medium',
-                  dark ? 'text-slate-500 hover:text-red-400 hover:bg-red-500/10' : 'text-[#64748B] hover:text-red-600 hover:bg-red-50'
+                  dark ? 'text-slate-500 hover:text-red-400 hover:bg-red-500/10' : 'text-muted-foreground hover:text-red-600 hover:bg-red-50'
                 )}
               >
                 <LogOut style={{ width: 15, height: 15 }} />
@@ -218,7 +218,7 @@ function SidebarContent({
           <div className="py-2 px-2">
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center mx-auto text-white text-xs font-bold mb-2"
-              style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)' }}
+              style={{ background: 'var(--hp-gradient-primary)' }}
             >
               {user?.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
             </div>
@@ -228,7 +228,7 @@ function SidebarContent({
                 title="Выйти"
                 className={cn(
                   'w-full flex items-center justify-center p-2 rounded-xl transition-all duration-200',
-                  dark ? 'text-slate-500 hover:text-red-400 hover:bg-red-500/10' : 'text-[#94A3B8] hover:text-red-600 hover:bg-red-50'
+                  dark ? 'text-slate-500 hover:text-red-400 hover:bg-red-500/10' : 'text-slate-400 hover:text-red-600 hover:bg-red-50'
                 )}
               >
                 <LogOut style={{ width: 16, height: 16 }} />
@@ -282,18 +282,18 @@ function MobileDrawer({
           <div className="flex items-center gap-3">
             <div
               className="w-9 h-9 rounded-[12px] flex items-center justify-center shrink-0"
-              style={{ background: 'linear-gradient(135deg, #16A34A 0%, #22C55E 100%)', boxShadow: '0 4px 12px rgba(22,163,74,0.35)' }}
+              style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 12px rgba(22,163,74,0.35)' }}
             >
               <Building2 style={{ width: 18, height: 18 }} className="text-white" />
             </div>
             <div>
-              <span className="font-bold text-[#111827] text-[16px] leading-tight block tracking-tight">HousePro</span>
-              <span className="text-[10px] text-[#64748B] font-semibold tracking-widest uppercase leading-tight">CRM</span>
+              <span className="font-bold text-foreground text-[16px] leading-tight block tracking-tight">HousePro</span>
+              <span className="text-[10px] text-muted-foreground font-semibold tracking-widest uppercase leading-tight">CRM</span>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-xl text-[#64748B] hover:text-[#111827] hover:bg-slate-100 transition-all"
+            className="w-8 h-8 flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-slate-100 transition-all"
           >
             <X style={{ width: 17, height: 17 }} />
           </button>
@@ -344,7 +344,7 @@ export function MobileBottomNav({ user }: { user: User | null }) {
                 }}
                 className={cn(
                   'flex flex-col items-center gap-1 px-3 py-1.5 rounded-[12px] transition-all duration-200 min-w-[52px]',
-                  isActive ? 'text-[#16A34A]' : 'text-[#94A3B8]'
+                  isActive ? 'text-[#16A34A]' : 'text-slate-400'
                 )}
                 style={isActive ? { background: 'rgba(34,197,94,0.1)' } : undefined}
               >
@@ -388,7 +388,7 @@ export function Sidebar({ user }: { user: User | null }) {
           <div
             className="w-9 h-9 rounded-[12px] flex items-center justify-center shrink-0"
             style={{
-              background: 'linear-gradient(135deg, #16A34A 0%, #22C55E 100%)',
+              background: 'var(--hp-gradient-primary)',
               boxShadow: '0 4px 12px rgba(22,163,74,0.35)',
             }}
           >

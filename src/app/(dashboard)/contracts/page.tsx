@@ -67,12 +67,12 @@ export default async function ContractsPage({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Договоры</h1>
-          <p className="text-[#64748B] mt-1 text-sm">{contracts?.length ?? 0} договоров</p>
+          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Договоры</h1>
+          <p className="text-muted-foreground mt-1 text-sm">{contracts?.length ?? 0} договоров</p>
         </div>
         <Link href="/contracts/new"
           className="flex items-center gap-2 px-4 py-2.5 text-white rounded-xl text-sm font-semibold"
-          style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+          style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
           <Plus style={{ width: 16, height: 16 }} />
           Новый договор
         </Link>
@@ -86,19 +86,19 @@ export default async function ContractsPage({
               style={{ width: 15, height: 15 }} />
             <input name="search" defaultValue={params.search}
               placeholder="Поиск по номеру договора..."
-              className="w-full h-10 pl-10 pr-4 text-sm text-[#111827] placeholder:text-slate-400 outline-none bg-slate-50 border border-slate-200 rounded-xl focus:border-green-400 focus:ring-2 focus:ring-green-100 transition-all" />
+              className="w-full h-10 pl-10 pr-4 text-sm text-foreground placeholder:text-slate-400 outline-none bg-slate-50 border border-slate-200 rounded-xl focus:border-green-400 focus:ring-2 focus:ring-green-100 transition-all" />
           </div>
         </form>
         <div className="flex gap-2 flex-wrap">
           <Link href="/contracts"
             className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${!params.status ? 'text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-            style={!params.status ? { background: 'linear-gradient(135deg, #16A34A, #22C55E)' } : {}}>
+            style={!params.status ? { background: 'var(--hp-gradient-primary)' } : {}}>
             Все
           </Link>
           {statusKeys.map(value => (
             <Link key={value} href={`/contracts?status=${value}`}
               className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${params.status === value ? 'text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-              style={params.status === value ? { background: 'linear-gradient(135deg, #16A34A, #22C55E)' } : {}}>
+              style={params.status === value ? { background: 'var(--hp-gradient-primary)' } : {}}>
               {statusConfig[value].label}
             </Link>
           ))}
@@ -117,7 +117,7 @@ export default async function ContractsPage({
             </p>
             <Link href="/contracts/new"
               className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 text-white rounded-xl text-sm font-semibold"
-              style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+              style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
               <Plus style={{ width: 14, height: 14 }} />
               Создать договор
             </Link>
@@ -130,7 +130,7 @@ export default async function ContractsPage({
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-100">
                     {['Номер', 'Тип', 'Клиент', 'Объект', 'Сумма', 'Статус', 'Дата', ''].map(h => (
-                      <th key={h} className="text-left text-xs font-semibold text-[#64748B] uppercase tracking-wide px-4 py-3.5 first:px-6">{h}</th>
+                      <th key={h} className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide px-4 py-3.5 first:px-6">{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -148,21 +148,21 @@ export default async function ContractsPage({
                             <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-violet-50 shrink-0">
                               <FileText style={{ width: 14, height: 14 }} className="text-violet-600" />
                             </div>
-                            <span className="text-sm font-semibold text-[#111827]">
+                            <span className="text-sm font-semibold text-foreground">
                               {contract.contract_number ?? `#${contract.id.slice(0, 8)}`}
                             </span>
                           </div>
                         </td>
-                        <td className="px-4 py-4 text-sm text-[#64748B]">
+                        <td className="px-4 py-4 text-sm text-muted-foreground">
                           {contractTypeLabels[contract.contract_type] ?? contract.contract_type}
                         </td>
                         <td className="px-4 py-4 text-sm font-medium text-[#374151]">
                           {client?.full_name ?? '—'}
                         </td>
-                        <td className="px-4 py-4 text-sm text-[#64748B] max-w-[200px] truncate">
+                        <td className="px-4 py-4 text-sm text-muted-foreground max-w-[200px] truncate">
                           {property?.title ?? property?.address ?? '—'}
                         </td>
-                        <td className="px-4 py-4 text-sm font-bold text-[#111827]">
+                        <td className="px-4 py-4 text-sm font-bold text-foreground">
                           {contract.amount ? `${Number(contract.amount).toLocaleString('ru-RU')} ₽` : '—'}
                         </td>
                         <td className="px-4 py-4">
@@ -171,7 +171,7 @@ export default async function ContractsPage({
                             {sc.label}
                           </span>
                         </td>
-                        <td className="px-4 py-4 text-sm text-[#64748B]">
+                        <td className="px-4 py-4 text-sm text-muted-foreground">
                           {new Date(contract.created_at).toLocaleDateString('ru-RU')}
                         </td>
                         <td className="px-4 py-4">
@@ -210,10 +210,10 @@ export default async function ContractsPage({
                           <FileText style={{ width: 13, height: 13 }} className="text-violet-600" />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-bold text-[#111827]">
+                          <p className="text-sm font-bold text-foreground">
                             {contract.contract_number ?? `#${contract.id.slice(0, 8)}`}
                           </p>
-                          <p className="text-xs text-[#64748B]">{contractTypeLabels[contract.contract_type] ?? contract.contract_type}</p>
+                          <p className="text-xs text-muted-foreground">{contractTypeLabels[contract.contract_type] ?? contract.contract_type}</p>
                         </div>
                       </div>
                       <span className={`shrink-0 flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${sc.cls}`}>
@@ -221,13 +221,13 @@ export default async function ContractsPage({
                         {sc.label}
                       </span>
                     </div>
-                    <div className="flex items-center gap-3 flex-wrap text-xs text-[#64748B] mt-1">
+                    <div className="flex items-center gap-3 flex-wrap text-xs text-muted-foreground mt-1">
                       {client?.full_name && <span>👤 {client.full_name}</span>}
                       {(property?.title || property?.address) && (
                         <span className="truncate max-w-[160px]">🏠 {property.title ?? property.address}</span>
                       )}
                       {contract.amount && (
-                        <span className="font-bold text-[#111827]">{Number(contract.amount).toLocaleString('ru-RU')} ₽</span>
+                        <span className="font-bold text-foreground">{Number(contract.amount).toLocaleString('ru-RU')} ₽</span>
                       )}
                     </div>
                   </Link>

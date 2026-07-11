@@ -71,7 +71,7 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight truncate max-w-[200px] sm:max-w-none">{emp.full_name}</h1>
+            <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight truncate max-w-[200px] sm:max-w-none">{emp.full_name}</h1>
             <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${roleColors[emp.role] ?? 'bg-gray-100'}`}>
               {roleLabels[emp.role] ?? emp.role}
             </span>
@@ -169,7 +169,7 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
               </select>
             </div>
             <button type="submit"
-              className="w-full h-10 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition" style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+              className="w-full h-10 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition" style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
               Сохранить изменения
             </button>
           </ServerActionForm>

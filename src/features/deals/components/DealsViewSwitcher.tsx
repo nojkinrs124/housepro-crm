@@ -185,7 +185,7 @@ export function DealsViewSwitcher({ deals }: { deals: any[] }) {
 
       {hasFilters && (
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-slate-500">
-          Найдено: <span className="font-semibold text-[#111827]">{filteredDeals.length}</span> из {deals.length}
+          Найдено: <span className="font-semibold text-foreground">{filteredDeals.length}</span> из {deals.length}
         </motion.p>
       )}
 

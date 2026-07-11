@@ -28,7 +28,7 @@ export default async function ExportPage() {
       url: '/api/export/cian',
       iconBg: 'bg-emerald-50',
       iconColor: 'text-emerald-600',
-      btnBg: 'linear-gradient(135deg, #16A34A, #22C55E)',
+      btnBg: 'var(--hp-gradient-primary)',
       btnShadow: '0 4px 16px rgba(22,163,74,0.35)',
       icon: '🟢',
       docsUrl: 'https://cian.ru/help/',
@@ -53,8 +53,8 @@ export default async function ExportPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div>
-        <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Экспорт объектов</h1>
-        <p className="text-[#64748B] mt-1.5 text-sm font-medium">
+        <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Экспорт объектов</h1>
+        <p className="text-muted-foreground mt-1.5 text-sm font-medium">
           Выгрузка объектов на рекламные площадки в XML-формате
         </p>
       </div>
@@ -65,8 +65,8 @@ export default async function ExportPage() {
           <Home className="text-emerald-600" style={{ width: 20, height: 20 }} />
         </div>
         <div className="min-w-0">
-          <p className="text-2xl font-bold text-[#111827] leading-tight">{availableCount}</p>
-          <p className="text-sm text-[#64748B] font-medium mt-0.5">объектов готовы к выгрузке (статус «Свободен»)</p>
+          <p className="text-2xl font-bold text-foreground leading-tight">{availableCount}</p>
+          <p className="text-sm text-muted-foreground font-medium mt-0.5">объектов готовы к выгрузке (статус «Свободен»)</p>
         </div>
       </div>
 
@@ -91,14 +91,14 @@ export default async function ExportPage() {
                 <span className="text-xl">{p.icon}</span>
               </div>
               <div className="min-w-0">
-                <h2 className="font-bold text-[#111827] text-base leading-tight">{p.name}</h2>
-                <p className="text-xs text-[#64748B] mt-0.5 leading-relaxed">{p.description}</p>
+                <h2 className="font-bold text-foreground text-base leading-tight">{p.name}</h2>
+                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{p.description}</p>
               </div>
             </div>
 
             <div className="space-y-1.5">
               {checklist.map(item => (
-                <p key={item} className="text-sm text-[#64748B] flex items-start gap-2">
+                <p key={item} className="text-sm text-muted-foreground flex items-start gap-2">
                   <span className="text-green-600 shrink-0">✓</span>
                   <span>{item}</span>
                 </p>
@@ -113,7 +113,7 @@ export default async function ExportPage() {
                 Скачать XML
               </a>
               <a href={p.docsUrl} target="_blank" rel="noopener noreferrer"
-                className="flex items-center justify-center px-4 py-2.5 border border-slate-200 rounded-[14px] text-sm font-semibold text-[#64748B] hover:bg-slate-50 hover:text-[#111827] transition-all shrink-0">
+                className="flex items-center justify-center px-4 py-2.5 border border-slate-200 rounded-[14px] text-sm font-semibold text-muted-foreground hover:bg-slate-50 hover:text-foreground transition-all shrink-0">
                 Docs
               </a>
             </div>
@@ -128,8 +128,8 @@ export default async function ExportPage() {
             <FileText className="text-violet-600" style={{ width: 16, height: 16 }} />
           </div>
           <div>
-            <h2 className="font-bold text-[#111827] text-[15px]">Экспорт CSV (для 1С)</h2>
-            <p className="text-xs text-[#64748B] mt-0.5">UTF-8 с BOM, разделитель «;»</p>
+            <h2 className="font-bold text-foreground text-[15px]">Экспорт CSV (для 1С)</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">UTF-8 с BOM, разделитель «;»</p>
           </div>
         </div>
 
@@ -158,13 +158,13 @@ export default async function ExportPage() {
           <div className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0 bg-slate-100">
             <FileText className="text-slate-600" style={{ width: 16, height: 16 }} />
           </div>
-          <h2 className="font-bold text-[#111827] text-[15px]">Как использовать</h2>
+          <h2 className="font-bold text-foreground text-[15px]">Как использовать</h2>
         </div>
 
         <div className="space-y-3">
           {steps.map((step, i) => (
             <div key={step} className="flex items-start gap-3">
-              <span className="w-5 h-5 rounded-full bg-slate-100 text-[#64748B] text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+              <span className="w-5 h-5 rounded-full bg-slate-100 text-muted-foreground text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
                 {i + 1}
               </span>
               <p className="text-sm text-[#374151] leading-relaxed">{step}</p>

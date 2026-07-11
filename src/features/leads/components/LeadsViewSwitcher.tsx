@@ -180,7 +180,7 @@ export function LeadsViewSwitcher({ leads }: { leads: any[] }) {
 
       {hasFilters && (
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-slate-500">
-          Найдено: <span className="font-semibold text-[#111827]">{filteredLeads.length}</span> из {leads.length}
+          Найдено: <span className="font-semibold text-foreground">{filteredLeads.length}</span> из {leads.length}
         </motion.p>
       )}
 

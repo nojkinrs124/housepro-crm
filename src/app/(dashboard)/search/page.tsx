@@ -14,7 +14,7 @@ export default async function SearchPage({
   if (!query) {
     return (
       <div className="max-w-3xl mx-auto space-y-6">
-        <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Поиск</h1>
+        <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Поиск</h1>
         <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-12 text-center">
           <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-40" />
           <p className="text-muted-foreground">Введите запрос в строку поиска</p>

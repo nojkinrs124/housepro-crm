@@ -38,10 +38,10 @@ export function RecurringRuleForm({ rule, categories, employees }: Props) {
         className="bg-white rounded-[20px] border border-slate-100 p-5"
         style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
       >
-        <h2 className="font-bold text-[#111827] text-[15px] mb-4">Правило повторения</h2>
+        <h2 className="font-bold text-foreground text-[15px] mb-4">Правило повторения</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5 sm:col-span-2">
-            <label className="block text-sm font-semibold text-[#111827]">Название *</label>
+            <label className="block text-sm font-semibold text-foreground">Название *</label>
             <input
               type="text"
               name="name"
@@ -51,7 +51,7 @@ export function RecurringRuleForm({ rule, categories, employees }: Props) {
             />
           </div>
           <div className="space-y-1.5">
-            <label className="block text-sm font-semibold text-[#111827]">Тип *</label>
+            <label className="block text-sm font-semibold text-foreground">Тип *</label>
             <select
               name="type"
               defaultValue={rule?.type ?? 'expense'}
@@ -62,7 +62,7 @@ export function RecurringRuleForm({ rule, categories, employees }: Props) {
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="block text-sm font-semibold text-[#111827]">Сумма (₽) *</label>
+            <label className="block text-sm font-semibold text-foreground">Сумма (₽) *</label>
             <input
               type="text"
               name="amount"
@@ -73,7 +73,7 @@ export function RecurringRuleForm({ rule, categories, employees }: Props) {
             />
           </div>
           <div className="space-y-1.5">
-            <label className="block text-sm font-semibold text-[#111827]">Частота *</label>
+            <label className="block text-sm font-semibold text-foreground">Частота *</label>
             <select
               name="frequency"
               defaultValue={rule?.frequency ?? 'monthly'}
@@ -85,7 +85,7 @@ export function RecurringRuleForm({ rule, categories, employees }: Props) {
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="block text-sm font-semibold text-[#111827]">День месяца</label>
+            <label className="block text-sm font-semibold text-foreground">День месяца</label>
             <input
               type="number"
               name="day_of_month"
@@ -97,7 +97,7 @@ export function RecurringRuleForm({ rule, categories, employees }: Props) {
             />
           </div>
           <div className="space-y-1.5">
-            <label className="block text-sm font-semibold text-[#111827]">Дата начала *</label>
+            <label className="block text-sm font-semibold text-foreground">Дата начала *</label>
             <input
               type="date"
               name="start_date"
@@ -106,7 +106,7 @@ export function RecurringRuleForm({ rule, categories, employees }: Props) {
             />
           </div>
           <div className="space-y-1.5">
-            <label className="block text-sm font-semibold text-[#111827]">Дата окончания</label>
+            <label className="block text-sm font-semibold text-foreground">Дата окончания</label>
             <input
               type="date"
               name="end_date"
@@ -115,7 +115,7 @@ export function RecurringRuleForm({ rule, categories, employees }: Props) {
             />
           </div>
           <div className="space-y-1.5">
-            <label className="block text-sm font-semibold text-[#111827]">Категория (доходы)</label>
+            <label className="block text-sm font-semibold text-foreground">Категория (доходы)</label>
             <select
               name="category_id"
               defaultValue={rule?.category_id ?? ''}
@@ -131,7 +131,7 @@ export function RecurringRuleForm({ rule, categories, employees }: Props) {
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="block text-sm font-semibold text-[#111827]">Сотрудник (зарплаты)</label>
+            <label className="block text-sm font-semibold text-foreground">Сотрудник (зарплаты)</label>
             <select
               name="employee_id"
               defaultValue={rule?.employee_id ?? ''}
@@ -143,7 +143,7 @@ export function RecurringRuleForm({ rule, categories, employees }: Props) {
           </div>
           {rule && (
             <div className="space-y-1.5 sm:col-span-2">
-              <label className="block text-sm font-semibold text-[#111827]">Активно</label>
+              <label className="block text-sm font-semibold text-foreground">Активно</label>
               <select
                 name="is_active"
                 defaultValue={rule.is_active ? 'true' : 'false'}
@@ -155,7 +155,7 @@ export function RecurringRuleForm({ rule, categories, employees }: Props) {
             </div>
           )}
           <div className="space-y-1.5 sm:col-span-2">
-            <label className="block text-sm font-semibold text-[#111827]">Примечание</label>
+            <label className="block text-sm font-semibold text-foreground">Примечание</label>
             <textarea
               name="notes"
               rows={2}
@@ -179,7 +179,7 @@ export function RecurringRuleForm({ rule, categories, employees }: Props) {
           disabled={isPending}
           className="flex items-center gap-2 px-5 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all disabled:opacity-60"
           style={{
-            background: 'linear-gradient(135deg, #16A34A, #22C55E)',
+            background: 'var(--hp-gradient-primary)',
             boxShadow: '0 4px 16px rgba(22,163,74,0.35)',
           }}
         >

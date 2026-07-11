@@ -127,7 +127,7 @@ export function PropertySelector({
             <button
               type="submit"
               className="flex-1 px-4 h-10 rounded-xl text-white text-sm font-bold hover:-translate-y-0.5 transition-all"
-              style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}
+              style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}
             >
               Создать
             </button>

@@ -178,7 +178,7 @@ export function ContactsViewSwitcher({ contacts }: { contacts: Contact[] }) {
 
       {hasFilters && (
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-slate-500">
-          Найдено: <span className="font-semibold text-[#111827]">{filteredContacts.length}</span> из {contacts.length}
+          Найдено: <span className="font-semibold text-foreground">{filteredContacts.length}</span> из {contacts.length}
         </motion.p>
       )}
 
@@ -192,7 +192,7 @@ export function ContactsViewSwitcher({ contacts }: { contacts: Contact[] }) {
         >
           {filteredContacts.length === 0 ? (
             <div className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm p-16 text-center">
-              <p className="text-[#64748B] text-sm">Нет контактов по выбранным фильтрам</p>
+              <p className="text-muted-foreground text-sm">Нет контактов по выбранным фильтрам</p>
             </div>
           ) : view === 'cards' ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">

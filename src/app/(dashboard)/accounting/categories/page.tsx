@@ -23,15 +23,15 @@ export default async function CategoriesPage() {
       <div>
         <Link
           href="/accounting"
-          className="inline-flex items-center gap-2 text-sm font-medium text-[#64748B] hover:text-[#111827] transition-colors mb-4"
+          className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-4"
         >
           <ArrowLeft className="w-4 h-4" />
           Бухгалтерия
         </Link>
-        <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">
+        <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">
           Категории
         </h1>
-        <p className="text-[#64748B] mt-1 text-sm font-medium">
+        <p className="text-muted-foreground mt-1 text-sm font-medium">
           Системные категории защищены от удаления
         </p>
       </div>
@@ -45,8 +45,8 @@ export default async function CategoriesPage() {
           <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-slate-100">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-green-500" />
-              <h2 className="font-bold text-[#111827] text-[15px]">Доходы</h2>
-              <span className="ml-1 text-xs text-[#64748B] font-medium">{income.length}</span>
+              <h2 className="font-bold text-foreground text-[15px]">Доходы</h2>
+              <span className="ml-1 text-xs text-muted-foreground font-medium">{income.length}</span>
             </div>
           </div>
           <div className="divide-y divide-slate-100">
@@ -56,7 +56,7 @@ export default async function CategoriesPage() {
                   className="w-3 h-3 rounded-full shrink-0"
                   style={{ background: c.color }}
                 />
-                <span className="flex-1 text-sm font-medium text-[#111827] min-w-0 truncate">
+                <span className="flex-1 text-sm font-medium text-foreground min-w-0 truncate">
                   {c.name}
                 </span>
                 {c.is_system
@@ -79,8 +79,8 @@ export default async function CategoriesPage() {
           <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-slate-100">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
-              <h2 className="font-bold text-[#111827] text-[15px]">Расходы</h2>
-              <span className="ml-1 text-xs text-[#64748B] font-medium">{expense.length}</span>
+              <h2 className="font-bold text-foreground text-[15px]">Расходы</h2>
+              <span className="ml-1 text-xs text-muted-foreground font-medium">{expense.length}</span>
             </div>
           </div>
           <div className="divide-y divide-slate-100">
@@ -90,7 +90,7 @@ export default async function CategoriesPage() {
                   className="w-3 h-3 rounded-full shrink-0"
                   style={{ background: c.color }}
                 />
-                <span className="flex-1 text-sm font-medium text-[#111827] min-w-0 truncate">
+                <span className="flex-1 text-sm font-medium text-foreground min-w-0 truncate">
                   {c.name}
                 </span>
                 {c.is_system

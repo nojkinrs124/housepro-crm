@@ -26,7 +26,7 @@ export function ContactsListView({ contacts }: { contacts: Contact[] }) {
   if (contacts.length === 0) {
     return (
       <div className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm p-16 text-center">
-        <p className="text-[#64748B] text-sm">Нет контактов по выбранным фильтрам</p>
+        <p className="text-muted-foreground text-sm">Нет контактов по выбранным фильтрам</p>
       </div>
     )
   }
@@ -38,13 +38,13 @@ export function ContactsListView({ contacts }: { contacts: Contact[] }) {
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-100 bg-slate-50/60">
-              <th className="text-left px-5 py-3 text-xs font-semibold text-[#64748B] uppercase tracking-wide">Контакт</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-[#64748B] uppercase tracking-wide w-[150px]">Телефон</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-[#64748B] uppercase tracking-wide w-[200px]">Email</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-[#64748B] uppercase tracking-wide w-[130px]">Роль</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-[#64748B] uppercase tracking-wide w-[120px]">Статус</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-[#64748B] uppercase tracking-wide w-[140px]">Источник</th>
-              <th className="text-right px-5 py-3 text-xs font-semibold text-[#64748B] uppercase tracking-wide w-[130px]">Действия</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Контакт</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[150px]">Телефон</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[200px]">Email</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[130px]">Роль</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[120px]">Статус</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[140px]">Источник</th>
+              <th className="text-right px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[130px]">Действия</th>
               <th className="px-5 py-3 w-10"></th>
             </tr>
           </thead>
@@ -70,7 +70,7 @@ export function ContactsListView({ contacts }: { contacts: Contact[] }) {
                       >
                         {initials}
                       </div>
-                      <span className="text-sm font-semibold text-[#111827] truncate max-w-[160px]">
+                      <span className="text-sm font-semibold text-foreground truncate max-w-[160px]">
                         {contact.full_name}
                       </span>
                     </div>
@@ -106,7 +106,7 @@ export function ContactsListView({ contacts }: { contacts: Contact[] }) {
                     </span>
                   </td>
                   <td className="px-5 py-3.5">
-                    <span className="text-xs text-[#64748B]">{contact.source ?? '—'}</span>
+                    <span className="text-xs text-muted-foreground">{contact.source ?? '—'}</span>
                   </td>
                   <td className="px-5 py-3.5">
                     <div className="flex items-center justify-end gap-1" onClick={e => e.stopPropagation()}>
@@ -174,8 +174,8 @@ export function ContactsListView({ contacts }: { contacts: Contact[] }) {
                   {initials}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-[#111827] truncate">{contact.full_name}</p>
-                  {contact.phone && <p className="text-xs text-[#64748B] truncate mt-0.5">{contact.phone}</p>}
+                  <p className="text-sm font-semibold text-foreground truncate">{contact.full_name}</p>
+                  {contact.phone && <p className="text-xs text-muted-foreground truncate mt-0.5">{contact.phone}</p>}
                 </div>
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium border ${status.cls} shrink-0`}>
                   {status.label}

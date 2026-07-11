@@ -81,7 +81,7 @@ export function LeadActivityForm({ leadId }: { leadId: string }) {
       <div className="flex gap-2">
         <button type="submit" disabled={loading}
           className="flex items-center gap-1.5 px-4 h-10 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0 transition-all"
-          style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+          style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
           {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
           Сохранить
         </button>

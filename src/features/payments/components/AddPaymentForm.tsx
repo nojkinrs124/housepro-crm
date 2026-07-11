@@ -131,7 +131,7 @@ export function AddPaymentForm({ contractId }: AddPaymentFormProps) {
             type="submit"
             disabled={isPending}
             className="ml-auto flex items-center gap-2 px-4 py-2 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0 transition-all"
-            style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}
+            style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}
           >
             {isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
             Добавить

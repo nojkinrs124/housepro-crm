@@ -34,7 +34,7 @@ export function DealsListView({ deals }: { deals: any[] }) {
   if (deals.length === 0) {
     return (
       <div className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm p-16 text-center">
-        <p className="text-[#64748B] text-sm">Нет сделок по выбранным фильтрам</p>
+        <p className="text-muted-foreground text-sm">Нет сделок по выбранным фильтрам</p>
       </div>
     )
   }
@@ -46,12 +46,12 @@ export function DealsListView({ deals }: { deals: any[] }) {
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-100 bg-slate-50/60">
-              <th className="text-left px-5 py-3 text-xs font-semibold text-[#64748B] uppercase tracking-wide w-[180px]">Тип</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-[#64748B] uppercase tracking-wide">Клиент</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-[#64748B] uppercase tracking-wide">Собственник</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-[#64748B] uppercase tracking-wide">Объект</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-[#64748B] uppercase tracking-wide w-[120px]">Статус</th>
-              <th className="text-right px-5 py-3 text-xs font-semibold text-[#64748B] uppercase tracking-wide w-[140px]">Сумма</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[180px]">Тип</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Клиент</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Собственник</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Объект</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[120px]">Статус</th>
+              <th className="text-right px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[140px]">Сумма</th>
               <th className="px-5 py-3 w-10"></th>
             </tr>
           </thead>
@@ -84,7 +84,7 @@ export function DealsListView({ deals }: { deals: any[] }) {
                     {clientName ? (
                       <div className="flex items-center gap-2">
                         <User className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                        <span className="text-sm font-medium text-[#111827] truncate max-w-[160px]">{clientName}</span>
+                        <span className="text-sm font-medium text-foreground truncate max-w-[160px]">{clientName}</span>
                       </div>
                     ) : (
                       <span className="text-xs text-slate-400">—</span>
@@ -117,7 +117,7 @@ export function DealsListView({ deals }: { deals: any[] }) {
                   </td>
                   <td className="px-5 py-3.5 text-right">
                     {deal.amount ? (
-                      <span className="text-sm font-semibold text-[#111827]">
+                      <span className="text-sm font-semibold text-foreground">
                         {Number(deal.amount).toLocaleString('ru-RU')} ₽
                       </span>
                     ) : (
@@ -155,8 +155,8 @@ export function DealsListView({ deals }: { deals: any[] }) {
                   {statusLabels[deal.status] ?? deal.status}
                 </span>
               </div>
-              {clientName && <p className="text-sm font-medium text-[#111827] truncate">{clientName}</p>}
-              {propLabel && <p className="text-xs text-[#64748B] truncate mt-0.5">{propLabel}</p>}
+              {clientName && <p className="text-sm font-medium text-foreground truncate">{clientName}</p>}
+              {propLabel && <p className="text-xs text-muted-foreground truncate mt-0.5">{propLabel}</p>}
               {deal.amount && (
                 <p className="text-sm font-semibold text-[#16A34A] mt-1.5">
                   {Number(deal.amount).toLocaleString('ru-RU')} ₽

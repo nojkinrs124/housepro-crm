@@ -19,14 +19,14 @@ export default async function LeadsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Лиды</h1>
-          <p className="text-[#64748B] mt-1 text-sm">
+          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Лиды</h1>
+          <p className="text-muted-foreground mt-1 text-sm">
             {total} всего · {newCount} новых · {converted} конвертировано
           </p>
         </div>
         <Link href="/leads/new"
           className="flex items-center gap-2 px-4 py-2.5 text-white rounded-xl text-sm font-semibold"
-          style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+          style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
           <Plus style={{ width: 16, height: 16 }} />
           Новый лид
         </Link>
@@ -47,8 +47,8 @@ export default async function LeadsPage() {
                 <Icon className={stat.iconColor} style={{ width: 20, height: 20 }} />
               </div>
               <div className="min-w-0">
-                <p className="text-2xl font-bold text-[#111827]">{stat.value}</p>
-                <p className="text-xs text-[#64748B] font-medium mt-0.5 leading-tight break-words">{stat.label}</p>
+                <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                <p className="text-xs text-muted-foreground font-medium mt-0.5 leading-tight break-words">{stat.label}</p>
               </div>
             </div>
           )

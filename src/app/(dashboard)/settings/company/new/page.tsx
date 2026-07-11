@@ -20,7 +20,7 @@ export default async function NewCompanyProfilePage() {
           <Building2 className="w-5 h-5 text-blue-600" />
         </div>
         <div>
-          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Новый профиль</h1>
+          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Новый профиль</h1>
           <p className="text-muted-foreground text-sm">Физ. лицо, ИП или ООО для подготовки документов</p>
         </div>
       </div>

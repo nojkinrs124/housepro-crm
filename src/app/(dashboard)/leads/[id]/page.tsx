@@ -92,7 +92,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
             </span>
           </div>
           <div className="min-w-0">
-            <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight break-words">{lead.full_name || 'Без имени'}</h1>
+            <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight break-words">{lead.full_name || 'Без имени'}</h1>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${statusColors[lead.status] ?? 'bg-gray-100'}`}>
                 {statusLabels[lead.status] ?? lead.status}
@@ -113,7 +113,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
           {!isConverted && (
             <ServerActionForm action={convertLeadToClient.bind(null, id)}>
               <button type="submit"
-                className="flex items-center gap-2 px-4 py-2 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition whitespace-nowrap" style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+                className="flex items-center gap-2 px-4 py-2 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition whitespace-nowrap" style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
                 <UserCheck className="w-4 h-4" />
                 → Контакт
               </button>

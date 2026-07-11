@@ -30,7 +30,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
       </Link>
 
       <div>
-        <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Редактировать объект</h1>
+        <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Редактировать объект</h1>
         <p className="text-muted-foreground mt-1">{p.title}</p>
       </div>
 
@@ -227,7 +227,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
 
         <div className="flex gap-3">
           <button type="submit"
-            className="flex-1 h-10 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition" style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+            className="flex-1 h-10 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition" style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
             Сохранить изменения
           </button>
           <Link href={`/properties/${id}`}

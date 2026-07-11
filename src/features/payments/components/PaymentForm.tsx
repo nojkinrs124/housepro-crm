@@ -63,7 +63,7 @@ export function PaymentForm({
 
       {/* Contract */}
       <div className="space-y-1.5">
-        <label className="text-xs font-semibold text-[#64748B] uppercase tracking-wide">Договор</label>
+        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Договор</label>
         <select
           name="contract_id"
           defaultValue={defaultContractId ?? ''}
@@ -81,7 +81,7 @@ export function PaymentForm({
 
       {/* Amount */}
       <div className="space-y-1.5">
-        <label className="text-xs font-semibold text-[#64748B] uppercase tracking-wide">Сумма *</label>
+        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Сумма *</label>
         <div className="relative">
           <input
             name="amount"
@@ -94,14 +94,14 @@ export function PaymentForm({
               fieldErr('amount') ? 'border-red-300 bg-red-50' : 'border-slate-200 bg-white'
             }`}
           />
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#64748B] text-sm">₽</span>
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">₽</span>
         </div>
         {fieldErr('amount') && <p className="text-xs text-red-500">{fieldErr('amount')}</p>}
       </div>
 
       {/* Type */}
       <div className="space-y-1.5">
-        <label className="text-xs font-semibold text-[#64748B] uppercase tracking-wide">Тип платежа</label>
+        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Тип платежа</label>
         <select
           name="payment_type"
           defaultValue="rent"
@@ -115,7 +115,7 @@ export function PaymentForm({
 
       {/* Due date */}
       <div className="space-y-1.5">
-        <label className="text-xs font-semibold text-[#64748B] uppercase tracking-wide">Срок оплаты</label>
+        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Срок оплаты</label>
         <input
           name="due_date"
           type="date"
@@ -125,7 +125,7 @@ export function PaymentForm({
 
       {/* Notes */}
       <div className="space-y-1.5">
-        <label className="text-xs font-semibold text-[#64748B] uppercase tracking-wide">Примечание</label>
+        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Примечание</label>
         <textarea
           name="notes"
           rows={2}
@@ -145,7 +145,7 @@ export function PaymentForm({
           type="submit"
           disabled={pending}
           className="flex-1 h-10 text-white rounded-xl text-sm font-semibold transition-all disabled:opacity-60 disabled:cursor-not-allowed"
-          style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}
+          style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}
         >
           {pending ? 'Сохранение...' : 'Создать платёж'}
         </button>

@@ -80,7 +80,7 @@ export function ContactCard({ contact, idx }: ContactCardProps) {
 
         {/* Name */}
         <Link href={`/contacts/${contact.id}`}>
-          <h3 className="font-bold text-[#111827] text-[15px] leading-snug mt-2 group-hover:text-[#16A34A] transition-colors">
+          <h3 className="font-bold text-foreground text-[15px] leading-snug mt-2 group-hover:text-[#16A34A] transition-colors">
             {contact.full_name}
           </h3>
         </Link>
@@ -88,13 +88,13 @@ export function ContactCard({ contact, idx }: ContactCardProps) {
         {/* Contact info */}
         <div className="mt-3 space-y-1.5">
           {contact.phone && (
-            <div className="flex items-center gap-2 text-xs text-[#64748B]">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Phone style={{ width: 12, height: 12, flexShrink: 0, color: '#94A3B8' }} />
               <span className="truncate font-medium">{contact.phone}</span>
             </div>
           )}
           {contact.email && (
-            <div className="flex items-center gap-2 text-xs text-[#64748B]">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Mail style={{ width: 12, height: 12, flexShrink: 0, color: '#94A3B8' }} />
               <span className="truncate">{contact.email}</span>
             </div>

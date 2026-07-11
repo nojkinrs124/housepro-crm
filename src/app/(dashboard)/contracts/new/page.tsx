@@ -89,7 +89,7 @@ export default async function NewContractPage({
           <FileText className="w-5 h-5 text-violet-600" />
         </div>
         <div>
-          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Новый договор</h1>
+          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Новый договор</h1>
           <p className="text-muted-foreground text-sm">Укажите обе стороны из единой базы контактов</p>
         </div>
       </div>

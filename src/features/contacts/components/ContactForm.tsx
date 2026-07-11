@@ -277,7 +277,7 @@ export function ContactForm({ action, defaults = {}, backHref, submitLabel }: Co
       <div className="flex items-center gap-3">
         <button type="submit" disabled={isPending}
           className="px-6 py-2.5 rounded-[14px] text-white font-medium hover:-translate-y-0.5 transition text-sm disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
-          style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+          style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
           {isPending ? 'Сохранение…' : submitLabel}
         </button>
         <Link href={backHref} className="px-6 py-2.5 border border-border text-foreground rounded-[14px] text-sm font-medium hover:bg-accent transition">

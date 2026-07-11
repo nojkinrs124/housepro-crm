@@ -35,7 +35,7 @@ export default async function EditCompanyProfilePage({
             <Building2 className="w-5 h-5 text-blue-600" />
           </div>
           <div className="min-w-0">
-            <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight truncate">{profile.name || 'Профиль'}</h1>
+            <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight truncate">{profile.name || 'Профиль'}</h1>
             <p className="text-muted-foreground text-sm">Реквизиты профиля</p>
           </div>
         </div>

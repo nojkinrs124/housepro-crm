@@ -141,8 +141,8 @@ export default async function AnalyticsPage({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Аналитика</h1>
-          <p className="text-sm text-[#64748B] mt-1">
+          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Аналитика</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             {from && to ? `${from} — ${to}` : 'Данные за последние 12 месяцев'}
           </p>
         </div>
@@ -181,13 +181,13 @@ export default async function AnalyticsPage({
             gradient: 'from-orange-500 to-orange-600',
           },
         ].map(card => (
-          <div key={card.label} className="bg-white rounded-[20px] border border-[#E2E8F0] p-5 shadow-sm">
+          <div key={card.label} className="bg-white rounded-[20px] border border-border p-5 shadow-sm">
             <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center text-white mb-3`}>
               {card.icon}
             </div>
-            <p className="text-2xl font-bold text-[#111827]">{card.value}</p>
-            <p className="text-xs text-[#64748B] mt-0.5">{card.label}</p>
-            <p className="text-xs text-[#94A3B8] mt-1">{card.sub}</p>
+            <p className="text-2xl font-bold text-foreground">{card.value}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{card.label}</p>
+            <p className="text-xs text-slate-400 mt-1">{card.sub}</p>
           </div>
         ))}
       </div>
@@ -200,13 +200,13 @@ export default async function AnalyticsPage({
           { label: 'Продано объектов',   value: soldProps,        icon: <CheckCircle2 style={{ width: 16, height: 16 }} />,  color: 'text-violet-600 bg-violet-50' },
           { label: 'Активных договоров', value: activeContracts,  icon: <FileText style={{ width: 16, height: 16 }} />,      color: 'text-orange-600 bg-orange-50' },
         ].map(item => (
-          <div key={item.label} className="bg-white rounded-[20px] border border-[#E2E8F0] p-4 shadow-sm flex items-center gap-3">
+          <div key={item.label} className="bg-white rounded-[20px] border border-border p-4 shadow-sm flex items-center gap-3">
             <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${item.color}`}>
               {item.icon}
             </div>
             <div>
-              <p className="text-xl font-bold text-[#111827]">{item.value}</p>
-              <p className="text-xs text-[#64748B]">{item.label}</p>
+              <p className="text-xl font-bold text-foreground">{item.value}</p>
+              <p className="text-xs text-muted-foreground">{item.label}</p>
             </div>
           </div>
         ))}
@@ -214,36 +214,36 @@ export default async function AnalyticsPage({
 
       {/* Charts row 1 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-[20px] border border-[#E2E8F0] p-5 shadow-sm">
-          <h2 className="text-sm font-semibold text-[#111827] mb-4">Сумма и комиссия по сделкам</h2>
+        <div className="bg-white rounded-[20px] border border-border p-5 shadow-sm">
+          <h2 className="text-sm font-semibold text-foreground mb-4">Сумма и комиссия по сделкам</h2>
           <DealsAreaChart data={monthlyDeals} />
           <div className="flex items-center gap-4 mt-3">
-            <span className="flex items-center gap-1.5 text-xs text-[#64748B]">
+            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <span className="w-3 h-0.5 bg-green-600 inline-block rounded" /> Сумма сделок
             </span>
-            <span className="flex items-center gap-1.5 text-xs text-[#64748B]">
+            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <span className="w-3 h-0.5 bg-blue-600 inline-block rounded" /> Комиссия
             </span>
           </div>
         </div>
-        <div className="bg-white rounded-[20px] border border-[#E2E8F0] p-5 shadow-sm">
-          <h2 className="text-sm font-semibold text-[#111827] mb-4">Воронка сделок</h2>
+        <div className="bg-white rounded-[20px] border border-border p-5 shadow-sm">
+          <h2 className="text-sm font-semibold text-foreground mb-4">Воронка сделок</h2>
           <DealFunnelChart data={funnelStages} />
         </div>
       </div>
 
       {/* Charts row 2 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-[20px] border border-[#E2E8F0] p-5 shadow-sm">
-          <h2 className="text-sm font-semibold text-[#111827] mb-4">Платежи по месяцам</h2>
+        <div className="bg-white rounded-[20px] border border-border p-5 shadow-sm">
+          <h2 className="text-sm font-semibold text-foreground mb-4">Платежи по месяцам</h2>
           <PaymentsMonthlyChart data={paymentsMonthly} />
         </div>
-        <div className="bg-white rounded-[20px] border border-[#E2E8F0] p-5 shadow-sm">
-          <h2 className="text-sm font-semibold text-[#111827] mb-4">Типы сделок</h2>
+        <div className="bg-white rounded-[20px] border border-border p-5 shadow-sm">
+          <h2 className="text-sm font-semibold text-foreground mb-4">Типы сделок</h2>
           {dealTypePie.length > 0 ? (
             <DealTypePieChart data={dealTypePie} />
           ) : (
-            <div className="h-[220px] flex items-center justify-center text-sm text-[#94A3B8]">
+            <div className="h-[220px] flex items-center justify-center text-sm text-slate-400">
               Нет данных о сделках
             </div>
           )}
@@ -251,20 +251,20 @@ export default async function AnalyticsPage({
       </div>
 
       {/* Chart row 3 */}
-      <div className="bg-white rounded-[20px] border border-[#E2E8F0] p-5 shadow-sm">
-        <h2 className="text-sm font-semibold text-[#111827] mb-4">Лиды и конверсия по месяцам</h2>
+      <div className="bg-white rounded-[20px] border border-border p-5 shadow-sm">
+        <h2 className="text-sm font-semibold text-foreground mb-4">Лиды и конверсия по месяцам</h2>
         <LeadsConversionChart data={leadsConversionData} />
       </div>
 
       {/* Alerts row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Overdue payments */}
-        <div className="bg-white rounded-[20px] border border-[#E2E8F0] p-5 shadow-sm">
+        <div className="bg-white rounded-[20px] border border-border p-5 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-7 h-7 rounded-lg bg-red-100 flex items-center justify-center">
               <AlertTriangle style={{ width: 14, height: 14, color: '#DC2626' }} />
             </div>
-            <h2 className="text-sm font-semibold text-[#111827]">Просроченные платежи</h2>
+            <h2 className="text-sm font-semibold text-foreground">Просроченные платежи</h2>
             {overduePayments.length > 0 && (
               <span className="ml-auto text-xs font-semibold bg-red-100 text-red-700 px-2 py-0.5 rounded-full">
                 {overduePayments.length}
@@ -287,7 +287,7 @@ export default async function AnalyticsPage({
                   <a key={p.id} href={`/payments/${p.id}`}
                     className="flex items-center justify-between p-3 rounded-xl border border-red-100 hover:border-red-300 hover:bg-red-50/40 transition-all group">
                     <div>
-                      <p className="text-sm font-medium text-[#111827] group-hover:text-red-700 transition-colors">
+                      <p className="text-sm font-medium text-foreground group-hover:text-red-700 transition-colors">
                         Договор № {contract?.contract_number ?? '—'}
                       </p>
                       <p className="text-xs text-red-500">Просрочен на {daysOverdue} дн.</p>
@@ -303,12 +303,12 @@ export default async function AnalyticsPage({
         </div>
 
         {/* Overdue tasks */}
-        <div className="bg-white rounded-[20px] border border-[#E2E8F0] p-5 shadow-sm">
+        <div className="bg-white rounded-[20px] border border-border p-5 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-7 h-7 rounded-lg bg-orange-100 flex items-center justify-center">
               <Clock style={{ width: 14, height: 14, color: '#EA580C' }} />
             </div>
-            <h2 className="text-sm font-semibold text-[#111827]">Просроченные задачи</h2>
+            <h2 className="text-sm font-semibold text-foreground">Просроченные задачи</h2>
             {overdueTasks.length > 0 && (
               <span className="ml-auto text-xs font-semibold bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
                 {overdueTasks.length}
@@ -331,10 +331,10 @@ export default async function AnalyticsPage({
                   <a key={t.id} href={`/tasks/${t.id}`}
                     className="flex items-center justify-between p-3 rounded-xl border border-orange-100 hover:border-orange-300 hover:bg-orange-50/40 transition-all group">
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-[#111827] group-hover:text-orange-700 transition-colors truncate">
+                      <p className="text-sm font-medium text-foreground group-hover:text-orange-700 transition-colors truncate">
                         {t.title}
                       </p>
-                      <p className="text-xs text-[#94A3B8]">
+                      <p className="text-xs text-slate-400">
                         {assignee?.full_name ? `${assignee.full_name} · ` : ''}
                         Просрочена на {daysOverdue} дн.
                       </p>

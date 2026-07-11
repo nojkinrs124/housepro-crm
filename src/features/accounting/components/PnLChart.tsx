@@ -25,7 +25,7 @@ function fmt(v: number) {
 export function PnLChart({ data }: Props) {
   if (data.length === 0) {
     return (
-      <div className="h-[260px] flex items-center justify-center text-[#94A3B8] text-sm">
+      <div className="h-[260px] flex items-center justify-center text-slate-400 text-sm">
         Нет данных за период
       </div>
     )

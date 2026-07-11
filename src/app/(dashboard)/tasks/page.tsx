@@ -21,12 +21,12 @@ export default async function TasksPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Задачи</h1>
-          <p className="text-[#64748B] mt-1 text-sm">{total} задач · {active} активных</p>
+          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Задачи</h1>
+          <p className="text-muted-foreground mt-1 text-sm">{total} задач · {active} активных</p>
         </div>
         <Link href="/tasks/new"
           className="flex items-center gap-2 px-4 py-2.5 text-white rounded-xl text-sm font-semibold"
-          style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+          style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
           <Plus style={{ width: 16, height: 16 }} />
           Новая задача
         </Link>
@@ -47,8 +47,8 @@ export default async function TasksPage() {
                 <Icon className={stat.iconColor} style={{ width: 20, height: 20 }} />
               </div>
               <div className="min-w-0">
-                <p className="text-2xl font-bold text-[#111827]">{stat.value}</p>
-                <p className="text-xs text-[#64748B] font-medium mt-0.5 leading-tight break-words">{stat.label}</p>
+                <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                <p className="text-xs text-muted-foreground font-medium mt-0.5 leading-tight break-words">{stat.label}</p>
               </div>
             </div>
           )
@@ -60,11 +60,11 @@ export default async function TasksPage() {
           <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mx-auto mb-4 shadow-md">
             <CheckSquare style={{ width: 24, height: 24 }} className="text-green-600" />
           </div>
-          <h3 className="font-bold text-[#111827] text-lg">Нет задач</h3>
-          <p className="text-[#64748B] text-sm mt-1">Создайте первую задачу для команды</p>
+          <h3 className="font-bold text-foreground text-lg">Нет задач</h3>
+          <p className="text-muted-foreground text-sm mt-1">Создайте первую задачу для команды</p>
           <Link href="/tasks/new"
             className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 text-white rounded-xl text-sm font-semibold"
-            style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+            style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
             <Plus style={{ width: 16, height: 16 }} />
             Создать задачу
           </Link>

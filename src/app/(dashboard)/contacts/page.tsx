@@ -21,12 +21,12 @@ export default async function ContactsPage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight">Контакты</h1>
-          <p className="text-[#64748B] mt-1 text-sm font-medium">{total} контактов в базе</p>
+          <h1 className="text-[28px] font-bold text-foreground tracking-tight">Контакты</h1>
+          <p className="text-muted-foreground mt-1 text-sm font-medium">{total} контактов в базе</p>
         </div>
         <Link href="/contacts/new"
           className="flex items-center gap-2 px-5 py-2.5 text-white rounded-[14px] text-sm font-bold transition-all hover:-translate-y-0.5"
-          style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+          style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
           <Plus style={{ width: 16, height: 16 }} />
           Добавить контакт
         </Link>
@@ -47,8 +47,8 @@ export default async function ContactsPage() {
                 <Icon className={stat.iconColor} style={{ width: 20, height: 20 }} />
               </div>
               <div className="min-w-0">
-                <p className="text-2xl font-bold text-[#111827]">{stat.value}</p>
-                <p className="text-xs text-[#64748B] font-medium mt-0.5 leading-tight break-words">{stat.label}</p>
+                <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                <p className="text-xs text-muted-foreground font-medium mt-0.5 leading-tight break-words">{stat.label}</p>
               </div>
             </div>
           )
@@ -61,11 +61,11 @@ export default async function ContactsPage() {
             style={{ background: 'linear-gradient(135deg, rgba(22,163,74,0.1), rgba(34,197,94,0.1))' }}>
             <Users style={{ width: 28, height: 28, color: '#16A34A' }} />
           </div>
-          <p className="text-[#111827] font-bold text-lg">Контактов ещё нет</p>
-          <p className="text-[#64748B] text-sm mt-1">Добавьте первый контакт в базу</p>
+          <p className="text-foreground font-bold text-lg">Контактов ещё нет</p>
+          <p className="text-muted-foreground text-sm mt-1">Добавьте первый контакт в базу</p>
           <Link href="/contacts/new"
             className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all"
-            style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+            style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
             <Plus style={{ width: 16, height: 16 }} />
             Добавить контакт
           </Link>

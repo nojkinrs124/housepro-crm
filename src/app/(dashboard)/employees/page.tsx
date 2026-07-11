@@ -42,13 +42,13 @@ export default async function EmployeesPage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Сотрудники</h1>
-          <p className="text-[#64748B] mt-1 text-sm font-medium">{employees?.length ?? 0} сотрудников</p>
+          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Сотрудники</h1>
+          <p className="text-muted-foreground mt-1 text-sm font-medium">{employees?.length ?? 0} сотрудников</p>
         </div>
         <Link
           href="/employees/new"
           className="flex items-center gap-2 px-5 py-2.5 text-white rounded-[14px] text-sm font-bold transition-all hover:-translate-y-0.5"
-          style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}
+          style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}
         >
           <Plus style={{ width: 16, height: 16 }} />
           Добавить
@@ -66,8 +66,8 @@ export default async function EmployeesPage() {
                 <Icon style={{ width: 20, height: 20 }} />
               </div>
               <div className="min-w-0">
-                <p className="text-2xl font-bold text-[#111827]">{count}</p>
-                <p className="text-xs text-[#64748B] font-medium mt-0.5 leading-tight break-words">{roleLabels[role]}</p>
+                <p className="text-2xl font-bold text-foreground">{count}</p>
+                <p className="text-xs text-muted-foreground font-medium mt-0.5 leading-tight break-words">{roleLabels[role]}</p>
               </div>
             </div>
           )
@@ -85,11 +85,11 @@ export default async function EmployeesPage() {
               style={{ background: 'linear-gradient(135deg, rgba(22,163,74,0.1), rgba(34,197,94,0.1))' }}>
               <Users style={{ width: 24, height: 24, color: '#16A34A' }} />
             </div>
-            <p className="text-[#111827] font-bold text-base">Сотрудников ещё нет</p>
-            <p className="text-[#64748B] text-sm mt-1">Добавьте первого сотрудника</p>
+            <p className="text-foreground font-bold text-base">Сотрудников ещё нет</p>
+            <p className="text-muted-foreground text-sm mt-1">Добавьте первого сотрудника</p>
             <Link href="/employees/new"
               className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all"
-              style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+              style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
               <Plus style={{ width: 16, height: 16 }} />
               Добавить
             </Link>
@@ -105,12 +105,12 @@ export default async function EmployeesPage() {
                 <Link
                   key={emp.id}
                   href={`/employees/${emp.id}`}
-                  className="flex items-center gap-4 px-6 py-4 hover:bg-[#F8FAFC] transition-all duration-200 group"
+                  className="flex items-center gap-4 px-6 py-4 hover:bg-background transition-all duration-200 group"
                 >
                   {/* Avatar */}
                   <div
                     className="w-11 h-11 rounded-full flex items-center justify-center shrink-0 text-white text-sm font-bold"
-                    style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 2px 8px rgba(22,163,74,0.25)' }}
+                    style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 2px 8px rgba(22,163,74,0.25)' }}
                   >
                     {emp.full_name?.charAt(0)?.toUpperCase() ?? '?'}
                   </div>
@@ -118,7 +118,7 @@ export default async function EmployeesPage() {
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap min-w-0">
-                      <p className="font-semibold text-[#111827] group-hover:text-[#16A34A] transition-colors text-sm truncate max-w-[200px] sm:max-w-none">
+                      <p className="font-semibold text-foreground group-hover:text-[#16A34A] transition-colors text-sm truncate max-w-[200px] sm:max-w-none">
                         {emp.full_name}
                       </p>
                       <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ${roleColors[emp.role] ?? 'bg-gray-100'}`}>
@@ -130,22 +130,22 @@ export default async function EmployeesPage() {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-[#64748B] mt-0.5 truncate">{emp.email}</p>
-                    {emp.phone && <p className="text-xs text-[#94A3B8] truncate">{emp.phone}</p>}
+                    <p className="text-xs text-muted-foreground mt-0.5 truncate">{emp.email}</p>
+                    {emp.phone && <p className="text-xs text-slate-400 truncate">{emp.phone}</p>}
                   </div>
 
                   {/* Stats */}
                   <div className="hidden sm:flex items-center gap-6 shrink-0">
                     <div className="text-center">
-                      <p className="text-lg font-bold text-[#111827]">{deals}</p>
-                      <p className="text-[10px] text-[#64748B] font-medium">Сделок</p>
+                      <p className="text-lg font-bold text-foreground">{deals}</p>
+                      <p className="text-[10px] text-muted-foreground font-medium">Сделок</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-lg font-bold text-[#111827]">{contracts}</p>
-                      <p className="text-[10px] text-[#64748B] font-medium">Договоров</p>
+                      <p className="text-lg font-bold text-foreground">{contracts}</p>
+                      <p className="text-[10px] text-muted-foreground font-medium">Договоров</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-xs text-[#94A3B8] font-medium">
+                      <p className="text-xs text-slate-400 font-medium">
                         с {new Date(emp.created_at).toLocaleDateString('ru-RU', { month: 'short', year: 'numeric' })}
                       </p>
                     </div>

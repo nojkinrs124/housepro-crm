@@ -12,7 +12,7 @@ export default function NewEmployeePage() {
       </Link>
 
       <div>
-        <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Добавить сотрудника</h1>
+        <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Добавить сотрудника</h1>
         <p className="text-muted-foreground mt-1">Создание нового пользователя в системе</p>
       </div>
 
@@ -74,7 +74,7 @@ export default function NewEmployeePage() {
 
         <button
           type="submit"
-          className="w-full px-4 py-2 rounded-[14px] text-white font-medium hover:-translate-y-0.5 transition" style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}
+          className="w-full px-4 py-2 rounded-[14px] text-white font-medium hover:-translate-y-0.5 transition" style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}
         >
           Добавить сотрудника
         </button>

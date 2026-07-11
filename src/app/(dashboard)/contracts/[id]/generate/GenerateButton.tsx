@@ -26,7 +26,7 @@ export function GenerateButton({ contractId }: { contractId: string }) {
         onClick={handleGenerate}
         disabled={state === 'loading'}
         className="flex items-center gap-2 px-5 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
-        style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}
+        style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}
       >
         {state === 'loading' ? (
           <><Loader2 className="w-4 h-4 animate-spin" />Генерация...</>
@@ -46,7 +46,7 @@ export function GenerateButton({ contractId }: { contractId: string }) {
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 px-4 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all"
-            style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}
+            style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}
           >
             <Download className="w-4 h-4" />
             Скачать DOCX

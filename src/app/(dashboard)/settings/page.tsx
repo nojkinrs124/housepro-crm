@@ -23,8 +23,8 @@ export default async function SettingsPage() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div>
-        <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Настройки</h1>
-        <p className="text-[#64748B] mt-1.5 text-sm font-medium">Управление системой HousePro CRM</p>
+        <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Настройки</h1>
+        <p className="text-muted-foreground mt-1.5 text-sm font-medium">Управление системой HousePro CRM</p>
       </div>
 
       {/* Profile card */}
@@ -36,7 +36,7 @@ export default async function SettingsPage() {
         >
           <div
             className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center shrink-0 text-white text-base font-bold"
-            style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 2px 8px rgba(22,163,74,0.3)' }}
+            style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 2px 8px rgba(22,163,74,0.3)' }}
           >
             {avatarUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -46,10 +46,10 @@ export default async function SettingsPage() {
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="font-semibold text-[#111827] text-sm truncate">
+            <p className="font-semibold text-foreground text-sm truncate">
               {(profile as { full_name?: string }).full_name}
             </p>
-            <p className="text-xs text-[#64748B] mt-0.5 truncate">
+            <p className="text-xs text-muted-foreground mt-0.5 truncate">
               {(profile as { email?: string }).email} ·{' '}
               {roleLabels[(profile as { role?: string }).role ?? ''] ?? (profile as { role?: string }).role}
             </p>
@@ -147,17 +147,17 @@ export default async function SettingsPage() {
                 <Icon className={item.iconColor} style={{ width: 20, height: 20 }} />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="font-semibold text-[#111827] text-sm">{item.title}</p>
-                <p className="text-xs text-[#64748B] mt-0.5">{item.desc}</p>
+                <p className="font-semibold text-foreground text-sm">{item.title}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
               </div>
-              <ChevronRight className="text-[#94A3B8] shrink-0" style={{ width: 16, height: 16 }} />
+              <ChevronRight className="text-slate-400 shrink-0" style={{ width: 16, height: 16 }} />
             </Link>
           )
         })}
       </div>
 
       <div className="rounded-[16px] p-4 text-center" style={{ background: 'rgba(248,250,252,0.8)', border: '1px solid rgba(214,219,235,0.5)' }}>
-        <p className="text-xs text-[#64748B] font-medium">
+        <p className="text-xs text-muted-foreground font-medium">
           HousePro CRM v1.0.0 · Powered by Next.js + Supabase
         </p>
       </div>

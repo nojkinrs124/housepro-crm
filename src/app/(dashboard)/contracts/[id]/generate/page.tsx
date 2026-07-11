@@ -70,7 +70,7 @@ export default async function GenerateContractPage({
           <Sparkles className="w-5 h-5 text-violet-600" />
         </div>
         <div>
-          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Генерация договора</h1>
+          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Генерация договора</h1>
           <p className="text-muted-foreground text-sm">
             {contract.contract_number} · {contractTypeLabels[contract.contract_type]}
           </p>

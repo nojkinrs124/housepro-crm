@@ -127,7 +127,7 @@ export function RepresentativesPanel({ contactId, representatives }: { contactId
           </label>
           <button type="submit"
             className="px-4 py-2 rounded-lg text-white text-xs font-medium hover:-translate-y-0.5 transition"
-            style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)' }}>
+            style={{ background: 'var(--hp-gradient-primary)' }}>
             Сохранить представителя
           </button>
         </ServerActionForm>

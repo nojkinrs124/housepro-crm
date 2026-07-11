@@ -43,7 +43,7 @@ export function TaskStatusSelect({ taskId, currentStatus }: Props) {
             flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border transition-all disabled:opacity-50
             ${currentStatus === s.value
               ? `${s.bg} ${s.border} ${s.color} ring-2 ring-offset-1 ring-current`
-              : 'bg-white border-[#E2E8F0] text-[#64748B] hover:border-[#CBD5E1] hover:bg-[#F8FAFC]'
+              : 'bg-white border-border text-muted-foreground hover:border-[#CBD5E1] hover:bg-background'
             }
           `}
         >

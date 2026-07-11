@@ -62,7 +62,7 @@ export default async function NewDealPage({
           <TrendingUp className="w-5 h-5 text-green-600" />
         </div>
         <div>
-          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Новая сделка</h1>
+          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Новая сделка</h1>
           <p className="text-muted-foreground text-sm">Укажите обе стороны и объект</p>
         </div>
       </div>
@@ -151,7 +151,7 @@ export default async function NewDealPage({
 
         <div className="flex items-center gap-3">
           <button type="submit"
-            className="flex items-center gap-2 px-6 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all" style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+            className="flex items-center gap-2 px-6 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all" style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
             <TrendingUp className="w-4 h-4" />
             Создать сделку
           </button>

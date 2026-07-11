@@ -18,7 +18,7 @@ export function CategoryPieChart({ data, title }: Props) {
 
   if (data.length === 0 || total === 0) {
     return (
-      <div className="h-[200px] flex items-center justify-center text-[#94A3B8] text-sm">
+      <div className="h-[200px] flex items-center justify-center text-slate-400 text-sm">
         Нет данных
       </div>
     )
@@ -26,7 +26,7 @@ export function CategoryPieChart({ data, title }: Props) {
 
   return (
     <div>
-      <p className="text-xs font-semibold text-[#64748B] uppercase tracking-wide mb-3">{title}</p>
+      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">{title}</p>
       <div className="flex items-center gap-4">
         <div className="shrink-0" style={{ width: 120, height: 120 }}>
           <ResponsiveContainer width="100%" height="100%">
@@ -60,7 +60,7 @@ export function CategoryPieChart({ data, title }: Props) {
                 style={{ background: d.color }}
               />
               <span className="text-xs text-[#374151] truncate flex-1">{d.name}</span>
-              <span className="text-xs font-semibold text-[#111827] shrink-0">
+              <span className="text-xs font-semibold text-foreground shrink-0">
                 {Math.round((d.value / total) * 100)}%
               </span>
             </div>

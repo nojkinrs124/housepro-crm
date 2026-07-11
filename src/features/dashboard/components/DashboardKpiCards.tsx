@@ -63,10 +63,10 @@ export function DashboardKpiCards({ cards }: { cards: KpiCard[] }) {
                     {card.trend}
                   </span>
                 </div>
-                <p className="text-[32px] font-bold text-[#111827] leading-none tracking-tight">
+                <p className="text-[32px] font-bold text-foreground leading-none tracking-tight">
                   {card.value.toLocaleString('ru-RU')}
                 </p>
-                <p className="text-xs text-[#64748B] mt-2 leading-snug font-medium">{card.title}</p>
+                <p className="text-xs text-muted-foreground mt-2 leading-snug font-medium">{card.title}</p>
               </motion.div>
             </Link>
           </motion.div>

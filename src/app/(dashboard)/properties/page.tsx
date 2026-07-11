@@ -64,12 +64,12 @@ export default async function PropertiesPage({
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Объекты недвижимости</h1>
-          <p className="text-[#64748B] mt-1 text-sm font-medium">{properties?.length ?? 0} объектов в базе</p>
+          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Объекты недвижимости</h1>
+          <p className="text-muted-foreground mt-1 text-sm font-medium">{properties?.length ?? 0} объектов в базе</p>
         </div>
         <Link href="/properties/new"
           className="flex items-center gap-2 px-5 py-2.5 text-white rounded-[14px] text-sm font-bold transition-all hover:-translate-y-0.5"
-          style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+          style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
           <Plus style={{ width: 16, height: 16 }} />
           Добавить объект
         </Link>
@@ -90,7 +90,7 @@ export default async function PropertiesPage({
               name="search"
               defaultValue={params.search}
               placeholder="Поиск по адресу..."
-              className="w-full h-[42px] pl-10 pr-4 text-sm text-[#111827] placeholder:text-slate-400 outline-none bg-[#F8FAFC] border border-slate-200 rounded-[12px] focus:border-[#22C55E] focus:ring-2 focus:ring-green-100 transition-all font-medium"
+              className="w-full h-[42px] pl-10 pr-4 text-sm text-foreground placeholder:text-slate-400 outline-none bg-background border border-slate-200 rounded-[12px] focus:border-[#22C55E] focus:ring-2 focus:ring-green-100 transition-all font-medium"
             />
           </div>
         </form>
@@ -100,7 +100,7 @@ export default async function PropertiesPage({
           <Link href={buildHref({ deal_type: undefined })}
             className="px-4 py-2 rounded-[12px] text-sm font-bold transition-all"
             style={!params.deal_type
-              ? { background: 'linear-gradient(135deg, #16A34A, #22C55E)', color: '#fff' }
+              ? { background: 'var(--hp-gradient-primary)', color: '#fff' }
               : { background: '#F8FAFC', color: '#64748B' }}>
             Все
           </Link>
@@ -108,7 +108,7 @@ export default async function PropertiesPage({
             <Link key={value} href={buildHref({ deal_type: value })}
               className="px-4 py-2 rounded-[12px] text-sm font-bold transition-all"
               style={params.deal_type === value
-                ? { background: 'linear-gradient(135deg, #16A34A, #22C55E)', color: '#fff' }
+                ? { background: 'var(--hp-gradient-primary)', color: '#fff' }
                 : { background: '#F8FAFC', color: '#64748B' }}>
               {label}
             </Link>
@@ -118,12 +118,12 @@ export default async function PropertiesPage({
         {/* View switcher */}
         <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-[12px] shrink-0 ml-auto">
           <Link href={buildHref({ view: undefined })}
-            className={`w-9 h-9 flex items-center justify-center rounded-[10px] transition-all ${view === 'grid' ? 'bg-white shadow-sm text-[#111827]' : 'text-[#94A3B8] hover:text-[#64748B]'}`}
+            className={`w-9 h-9 flex items-center justify-center rounded-[10px] transition-all ${view === 'grid' ? 'bg-white shadow-sm text-foreground' : 'text-slate-400 hover:text-muted-foreground'}`}
             title="Карточки">
             <LayoutGrid style={{ width: 16, height: 16 }} />
           </Link>
           <Link href={buildHref({ view: 'list' })}
-            className={`w-9 h-9 flex items-center justify-center rounded-[10px] transition-all ${view === 'list' ? 'bg-white shadow-sm text-[#111827]' : 'text-[#94A3B8] hover:text-[#64748B]'}`}
+            className={`w-9 h-9 flex items-center justify-center rounded-[10px] transition-all ${view === 'list' ? 'bg-white shadow-sm text-foreground' : 'text-slate-400 hover:text-muted-foreground'}`}
             title="Список">
             <List style={{ width: 16, height: 16 }} />
           </Link>
@@ -138,13 +138,13 @@ export default async function PropertiesPage({
             style={{ background: 'linear-gradient(135deg, rgba(22,163,74,0.1), rgba(34,197,94,0.1))' }}>
             <Home style={{ width: 28, height: 28, color: '#16A34A' }} />
           </div>
-          <p className="text-[#111827] font-bold text-lg">Нет объектов</p>
-          <p className="text-[#64748B] text-sm mt-1">
+          <p className="text-foreground font-bold text-lg">Нет объектов</p>
+          <p className="text-muted-foreground text-sm mt-1">
             {error ? `Ошибка: ${error.message}` : 'Добавьте первый объект недвижимости'}
           </p>
           <Link href="/properties/new"
             className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all"
-            style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+            style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
             <Plus style={{ width: 16, height: 16 }} />
             Добавить объект
           </Link>
@@ -204,32 +204,32 @@ export default async function PropertiesPage({
                 </div>
                 {/* Body */}
                 <div className="p-4">
-                  <h3 className="font-bold text-[#111827] text-[15px] leading-snug group-hover:text-[#16A34A] transition-colors mb-2">
+                  <h3 className="font-bold text-foreground text-[15px] leading-snug group-hover:text-[#16A34A] transition-colors mb-2">
                     {property.title}
                   </h3>
                   {property.address && (
-                    <div className="flex items-center gap-1.5 text-xs text-[#64748B] mb-3">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-3">
                       <MapPin style={{ width: 12, height: 12, flexShrink: 0, color: '#94A3B8' }} />
                       <span className="truncate font-medium">{property.address}</span>
                     </div>
                   )}
                   <div className="flex items-center gap-4 pt-3 border-t border-slate-100">
                     {property.area && (
-                      <div className="flex items-center gap-1.5 text-xs text-[#64748B]">
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <div className="w-6 h-6 rounded-lg bg-slate-50 flex items-center justify-center">
                           <Maximize2 style={{ width: 11, height: 11, color: '#94A3B8' }} />
                         </div>
                         <span className="font-semibold text-[#374151]">{property.area}</span>
-                        <span className="text-[#94A3B8]">м²</span>
+                        <span className="text-slate-400">м²</span>
                       </div>
                     )}
                     {property.rooms && (
-                      <div className="flex items-center gap-1.5 text-xs text-[#64748B]">
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <div className="w-6 h-6 rounded-lg bg-slate-50 flex items-center justify-center">
                           <DoorOpen style={{ width: 11, height: 11, color: '#94A3B8' }} />
                         </div>
                         <span className="font-semibold text-[#374151]">{property.rooms}</span>
-                        <span className="text-[#94A3B8]">комн.</span>
+                        <span className="text-slate-400">комн.</span>
                       </div>
                     )}
                     <div className="ml-auto">
@@ -255,7 +255,7 @@ export default async function PropertiesPage({
 
               return (
                 <Link key={property.id} href={`/properties/${property.id}`}
-                  className="flex items-center gap-4 px-5 py-4 hover:bg-[#F8FAFC] transition-all duration-200 group">
+                  className="flex items-center gap-4 px-5 py-4 hover:bg-background transition-all duration-200 group">
 
                   {/* Thumbnail */}
                   <div className="w-16 h-16 sm:w-20 sm:h-16 rounded-[14px] overflow-hidden shrink-0 bg-slate-100">
@@ -267,13 +267,13 @@ export default async function PropertiesPage({
                   {/* Main info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2 flex-wrap">
-                      <p className="font-semibold text-[#111827] text-sm group-hover:text-[#16A34A] transition-colors truncate">
+                      <p className="font-semibold text-foreground text-sm group-hover:text-[#16A34A] transition-colors truncate">
                         {property.title}
                       </p>
                       {property.price && (
-                        <p className="font-bold text-[#111827] text-sm shrink-0 whitespace-nowrap">
+                        <p className="font-bold text-foreground text-sm shrink-0 whitespace-nowrap">
                           {Number(property.price).toLocaleString('ru-RU')} ₽
-                          {property.deal_type === 'rent' && <span className="text-[#94A3B8] font-normal text-xs ml-1">/мес</span>}
+                          {property.deal_type === 'rent' && <span className="text-slate-400 font-normal text-xs ml-1">/мес</span>}
                         </p>
                       )}
                     </div>
@@ -281,7 +281,7 @@ export default async function PropertiesPage({
                     {property.address && (
                       <div className="flex items-center gap-1 mt-1">
                         <MapPin style={{ width: 11, height: 11, color: '#94A3B8', flexShrink: 0 }} />
-                        <p className="text-xs text-[#64748B] truncate">{property.address}</p>
+                        <p className="text-xs text-muted-foreground truncate">{property.address}</p>
                       </div>
                     )}
 
@@ -302,19 +302,19 @@ export default async function PropertiesPage({
                       </span>
                       {/* Area */}
                       {property.area && (
-                        <span className="text-[10px] text-[#94A3B8] font-medium">
+                        <span className="text-[10px] text-slate-400 font-medium">
                           {property.area} м²
                         </span>
                       )}
                       {/* Rooms */}
                       {property.rooms && (
-                        <span className="text-[10px] text-[#94A3B8] font-medium">
+                        <span className="text-[10px] text-slate-400 font-medium">
                           {property.rooms} комн.
                         </span>
                       )}
                       {/* Floor */}
                       {property.floor && (
-                        <span className="text-[10px] text-[#94A3B8] font-medium">
+                        <span className="text-[10px] text-slate-400 font-medium">
                           {property.floor}{property.total_floors ? `/${property.total_floors}` : ''} эт.
                         </span>
                       )}
@@ -323,7 +323,7 @@ export default async function PropertiesPage({
 
                   {/* Arrow */}
                   <div className="shrink-0 hidden sm:block">
-                    <div className="w-8 h-8 rounded-[10px] flex items-center justify-center bg-slate-50 text-[#94A3B8] group-hover:bg-green-600 group-hover:text-white transition-all">
+                    <div className="w-8 h-8 rounded-[10px] flex items-center justify-center bg-slate-50 text-slate-400 group-hover:bg-green-600 group-hover:text-white transition-all">
                       <ArrowUpRight style={{ width: 15, height: 15 }} />
                     </div>
                   </div>

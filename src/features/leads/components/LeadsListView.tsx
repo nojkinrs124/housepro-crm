@@ -45,7 +45,7 @@ export function LeadsListView({ leads }: { leads: any[] }) {
   if (leads.length === 0) {
     return (
       <div className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm p-16 text-center">
-        <p className="text-[#64748B] text-sm">Нет лидов по выбранным фильтрам</p>
+        <p className="text-muted-foreground text-sm">Нет лидов по выбранным фильтрам</p>
       </div>
     )
   }
@@ -57,12 +57,12 @@ export function LeadsListView({ leads }: { leads: any[] }) {
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-100 bg-slate-50/60">
-              <th className="text-left px-5 py-3 text-xs font-semibold text-[#64748B] uppercase tracking-wide">Имя</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-[#64748B] uppercase tracking-wide w-[140px]">Телефон</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-[#64748B] uppercase tracking-wide w-[130px]">Тип</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-[#64748B] uppercase tracking-wide w-[120px]">Источник</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-[#64748B] uppercase tracking-wide w-[130px]">Статус</th>
-              <th className="text-right px-5 py-3 text-xs font-semibold text-[#64748B] uppercase tracking-wide w-[160px]">Бюджет</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Имя</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[140px]">Телефон</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[130px]">Тип</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[120px]">Источник</th>
+              <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[130px]">Статус</th>
+              <th className="text-right px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[160px]">Бюджет</th>
               <th className="px-5 py-3 w-10"></th>
             </tr>
           </thead>
@@ -86,7 +86,7 @@ export function LeadsListView({ leads }: { leads: any[] }) {
                       <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center shrink-0">
                         <User className="w-3.5 h-3.5 text-white" />
                       </div>
-                      <span className="text-sm font-semibold text-[#111827] truncate max-w-[180px]">{lead.full_name || '—'}</span>
+                      <span className="text-sm font-semibold text-foreground truncate max-w-[180px]">{lead.full_name || '—'}</span>
                     </div>
                   </td>
                   <td className="px-5 py-3.5">
@@ -109,7 +109,7 @@ export function LeadsListView({ leads }: { leads: any[] }) {
                     )}
                   </td>
                   <td className="px-5 py-3.5">
-                    <span className="text-xs text-[#64748B]">
+                    <span className="text-xs text-muted-foreground">
                       {sourceLabels[lead.source] ?? lead.source ?? '—'}
                     </span>
                   </td>
@@ -120,7 +120,7 @@ export function LeadsListView({ leads }: { leads: any[] }) {
                   </td>
                   <td className="px-5 py-3.5 text-right">
                     {budgetStr ? (
-                      <span className="text-sm font-semibold text-[#111827]">{budgetStr}</span>
+                      <span className="text-sm font-semibold text-foreground">{budgetStr}</span>
                     ) : (
                       <span className="text-xs text-slate-400">—</span>
                     )}
@@ -148,13 +148,13 @@ export function LeadsListView({ leads }: { leads: any[] }) {
           return (
             <Link key={lead.id} href={`/leads/${lead.id}`} className="block p-4 hover:bg-slate-50/60 transition-colors">
               <div className="flex items-center justify-between gap-2 mb-2">
-                <span className="text-sm font-semibold text-[#111827] truncate min-w-0 flex-1">{lead.full_name || '—'}</span>
+                <span className="text-sm font-semibold text-foreground truncate min-w-0 flex-1">{lead.full_name || '—'}</span>
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium border whitespace-nowrap shrink-0 ${statusColors[lead.status] ?? 'bg-gray-50 text-gray-500 border-gray-200'}`}>
                   {statusLabels[lead.status] ?? lead.status}
                 </span>
               </div>
               {lead.phone && (
-                <div className="flex items-center gap-1.5 text-xs text-[#64748B] mt-1">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
                   <Phone className="w-3 h-3 shrink-0" />
                   <span>{lead.phone}</span>
                 </div>

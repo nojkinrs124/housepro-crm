@@ -122,10 +122,10 @@ export default async function AccountingPage({
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">
+          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">
             Бухгалтерия
           </h1>
-          <p className="text-[#64748B] mt-1 text-sm font-medium">
+          <p className="text-muted-foreground mt-1 text-sm font-medium">
             {transactions.length} транзакций
           </p>
         </div>
@@ -149,7 +149,7 @@ export default async function AccountingPage({
             href="/accounting/transactions/new"
             className="flex items-center gap-2 px-5 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all"
             style={{
-              background: 'linear-gradient(135deg, #16A34A, #22C55E)',
+              background: 'var(--hp-gradient-primary)',
               boxShadow: '0 4px 16px rgba(22,163,74,0.35)',
             }}
           >
@@ -170,7 +170,7 @@ export default async function AccountingPage({
               style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
             >
               <div className="flex items-center justify-between gap-2 mb-3">
-                <p className="text-xs font-medium text-[#64748B] min-w-0 leading-tight break-words">
+                <p className="text-xs font-medium text-muted-foreground min-w-0 leading-tight break-words">
                   {card.label}
                 </p>
                 <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${card.iconBg}`}>
@@ -178,7 +178,7 @@ export default async function AccountingPage({
                 </div>
               </div>
               <p className={`text-xl font-bold ${card.valueColor}`}>{card.value}</p>
-              <p className="text-xs text-[#94A3B8] mt-0.5 font-medium">{card.sub}</p>
+              <p className="text-xs text-slate-400 mt-0.5 font-medium">{card.sub}</p>
             </div>
           )
         })}
@@ -190,14 +190,14 @@ export default async function AccountingPage({
           className="lg:col-span-2 bg-white rounded-[20px] border border-slate-100 p-5"
           style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
         >
-          <h2 className="font-bold text-[#111827] text-[15px] mb-4">P&L — последние 6 месяцев</h2>
+          <h2 className="font-bold text-foreground text-[15px] mb-4">P&L — последние 6 месяцев</h2>
           <PnLChart data={chartData} />
         </div>
         <div
           className="bg-white rounded-[20px] border border-slate-100 p-5"
           style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
         >
-          <h2 className="font-bold text-[#111827] text-[15px] mb-4">Структура месяца</h2>
+          <h2 className="font-bold text-foreground text-[15px] mb-4">Структура месяца</h2>
           <div className="space-y-5">
             <CategoryPieChart data={incomePie}  title="Доходы" />
             <div className="border-t border-slate-100 pt-5">
@@ -216,7 +216,7 @@ export default async function AccountingPage({
               <Link
                 key={f.value}
                 href={buildHref(f.value)}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${isActive ? 'bg-white text-[#111827] shadow-sm' : 'text-slate-500 hover:text-[#111827]'}`}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${isActive ? 'bg-white text-foreground shadow-sm' : 'text-slate-500 hover:text-foreground'}`}
               >
                 {f.label}
               </Link>
@@ -230,7 +230,7 @@ export default async function AccountingPage({
               <Link
                 key={f.value}
                 href={buildHref(undefined, f.value)}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${isActive ? 'bg-white text-[#111827] shadow-sm' : 'text-slate-500 hover:text-[#111827]'}`}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${isActive ? 'bg-white text-foreground shadow-sm' : 'text-slate-500 hover:text-foreground'}`}
               >
                 {f.label}
               </Link>
@@ -265,7 +265,7 @@ export default async function AccountingPage({
                 <thead>
                   <tr className="border-b border-slate-100" style={{ background: '#F8FAFC' }}>
                     {['Тип', 'Дата', 'Сумма', 'Категория', 'Договор / Сотрудник', 'Статус', ''].map(h => (
-                      <th key={h} className="text-left px-5 py-3.5 text-xs font-semibold text-[#64748B] uppercase tracking-wide">
+                      <th key={h} className="text-left px-5 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                         {h}
                       </th>
                     ))}
@@ -285,11 +285,11 @@ export default async function AccountingPage({
                         </td>
                         <td className="px-5 py-3.5">
                           <Link href={`/accounting/transactions/${t.id}`} className="hover:text-blue-600 transition-colors group">
-                            <p className="text-sm font-semibold text-[#111827] group-hover:text-blue-600">
+                            <p className="text-sm font-semibold text-foreground group-hover:text-blue-600">
                               {fmtDate(t.date)}
                             </p>
                             {t.description && (
-                              <p className="text-xs text-[#64748B] mt-0.5 truncate max-w-[160px]">{t.description}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-[160px]">{t.description}</p>
                             )}
                           </Link>
                         </td>
@@ -308,7 +308,7 @@ export default async function AccountingPage({
                               {t.category.name}
                             </span>
                           ) : (
-                            <span className="text-xs text-[#94A3B8]">—</span>
+                            <span className="text-xs text-slate-400">—</span>
                           )}
                         </td>
                         <td className="px-5 py-3.5">
@@ -321,9 +321,9 @@ export default async function AccountingPage({
                             </Link>
                           )}
                           {t.employee?.full_name && (
-                            <p className="text-xs text-[#64748B]">{t.employee.full_name}</p>
+                            <p className="text-xs text-muted-foreground">{t.employee.full_name}</p>
                           )}
-                          {!t.contract && !t.employee && <span className="text-xs text-[#94A3B8]">—</span>}
+                          {!t.contract && !t.employee && <span className="text-xs text-slate-400">—</span>}
                         </td>
                         <td className="px-5 py-3.5">
                           <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${sc.cls}`}>
@@ -363,10 +363,10 @@ export default async function AccountingPage({
                             ? <ArrowDownCircle className="w-4 h-4 text-green-500 shrink-0" />
                             : <ArrowUpCircle   className="w-4 h-4 text-red-400 shrink-0" />
                           }
-                          <p className="text-sm font-bold text-[#111827]">{fmtDate(t.date)}</p>
+                          <p className="text-sm font-bold text-foreground">{fmtDate(t.date)}</p>
                         </div>
                         {t.description && (
-                          <p className="text-xs text-[#64748B] mt-0.5 ml-6 truncate">{t.description}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5 ml-6 truncate">{t.description}</p>
                         )}
                       </Link>
                       <p className={`text-base font-bold shrink-0 ${isIncome ? 'text-green-700' : 'text-red-600'}`}>
@@ -376,7 +376,7 @@ export default async function AccountingPage({
                     <div className="flex items-center gap-2 flex-wrap ml-6">
                       <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${sc.cls}`}>{sc.label}</span>
                       {t.category && (
-                        <span className="inline-flex items-center gap-1 text-xs text-[#64748B]">
+                        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                           <span className="w-1.5 h-1.5 rounded-full" style={{ background: t.category.color }} />
                           {t.category.name}
                         </span>

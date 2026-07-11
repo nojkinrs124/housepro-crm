@@ -28,7 +28,7 @@ export default async function CompanyPage() {
     <div className="max-w-2xl mx-auto space-y-6">
       <Link
         href="/settings"
-        className="inline-flex items-center gap-2 text-sm font-medium text-[#64748B] hover:text-[#111827] transition-colors"
+        className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowLeft style={{ width: 16, height: 16 }} />
         Настройки
@@ -40,8 +40,8 @@ export default async function CompanyPage() {
             <Building2 className="text-blue-600" style={{ width: 20, height: 20 }} />
           </div>
           <div>
-            <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Компания</h1>
-            <p className="text-[#64748B] text-sm font-medium mt-0.5">Профили реквизитов для подготовки документов</p>
+            <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Компания</h1>
+            <p className="text-muted-foreground text-sm font-medium mt-0.5">Профили реквизитов для подготовки документов</p>
           </div>
         </div>
         {isAdmin && (

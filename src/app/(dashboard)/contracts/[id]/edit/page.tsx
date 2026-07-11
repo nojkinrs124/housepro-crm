@@ -36,7 +36,7 @@ export default async function EditContractPage({ params }: { params: Promise<{ i
           <FileText className="w-5 h-5 text-violet-600" />
         </div>
         <div>
-          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Редактировать договор</h1>
+          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Редактировать договор</h1>
           <p className="text-muted-foreground text-sm">{c.contract_number ?? `#${id.slice(0, 8)}`}</p>
         </div>
       </div>

@@ -55,7 +55,7 @@ export default async function TransactionDetailPage({
       <div>
         <Link
           href="/accounting"
-          className="inline-flex items-center gap-2 text-sm font-medium text-[#64748B] hover:text-[#111827] transition-colors mb-4"
+          className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-4"
         >
           <ArrowLeft className="w-4 h-4" />
           Бухгалтерия
@@ -69,10 +69,10 @@ export default async function TransactionDetailPage({
               }
             </div>
             <div>
-              <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">
+              <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">
                 {isIncome ? '+' : '−'}{fmt(Number(t.amount))}
               </h1>
-              <p className="text-[#64748B] text-sm font-medium mt-0.5">
+              <p className="text-muted-foreground text-sm font-medium mt-0.5">
                 {isIncome ? 'Доход' : 'Расход'} · {fmtDate(t.date)}
               </p>
             </div>
@@ -96,7 +96,7 @@ export default async function TransactionDetailPage({
           className="lg:col-span-2 bg-white rounded-[20px] border border-slate-100 p-5"
           style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
         >
-          <h2 className="font-bold text-[#111827] text-[15px] mb-4">Информация</h2>
+          <h2 className="font-bold text-foreground text-[15px] mb-4">Информация</h2>
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
             {[
               { label: 'Тип', value: isIncome ? 'Доход' : 'Расход' },
@@ -107,8 +107,8 @@ export default async function TransactionDetailPage({
               t.description ? { label: 'Описание', value: t.description } : null,
             ].filter(Boolean).map((item) => (
               <div key={item!.label}>
-                <dt className="text-xs font-semibold text-[#64748B] uppercase tracking-wide mb-1">{item!.label}</dt>
-                <dd className="text-sm font-medium text-[#111827]">{item!.value}</dd>
+                <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">{item!.label}</dt>
+                <dd className="text-sm font-medium text-foreground">{item!.value}</dd>
               </div>
             ))}
           </dl>
@@ -120,7 +120,7 @@ export default async function TransactionDetailPage({
             className="bg-white rounded-[20px] border border-slate-100 p-5"
             style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
           >
-            <h2 className="font-bold text-[#111827] text-[15px] mb-3">Статус</h2>
+            <h2 className="font-bold text-foreground text-[15px] mb-3">Статус</h2>
             <span className={`text-sm font-semibold px-3 py-1.5 rounded-full ${sc.cls}`}>{sc.label}</span>
           </div>
 
@@ -129,10 +129,10 @@ export default async function TransactionDetailPage({
               className="bg-white rounded-[20px] border border-slate-100 p-5"
               style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
             >
-              <h2 className="font-bold text-[#111827] text-[15px] mb-3">Категория</h2>
+              <h2 className="font-bold text-foreground text-[15px] mb-3">Категория</h2>
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full shrink-0" style={{ background: t.category.color }} />
-                <span className="text-sm font-medium text-[#111827]">{t.category.name}</span>
+                <span className="text-sm font-medium text-foreground">{t.category.name}</span>
               </div>
             </div>
           )}
@@ -142,11 +142,11 @@ export default async function TransactionDetailPage({
               className="bg-white rounded-[20px] border border-slate-100 p-5"
               style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
             >
-              <h2 className="font-bold text-[#111827] text-[15px] mb-3">Привязки</h2>
+              <h2 className="font-bold text-foreground text-[15px] mb-3">Привязки</h2>
               <div className="space-y-2">
                 {t.contract && (
                   <div>
-                    <p className="text-xs text-[#64748B] font-medium mb-0.5">Договор</p>
+                    <p className="text-xs text-muted-foreground font-medium mb-0.5">Договор</p>
                     <Link href={`/contracts/${t.contract.id}`} className="text-sm font-medium text-blue-600 hover:underline">
                       №{t.contract.contract_number ?? t.contract.id.slice(0, 8)}
                     </Link>
@@ -154,7 +154,7 @@ export default async function TransactionDetailPage({
                 )}
                 {t.deal && (
                   <div>
-                    <p className="text-xs text-[#64748B] font-medium mb-0.5">Сделка</p>
+                    <p className="text-xs text-muted-foreground font-medium mb-0.5">Сделка</p>
                     <Link href={`/deals/${t.deal.id}`} className="text-sm font-medium text-blue-600 hover:underline">
                       {t.deal.deal_type} · {t.deal.id.slice(0, 8)}
                     </Link>
@@ -162,15 +162,15 @@ export default async function TransactionDetailPage({
                 )}
                 {t.employee && (
                   <div>
-                    <p className="text-xs text-[#64748B] font-medium mb-0.5">Сотрудник</p>
-                    <Link href={`/employees/${t.employee.id}`} className="text-sm font-medium text-[#111827] hover:text-blue-600">
+                    <p className="text-xs text-muted-foreground font-medium mb-0.5">Сотрудник</p>
+                    <Link href={`/employees/${t.employee.id}`} className="text-sm font-medium text-foreground hover:text-blue-600">
                       {t.employee.full_name}
                     </Link>
                   </div>
                 )}
                 {t.contact && (
                   <div>
-                    <p className="text-xs text-[#64748B] font-medium mb-0.5">Контакт</p>
+                    <p className="text-xs text-muted-foreground font-medium mb-0.5">Контакт</p>
                     <Link href={`/contacts/${t.contact.id}`} className="text-sm font-medium text-blue-600 hover:underline">
                       {t.contact.full_name}
                     </Link>

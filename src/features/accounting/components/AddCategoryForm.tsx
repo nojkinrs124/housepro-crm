@@ -19,7 +19,7 @@ export function AddCategoryForm({ defaultType }: { defaultType?: AccountingTrans
     <form action={formAction} className="flex items-end gap-2 flex-wrap">
       <input type="hidden" name="type" value={defaultType ?? 'income'} />
       <div className="space-y-1 flex-1 min-w-[140px]">
-        <label className="block text-xs font-semibold text-[#64748B]">Название</label>
+        <label className="block text-xs font-semibold text-muted-foreground">Название</label>
         <input
           type="text"
           name="name"
@@ -28,7 +28,7 @@ export function AddCategoryForm({ defaultType }: { defaultType?: AccountingTrans
         />
       </div>
       <div className="space-y-1">
-        <label className="block text-xs font-semibold text-[#64748B]">Цвет</label>
+        <label className="block text-xs font-semibold text-muted-foreground">Цвет</label>
         <select
           name="color"
           className="h-9 px-3 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer"
@@ -42,7 +42,7 @@ export function AddCategoryForm({ defaultType }: { defaultType?: AccountingTrans
         type="submit"
         disabled={isPending}
         className="h-9 flex items-center gap-1.5 px-3 text-white rounded-xl text-xs font-bold disabled:opacity-60"
-        style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)' }}
+        style={{ background: 'var(--hp-gradient-primary)' }}
       >
         <Plus className="w-3.5 h-3.5" />
         Добавить

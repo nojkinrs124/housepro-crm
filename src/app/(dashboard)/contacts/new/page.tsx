@@ -12,7 +12,7 @@ export default function NewContactPage() {
       </Link>
 
       <div>
-        <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Добавить контакт</h1>
+        <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Добавить контакт</h1>
         <p className="text-muted-foreground mt-1">Физлицо или юрлицо · клиент, собственник или оба</p>
       </div>
 

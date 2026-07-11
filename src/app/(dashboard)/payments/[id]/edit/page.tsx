@@ -58,7 +58,7 @@ export default async function EditPaymentPage({ params }: { params: Promise<{ id
           <DollarSign className="w-5 h-5 text-green-600" />
         </div>
         <div>
-          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Редактировать платёж</h1>
+          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Редактировать платёж</h1>
           {contract && (
             <p className="text-muted-foreground text-sm mt-0.5">
               {contract.contract_number ?? `Договор #${id.slice(0, 8)}`}
@@ -141,7 +141,7 @@ export default async function EditPaymentPage({ params }: { params: Promise<{ id
 
         <div className="flex gap-3">
           <button type="submit"
-            className="flex-1 h-10 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition" style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+            className="flex-1 h-10 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition" style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
             Сохранить изменения
           </button>
           <Link href="/payments"

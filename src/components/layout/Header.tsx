@@ -65,7 +65,7 @@ export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCou
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
             placeholder="Поиск по CRM..."
-            className="w-full h-[42px] pl-11 pr-16 text-sm text-[#111827] placeholder:text-[#94A3B8] outline-none transition-all duration-200"
+            className="w-full h-[42px] pl-11 pr-16 text-sm text-foreground placeholder:text-slate-400 outline-none transition-all duration-200"
             style={{
               background: focused ? '#ffffff' : 'rgba(255,255,255,0.85)',
               border: `1.5px solid ${focused ? '#22C55E' : 'rgba(214,219,235,0.8)'}`,
@@ -77,7 +77,7 @@ export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCou
           />
           <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
             <kbd
-              className="hidden sm:flex items-center px-1.5 py-0.5 text-[10px] font-mono text-[#94A3B8] rounded-md"
+              className="hidden sm:flex items-center px-1.5 py-0.5 text-[10px] font-mono text-slate-400 rounded-md"
               style={{ background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.08)' }}
             >
               ⌘K
@@ -88,7 +88,7 @@ export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCou
 
       {/* Mobile search */}
       <button
-        className="sm:hidden w-10 h-10 flex items-center justify-center rounded-[12px] text-[#64748B] hover:bg-white hover:shadow-sm transition-all duration-200"
+        className="sm:hidden w-10 h-10 flex items-center justify-center rounded-[12px] text-muted-foreground hover:bg-white hover:shadow-sm transition-all duration-200"
         onClick={() => router.push('/search')}
       >
         <Search style={{ width: 18, height: 18 }} />
@@ -103,7 +103,7 @@ export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCou
             onClick={(e) => { e.stopPropagation(); setCreateOpen(!createOpen) }}
             className="flex items-center gap-2 h-[42px] px-4 text-sm font-semibold text-white rounded-[14px] transition-all duration-200"
             style={{
-              background: 'linear-gradient(135deg, #16A34A 0%, #22C55E 100%)',
+              background: 'var(--hp-gradient-primary)',
               boxShadow: createOpen
                 ? '0 4px 20px rgba(22,163,74,0.5), 0 0 0 3px rgba(34,197,94,0.15)'
                 : '0 2px 12px rgba(22,163,74,0.35)',
@@ -132,7 +132,7 @@ export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCou
               onClick={e => e.stopPropagation()}
             >
               <div className="px-3 pb-1.5">
-                <span className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest flex items-center gap-1">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
                   <Sparkles style={{ width: 10, height: 10 }} />
                   Быстрое создание
                 </span>
@@ -182,7 +182,7 @@ export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCou
             <div
               className="w-[38px] h-[38px] rounded-full flex items-center justify-center text-white text-sm font-bold group-hover:shadow-md transition-shadow"
               style={{
-                background: 'linear-gradient(135deg, #16A34A, #22C55E)',
+                background: 'var(--hp-gradient-primary)',
                 boxShadow: '0 0 0 2.5px rgba(34,197,94,0.2)',
               }}
             >
@@ -190,7 +190,7 @@ export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCou
             </div>
           )}
           {firstName && (
-            <span className="hidden lg:block text-sm font-semibold text-[#374151] group-hover:text-[#111827] transition-colors">
+            <span className="hidden lg:block text-sm font-semibold text-[#374151] group-hover:text-foreground transition-colors">
               {firstName}
             </span>
           )}

@@ -66,19 +66,19 @@ export default function LoginPage() {
           <div className="flex items-center gap-3 mb-10 lg:hidden">
             <div
               className="w-11 h-11 rounded-[14px] flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 14px rgba(22,163,74,0.35)' }}
+              style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 14px rgba(22,163,74,0.35)' }}
             >
               <Building2 className="w-6 h-6 text-white" />
             </div>
             <div>
-              <span className="font-bold text-[#111827] text-[18px] leading-tight block tracking-tight">HousePro</span>
-              <span className="text-[10px] text-[#64748B] font-bold tracking-widest uppercase">CRM</span>
+              <span className="font-bold text-foreground text-[18px] leading-tight block tracking-tight">HousePro</span>
+              <span className="text-[10px] text-muted-foreground font-bold tracking-widest uppercase">CRM</span>
             </div>
           </div>
 
           <div className="mb-8">
-            <h2 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">Вход в систему</h2>
-            <p className="text-[#64748B] mt-1.5 text-sm font-medium">Введите свои данные для входа</p>
+            <h2 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Вход в систему</h2>
+            <p className="text-muted-foreground mt-1.5 text-sm font-medium">Введите свои данные для входа</p>
           </div>
 
           <LoginForm />
