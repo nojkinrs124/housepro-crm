@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { Users, Shield, UserCheck, User, Plus } from 'lucide-react'
 import Link from 'next/link'
+import { PageHeader } from '@/components/layout/PageHeader'
+import { buttonVariants } from '@/components/ui/button'
 
 const roleLabels: Record<string, string> = {
   admin: 'Администратор', manager: 'Менеджер',
@@ -39,21 +41,16 @@ export default async function EmployeesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Сотрудники</h1>
-          <p className="text-muted-foreground mt-1 text-sm font-medium">{employees?.length ?? 0} сотрудников</p>
-        </div>
-        <Link
-          href="/employees/new"
-          className="flex items-center gap-2 px-5 py-2.5 text-white rounded-[14px] text-sm font-bold transition-all hover:-translate-y-0.5"
-          style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}
-        >
-          <Plus style={{ width: 16, height: 16 }} />
-          Добавить
-        </Link>
-      </div>
+      <PageHeader
+        title="Сотрудники"
+        subtitle={`${employees?.length ?? 0} сотрудников`}
+        actions={
+          <Link href="/employees/new" className={buttonVariants({ size: 'lg' })}>
+            <Plus style={{ width: 16, height: 16 }} />
+            Добавить
+          </Link>
+        }
+      />
 
       {/* Role stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

@@ -3,6 +3,8 @@ import { Users, Plus, UserCheck, Crown, UserX } from 'lucide-react'
 import Link from 'next/link'
 import type { Contact } from '@/types/database'
 import { ContactsViewSwitcher } from '@/features/contacts/components/ContactsViewSwitcher'
+import { PageHeader } from '@/components/layout/PageHeader'
+import { buttonVariants } from '@/components/ui/button'
 
 export default async function ContactsPage() {
   const supabase = await createClient()
@@ -18,19 +20,16 @@ export default async function ContactsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h1 className="text-[28px] font-bold text-foreground tracking-tight">Контакты</h1>
-          <p className="text-muted-foreground mt-1 text-sm font-medium">{total} контактов в базе</p>
-        </div>
-        <Link href="/contacts/new"
-          className="flex items-center gap-2 px-5 py-2.5 text-white rounded-[14px] text-sm font-bold transition-all hover:-translate-y-0.5"
-          style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
-          <Plus style={{ width: 16, height: 16 }} />
-          Добавить контакт
-        </Link>
-      </div>
+      <PageHeader
+        title="Контакты"
+        subtitle={`${total} контактов в базе`}
+        actions={
+          <Link href="/contacts/new" className={buttonVariants({ size: 'lg' })}>
+            <Plus style={{ width: 16, height: 16 }} />
+            Добавить контакт
+          </Link>
+        }
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

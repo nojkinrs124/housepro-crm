@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { FileText, Plus, Search } from 'lucide-react'
 import Link from 'next/link'
 import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
+import { PageHeader } from '@/components/layout/PageHeader'
+import { buttonVariants } from '@/components/ui/button'
 
 const contractTypeLabels = CONTRACT_TYPE_LABELS
 const statusConfig: Record<string, { label: string; cls: string; dot: string }> = {
@@ -64,19 +66,16 @@ export default async function ContractsPage({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Договоры</h1>
-          <p className="text-muted-foreground mt-1 text-sm">{contracts?.length ?? 0} договоров</p>
-        </div>
-        <Link href="/contracts/new"
-          className="flex items-center gap-2 px-4 py-2.5 text-white rounded-xl text-sm font-semibold"
-          style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
-          <Plus style={{ width: 16, height: 16 }} />
-          Новый договор
-        </Link>
-      </div>
+      <PageHeader
+        title="Договоры"
+        subtitle={`${contracts?.length ?? 0} договоров`}
+        actions={
+          <Link href="/contracts/new" className={buttonVariants({ size: 'sm' })}>
+            <Plus style={{ width: 16, height: 16 }} />
+            Новый договор
+          </Link>
+        }
+      />
 
       {/* Filters */}
       <div className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm p-4 flex flex-wrap gap-3">

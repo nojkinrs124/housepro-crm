@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { Plus, Zap, TrendingUp, CheckCircle2, Clock } from 'lucide-react'
 import Link from 'next/link'
 import { LeadsViewSwitcher } from '@/features/leads/components/LeadsViewSwitcher'
+import { PageHeader } from '@/components/layout/PageHeader'
+import { buttonVariants } from '@/components/ui/button'
 
 export default async function LeadsPage() {
   const supabase = await createClient()
@@ -17,20 +19,16 @@ export default async function LeadsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Лиды</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {total} всего · {newCount} новых · {converted} конвертировано
-          </p>
-        </div>
-        <Link href="/leads/new"
-          className="flex items-center gap-2 px-4 py-2.5 text-white rounded-xl text-sm font-semibold"
-          style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
-          <Plus style={{ width: 16, height: 16 }} />
-          Новый лид
-        </Link>
-      </div>
+      <PageHeader
+        title="Лиды"
+        subtitle={`${total} всего · ${newCount} новых · ${converted} конвертировано`}
+        actions={
+          <Link href="/leads/new" className={buttonVariants({ size: 'sm' })}>
+            <Plus style={{ width: 16, height: 16 }} />
+            Новый лид
+          </Link>
+        }
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

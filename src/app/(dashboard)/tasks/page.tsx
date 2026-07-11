@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { Plus, CheckSquare, AlertCircle, Clock, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import { TasksKanbanBoard } from '@/features/tasks/components/TasksKanban'
+import { PageHeader } from '@/components/layout/PageHeader'
+import { buttonVariants } from '@/components/ui/button'
 
 export default async function TasksPage() {
   const supabase = await createClient()
@@ -19,18 +21,16 @@ export default async function TasksPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Задачи</h1>
-          <p className="text-muted-foreground mt-1 text-sm">{total} задач · {active} активных</p>
-        </div>
-        <Link href="/tasks/new"
-          className="flex items-center gap-2 px-4 py-2.5 text-white rounded-xl text-sm font-semibold"
-          style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
-          <Plus style={{ width: 16, height: 16 }} />
-          Новая задача
-        </Link>
-      </div>
+      <PageHeader
+        title="Задачи"
+        subtitle={`${total} задач · ${active} активных`}
+        actions={
+          <Link href="/tasks/new" className={buttonVariants({ size: 'sm' })}>
+            <Plus style={{ width: 16, height: 16 }} />
+            Новая задача
+          </Link>
+        }
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

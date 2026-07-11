@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { Home, Plus, Search, MapPin, Maximize2, DoorOpen, ArrowUpRight, LayoutGrid, List } from 'lucide-react'
 import Link from 'next/link'
+import { PageHeader } from '@/components/layout/PageHeader'
+import { buttonVariants } from '@/components/ui/button'
 
 const typeLabels: Record<string, string> = {
   apartment: 'Квартира', house: 'Дом', commercial: 'Коммерция',
@@ -61,19 +63,16 @@ export default async function PropertiesPage({
   return (
     <div className="space-y-6">
 
-      {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Объекты недвижимости</h1>
-          <p className="text-muted-foreground mt-1 text-sm font-medium">{properties?.length ?? 0} объектов в базе</p>
-        </div>
-        <Link href="/properties/new"
-          className="flex items-center gap-2 px-5 py-2.5 text-white rounded-[14px] text-sm font-bold transition-all hover:-translate-y-0.5"
-          style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
-          <Plus style={{ width: 16, height: 16 }} />
-          Добавить объект
-        </Link>
-      </div>
+      <PageHeader
+        title="Объекты недвижимости"
+        subtitle={`${properties?.length ?? 0} объектов в базе`}
+        actions={
+          <Link href="/properties/new" className={buttonVariants({ size: 'lg' })}>
+            <Plus style={{ width: 16, height: 16 }} />
+            Добавить объект
+          </Link>
+        }
+      />
 
       {/* Filters + view switcher */}
       <div className="bg-white rounded-[20px] border border-slate-100 p-4 flex flex-wrap gap-3 items-center"
