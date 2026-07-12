@@ -6,6 +6,7 @@ import { updateContractAction } from '@/features/contracts/actions/contracts.act
 import { ContractForm } from '@/features/contracts/components/ContractForm'
 import { toExtraFieldsDefaults } from '@/features/contracts/utils/rent-apartment-data'
 import { getContractFormData } from '@/features/contracts/data/contract-form-data'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 export default async function EditContractPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -26,20 +27,14 @@ export default async function EditContractPage({ params }: { params: Promise<{ i
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <Link href={`/contracts/${id}`} className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft className="w-4 h-4" />
-        Вернуться к договору
-      </Link>
-
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-violet-100 rounded-xl flex items-center justify-center">
-          <FileText className="w-5 h-5 text-violet-600" />
-        </div>
-        <div>
-          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Редактировать договор</h1>
-          <p className="text-muted-foreground text-sm">{c.contract_number ?? `#${id.slice(0, 8)}`}</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Редактировать договор"
+        subtitle={c.contract_number ?? `#${id.slice(0, 8)}`}
+        backHref={`/contracts/${id}`}
+        backLabel="Вернуться к договору"
+        iconBg="bg-violet-100"
+        icon={<FileText className="w-5 h-5 text-violet-600" />}
+      />
 
       <ContractForm
         action={boundAction}

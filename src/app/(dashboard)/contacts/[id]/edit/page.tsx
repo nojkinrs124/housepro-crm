@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { updateContactAction } from '@/features/contacts/actions/contacts.actions'
 import { ContactForm } from '@/features/contacts/components/ContactForm'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 export default async function EditContactPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -15,15 +16,12 @@ export default async function EditContactPage({ params }: { params: Promise<{ id
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <Link href={`/contacts/${id}`} className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft className="w-4 h-4" />
-        Вернуться к контакту
-      </Link>
-
-      <div>
-        <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Редактировать контакт</h1>
-        <p className="text-muted-foreground mt-1">{c.full_name}</p>
-      </div>
+      <PageHeader
+        title="Редактировать контакт"
+        subtitle={c.full_name}
+        backHref={`/contacts/${id}`}
+        backLabel="Вернуться к контакту"
+      />
 
       <ContactForm
         action={boundAction}

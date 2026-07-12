@@ -6,6 +6,7 @@ import { updateDealAction } from '@/features/deals/actions/deals.actions'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { PartyContactSelect } from '@/features/contacts/components/PartyContactSelect'
 import { PropertySelectField } from '@/features/properties/components/PropertySelectField'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 export default async function EditDealPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -41,23 +42,14 @@ export default async function EditDealPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <Link href={`/deals/${id}`}
-        className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft className="w-4 h-4" />
-        Вернуться к сделке
-      </Link>
-
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-          <TrendingUp className="w-5 h-5 text-green-600" />
-        </div>
-        <div>
-          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Редактировать сделку</h1>
-          <p className="text-muted-foreground text-sm">
-            Создана {new Date(deal.created_at).toLocaleDateString('ru-RU')}
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Редактировать сделку"
+        subtitle={`Создана ${new Date(deal.created_at).toLocaleDateString('ru-RU')}`}
+        backHref={`/deals/${id}`}
+        backLabel="Вернуться к сделке"
+        iconBg="bg-green-100"
+        icon={<TrendingUp className="w-5 h-5 text-green-600" />}
+      />
 
       <ServerActionForm action={boundAction} className="space-y-4">
 

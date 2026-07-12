@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { DeleteTransactionButton } from '@/features/accounting/components/DeleteTransactionButton'
 import { ArrowLeft, ArrowDownCircle, ArrowUpCircle, Pencil } from 'lucide-react'
 import Link from 'next/link'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 const STATUS_CFG: Record<string, { label: string; cls: string }> = {
   completed: { label: 'Выполнено',    cls: 'bg-green-50 text-green-700 border border-green-200' },
@@ -52,32 +53,20 @@ export default async function TransactionDetailPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <Link
-          href="/accounting"
-          className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-4"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Бухгалтерия
-        </Link>
-        <div className="flex items-start justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-3">
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${isIncome ? 'bg-green-50' : 'bg-red-50'}`}>
-              {isIncome
-                ? <ArrowDownCircle className="w-6 h-6 text-green-600" />
-                : <ArrowUpCircle   className="w-6 h-6 text-red-500" />
-              }
-            </div>
-            <div>
-              <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">
-                {isIncome ? '+' : '−'}{fmt(Number(t.amount))}
-              </h1>
-              <p className="text-muted-foreground text-sm font-medium mt-0.5">
-                {isIncome ? 'Доход' : 'Расход'} · {fmtDate(t.date)}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap shrink-0">
+      <PageHeader
+        title={`${isIncome ? '+' : '−'}${fmt(Number(t.amount))}`}
+        subtitle={`${isIncome ? 'Доход' : 'Расход'} · ${fmtDate(t.date)}`}
+        backHref="/accounting"
+        backLabel="Бухгалтерия"
+        iconBg={isIncome ? 'bg-green-50' : 'bg-red-50'}
+        iconBoxClassName="w-11 h-11 rounded-xl"
+        icon={
+          isIncome
+            ? <ArrowDownCircle className="w-6 h-6 text-green-600" />
+            : <ArrowUpCircle className="w-6 h-6 text-red-500" />
+        }
+        actions={
+          <>
             <Link
               href={`/accounting/transactions/${id}/edit`}
               className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-[14px] text-sm font-semibold text-[#374151] hover:bg-slate-50 transition-all"
@@ -86,9 +75,9 @@ export default async function TransactionDetailPage({
               Редактировать
             </Link>
             <DeleteTransactionButton id={id} redirectAfter="/accounting" />
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Main info */}

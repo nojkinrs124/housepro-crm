@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { GenerateButton } from './GenerateButton'
 import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 const contractTypeLabels = CONTRACT_TYPE_LABELS
 
@@ -59,23 +60,14 @@ export default async function GenerateContractPage({
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <Link href={`/contracts/${id}`}
-        className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft className="w-4 h-4" />
-        Назад к договору
-      </Link>
-
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-violet-100 rounded-xl flex items-center justify-center">
-          <Sparkles className="w-5 h-5 text-violet-600" />
-        </div>
-        <div>
-          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Генерация договора</h1>
-          <p className="text-muted-foreground text-sm">
-            {contract.contract_number} · {contractTypeLabels[contract.contract_type]}
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Генерация договора"
+        subtitle={`${contract.contract_number} · ${contractTypeLabels[contract.contract_type]}`}
+        backHref={`/contracts/${id}`}
+        backLabel="Назад к договору"
+        iconBg="bg-violet-100"
+        icon={<Sparkles className="w-5 h-5 text-violet-600" />}
+      />
 
       {/* Checklist */}
       <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">

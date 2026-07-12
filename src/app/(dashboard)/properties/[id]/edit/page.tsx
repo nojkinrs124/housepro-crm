@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { updatePropertyAction } from '@/features/properties/actions/properties.actions'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 export default async function EditPropertyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -24,15 +25,12 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <Link href={`/properties/${id}`} className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft className="w-4 h-4" />
-        Вернуться к объекту
-      </Link>
-
-      <div>
-        <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Редактировать объект</h1>
-        <p className="text-muted-foreground mt-1">{p.title}</p>
-      </div>
+      <PageHeader
+        title="Редактировать объект"
+        subtitle={p.title}
+        backHref={`/properties/${id}`}
+        backLabel="Вернуться к объекту"
+      />
 
       <ServerActionForm action={boundAction} className="space-y-4">
 

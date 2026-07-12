@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { TransactionForm } from '@/features/accounting/components/TransactionForm'
-import { ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 export default async function NewTransactionPage() {
   const supabase = await createClient()
@@ -24,18 +23,7 @@ export default async function NewTransactionPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <Link
-          href="/accounting"
-          className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-4"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Бухгалтерия
-        </Link>
-        <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">
-          Новая транзакция
-        </h1>
-      </div>
+      <PageHeader title="Новая транзакция" backHref="/accounting" backLabel="Бухгалтерия" />
       <TransactionForm
         categories={categories}
         contracts={contracts}

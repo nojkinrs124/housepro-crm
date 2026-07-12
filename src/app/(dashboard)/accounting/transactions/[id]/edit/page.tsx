@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { TransactionForm } from '@/features/accounting/components/TransactionForm'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 export default async function EditTransactionPage({
   params,
@@ -39,18 +40,7 @@ export default async function EditTransactionPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <Link
-          href={`/accounting/transactions/${id}`}
-          className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-4"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Назад
-        </Link>
-        <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">
-          Редактировать транзакцию
-        </h1>
-      </div>
+      <PageHeader title="Редактировать транзакцию" backHref={`/accounting/transactions/${id}`} backLabel="Назад" />
       <TransactionForm
         transaction={transaction}
         categories={categories}

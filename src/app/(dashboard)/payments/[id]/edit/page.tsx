@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { updatePaymentAction } from '@/features/payments/actions/payments.actions'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 const typeOptions = [
   { value: 'rent',       label: 'Аренда' },
@@ -48,25 +49,21 @@ export default async function EditPaymentPage({ params }: { params: Promise<{ id
 
   return (
     <div className="max-w-xl mx-auto space-y-6">
-      <Link href="/payments" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft className="w-4 h-4" />
-        Вернуться к платежам
-      </Link>
-
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-          <DollarSign className="w-5 h-5 text-green-600" />
-        </div>
-        <div>
-          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Редактировать платёж</h1>
-          {contract && (
-            <p className="text-muted-foreground text-sm mt-0.5">
+      <PageHeader
+        title="Редактировать платёж"
+        backHref="/payments"
+        backLabel="Вернуться к платежам"
+        iconBg="bg-green-100"
+        icon={<DollarSign className="w-5 h-5 text-green-600" />}
+        subtitle={
+          contract ? (
+            <>
               {contract.contract_number ?? `Договор #${id.slice(0, 8)}`}
               {contract.client_contact?.full_name && ` · ${contract.client_contact.full_name}`}
-            </p>
-          )}
-        </div>
-      </div>
+            </>
+          ) : undefined
+        }
+      />
 
       <ServerActionForm action={boundAction} className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-5">
 

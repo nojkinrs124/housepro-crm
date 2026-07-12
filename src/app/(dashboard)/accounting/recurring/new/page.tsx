@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { RecurringRuleForm } from '@/features/accounting/components/RecurringRuleForm'
-import { ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 export default async function NewRecurringPage() {
   const supabase = await createClient()
@@ -18,18 +17,7 @@ export default async function NewRecurringPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <Link
-          href="/accounting/recurring"
-          className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-4"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Периодические операции
-        </Link>
-        <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">
-          Новое правило
-        </h1>
-      </div>
+      <PageHeader title="Новое правило" backHref="/accounting/recurring" backLabel="Периодические операции" />
       <RecurringRuleForm categories={categories} employees={employees} />
     </div>
   )
