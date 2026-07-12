@@ -9,6 +9,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { FilesSection } from '@/features/files/components/FilesSection'
 import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 const typeLabels: Record<string, string> = {
   apartment: 'Квартира', house: 'Дом', commercial: 'Коммерция',
@@ -91,45 +92,41 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      <Link href="/properties" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft className="w-4 h-4" />
-        Все объекты
-      </Link>
-
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-        <div className="flex items-center gap-4 min-w-0">
-          <div className="w-14 h-14 rounded-[20px] bg-emerald-100 flex items-center justify-center shrink-0">
-            <Home className="w-7 h-7 text-emerald-600" />
-          </div>
-          <div className="min-w-0">
-            <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight break-words">{p.title}</h1>
-            <div className="flex items-center gap-2 mt-1 flex-wrap">
-              <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
-                {typeLabels[p.property_type] ?? p.property_type}
-              </span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">
-                {dealLabels[p.deal_type] ?? p.deal_type}
-              </span>
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[p.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                {statusLabels[p.status] ?? p.status}
-              </span>
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap shrink-0">
-          <Link href={`/properties/${id}/edit`}
-            className="flex items-center gap-2 px-4 py-2 border border-border text-foreground rounded-[14px] text-sm font-medium hover:bg-accent transition whitespace-nowrap">
-            <Edit className="w-4 h-4" />
-            Редактировать
-          </Link>
-          <DeletePropertyButton propertyId={id} />
-          <Link href={`/contracts/new?property_id=${id}`}
-            className="px-4 py-2 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition whitespace-nowrap" style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
-            + Договор
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title={p.title}
+        backHref="/properties"
+        backLabel="Все объекты"
+        iconBg="bg-emerald-100"
+        iconBoxClassName="w-14 h-14 rounded-[20px]"
+        icon={<Home className="w-7 h-7 text-emerald-600" />}
+        subtitle={
+          <span className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
+              {typeLabels[p.property_type] ?? p.property_type}
+            </span>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">
+              {dealLabels[p.deal_type] ?? p.deal_type}
+            </span>
+            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[p.status] ?? 'bg-gray-100 text-gray-600'}`}>
+              {statusLabels[p.status] ?? p.status}
+            </span>
+          </span>
+        }
+        actions={
+          <>
+            <Link href={`/properties/${id}/edit`}
+              className="flex items-center gap-2 px-4 py-2 border border-border text-foreground rounded-[14px] text-sm font-medium hover:bg-accent transition whitespace-nowrap">
+              <Edit className="w-4 h-4" />
+              Редактировать
+            </Link>
+            <DeletePropertyButton propertyId={id} />
+            <Link href={`/contracts/new?property_id=${id}`}
+              className="px-4 py-2 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition whitespace-nowrap" style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+              + Договор
+            </Link>
+          </>
+        }
+      />
 
       {/* Address */}
       <div className="flex items-center gap-2 px-4 py-3 bg-white border border-slate-100 rounded-[20px] shadow-sm">

@@ -16,18 +16,20 @@ export function PageHeader({
   backLabel,
   icon,
   iconBg = 'bg-green-50',
+  iconBoxClassName = 'w-11 h-11 rounded-[12px]',
 }: {
-  title: string
+  title: ReactNode
   subtitle?: ReactNode
   actions?: ReactNode
   backHref?: string
   backLabel?: string
   icon?: ReactNode
   iconBg?: string
+  iconBoxClassName?: string
 }) {
   return (
     <div className="hp-section-header">
-      <div>
+      <div className="min-w-0">
         {backHref && (
           <Link
             href={backHref}
@@ -37,21 +39,21 @@ export function PageHeader({
             {backLabel ?? 'Назад'}
           </Link>
         )}
-        <div className={icon ? 'flex items-center gap-3' : undefined}>
+        <div className={icon ? 'flex items-center gap-4 min-w-0' : 'min-w-0'}>
           {icon && (
-            <div className={`w-11 h-11 rounded-[12px] flex items-center justify-center shrink-0 ${iconBg}`}>
+            <div className={`flex items-center justify-center shrink-0 ${iconBg} ${iconBoxClassName}`}>
               {icon}
             </div>
           )}
-          <div>
-            <h1 className="hp-h1">{title}</h1>
+          <div className="min-w-0">
+            <h1 className="hp-h1 break-words">{title}</h1>
             {subtitle && (
               <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
             )}
           </div>
         </div>
       </div>
-      {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}
+      {actions && <div className="flex items-center gap-2 flex-wrap shrink-0">{actions}</div>}
     </div>
   )
 }

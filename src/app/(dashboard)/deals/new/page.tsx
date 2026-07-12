@@ -1,10 +1,11 @@
 import { createDealAction } from '@/features/deals/actions/deals.actions'
 import { createClient } from '@/lib/supabase/server'
-import { ArrowLeft, TrendingUp, User, Building2 } from 'lucide-react'
+import { TrendingUp, User, Building2 } from 'lucide-react'
 import Link from 'next/link'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { PartyContactSelect } from '@/features/contacts/components/PartyContactSelect'
 import { PropertySelectField } from '@/features/properties/components/PropertySelectField'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 export default async function NewDealPage({
   searchParams,
@@ -52,20 +53,14 @@ export default async function NewDealPage({
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <Link href="/deals" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft className="w-4 h-4" />
-        Назад к сделкам
-      </Link>
-
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-          <TrendingUp className="w-5 h-5 text-green-600" />
-        </div>
-        <div>
-          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Новая сделка</h1>
-          <p className="text-muted-foreground text-sm">Укажите обе стороны и объект</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Новая сделка"
+        subtitle="Укажите обе стороны и объект"
+        backHref="/deals"
+        backLabel="Назад к сделкам"
+        iconBg="bg-green-100"
+        icon={<TrendingUp className="w-5 h-5 text-green-600" />}
+      />
 
       <ServerActionForm action={createDealAction} className="space-y-4">
 

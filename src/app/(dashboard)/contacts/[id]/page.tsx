@@ -5,6 +5,7 @@ import { RepresentativesPanel } from '@/features/contacts/components/Representat
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Contact } from '@/types/database'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 const roleLabels: Record<string, string> = {
   client: '👥 Клиент',
@@ -69,16 +70,12 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <Link href="/contacts" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft className="w-4 h-4" />
-        Вернуться к контактам
-      </Link>
-
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-        <div className="min-w-0">
-          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight break-words">{c.full_name}</h1>
-          <div className="flex items-center gap-2 mt-2 flex-wrap">
+      <PageHeader
+        title={c.full_name}
+        backHref="/contacts"
+        backLabel="Вернуться к контактам"
+        subtitle={
+          <span className="flex items-center gap-2 flex-wrap">
             <span className="text-base">{roleLabels[c.role]}</span>
             {c.client_type === 'legal_entity' && (
               <span className="text-xs px-2.5 py-1 rounded-full font-medium shrink-0 bg-indigo-100 text-indigo-700">
@@ -88,22 +85,24 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
             <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${statusInfo.color}`}>
               {statusInfo.label}
             </span>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <Link href={`/tasks/new?client_id=${id}`}
-            className="flex items-center gap-2 px-3 py-2 border border-border rounded-xl text-sm font-medium hover:bg-accent transition whitespace-nowrap">
-            <Plus className="w-4 h-4" />
-            Задача
-          </Link>
-          <Link href={`/contacts/${id}/edit`}
-            className="flex items-center gap-2 px-4 py-2 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition whitespace-nowrap" style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
-            <Edit className="w-4 h-4" />
-            Редактировать
-          </Link>
-          <DeleteContactButton contactId={id} />
-        </div>
-      </div>
+          </span>
+        }
+        actions={
+          <>
+            <Link href={`/tasks/new?client_id=${id}`}
+              className="flex items-center gap-2 px-3 py-2 border border-border rounded-xl text-sm font-medium hover:bg-accent transition whitespace-nowrap">
+              <Plus className="w-4 h-4" />
+              Задача
+            </Link>
+            <Link href={`/contacts/${id}/edit`}
+              className="flex items-center gap-2 px-4 py-2 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition whitespace-nowrap" style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+              <Edit className="w-4 h-4" />
+              Редактировать
+            </Link>
+            <DeleteContactButton contactId={id} />
+          </>
+        }
+      />
 
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">

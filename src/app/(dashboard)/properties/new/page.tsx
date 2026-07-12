@@ -1,8 +1,9 @@
 import { createPropertyAction } from '@/features/properties/actions/properties.actions'
 import { createClient } from '@/lib/supabase/server'
-import { ArrowLeft, Home } from 'lucide-react'
+import { Home } from 'lucide-react'
 import Link from 'next/link'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 export default async function NewPropertyPage() {
   const supabase = await createClient()
@@ -14,20 +15,14 @@ export default async function NewPropertyPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <Link href="/properties" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft className="w-4 h-4" />
-        Назад к объектам
-      </Link>
-
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
-          <Home className="w-5 h-5 text-emerald-600" />
-        </div>
-        <div>
-          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Новый объект</h1>
-          <p className="text-muted-foreground text-sm">Добавьте объект недвижимости</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Новый объект"
+        subtitle="Добавьте объект недвижимости"
+        backHref="/properties"
+        backLabel="Назад к объектам"
+        iconBg="bg-emerald-100"
+        icon={<Home className="w-5 h-5 text-emerald-600" />}
+      />
 
       <ServerActionForm action={createPropertyAction} className="space-y-4">
 

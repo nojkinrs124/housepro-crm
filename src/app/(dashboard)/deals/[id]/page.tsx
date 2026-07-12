@@ -5,6 +5,7 @@ import { DealComments } from '@/features/deals/components/DealComments'
 import { DealStatusSelector } from '@/features/deals/components/DealStatusSelector'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 const dealTypeLabels: Record<string, string> = {
   rent: 'Аренда', sale: 'Продажа',
@@ -59,38 +60,28 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <Link href="/deals" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft className="w-4 h-4" />
-        Все сделки
-      </Link>
-
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-        <div className="flex items-center gap-4 min-w-0">
-          <div className="w-14 h-14 rounded-[20px] bg-green-100 flex items-center justify-center shrink-0">
-            <TrendingUp className="w-7 h-7 text-green-600" />
-          </div>
-          <div className="min-w-0">
-            <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight break-words">
-              {dealTypeLabels[deal.deal_type] ?? deal.deal_type}
-            </h1>
-            <p className="text-muted-foreground text-sm">
-              Создана {new Date(deal.created_at).toLocaleDateString('ru-RU')}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap shrink-0">
-          <DealStatusSelector dealId={id} currentStatus={deal.status} />
-          <Link
-            href={`/deals/${id}/edit`}
-            className="flex items-center gap-2 px-4 py-2 border border-border rounded-[14px] text-sm font-medium hover:bg-accent transition whitespace-nowrap"
-          >
-            <Edit className="w-4 h-4" />
-            Редактировать
-          </Link>
-          <DeleteDealButton dealId={id} />
-        </div>
-      </div>
+      <PageHeader
+        title={dealTypeLabels[deal.deal_type] ?? deal.deal_type}
+        subtitle={`Создана ${new Date(deal.created_at).toLocaleDateString('ru-RU')}`}
+        backHref="/deals"
+        backLabel="Все сделки"
+        iconBg="bg-green-100"
+        iconBoxClassName="w-14 h-14 rounded-[20px]"
+        icon={<TrendingUp className="w-7 h-7 text-green-600" />}
+        actions={
+          <>
+            <DealStatusSelector dealId={id} currentStatus={deal.status} />
+            <Link
+              href={`/deals/${id}/edit`}
+              className="flex items-center gap-2 px-4 py-2 border border-border rounded-[14px] text-sm font-medium hover:bg-accent transition whitespace-nowrap"
+            >
+              <Edit className="w-4 h-4" />
+              Редактировать
+            </Link>
+            <DeleteDealButton dealId={id} />
+          </>
+        }
+      />
 
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">

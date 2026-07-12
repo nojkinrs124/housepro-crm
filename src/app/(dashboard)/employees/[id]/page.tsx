@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { updateEmployeeAction, deactivateEmployeeAction, activateEmployeeAction } from '@/features/users/actions/users.actions'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 const roleLabels: Record<string, string> = {
   admin: 'Администратор', manager: 'Менеджер',
@@ -57,39 +58,39 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <Link href="/employees" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft className="w-4 h-4" />
-        Все сотрудники
-      </Link>
-
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <div className="w-16 h-16 rounded-[20px] bg-primary/10 flex items-center justify-center shrink-0">
+      <PageHeader
+        title={emp.full_name}
+        backHref="/employees"
+        backLabel="Все сотрудники"
+        iconBg="bg-primary/10"
+        iconBoxClassName="w-16 h-16 rounded-[20px]"
+        icon={
           <span className="text-primary text-2xl font-bold">
             {emp.full_name?.charAt(0)?.toUpperCase() ?? '?'}
           </span>
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight truncate max-w-[200px] sm:max-w-none">{emp.full_name}</h1>
-            <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${roleColors[emp.role] ?? 'bg-gray-100'}`}>
-              {roleLabels[emp.role] ?? emp.role}
+        }
+        subtitle={
+          <>
+            <span className="flex items-center gap-2 flex-wrap">
+              <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${roleColors[emp.role] ?? 'bg-gray-100'}`}>
+                {roleLabels[emp.role] ?? emp.role}
+              </span>
+              {emp.is_active ? (
+                <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium bg-green-100 text-green-700 shrink-0">
+                  <CheckCircle className="w-3 h-3" /> Активен
+                </span>
+              ) : (
+                <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium bg-red-100 text-red-600 shrink-0">
+                  <XCircle className="w-3 h-3" /> Неактивен
+                </span>
+              )}
             </span>
-            {emp.is_active ? (
-              <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium bg-green-100 text-green-700 shrink-0">
-                <CheckCircle className="w-3 h-3" /> Активен
-              </span>
-            ) : (
-              <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium bg-red-100 text-red-600 shrink-0">
-                <XCircle className="w-3 h-3" /> Неактивен
-              </span>
-            )}
-          </div>
-          <p className="text-muted-foreground text-sm mt-1">
-            В системе с {new Date(emp.created_at).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })}
-          </p>
-        </div>
-      </div>
+            <span className="block mt-1">
+              В системе с {new Date(emp.created_at).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })}
+            </span>
+          </>
+        }
+      />
 
       {/* Общая статистика */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

@@ -1,8 +1,9 @@
 import { createLeadAction } from '@/features/leads/actions/leads.actions'
 import { createClient } from '@/lib/supabase/server'
-import { ArrowLeft, Zap } from 'lucide-react'
+import { Zap } from 'lucide-react'
 import Link from 'next/link'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 const sourceOptions = [
   { value: 'avito',    label: '🟡 Авито' },
@@ -45,20 +46,14 @@ export default async function NewLeadPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <Link href="/leads" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft className="w-4 h-4" />
-        Назад к лидам
-      </Link>
-
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-          <Zap className="w-5 h-5 text-blue-600" />
-        </div>
-        <div>
-          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Новый лид</h1>
-          <p className="text-muted-foreground text-sm">Входящее обращение от потенциального клиента</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Новый лид"
+        subtitle="Входящее обращение от потенциального клиента"
+        backHref="/leads"
+        backLabel="Назад к лидам"
+        iconBg="bg-blue-100"
+        icon={<Zap className="w-5 h-5 text-blue-600" />}
+      />
 
       <ServerActionForm action={createLeadAction} className="space-y-4">
 

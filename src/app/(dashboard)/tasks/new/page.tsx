@@ -1,8 +1,9 @@
 import { createTaskAction } from '@/features/tasks/actions/tasks.actions'
 import { createClient } from '@/lib/supabase/server'
-import { ArrowLeft, CheckSquare } from 'lucide-react'
+import { CheckSquare } from 'lucide-react'
 import Link from 'next/link'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 export default async function NewTaskPage({
   searchParams,
@@ -26,20 +27,14 @@ export default async function NewTaskPage({
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <Link href="/tasks" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft className="w-4 h-4" />
-        Назад к задачам
-      </Link>
-
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
-          <CheckSquare className="w-5 h-5 text-orange-600" />
-        </div>
-        <div>
-          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Новая задача</h1>
-          <p className="text-muted-foreground text-sm">Создайте задачу для команды</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Новая задача"
+        subtitle="Создайте задачу для команды"
+        backHref="/tasks"
+        backLabel="Назад к задачам"
+        iconBg="bg-orange-100"
+        icon={<CheckSquare className="w-5 h-5 text-orange-600" />}
+      />
 
       <ServerActionForm action={createTaskAction} className="space-y-4">
         <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-5">

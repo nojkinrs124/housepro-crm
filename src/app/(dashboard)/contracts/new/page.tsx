@@ -2,8 +2,9 @@ import { createContractAction } from '@/features/contracts/actions/contracts.act
 import { ContractForm } from '@/features/contracts/components/ContractForm'
 import { getContractFormData } from '@/features/contracts/data/contract-form-data'
 import { createClient } from '@/lib/supabase/server'
-import { ArrowLeft, FileText } from 'lucide-react'
+import { FileText } from 'lucide-react'
 import Link from 'next/link'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 // Тип сделки -> тип договора по умолчанию. 'rent' уточняется ниже по типу объекта
 // (жилой -> rent_apartment, коммерческий -> rent_commercial).
@@ -79,20 +80,14 @@ export default async function NewContractPage({
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <Link href="/contracts" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft className="w-4 h-4" />
-        Назад к договорам
-      </Link>
-
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-violet-100 rounded-xl flex items-center justify-center">
-          <FileText className="w-5 h-5 text-violet-600" />
-        </div>
-        <div>
-          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Новый договор</h1>
-          <p className="text-muted-foreground text-sm">Укажите обе стороны из единой базы контактов</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Новый договор"
+        subtitle="Укажите обе стороны из единой базы контактов"
+        backHref="/contracts"
+        backLabel="Назад к договорам"
+        iconBg="bg-violet-100"
+        icon={<FileText className="w-5 h-5 text-violet-600" />}
+      />
 
       <ContractForm
         action={createContractAction}

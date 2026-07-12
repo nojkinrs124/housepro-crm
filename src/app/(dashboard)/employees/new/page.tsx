@@ -1,20 +1,16 @@
-import { ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
 import { createEmployeeAction } from '@/features/users/actions/users.actions'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 export default function NewEmployeePage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <Link href="/employees" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft className="w-4 h-4" />
-        Вернуться к сотрудникам
-      </Link>
-
-      <div>
-        <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Добавить сотрудника</h1>
-        <p className="text-muted-foreground mt-1">Создание нового пользователя в системе</p>
-      </div>
+      <PageHeader
+        title="Добавить сотрудника"
+        subtitle="Создание нового пользователя в системе"
+        backHref="/employees"
+        backLabel="Вернуться к сотрудникам"
+      />
 
       <ServerActionForm action={createEmployeeAction} className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-5">
         <div>

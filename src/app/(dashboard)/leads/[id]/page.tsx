@@ -7,6 +7,7 @@ import { DeleteLeadButton } from '@/features/leads/components/DeleteLeadButton'
 import { LeadActivityForm } from '@/features/leads/components/LeadActivityForm'
 import { LeadStatusSelect } from '@/features/leads/components/LeadStatusSelect'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 const sourceLabels: Record<string, string> = {
   avito: '🟡 Авито', cian: '🟢 ЦИАН', domclick: '🔵 Домклик',
@@ -78,55 +79,52 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <Link href="/leads" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft className="w-4 h-4" />
-        Все лиды
-      </Link>
-
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-        <div className="flex items-center gap-4 min-w-0">
-          <div className="w-14 h-14 rounded-[20px] bg-blue-100 flex items-center justify-center shrink-0">
-            <span className="text-blue-600 text-2xl font-bold">
-              {lead.full_name?.charAt(0)?.toUpperCase() ?? '?'}
+      <PageHeader
+        title={lead.full_name || 'Без имени'}
+        backHref="/leads"
+        backLabel="Все лиды"
+        iconBg="bg-blue-100"
+        iconBoxClassName="w-14 h-14 rounded-[20px]"
+        icon={
+          <span className="text-blue-600 text-2xl font-bold">
+            {lead.full_name?.charAt(0)?.toUpperCase() ?? '?'}
+          </span>
+        }
+        subtitle={
+          <span className="flex items-center gap-2 flex-wrap">
+            <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${statusColors[lead.status] ?? 'bg-gray-100'}`}>
+              {statusLabels[lead.status] ?? lead.status}
             </span>
-          </div>
-          <div className="min-w-0">
-            <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight break-words">{lead.full_name || 'Без имени'}</h1>
-            <div className="flex items-center gap-2 mt-1 flex-wrap">
-              <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${statusColors[lead.status] ?? 'bg-gray-100'}`}>
-                {statusLabels[lead.status] ?? lead.status}
+            {lead.source && (
+              <span className="text-xs text-muted-foreground">{sourceLabels[lead.source] ?? lead.source}</span>
+            )}
+            {isOverdue && (
+              <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-red-100 text-red-700 animate-pulse">
+                ⚠ Просрочен контакт
               </span>
-              {lead.source && (
-                <span className="text-xs text-muted-foreground">{sourceLabels[lead.source] ?? lead.source}</span>
-              )}
-              {isOverdue && (
-                <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-red-100 text-red-700 animate-pulse">
-                  ⚠ Просрочен контакт
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap shrink-0">
-          {!isConverted && (
-            <ServerActionForm action={convertLeadToClient.bind(null, id)}>
-              <button type="submit"
-                className="flex items-center gap-2 px-4 py-2 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition whitespace-nowrap" style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
-                <UserCheck className="w-4 h-4" />
-                → Контакт
-              </button>
-            </ServerActionForm>
-          )}
-          <Link href={`/leads/${id}/edit`}
-            className="flex items-center gap-2 px-4 py-2 border border-border rounded-[14px] text-sm font-medium hover:bg-accent transition whitespace-nowrap">
-            <Edit className="w-4 h-4" />
-            Изменить
-          </Link>
-          <DeleteLeadButton leadId={id} />
-        </div>
-      </div>
+            )}
+          </span>
+        }
+        actions={
+          <>
+            {!isConverted && (
+              <ServerActionForm action={convertLeadToClient.bind(null, id)}>
+                <button type="submit"
+                  className="flex items-center gap-2 px-4 py-2 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition whitespace-nowrap" style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+                  <UserCheck className="w-4 h-4" />
+                  → Контакт
+                </button>
+              </ServerActionForm>
+            )}
+            <Link href={`/leads/${id}/edit`}
+              className="flex items-center gap-2 px-4 py-2 border border-border rounded-[14px] text-sm font-medium hover:bg-accent transition whitespace-nowrap">
+              <Edit className="w-4 h-4" />
+              Изменить
+            </Link>
+            <DeleteLeadButton leadId={id} />
+          </>
+        }
+      />
 
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
