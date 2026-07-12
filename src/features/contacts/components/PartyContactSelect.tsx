@@ -63,7 +63,7 @@ export function PartyContactSelect({
         <option value="">{placeholder}</option>
         {contacts.map(c => (
           <option key={c.id} value={c.id}>
-            {c.client_type === 'legal_entity' ? '🏢 ' : ''}{c.full_name}{c.phone ? ` · ${c.phone}` : ''}
+            {c.full_name}{c.phone ? ` · ${c.phone}` : ''}
           </option>
         ))}
       </select>

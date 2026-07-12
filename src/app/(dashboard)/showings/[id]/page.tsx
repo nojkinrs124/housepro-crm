@@ -106,8 +106,8 @@ export default async function ShowingDetailPage({ params }: { params: Promise<{ 
                 <div>
                   <span className="text-xs text-muted-foreground">Результат</span>
                   <p className="text-sm font-medium mt-0.5">{
-                    showing.result === 'interested' ? '✅ Заинтересован' :
-                    showing.result === 'thinking'   ? '🤔 Думает' : '❌ Не заинтересован'
+                    showing.result === 'interested' ? 'Заинтересован' :
+                    showing.result === 'thinking'   ? 'Думает' : 'Не заинтересован'
                   }</p>
                 </div>
               )}

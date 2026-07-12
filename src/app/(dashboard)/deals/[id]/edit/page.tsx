@@ -58,11 +58,11 @@ export default async function EditDealPage({ params }: { params: Promise<{ id: s
           <h2 className="font-semibold text-foreground">Тип сделки</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {[
-              { value: 'rent',       label: '🏠 Аренда' },
-              { value: 'sale',       label: '💰 Продажа' },
-              { value: 'management', label: '⚙️ Управление' },
-              { value: 'commercial', label: '🏢 Коммерция' },
-              { value: 'subrent',    label: '🔄 Субаренда' },
+              { value: 'rent',       label: 'Аренда' },
+              { value: 'sale',       label: 'Продажа' },
+              { value: 'management', label: 'Управление' },
+              { value: 'commercial', label: 'Коммерция' },
+              { value: 'subrent',    label: 'Субаренда' },
             ].map(t => (
               <label key={t.value}
                 className="flex items-center gap-2 p-2.5 border border-border rounded-xl cursor-pointer hover:bg-accent transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5 text-sm">
@@ -80,13 +80,13 @@ export default async function EditDealPage({ params }: { params: Promise<{ id: s
           <h2 className="font-semibold text-foreground">Статус</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {[
-              { value: 'new',         label: '🔵 Новая' },
-              { value: 'showing',     label: '👁 Показ' },
-              { value: 'negotiation', label: '🤝 Переговоры' },
-              { value: 'contract',    label: '📄 Договор' },
-              { value: 'payment',     label: '💳 Оплата' },
-              { value: 'completed',   label: '✅ Завершена' },
-              { value: 'cancelled',   label: '❌ Отменена' },
+              { value: 'new',         label: 'Новая' },
+              { value: 'showing',     label: 'Показ' },
+              { value: 'negotiation', label: 'Переговоры' },
+              { value: 'contract',    label: 'Договор' },
+              { value: 'payment',     label: 'Оплата' },
+              { value: 'completed',   label: 'Завершена' },
+              { value: 'cancelled',   label: 'Отменена' },
             ].map(s => (
               <label key={s.value}
                 className="flex items-center gap-2 p-2.5 border border-border rounded-xl cursor-pointer hover:bg-accent transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5 text-sm">

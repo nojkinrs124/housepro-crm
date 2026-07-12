@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { ArrowLeft, Phone, Mail, MessageCircle, Clock, UserCheck, MapPin, Home, DollarSign, Zap, Edit, Plus } from 'lucide-react'
+import { ArrowLeft, Phone, Mail, MessageCircle, Clock, UserCheck, MapPin, Home, DollarSign, Zap, Edit, Plus, Users, FileText, Activity, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { convertLeadToClient } from '@/features/leads/actions/leads.actions'
@@ -10,10 +10,10 @@ import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { PageHeader } from '@/components/layout/PageHeader'
 
 const sourceLabels: Record<string, string> = {
-  avito: '🟡 Авито', cian: '🟢 ЦИАН', domclick: '🔵 Домклик',
-  whatsapp: '💬 WhatsApp', telegram: '✈️ Telegram', call: '📞 Звонок',
-  website: '🌐 Сайт', referral: '🤝 Рекомендация',
-  instagram: '📸 Instagram', vk: '💙 VK', other: '📌 Другое',
+  avito: 'Авито', cian: 'ЦИАН', domclick: 'Домклик',
+  whatsapp: 'WhatsApp', telegram: 'Telegram', call: 'Звонок',
+  website: 'Сайт', referral: 'Рекомендация',
+  instagram: 'Instagram', vk: 'VK', other: 'Другое',
 }
 const dealTypeLabels: Record<string, string> = {
   rent: 'Аренда', sale: 'Покупка', subrent: 'Субаренда',
@@ -23,9 +23,9 @@ const propertyTypeLabels: Record<string, string> = {
   apartment: 'Квартира', house: 'Дом', commercial: 'Коммерция',
   office: 'Офис', warehouse: 'Склад', land: 'Участок',
 }
-const activityIcons: Record<string, string> = {
-  call: '📞', message: '💬', meeting: '🤝',
-  showing: '🏠', note: '📝', email: '📧',
+const activityIcons: Record<string, typeof Phone> = {
+  call: Phone, message: MessageCircle, meeting: Users,
+  showing: Home, note: FileText, email: Mail,
 }
 const activityLabels: Record<string, string> = {
   call: 'Звонок', message: 'Сообщение', meeting: 'Встреча',
@@ -99,8 +99,9 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
               <span className="text-xs text-muted-foreground">{sourceLabels[lead.source] ?? lead.source}</span>
             )}
             {isOverdue && (
-              <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-red-100 text-red-700 animate-pulse">
-                ⚠ Просрочен контакт
+              <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium bg-red-100 text-red-700 animate-pulse">
+                <AlertTriangle className="w-3 h-3" />
+                Просрочен контакт
               </span>
             )}
           </span>
@@ -256,10 +257,12 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
               </div>
             ) : (
               <div className="mt-4 space-y-3">
-                {activities.map(act => (
+                {activities.map(act => {
+                  const ActivityIcon = activityIcons[act.type] ?? Activity
+                  return (
                   <div key={act.id} className="flex gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center shrink-0 text-base">
-                      {activityIcons[act.type] ?? '📋'}
+                    <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center shrink-0">
+                      <ActivityIcon className="w-4 h-4 text-muted-foreground" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -283,14 +286,14 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
                       )}
                       {act.scheduled_at && (
                         <p className="text-xs text-primary mt-0.5">
-                          📅 Следующий: {new Date(act.scheduled_at).toLocaleDateString('ru-RU', {
+                          Следующий: {new Date(act.scheduled_at).toLocaleDateString('ru-RU', {
                             day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
                           })}
                         </p>
                       )}
                     </div>
                   </div>
-                ))}
+                )})}
               </div>
             )}
           </div>
@@ -319,7 +322,6 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
                 <div className="flex justify-between items-start">
                   <span className="text-muted-foreground">След. контакт</span>
                   <span className={`font-medium text-right ${isOverdue ? 'text-red-600' : 'text-foreground'}`}>
-                    {isOverdue && '⚠ '}
                     {new Date(lead.next_contact_at).toLocaleDateString('ru-RU', {
                       day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
                     })}

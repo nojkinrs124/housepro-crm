@@ -1,12 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+import { CheckCircle2 } from 'lucide-react'
 import { updateShowingStatusAction } from '../actions/showings.actions'
 
 const RESULTS = [
-  { value: 'interested',     label: '✅ Заинтересован' },
-  { value: 'thinking',       label: '🤔 Думает' },
-  { value: 'not_interested', label: '❌ Не заинтересован' },
+  { value: 'interested',     label: 'Заинтересован' },
+  { value: 'thinking',       label: 'Думает' },
+  { value: 'not_interested', label: 'Не заинтересован' },
 ]
 
 export function ShowingResultForm({ showingId }: { showingId: string }) {
@@ -26,7 +27,7 @@ export function ShowingResultForm({ showingId }: { showingId: string }) {
   if (done) {
     return (
       <div className="flex items-center gap-2 text-emerald-600 text-sm font-medium">
-        <span>✅</span> Результат сохранён
+        <CheckCircle2 className="w-4 h-4" /> Результат сохранён
       </div>
     )
   }

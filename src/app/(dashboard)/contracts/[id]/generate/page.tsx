@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { ArrowLeft, FileText, Download, Sparkles, CheckCircle2 } from 'lucide-react'
+import { FileText, Download, Sparkles, CheckCircle2, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { GenerateButton } from './GenerateButton'
@@ -100,8 +100,9 @@ export default async function GenerateContractPage({
         </div>
 
         {missingCount > 0 && (
-          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-xl text-sm text-yellow-800">
-            ⚠️ Не заполнено {missingCount} обязательных полей. Договор будет создан с прочерками.
+          <div className="mt-4 flex items-start gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-xl text-sm text-yellow-800">
+            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+            <span>Не заполнено {missingCount} обязательных полей. Договор будет создан с прочерками.</span>
           </div>
         )}
       </div>

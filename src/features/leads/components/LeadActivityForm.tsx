@@ -5,12 +5,12 @@ import { Loader2, Plus } from 'lucide-react'
 import { addLeadActivityAction } from '@/features/leads/actions/leads.actions'
 
 const activityTypes = [
-  { value: 'call',     label: '📞 Звонок' },
-  { value: 'message',  label: '💬 Сообщение' },
-  { value: 'meeting',  label: '🤝 Встреча' },
-  { value: 'showing',  label: '🏠 Показ' },
-  { value: 'note',     label: '📝 Заметка' },
-  { value: 'email',    label: '📧 Email' },
+  { value: 'call',     label: 'Звонок' },
+  { value: 'message',  label: 'Сообщение' },
+  { value: 'meeting',  label: 'Встреча' },
+  { value: 'showing',  label: 'Показ' },
+  { value: 'note',     label: 'Заметка' },
+  { value: 'email',    label: 'Email' },
 ]
 
 export function LeadActivityForm({ leadId }: { leadId: string }) {

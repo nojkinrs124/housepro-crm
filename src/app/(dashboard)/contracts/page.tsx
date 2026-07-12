@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { FileText, Plus, Search } from 'lucide-react'
+import { FileText, Plus, Search, User, Home } from 'lucide-react'
 import Link from 'next/link'
 import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
 import { PageHeader } from '@/components/layout/PageHeader'
@@ -221,9 +221,17 @@ export default async function ContractsPage({
                       </span>
                     </div>
                     <div className="flex items-center gap-3 flex-wrap text-xs text-muted-foreground mt-1">
-                      {client?.full_name && <span>👤 {client.full_name}</span>}
+                      {client?.full_name && (
+                        <span className="flex items-center gap-1">
+                          <User className="w-3 h-3" />
+                          {client.full_name}
+                        </span>
+                      )}
                       {(property?.title || property?.address) && (
-                        <span className="truncate max-w-[160px]">🏠 {property.title ?? property.address}</span>
+                        <span className="flex items-center gap-1 truncate max-w-[160px]">
+                          <Home className="w-3 h-3 shrink-0" />
+                          <span className="truncate">{property.title ?? property.address}</span>
+                        </span>
                       )}
                       {contract.amount && (
                         <span className="font-bold text-foreground">{Number(contract.amount).toLocaleString('ru-RU')} ₽</span>

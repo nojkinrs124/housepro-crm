@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState, useTransition } from 'react'
-import { Upload, X, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
+import { Upload, X, CheckCircle, AlertCircle, Loader2, FileImage, FileText, File as FileIcon } from 'lucide-react'
 import { uploadFileAction } from '../actions/files.actions'
 
 interface FileUploadProps {
@@ -20,10 +20,10 @@ const ACCEPTED_TYPES = [
 const ACCEPTED_LABEL = 'PDF, JPG, PNG, WEBP, DOC, DOCX'
 
 function getFileIcon(type: string) {
-  if (type.startsWith('image/')) return '🖼️'
-  if (type === 'application/pdf') return '📄'
-  if (type.includes('word')) return '📝'
-  return '📎'
+  if (type.startsWith('image/')) return FileImage
+  if (type === 'application/pdf') return FileText
+  if (type.includes('word')) return FileText
+  return FileIcon
 }
 
 type Status = 'idle' | 'uploading' | 'success' | 'error'
@@ -127,7 +127,10 @@ export function FileUpload({ clientId, propertyId, contractId }: FileUploadProps
           </div>
         ) : selectedFile ? (
           <div className="flex items-center gap-3 justify-center">
-            <span className="text-2xl">{getFileIcon(selectedFile.type)}</span>
+            {(() => {
+              const Icon = getFileIcon(selectedFile.type)
+              return <Icon className="w-6 h-6 text-muted-foreground shrink-0" />
+            })()}
             <div className="text-left">
               <p className="text-sm font-medium text-foreground truncate max-w-[200px]">
                 {selectedFile.name}

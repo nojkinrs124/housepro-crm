@@ -11,8 +11,8 @@ const typeColors: Record<string, string> = {
   contract_expiry:  'bg-yellow-100 text-yellow-700',
 }
 const typeLabels: Record<string, string> = {
-  overdue_payment: '💳 Платёж', overdue_task: '✅ Задача',
-  new_lead: '⚡ Лид', deal_status: '📈 Сделка', contract_expiry: '📄 Договор',
+  overdue_payment: 'Платёж', overdue_task: 'Задача',
+  new_lead: 'Лид', deal_status: 'Сделка', contract_expiry: 'Договор',
 }
 const entityHref: Record<string, (id: string) => string> = {
   payment:  id => `/payments/${id}/edit`,

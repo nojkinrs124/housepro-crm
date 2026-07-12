@@ -2,7 +2,7 @@
 
 import { useState, useActionState } from 'react'
 import Link from 'next/link'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, User, Building2 } from 'lucide-react'
 
 const inputCls = "w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
 const selectCls = "w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all"
@@ -74,14 +74,16 @@ export function ContactForm({ action, defaults = {}, backHref, submitLabel }: Co
               checked={clientType === 'individual'}
               onChange={() => setClientType('individual')}
               className="accent-primary shrink-0" />
-            👤 Физическое лицо
+            <User className="w-4 h-4 text-muted-foreground shrink-0" />
+            Физическое лицо
           </label>
           <label className="flex items-center gap-3 p-3 border border-border rounded-xl cursor-pointer hover:bg-accent transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5 text-sm">
             <input type="radio" name="client_type" value="legal_entity"
               checked={clientType === 'legal_entity'}
               onChange={() => setClientType('legal_entity')}
               className="accent-primary shrink-0" />
-            🏢 Юридическое лицо
+            <Building2 className="w-4 h-4 text-muted-foreground shrink-0" />
+            Юридическое лицо
           </label>
         </div>
       </div>
@@ -99,9 +101,9 @@ export function ContactForm({ action, defaults = {}, backHref, submitLabel }: Co
           <div>
             <label className={labelCls}>Роль *</label>
             <select name="role" required defaultValue={defaults.role ?? 'client'} className={selectCls}>
-              <option value="client">👥 Клиент</option>
-              <option value="owner">🏠 Собственник</option>
-              <option value="both">🔄 Клиент + Собственник</option>
+              <option value="client">Клиент</option>
+              <option value="owner">Собственник</option>
+              <option value="both">Клиент + Собственник</option>
             </select>
           </div>
           {defaults.status !== undefined && (

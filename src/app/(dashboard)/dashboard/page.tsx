@@ -380,7 +380,7 @@ export default async function DashboardPage() {
                       {task.deadline && (
                         <div className={`flex items-center gap-1 mt-1.5 text-xs font-semibold ${isOverdue ? 'text-red-600' : 'text-muted-foreground'}`}>
                           <Clock style={{ width: 11, height: 11 }} />
-                          {isOverdue ? '⚠ ' : ''}{new Date(task.deadline).toLocaleDateString('ru-RU')}
+                          {new Date(task.deadline).toLocaleDateString('ru-RU')}
                         </div>
                       )}
                     </div>

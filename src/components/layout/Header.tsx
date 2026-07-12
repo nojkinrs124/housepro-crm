@@ -1,6 +1,6 @@
 'use client'
 
-import { Search, Plus, ChevronDown, Sparkles } from 'lucide-react'
+import { Search, Plus, ChevronDown, Sparkles, User as UserIcon, Home, TrendingUp, FileText, CheckSquare } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import type { User } from '@/types/database'
@@ -138,18 +138,18 @@ export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCou
                 </span>
               </div>
               {[
-                { label: 'Контакт',  href: '/contacts/new',   emoji: '👤', color: 'hover:bg-violet-50 hover:text-violet-700' },
-                { label: 'Объект',   href: '/properties/new', emoji: '🏠', color: 'hover:bg-emerald-50 hover:text-emerald-700' },
-                { label: 'Сделку',   href: '/deals/new',      emoji: '📈', color: 'hover:bg-green-50 hover:text-green-700' },
-                { label: 'Договор',  href: '/contracts/new',  emoji: '📄', color: 'hover:bg-orange-50 hover:text-orange-700' },
-                { label: 'Задачу',   href: '/tasks/new',      emoji: '✅', color: 'hover:bg-blue-50 hover:text-blue-700' },
+                { label: 'Контакт',  href: '/contacts/new',   Icon: UserIcon,   color: 'hover:bg-violet-50 hover:text-violet-700', iconColor: 'text-violet-500' },
+                { label: 'Объект',   href: '/properties/new', Icon: Home,       color: 'hover:bg-emerald-50 hover:text-emerald-700', iconColor: 'text-emerald-500' },
+                { label: 'Сделку',   href: '/deals/new',      Icon: TrendingUp, color: 'hover:bg-green-50 hover:text-green-700', iconColor: 'text-green-500' },
+                { label: 'Договор',  href: '/contracts/new',  Icon: FileText,   color: 'hover:bg-orange-50 hover:text-orange-700', iconColor: 'text-orange-500' },
+                { label: 'Задачу',   href: '/tasks/new',      Icon: CheckSquare, color: 'hover:bg-blue-50 hover:text-blue-700', iconColor: 'text-blue-500' },
               ].map(item => (
                 <a
                   key={item.href}
                   href={item.href}
                   className={`flex items-center gap-3 mx-1.5 px-3 py-2.5 text-sm text-[#374151] font-medium transition-all duration-150 rounded-[12px] ${item.color}`}
                 >
-                  <span className="text-[16px] leading-none">{item.emoji}</span>
+                  <item.Icon className={`w-4 h-4 ${item.iconColor}`} />
                   {item.label}
                 </a>
               ))}

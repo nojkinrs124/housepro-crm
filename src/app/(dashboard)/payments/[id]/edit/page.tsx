@@ -15,11 +15,11 @@ const typeOptions = [
 ]
 
 const statusOptions = [
-  { value: 'pending',   label: '⏳ Ожидает оплату' },
-  { value: 'paid',      label: '✅ Оплачен' },
-  { value: 'partial',   label: '🔶 Частично оплачен' },
-  { value: 'overdue',   label: '🔴 Просрочен' },
-  { value: 'cancelled', label: '⛔ Отменён' },
+  { value: 'pending',   label: 'Ожидает оплату' },
+  { value: 'paid',      label: 'Оплачен' },
+  { value: 'partial',   label: 'Частично оплачен' },
+  { value: 'overdue',   label: 'Просрочен' },
+  { value: 'cancelled', label: 'Отменён' },
 ]
 
 export default async function EditPaymentPage({ params }: { params: Promise<{ id: string }> }) {

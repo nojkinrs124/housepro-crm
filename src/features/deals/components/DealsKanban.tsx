@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Building2, Home, User } from 'lucide-react'
+import { STAGE_COLORS } from '@/lib/design/stageColors'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function DealsKanbanBoard({ deals: initialDeals }: { deals: any[] }) {
@@ -14,12 +15,12 @@ export function DealsKanbanBoard({ deals: initialDeals }: { deals: any[] }) {
   const isDragging = useRef(false)
 
   const columns = [
-    { status: 'new',         label: 'Новые',       color: 'border-t-blue-400' },
-    { status: 'showing',     label: 'Показы',      color: 'border-t-yellow-400' },
-    { status: 'negotiation', label: 'Переговоры',  color: 'border-t-orange-400' },
-    { status: 'contract',    label: 'Договор',     color: 'border-t-purple-400' },
-    { status: 'payment',     label: 'Оплата',      color: 'border-t-cyan-400' },
-    { status: 'completed',   label: 'Завершено',   color: 'border-t-green-400' },
+    { status: 'new',         label: 'Новые',      ...STAGE_COLORS.blue },
+    { status: 'showing',     label: 'Показы',     ...STAGE_COLORS.yellow },
+    { status: 'negotiation', label: 'Переговоры', ...STAGE_COLORS.orange },
+    { status: 'contract',    label: 'Договор',    ...STAGE_COLORS.purple },
+    { status: 'payment',     label: 'Оплата',     ...STAGE_COLORS.cyan },
+    { status: 'completed',   label: 'Завершено',  ...STAGE_COLORS.green },
   ]
 
   const dealTypeLabels: Record<string, string> = {
@@ -119,7 +120,7 @@ export function DealsKanbanBoard({ deals: initialDeals }: { deals: any[] }) {
             >
               <div className="p-4 border-b border-border flex items-center justify-between">
                 <span className="font-semibold text-foreground text-sm">{col.label}</span>
-                <span className="bg-muted text-muted-foreground text-xs px-2 py-0.5 rounded-full font-medium">
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${col.badge}`}>
                   {colDeals.length}
                 </span>
               </div>
@@ -176,8 +177,8 @@ export function DealsKanbanBoard({ deals: initialDeals }: { deals: any[] }) {
                         )}
 
                         {deal.amount && (
-                          <div className="text-xs font-medium text-foreground">
-                            💰 {Number(deal.amount).toLocaleString('ru-RU')} ₽
+                          <div className="text-xs font-semibold text-foreground">
+                            {Number(deal.amount).toLocaleString('ru-RU')} ₽
                           </div>
                         )}
                       </div>

@@ -5,14 +5,15 @@ import { Phone, MessageCircle, UserCheck } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { convertLeadToClient } from '@/features/leads/actions/leads.actions'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
+import { STAGE_COLORS } from '@/lib/design/stageColors'
 
 const columns = [
-  { status: 'new',       label: 'Новые',    color: 'border-t-blue-400',   badge: 'bg-blue-100 text-blue-700' },
-  { status: 'contacted', label: 'Связались', color: 'border-t-yellow-400', badge: 'bg-yellow-100 text-yellow-700' },
-  { status: 'showing',   label: 'Показ',    color: 'border-t-orange-400',  badge: 'bg-orange-100 text-orange-700' },
-  { status: 'searching', label: 'Подбор',   color: 'border-t-purple-400',  badge: 'bg-purple-100 text-purple-700' },
-  { status: 'converted', label: 'Клиенты',  color: 'border-t-green-400',   badge: 'bg-green-100 text-green-700' },
-  { status: 'closed',    label: 'Закрыты',  color: 'border-t-gray-300',    badge: 'bg-gray-100 text-gray-600' },
+  { status: 'new',       label: 'Новые',     ...STAGE_COLORS.blue },
+  { status: 'contacted', label: 'Связались', ...STAGE_COLORS.yellow },
+  { status: 'showing',   label: 'Показ',     ...STAGE_COLORS.orange },
+  { status: 'searching', label: 'Подбор',    ...STAGE_COLORS.purple },
+  { status: 'converted', label: 'Клиенты',   ...STAGE_COLORS.green },
+  { status: 'closed',    label: 'Закрыты',   ...STAGE_COLORS.gray },
 ]
 
 const sourceLabels: Record<string, string> = {

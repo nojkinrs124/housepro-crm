@@ -1,6 +1,6 @@
 'use client'
 
-import { Phone, Mail, MessageCircle, TrendingUp, FileText } from 'lucide-react'
+import { Phone, Mail, MessageCircle, TrendingUp, FileText, Tag } from 'lucide-react'
 import Link from 'next/link'
 import type { Contact } from '@/types/database'
 
@@ -100,7 +100,10 @@ export function ContactCard({ contact, idx }: ContactCardProps) {
             </div>
           )}
           {contact.source && (
-            <div className="text-xs text-slate-400 mt-0.5">📍 {contact.source}</div>
+            <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
+              <Tag style={{ width: 12, height: 12, flexShrink: 0 }} />
+              <span className="truncate">{contact.source}</span>
+            </div>
           )}
         </div>
 

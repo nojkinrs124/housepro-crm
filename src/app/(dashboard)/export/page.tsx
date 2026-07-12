@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { Download, Home, AlertCircle, FileText } from 'lucide-react'
+import { Download, Home, AlertCircle, FileText, Lightbulb } from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
 
 export default async function ExportPage() {
@@ -20,7 +20,7 @@ export default async function ExportPage() {
       iconColor: 'text-blue-600',
       btnBg: 'linear-gradient(135deg, #2563EB, #3B82F6)',
       btnShadow: '0 4px 16px rgba(37,99,235,0.3)',
-      icon: '🟡',
+      icon: '',
       docsUrl: 'https://www.avito.ru/help/help/xml_feed',
     },
     {
@@ -31,7 +31,7 @@ export default async function ExportPage() {
       iconColor: 'text-emerald-600',
       btnBg: 'var(--hp-gradient-primary)',
       btnShadow: '0 4px 16px rgba(22,163,74,0.35)',
-      icon: '🟢',
+      icon: '',
       docsUrl: 'https://cian.ru/help/',
     },
   ]
@@ -168,11 +168,14 @@ export default async function ExportPage() {
           ))}
         </div>
 
-        <div className="rounded-[14px] p-4" style={{ background: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)', border: '1px solid rgba(59,130,246,0.15)' }}>
-          <p className="text-blue-900 font-semibold text-sm">💡 Авто-обновление</p>
-          <p className="text-blue-700 mt-1 text-sm leading-relaxed break-words">
-            Укажите ссылку <code className="bg-blue-100 px-1.5 py-0.5 rounded text-xs break-all">/api/export/avito</code> в настройках площадки для автоматического обновления объявлений.
-          </p>
+        <div className="rounded-[14px] p-4 flex gap-3" style={{ background: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)', border: '1px solid rgba(59,130,246,0.15)' }}>
+          <Lightbulb className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-blue-900 font-semibold text-sm">Авто-обновление</p>
+            <p className="text-blue-700 mt-1 text-sm leading-relaxed break-words">
+              Укажите ссылку <code className="bg-blue-100 px-1.5 py-0.5 rounded text-xs break-all">/api/export/avito</code> в настройках площадки для автоматического обновления объявлений.
+            </p>
+          </div>
         </div>
       </div>
     </div>

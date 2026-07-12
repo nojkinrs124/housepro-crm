@@ -4,12 +4,13 @@ import React, { useState, useRef } from 'react'
 import { CheckSquare, Clock } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import { STAGE_COLORS } from '@/lib/design/stageColors'
 
 const columns = [
-  { status: 'todo',        label: 'К выполнению', color: 'border-t-gray-300' },
-  { status: 'in_progress', label: 'В работе',     color: 'border-t-blue-400' },
-  { status: 'done',        label: 'Выполнено',    color: 'border-t-green-400' },
-  { status: 'cancelled',   label: 'Отменено',     color: 'border-t-red-300' },
+  { status: 'todo',        label: 'К выполнению', ...STAGE_COLORS.gray },
+  { status: 'in_progress', label: 'В работе',     ...STAGE_COLORS.blue },
+  { status: 'done',        label: 'Выполнено',    ...STAGE_COLORS.green },
+  { status: 'cancelled',   label: 'Отменено',     ...STAGE_COLORS.red },
 ]
 
 const priorityColors: Record<string, string> = {
@@ -95,7 +96,7 @@ export function TasksKanbanBoard({ tasks: initialTasks }: { tasks: any[] }) {
                   <CheckSquare className="w-4 h-4 text-muted-foreground" />
                   <span className="font-semibold text-foreground text-sm">{col.label}</span>
                 </div>
-                <span className="bg-muted text-muted-foreground text-xs px-2 py-0.5 rounded-full font-medium">
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${col.badge}`}>
                   {colTasks.length}
                 </span>
               </div>

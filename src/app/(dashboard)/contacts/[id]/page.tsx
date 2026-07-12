@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { ArrowLeft, Phone, Mail, MapPin, Edit, MessageCircle, CheckSquare, TrendingUp, FileText, Plus } from 'lucide-react'
+import { ArrowLeft, Phone, Mail, MapPin, Edit, MessageCircle, CheckSquare, TrendingUp, FileText, Plus, Building2 } from 'lucide-react'
 import { DeleteContactButton } from '@/features/contacts/components/DeleteContactButton'
 import { RepresentativesPanel } from '@/features/contacts/components/RepresentativesPanel'
 import Link from 'next/link'
@@ -8,9 +8,9 @@ import type { Contact } from '@/types/database'
 import { PageHeader } from '@/components/layout/PageHeader'
 
 const roleLabels: Record<string, string> = {
-  client: '👥 Клиент',
-  owner:  '🏠 Собственник',
-  both:   '🔄 Клиент + Собственник',
+  client: 'Клиент',
+  owner:  'Собственник',
+  both:   'Клиент + Собственник',
 }
 
 const statusLabels: Record<string, { label: string; color: string }> = {
@@ -78,8 +78,9 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
           <span className="flex items-center gap-2 flex-wrap">
             <span className="text-base">{roleLabels[c.role]}</span>
             {c.client_type === 'legal_entity' && (
-              <span className="text-xs px-2.5 py-1 rounded-full font-medium shrink-0 bg-indigo-100 text-indigo-700">
-                🏢 Юр. лицо
+              <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium shrink-0 bg-indigo-100 text-indigo-700">
+                <Building2 className="w-3 h-3" />
+                Юр. лицо
               </span>
             )}
             <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${statusInfo.color}`}>

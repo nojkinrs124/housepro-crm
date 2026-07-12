@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { CheckCircle2, Circle, AlertCircle, Trash2 } from 'lucide-react'
+import { CheckCircle2, Circle, AlertCircle, Trash2, Clock } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { Task } from '@/types/database'
 
@@ -63,15 +63,18 @@ export function RelatedTasks({
               <p className="text-xs text-muted-foreground mt-1">{task.description}</p>
             )}
             {task.deadline && (
-              <p className="text-xs text-muted-foreground mt-1">
-                ⏱️ {new Date(task.deadline).toLocaleDateString('ru-RU')}
+              <p className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                <Clock className="w-3 h-3" />
+                {new Date(task.deadline).toLocaleDateString('ru-RU')}
               </p>
             )}
           </div>
           <div className="flex items-center gap-1 shrink-0">
-            <span className="text-xs px-2 py-1 rounded-full bg-muted">
-              {task.priority === 'high' ? '🔴' : task.priority === 'medium' ? '🟡' : '🟢'}{' '}
-              {task.priority}
+            <span className="flex items-center gap-1.5 text-xs px-2 py-1 rounded-full bg-muted">
+              <span className={`w-1.5 h-1.5 rounded-full ${
+                task.priority === 'high' ? 'bg-red-500' : task.priority === 'medium' ? 'bg-amber-500' : 'bg-slate-400'
+              }`} />
+              {task.priority === 'high' ? 'Высокий' : task.priority === 'medium' ? 'Средний' : 'Низкий'}
             </span>
           </div>
         </div>

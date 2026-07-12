@@ -6,17 +6,17 @@ import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { PageHeader } from '@/components/layout/PageHeader'
 
 const sourceOptions = [
-  { value: 'avito',    label: '🟡 Авито' },
-  { value: 'cian',     label: '🟢 ЦИАН' },
-  { value: 'domclick', label: '🔵 Домклик' },
-  { value: 'whatsapp', label: '💬 WhatsApp' },
-  { value: 'telegram', label: '✈️ Telegram' },
-  { value: 'call',     label: '📞 Входящий звонок' },
-  { value: 'website',  label: '🌐 Сайт' },
-  { value: 'referral', label: '🤝 Рекомендация' },
-  { value: 'instagram',label: '📸 Instagram' },
-  { value: 'vk',       label: '💙 VK' },
-  { value: 'other',    label: '📌 Другое' },
+  { value: 'avito',    label: 'Авито' },
+  { value: 'cian',     label: 'ЦИАН' },
+  { value: 'domclick', label: 'Домклик' },
+  { value: 'whatsapp', label: 'WhatsApp' },
+  { value: 'telegram', label: 'Telegram' },
+  { value: 'call',     label: 'Входящий звонок' },
+  { value: 'website',  label: 'Сайт' },
+  { value: 'referral', label: 'Рекомендация' },
+  { value: 'instagram',label: 'Instagram' },
+  { value: 'vk',       label: 'VK' },
+  { value: 'other',    label: 'Другое' },
 ]
 
 const dealTypes = [

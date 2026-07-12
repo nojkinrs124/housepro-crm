@@ -2,12 +2,12 @@
 
 import { useState, useTransition, useEffect } from 'react'
 import { useTheme } from 'next-themes'
-import { Globe, DollarSign, Clock, Calendar, Moon, CheckCircle, AlertCircle, Save, Loader2 } from 'lucide-react'
+import { Globe, DollarSign, Clock, Calendar, Moon, Sun, Monitor, CheckCircle, AlertCircle, Save, Loader2 } from 'lucide-react'
 import { updateGeneralSettingsAction, type GeneralSettings } from '@/features/settings/actions/general.actions'
 
 const LANGUAGES = [
-  { value: 'ru', label: '🇷🇺 Русский' },
-  { value: 'en', label: '🇺🇸 English' },
+  { value: 'ru', label: 'Русский' },
+  { value: 'en', label: 'English' },
 ]
 
 const CURRENCIES = [
@@ -43,9 +43,9 @@ const DATE_FORMATS = [
 ]
 
 const THEMES = [
-  { value: 'light', label: 'Светлая', icon: '☀️' },
-  { value: 'dark', label: 'Тёмная', icon: '🌙' },
-  { value: 'system', label: 'Системная', icon: '💻' },
+  { value: 'light', label: 'Светлая', icon: Sun },
+  { value: 'dark', label: 'Тёмная', icon: Moon },
+  { value: 'system', label: 'Системная', icon: Monitor },
 ]
 
 type Feedback = { type: 'success' | 'error'; message: string } | null
@@ -165,7 +165,7 @@ export function GeneralSettingsForm({ settings }: { settings: GeneralSettings })
                   : 'border-border hover:border-primary/40 hover:bg-accent/50'
               }`}
             >
-              <span className="text-2xl">{t.icon}</span>
+              <t.icon className={`w-6 h-6 ${theme === t.value ? 'text-primary' : 'text-muted-foreground'}`} />
               <span className={`text-sm font-medium ${theme === t.value ? 'text-primary' : 'text-foreground'}`}>
                 {t.label}
               </span>

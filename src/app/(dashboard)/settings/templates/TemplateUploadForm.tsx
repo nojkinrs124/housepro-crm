@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Upload, Loader2 } from 'lucide-react'
+import { Upload, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { uploadTemplateAction } from './templates.actions'
 import { CONTRACT_TYPES } from '@/features/contracts/config/contract-types'
 
@@ -60,13 +60,15 @@ export function TemplateUploadForm() {
         </div>
 
         {result?.error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
-            ❌ {result.error}
+          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            {result.error}
           </div>
         )}
         {result?.success && (
-          <div className="p-3 bg-green-50 border border-green-200 rounded-xl text-sm text-green-700">
-            ✅ Шаблон успешно загружен
+          <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-xl text-sm text-green-700">
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+            Шаблон успешно загружен
           </div>
         )}
 
