@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
-import { ArrowLeft, Bell, CheckCheck } from 'lucide-react'
-import Link from 'next/link'
+import { Bell, CheckCheck } from 'lucide-react'
 import { markAllNotificationsReadAction, markNotificationReadAction } from './notifications.actions'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 const typeColors: Record<string, string> = {
   overdue_payment:  'bg-red-100 text-red-700',
@@ -37,33 +37,25 @@ export default async function NotificationsPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <Link href="/settings" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft style={{ width: 16, height: 16 }} />
-        Вернуться к настройкам
-      </Link>
-
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-[12px] flex items-center justify-center shrink-0 bg-amber-50">
-            <Bell className="text-amber-600" style={{ width: 20, height: 20 }} />
-          </div>
-          <div>
-            <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Уведомления</h1>
-            {unreadCount > 0 && (
-              <p className="text-muted-foreground text-sm font-medium mt-0.5">{unreadCount} непрочитанных</p>
-            )}
-          </div>
-        </div>
-        {unreadCount > 0 && (
-          <form action={markAllNotificationsReadAction}>
-            <button type="submit"
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-[12px] text-sm font-semibold text-[#374151] hover:bg-slate-50 transition-all">
-              <CheckCheck style={{ width: 15, height: 15 }} />
-              Прочитать все
-            </button>
-          </form>
-        )}
-      </div>
+      <PageHeader
+        title="Уведомления"
+        subtitle={unreadCount > 0 ? `${unreadCount} непрочитанных` : undefined}
+        backHref="/settings"
+        backLabel="Вернуться к настройкам"
+        iconBg="bg-amber-50"
+        icon={<Bell className="text-amber-600" style={{ width: 20, height: 20 }} />}
+        actions={
+          unreadCount > 0 ? (
+            <form action={markAllNotificationsReadAction}>
+              <button type="submit"
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-[12px] text-sm font-semibold text-[#374151] hover:bg-slate-50 transition-all">
+                <CheckCheck style={{ width: 15, height: 15 }} />
+                Прочитать все
+              </button>
+            </form>
+          ) : undefined
+        }
+      />
 
       {!notifications?.length ? (
         <div className="bg-white rounded-[20px] border border-slate-100 p-12 text-center" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>

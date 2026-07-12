@@ -1,7 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { DeleteRecurringButton } from '@/features/accounting/components/DeleteRecurringButton'
-import { ArrowLeft, Plus, RefreshCw, Pencil } from 'lucide-react'
+import { Plus, RefreshCw, Pencil } from 'lucide-react'
 import Link from 'next/link'
+import { PageHeader } from '@/components/layout/PageHeader'
+import { buttonVariants } from '@/components/ui/button'
 
 const FREQ_LABEL: Record<string, string> = {
   daily: 'Ежедневно', weekly: 'Еженедельно',
@@ -33,36 +35,18 @@ export default async function RecurringPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <Link
-          href="/accounting"
-          className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-4"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Бухгалтерия
-        </Link>
-        <div className="flex items-start justify-between flex-wrap gap-4">
-          <div>
-            <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">
-              Периодические операции
-            </h1>
-            <p className="text-muted-foreground mt-1 text-sm font-medium">
-              Аренда офиса, зарплаты, подписки — автоматически создаются транзакции
-            </p>
-          </div>
-          <Link
-            href="/accounting/recurring/new"
-            className="flex items-center gap-2 px-5 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all"
-            style={{
-              background: 'var(--hp-gradient-primary)',
-              boxShadow: '0 4px 16px rgba(22,163,74,0.35)',
-            }}
-          >
+      <PageHeader
+        title="Периодические операции"
+        subtitle="Аренда офиса, зарплаты, подписки — автоматически создаются транзакции"
+        backHref="/accounting"
+        backLabel="Бухгалтерия"
+        actions={
+          <Link href="/accounting/recurring/new" className={buttonVariants({ size: 'lg' })}>
             <Plus className="w-4 h-4" />
             Добавить
           </Link>
-        </div>
-      </div>
+        }
+      />
 
       {rules.length === 0 ? (
         <div

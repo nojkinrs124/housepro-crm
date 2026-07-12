@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { DashboardKpiCards } from '@/features/dashboard/components/DashboardKpiCards'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -125,26 +126,26 @@ export default async function DashboardPage() {
     <div className="space-y-6">
 
       {/* Page Header */}
-      <div className="flex items-start justify-between flex-wrap gap-4">
-        <div>
-          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Дашборд</h1>
-          <p className="text-muted-foreground mt-1.5 text-sm font-medium capitalize">{todayStr}</p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          {(overdueTasksCount ?? 0) > 0 && (
-            <Link href="/tasks" className="flex items-center gap-2 px-4 py-2 rounded-[12px] text-sm font-semibold bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 transition-colors">
-              <AlertTriangle style={{ width: 14, height: 14 }} />
-              {overdueTasksCount} просроч. задач
-            </Link>
-          )}
-          {(overduePaymentsCount ?? 0) > 0 && (
-            <Link href="/payments" className="flex items-center gap-2 px-4 py-2 rounded-[12px] text-sm font-semibold bg-orange-50 text-orange-600 border border-orange-100 hover:bg-orange-100 transition-colors">
-              <DollarSign style={{ width: 14, height: 14 }} />
-              {overduePaymentsCount} просроч. платежей
-            </Link>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        title="Дашборд"
+        subtitle={<span className="capitalize">{todayStr}</span>}
+        actions={
+          <div className="flex items-center gap-2 flex-wrap">
+            {(overdueTasksCount ?? 0) > 0 && (
+              <Link href="/tasks" className="flex items-center gap-2 px-4 py-2 rounded-[12px] text-sm font-semibold bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 transition-colors">
+                <AlertTriangle style={{ width: 14, height: 14 }} />
+                {overdueTasksCount} просроч. задач
+              </Link>
+            )}
+            {(overduePaymentsCount ?? 0) > 0 && (
+              <Link href="/payments" className="flex items-center gap-2 px-4 py-2 rounded-[12px] text-sm font-semibold bg-orange-50 text-orange-600 border border-orange-100 hover:bg-orange-100 transition-colors">
+                <DollarSign style={{ width: 14, height: 14 }} />
+                {overduePaymentsCount} просроч. платежей
+              </Link>
+            )}
+          </div>
+        }
+      />
 
       {/* KPI Cards — animated client component */}
       <DashboardKpiCards cards={kpiData} />

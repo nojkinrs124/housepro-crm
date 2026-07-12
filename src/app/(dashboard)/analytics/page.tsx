@@ -21,6 +21,7 @@ import {
 } from '@/features/analytics/data'
 import { formatMoney } from '@/lib/utils'
 import { DateRangePicker } from '@/features/analytics/components/DateRangePicker'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 export default async function AnalyticsPage({
   searchParams,
@@ -138,16 +139,11 @@ export default async function AnalyticsPage({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Аналитика</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {from && to ? `${from} — ${to}` : 'Данные за последние 12 месяцев'}
-          </p>
-        </div>
-        <DateRangePicker from={from} to={to} />
-      </div>
+      <PageHeader
+        title="Аналитика"
+        subtitle={from && to ? `${from} — ${to}` : 'Данные за последние 12 месяцев'}
+        actions={<DateRangePicker from={from} to={to} />}
+      />
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

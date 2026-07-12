@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
-import { ArrowLeft, UserCircle } from 'lucide-react'
-import Link from 'next/link'
+import { UserCircle } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import { ProfileForm } from '@/features/profile/components/ProfileForm'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -19,23 +19,13 @@ export default async function ProfilePage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <Link
-        href="/settings"
-        className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <ArrowLeft style={{ width: 16, height: 16 }} />
-        Настройки
-      </Link>
-
-      <div className="flex items-center gap-3">
-        <div className="w-11 h-11 rounded-[12px] flex items-center justify-center shrink-0 bg-green-50">
-          <UserCircle className="text-[#16A34A]" style={{ width: 20, height: 20 }} />
-        </div>
-        <div>
-          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Профиль</h1>
-          <p className="text-muted-foreground text-sm font-medium mt-0.5">Личные данные и безопасность</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Профиль"
+        subtitle="Личные данные и безопасность"
+        backHref="/settings"
+        backLabel="Настройки"
+        icon={<UserCircle className="text-[#16A34A]" style={{ width: 20, height: 20 }} />}
+      />
 
       <ProfileForm user={profile} />
     </div>

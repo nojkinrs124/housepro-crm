@@ -11,6 +11,8 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import type { AccountingTransaction } from '@/types/database'
+import { PageHeader } from '@/components/layout/PageHeader'
+import { buttonVariants } from '@/components/ui/button'
 
 const STATUS_CFG: Record<string, { label: string; cls: string }> = {
   completed: { label: 'Выполнено',    cls: 'bg-green-50 text-green-700' },
@@ -119,45 +121,33 @@ export default async function AccountingPage({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">
-            Бухгалтерия
-          </h1>
-          <p className="text-muted-foreground mt-1 text-sm font-medium">
-            {transactions.length} транзакций
-          </p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <ExportCsvButton transactions={transactions} />
-          <Link
-            href="/accounting/recurring"
-            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-[14px] text-sm font-semibold text-[#374151] hover:bg-slate-50 transition-all"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Периодические
-          </Link>
-          <Link
-            href="/accounting/categories"
-            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-[14px] text-sm font-semibold text-[#374151] hover:bg-slate-50 transition-all"
-          >
-            <Tag className="w-4 h-4" />
-            Категории
-          </Link>
-          <Link
-            href="/accounting/transactions/new"
-            className="flex items-center gap-2 px-5 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all"
-            style={{
-              background: 'var(--hp-gradient-primary)',
-              boxShadow: '0 4px 16px rgba(22,163,74,0.35)',
-            }}
-          >
-            <Plus className="w-4 h-4" />
-            Транзакция
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title="Бухгалтерия"
+        subtitle={`${transactions.length} транзакций`}
+        actions={
+          <div className="flex items-center gap-2 flex-wrap">
+            <ExportCsvButton transactions={transactions} />
+            <Link
+              href="/accounting/recurring"
+              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-[14px] text-sm font-semibold text-[#374151] hover:bg-slate-50 transition-all"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Периодические
+            </Link>
+            <Link
+              href="/accounting/categories"
+              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-[14px] text-sm font-semibold text-[#374151] hover:bg-slate-50 transition-all"
+            >
+              <Tag className="w-4 h-4" />
+              Категории
+            </Link>
+            <Link href="/accounting/transactions/new" className={buttonVariants({ size: 'lg' })}>
+              <Plus className="w-4 h-4" />
+              Транзакция
+            </Link>
+          </div>
+        }
+      />
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

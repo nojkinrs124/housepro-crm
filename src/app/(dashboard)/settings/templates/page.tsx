@@ -1,10 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
-import { ArrowLeft, FileText, Upload, Trash2 } from 'lucide-react'
-import Link from 'next/link'
+import { FileText, Upload, Trash2 } from 'lucide-react'
 import { TemplateUploadForm } from './TemplateUploadForm'
 import { deleteTemplateAction } from './templates.actions'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 const typeLabels: Record<string, string> = { ...CONTRACT_TYPE_LABELS, other: 'Другое' }
 
@@ -17,20 +17,14 @@ export default async function TemplatesPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <Link href="/settings" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft style={{ width: 16, height: 16 }} />
-        Вернуться к настройкам
-      </Link>
-
-      <div className="flex items-center gap-3">
-        <div className="w-11 h-11 rounded-[12px] flex items-center justify-center shrink-0 bg-orange-50">
-          <FileText className="text-orange-600" style={{ width: 20, height: 20 }} />
-        </div>
-        <div>
-          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Шаблоны документов</h1>
-          <p className="text-muted-foreground text-sm font-medium mt-0.5">DOCX-шаблоны для генерации договоров</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Шаблоны документов"
+        subtitle="DOCX-шаблоны для генерации договоров"
+        backHref="/settings"
+        backLabel="Вернуться к настройкам"
+        iconBg="bg-orange-50"
+        icon={<FileText className="text-orange-600" style={{ width: 20, height: 20 }} />}
+      />
 
       {/* Upload form */}
       <TemplateUploadForm />

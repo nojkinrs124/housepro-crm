@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
-import { ArrowLeft, Building2 } from 'lucide-react'
-import Link from 'next/link'
+import { Building2 } from 'lucide-react'
 import { createCompanyProfileAction } from '@/features/settings/actions/company.actions'
 import { CompanyProfileForm } from '@/features/settings/components/CompanyProfileForm'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 export default async function NewCompanyProfilePage() {
   const supabase = await createClient()
@@ -10,20 +10,14 @@ export default async function NewCompanyProfilePage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <Link href="/settings/company" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-        <ArrowLeft className="w-4 h-4" />
-        Назад к профилям
-      </Link>
-
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
-          <Building2 className="w-5 h-5 text-blue-600" />
-        </div>
-        <div>
-          <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Новый профиль</h1>
-          <p className="text-muted-foreground text-sm">Физ. лицо, ИП или ООО для подготовки документов</p>
-        </div>
-      </div>
+      <PageHeader
+        title="Новый профиль"
+        subtitle="Физ. лицо, ИП или ООО для подготовки документов"
+        backHref="/settings/company"
+        backLabel="Назад к профилям"
+        iconBg="bg-blue-50"
+        icon={<Building2 className="w-5 h-5 text-blue-600" />}
+      />
 
       <CompanyProfileForm mode="create" profile={null} action={createCompanyProfileAction} isFirstProfile={!count} />
     </div>

@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Search, User, Home, TrendingUp, FileText, CheckSquare } from 'lucide-react'
 import Link from 'next/link'
 import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 export default async function SearchPage({
   searchParams,
@@ -14,7 +15,7 @@ export default async function SearchPage({
   if (!query) {
     return (
       <div className="max-w-3xl mx-auto space-y-6">
-        <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Поиск</h1>
+        <PageHeader title="Поиск" />
         <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-12 text-center">
           <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-40" />
           <p className="text-muted-foreground">Введите запрос в строку поиска</p>

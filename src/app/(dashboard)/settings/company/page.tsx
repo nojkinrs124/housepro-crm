@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
-import { ArrowLeft, Building2, Plus, Star } from 'lucide-react'
+import { Building2, Plus, Star } from 'lucide-react'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { LEGAL_FORM_LABELS } from '@/features/settings/config/legal-forms'
 import { CompanyProfileCardActions } from '@/features/settings/components/CompanyProfileCardActions'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 export default async function CompanyPage() {
   const supabase = await createClient()
@@ -26,32 +27,23 @@ export default async function CompanyPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <Link
-        href="/settings"
-        className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <ArrowLeft style={{ width: 16, height: 16 }} />
-        Настройки
-      </Link>
-
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-[12px] flex items-center justify-center shrink-0 bg-blue-50">
-            <Building2 className="text-blue-600" style={{ width: 20, height: 20 }} />
-          </div>
-          <div>
-            <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Компания</h1>
-            <p className="text-muted-foreground text-sm font-medium mt-0.5">Профили реквизитов для подготовки документов</p>
-          </div>
-        </div>
-        {isAdmin && (
-          <Link href="/settings/company/new"
-            className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition-all shrink-0">
-            <Plus className="w-4 h-4" />
-            Профиль
-          </Link>
-        )}
-      </div>
+      <PageHeader
+        title="Компания"
+        subtitle="Профили реквизитов для подготовки документов"
+        backHref="/settings"
+        backLabel="Настройки"
+        iconBg="bg-blue-50"
+        icon={<Building2 className="text-blue-600" style={{ width: 20, height: 20 }} />}
+        actions={
+          isAdmin ? (
+            <Link href="/settings/company/new"
+              className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition-all shrink-0">
+              <Plus className="w-4 h-4" />
+              Профиль
+            </Link>
+          ) : undefined
+        }
+      />
 
       {!isAdmin && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-[20px] p-6 text-center">

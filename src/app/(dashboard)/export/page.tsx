@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { Download, Home, AlertCircle, FileText } from 'lucide-react'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 export default async function ExportPage() {
   const supabase = await createClient()
@@ -52,12 +53,7 @@ export default async function ExportPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Экспорт объектов</h1>
-        <p className="text-muted-foreground mt-1.5 text-sm font-medium">
-          Выгрузка объектов на рекламные площадки в XML-формате
-        </p>
-      </div>
+      <PageHeader title="Экспорт объектов" subtitle="Выгрузка объектов на рекламные площадки в XML-формате" />
 
       {/* Stats */}
       <div className="flex items-center gap-4 bg-white rounded-[20px] border border-slate-100 p-5" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>

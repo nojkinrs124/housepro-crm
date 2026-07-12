@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { Settings, Building2, Bell, Shield, Database, ChevronRight, ScrollText, CreditCard, Key, Webhook } from 'lucide-react'
 import Link from 'next/link'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 const roleLabels: Record<string, string> = {
   admin: 'Администратор',
@@ -22,10 +23,7 @@ export default async function SettingsPage() {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      <div>
-        <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">Настройки</h1>
-        <p className="text-muted-foreground mt-1.5 text-sm font-medium">Управление системой HousePro CRM</p>
-      </div>
+      <PageHeader title="Настройки" subtitle="Управление системой HousePro CRM" />
 
       {/* Profile card */}
       {profile && (

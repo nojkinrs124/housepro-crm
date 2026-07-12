@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { AddCategoryForm } from '@/features/accounting/components/AddCategoryForm'
 import { DeleteCategoryButton } from '@/features/accounting/components/DeleteCategoryButton'
-import { ArrowLeft, Lock } from 'lucide-react'
+import { Lock } from 'lucide-react'
 import Link from 'next/link'
 import type { AccountingCategory } from '@/types/database'
+import { PageHeader } from '@/components/layout/PageHeader'
 
 export default async function CategoriesPage() {
   const supabase = await createClient()
@@ -20,21 +21,12 @@ export default async function CategoriesPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <Link
-          href="/accounting"
-          className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-4"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Бухгалтерия
-        </Link>
-        <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight">
-          Категории
-        </h1>
-        <p className="text-muted-foreground mt-1 text-sm font-medium">
-          Системные категории защищены от удаления
-        </p>
-      </div>
+      <PageHeader
+        title="Категории"
+        subtitle="Системные категории защищены от удаления"
+        backHref="/accounting"
+        backLabel="Бухгалтерия"
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Income */}
