@@ -31,13 +31,20 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const limit  = Math.min(Number(searchParams.get('limit') ?? 50), 200)
   const offset = Number(searchParams.get('offset') ?? 0)
+  const search = searchParams.get('search') // ищет по phone, full_name, telegram — для get_client tool бота
 
-  const { data, error, count } = await supabaseAdmin
+  let query = supabaseAdmin
     .from('contacts')
-    .select('id, full_name, phone, email, role, status, created_at', { count: 'exact' })
+    .select('id, full_name, phone, email, telegram, role, status, created_at', { count: 'exact' })
     .eq('organization_id', auth.orgId)
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1)
+
+  if (search) {
+    query = query.or(`phone.ilike.%${search}%,full_name.ilike.%${search}%,telegram.ilike.%${search}%`)
+  }
+
+  const { data, error, count } = await query
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
