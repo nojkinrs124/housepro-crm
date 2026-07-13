@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createServiceRoleClient } from '@supabase/supabase-js'
 import {
   buildContractVariables,
   generateDocxFromTemplate,
@@ -106,6 +107,101 @@ export async function generateContractDocx(contractId: string) {
     return { success: true, docxUrl, version: nextVersion }
   } catch (err) {
     console.error('Generate contract error:', err)
+    return { error: err instanceof Error ? err.message : 'Ошибка генерации' }
+  }
+}
+
+/**
+ * Вариант generateContractDocx() для вызовов с авторизацией по API-ключу (Telegram-бот и
+ * прочие service-to-service клиенты) — там нет cookie-сессии, поэтому исходная функция
+ * (requireOrgId()/auth.getUser() читают куки) не подходит напрямую. Здесь orgId передаётся
+ * явно, а вся работа с БД/Storage идёт через service-role клиент — RLS обходится, поэтому
+ * принадлежность договора организации проверяется вручную ниже.
+ */
+export async function generateContractDocxForOrg(orgId: string, contractId: string) {
+  const supabaseAdmin = createServiceRoleClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { global: { fetch: (url, options = {}) => fetch(url, { ...(options as RequestInit), cache: 'no-store' }) } }
+  )
+
+  try {
+    const { data: contract } = await supabaseAdmin
+      .from('contracts')
+      .select('contract_type')
+      .eq('id', contractId)
+      .eq('organization_id', orgId)
+      .single()
+
+    if (!contract) return { error: 'Договор не найден или не принадлежит этой организации' }
+
+    const variables = await buildContractVariables(contractId, supabaseAdmin)
+
+    const { data: template } = await supabaseAdmin
+      .from('document_templates')
+      .select('file_url, storage_path, name')
+      .eq('template_type', contract.contract_type)
+      .limit(1)
+      .single()
+
+    let docxBuffer: Buffer
+
+    if (template?.storage_path || template?.file_url) {
+      const downloadPath = template.storage_path || template.file_url
+      const { data: templateFile } = await supabaseAdmin.storage
+        .from('document-templates')
+        .download(downloadPath)
+
+      if (!templateFile) return { error: 'Не удалось загрузить шаблон' }
+
+      const arrayBuffer = await templateFile.arrayBuffer()
+      const templateBuffer = Buffer.from(arrayBuffer)
+      docxBuffer = await generateDocxFromTemplate(templateBuffer, variables)
+    } else {
+      docxBuffer = await generateBasicDocx(variables, contract.contract_type)
+    }
+
+    const docxUrl = await uploadContractFile(
+      contractId,
+      docxBuffer,
+      'contract.docx',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      supabaseAdmin
+    )
+
+    const { data: versions } = await supabaseAdmin
+      .from('contract_versions')
+      .select('version')
+      .eq('contract_id', contractId)
+      .order('version', { ascending: false })
+      .limit(1)
+
+    const nextVersion = versions && versions.length > 0 ? versions[0].version + 1 : 1
+
+    await supabaseAdmin.from('contract_versions').insert({
+      contract_id: contractId,
+      version: nextVersion,
+      docx_url: docxUrl,
+      created_by: null,
+    })
+
+    await supabaseAdmin
+      .from('contracts')
+      .update({ status: 'generated', generated_docx_url: docxUrl })
+      .eq('id', contractId)
+
+    await supabaseAdmin.from('logs').insert({
+      user_id: null,
+      action: 'generate_contract',
+      entity_type: 'contract',
+      entity_id: contractId,
+      new_data: { version: nextVersion, docx_url: docxUrl, source: 'telegram_bot' },
+      organization_id: orgId,
+    })
+
+    return { success: true, docxUrl, version: nextVersion }
+  } catch (err) {
+    console.error('Generate contract error (service-role):', err)
     return { error: err instanceof Error ? err.message : 'Ошибка генерации' }
   }
 }

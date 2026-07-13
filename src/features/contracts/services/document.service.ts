@@ -3,6 +3,7 @@
 import PizZip from 'pizzip'
 import Docxtemplater from 'docxtemplater'
 import { createClient } from '@/lib/supabase/server'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 export interface ContractVariables {
   // ── Арендодатель (Сторона 1) ──────────────────────────────
@@ -226,8 +227,11 @@ function buildBasis(rep: Record<string, string> | null): string {
   return rep.basis_details ? `${label} ${rep.basis_details}` : label
 }
 
-export async function buildContractVariables(contractId: string): Promise<ContractVariables> {
-  const supabase = await createClient()
+export async function buildContractVariables(
+  contractId: string,
+  injectedClient?: SupabaseClient
+): Promise<ContractVariables> {
+  const supabase = injectedClient ?? (await createClient())
 
   const { data: contract, error: contractError } = await supabase
     .from('contracts')
@@ -521,9 +525,10 @@ export async function uploadContractFile(
   contractId: string,
   buffer: Buffer,
   filename: string,
-  contentType: string
+  contentType: string,
+  injectedClient?: SupabaseClient
 ): Promise<string> {
-  const supabase = await createClient()
+  const supabase = injectedClient ?? (await createClient())
 
   const { data: versions } = await supabase
     .from('contract_versions')
