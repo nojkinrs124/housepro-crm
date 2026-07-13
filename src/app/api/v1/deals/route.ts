@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { authenticateApiKey, hasScope } from '@/lib/api-auth'
+import { DealStatusUpdateSchema } from '@/lib/schemas/accounting-api'
+import { writeAuditLogServiceRole } from '@/lib/audit'
 
 // КРИТИЧНО: этот роут отдаёт данные, специфичные для конкретной организации/пользователя
 // (RLS или ручная фильтрация по organization_id). Next.js по умолчанию может закэшировать
@@ -46,4 +48,62 @@ export async function GET(request: Request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ data, meta: { total: count, limit, offset } })
+}
+
+export async function PATCH(request: Request) {
+  const auth = await authenticateApiKey(request)
+  if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status })
+  if (!hasScope(auth.scopes, 'write')) {
+    return NextResponse.json({ error: 'Insufficient scope' }, { status: 403 })
+  }
+
+  const { searchParams } = new URL(request.url)
+  const dealId = searchParams.get('id')
+  if (!dealId) return NextResponse.json({ error: 'Query param "id" is required' }, { status: 400 })
+
+  let body: unknown
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+  }
+
+  const parsed = DealStatusUpdateSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten() }, { status: 400 })
+  }
+
+  const supabaseAdmin = getSupabaseAdmin()
+
+  // Читаем текущий статус для audit log и чтобы убедиться, что сделка принадлежит этой организации
+  const { data: existing, error: fetchError } = await supabaseAdmin
+    .from('deals')
+    .select('id, status')
+    .eq('id', dealId)
+    .eq('organization_id', auth.orgId)
+    .maybeSingle()
+
+  if (fetchError) return NextResponse.json({ error: fetchError.message }, { status: 500 })
+  if (!existing) return NextResponse.json({ error: 'Deal not found' }, { status: 404 })
+
+  const { data, error } = await supabaseAdmin
+    .from('deals')
+    .update({ status: parsed.data.status })
+    .eq('id', dealId)
+    .eq('organization_id', auth.orgId)
+    .select('id, status')
+    .single()
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  await writeAuditLogServiceRole(supabaseAdmin, {
+    orgId:       auth.orgId!,
+    action:      'update',
+    entityType:  'deal',
+    entityId:    dealId,
+    entityLabel: `Сделка: статус изменён через Telegram-бота`,
+    changes:     { status: { old: existing.status, new: parsed.data.status } },
+  })
+
+  return NextResponse.json({ data })
 }
