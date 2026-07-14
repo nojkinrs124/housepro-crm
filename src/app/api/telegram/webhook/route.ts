@@ -227,6 +227,9 @@ export async function POST(request: Request) {
     hasBotApiKey: !!process.env.HOUSEPRO_BOT_API_KEY,
     hasOpenRouterKey: !!process.env.OPENROUTER_API_KEY,
     hasTelegramToken: !!process.env.TELEGRAM_BOT_TOKEN,
+    hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+    hasServiceRoleKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+    serviceRoleKeyLen: process.env.SUPABASE_SERVICE_ROLE_KEY?.length ?? 0,
   }))
 
   if (!process.env.TELEGRAM_BOT_SECRET || secret !== process.env.TELEGRAM_BOT_SECRET) {
