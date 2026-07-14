@@ -23,10 +23,16 @@ export const dynamic = 'force-dynamic'
 const SYSTEM_PROMPT = `Ты — ассистент внутри Telegram-бота HousePro CRM (агентство недвижимости).
 Отвечай кратко, по-деловому, на русском. У тебя есть инструменты для чтения и изменения данных CRM.
 Суммы — в рублях. Если пользователь не указал дату — используй сегодняшнюю.
-Для мутирующих действий (add_transaction, update_deal_status) НЕ считай, что действие уже выполнено —
-система сама покажет пользователю подтверждение и выполнит действие только после его согласия.
-Если не хватает данных для вызова инструмента (например, не найден deal_id) — сначала используй
-read-only инструмент, чтобы его найти, и только потом предлагай мутацию.`
+Для мутирующих действий (add_transaction, update_deal_status, generate_contract, create_lead) НЕ считай,
+что действие уже выполнено — система сама покажет пользователю подтверждение и выполнит действие только
+после его согласия. Если не хватает данных для вызова инструмента (например, не найден deal_id) — сначала
+используй read-only инструмент, чтобы его найти, и только потом предлагай мутацию.
+У тебя есть история последних сообщений в этом чате — используй её для контекста
+(например, если пользователь пишет "а по нему" — посмотри, о ком речь, в предыдущих сообщениях).`
+
+// Сколько последних сообщений диалога храним и передаём модели (не считая system prompt).
+// Ограничивает рост payload'а и стоимость запроса — для чат-бота этого более чем достаточно.
+const MAX_HISTORY_MESSAGES = 20
 
 function getSupabaseAdmin() {
   return createClient(
@@ -44,11 +50,65 @@ async function resolveBotOrgId(): Promise<string | null> {
   return auth.orgId ?? null
 }
 
+/**
+ * Проверяет, может ли этот telegram_user_id общаться с ботом. Если для организации
+ * ещё нет ни одной записи в allowlist — считаем это первым запуском и автоматически
+ * добавляем отправителя (bootstrap), чтобы владелец бота не оказался сам же заблокирован
+ * без возможности себя туда вписать. После первой записи allowlist работает строго.
+ */
+async function isUserAllowed(orgId: string, telegramUserId: string, username?: string): Promise<boolean> {
+  const supabaseAdmin = getSupabaseAdmin()
+
+  const { count } = await supabaseAdmin
+    .from('bot_allowed_users')
+    .select('telegram_user_id', { count: 'exact', head: true })
+    .eq('organization_id', orgId)
+
+  if (!count || count === 0) {
+    await supabaseAdmin.from('bot_allowed_users').insert({
+      telegram_user_id: telegramUserId,
+      organization_id: orgId,
+      label: username ? `@${username} (первый пользователь, авто)` : 'первый пользователь (авто)',
+    })
+    return true
+  }
+
+  const { data } = await supabaseAdmin
+    .from('bot_allowed_users')
+    .select('telegram_user_id')
+    .eq('organization_id', orgId)
+    .eq('telegram_user_id', telegramUserId)
+    .maybeSingle()
+
+  return !!data
+}
+
 interface OpenRouterMessage {
   role: 'system' | 'user' | 'assistant' | 'tool'
   content?: string | null
   tool_calls?: Array<{ id: string; type: 'function'; function: { name: string; arguments: string } }>
   tool_call_id?: string
+}
+
+async function loadConversation(chatId: string): Promise<OpenRouterMessage[]> {
+  const supabaseAdmin = getSupabaseAdmin()
+  const { data } = await supabaseAdmin
+    .from('bot_conversations')
+    .select('messages')
+    .eq('telegram_chat_id', chatId)
+    .maybeSingle()
+  return (data?.messages as OpenRouterMessage[] | undefined) ?? []
+}
+
+async function saveConversation(chatId: string, orgId: string, messages: OpenRouterMessage[]): Promise<void> {
+  const trimmed = messages.slice(-MAX_HISTORY_MESSAGES)
+  const supabaseAdmin = getSupabaseAdmin()
+  await supabaseAdmin.from('bot_conversations').upsert({
+    telegram_chat_id: chatId,
+    organization_id: orgId,
+    messages: trimmed,
+    updated_at: new Date().toISOString(),
+  })
 }
 
 async function callOpenRouter(messages: OpenRouterMessage[]) {
@@ -60,7 +120,7 @@ async function callOpenRouter(messages: OpenRouterMessage[]) {
     },
     body: JSON.stringify({
       model: process.env.OPENROUTER_MODEL ?? 'anthropic/claude-sonnet-5',
-      messages,
+      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
       tools: TOOL_DEFINITIONS,
       tool_choice: 'auto',
     }),
@@ -71,96 +131,113 @@ async function callOpenRouter(messages: OpenRouterMessage[]) {
   return res.json()
 }
 
-async function handleTextMessage(chatId: number, telegramUserId: string, text: string) {
+async function handleTextMessage(chatId: number, telegramUserId: string, username: string | undefined, text: string) {
   const orgId = await resolveBotOrgId()
   if (!orgId) {
     await sendMessage(chatId, '⚠️ Бот не настроен: не найден рабочий API-ключ (HOUSEPRO_BOT_API_KEY).')
     return
   }
 
-  const messages: OpenRouterMessage[] = [
-    { role: 'system', content: SYSTEM_PROMPT },
-    { role: 'user', content: text },
-  ]
-
-  // До 4 раундов tool-calling — этого достаточно для наших сценариев и защищает от зацикливания
-  for (let round = 0; round < 4; round++) {
-    const completion = await callOpenRouter(messages)
-    const choice = completion.choices?.[0]
-    const message: OpenRouterMessage | undefined = choice?.message
-
-    if (!message) {
-      await sendMessage(chatId, 'Не удалось получить ответ от модели, попробуй ещё раз.')
-      return
-    }
-
-    if (!message.tool_calls || message.tool_calls.length === 0) {
-      await sendMessage(chatId, message.content?.trim() || 'Готово.')
-      return
-    }
-
-    messages.push(message)
-
-    // Мутирующий tool call — перехватываем ПЕРВЫЙ такой вызов, заводим подтверждение и
-    // останавливаем цикл (не даём модели считать действие выполненным).
-    const mutatingCall = message.tool_calls.find((tc) =>
-      (MUTATING_TOOLS as readonly string[]).includes(tc.function.name)
-    )
-
-    if (mutatingCall) {
-      let args: Record<string, unknown> = {}
-      try {
-        args = JSON.parse(mutatingCall.function.arguments)
-      } catch {
-        await sendMessage(chatId, 'Не смог разобрать параметры действия, попробуй переформулировать.')
-        return
-      }
-
-      const summary = describeMutation(mutatingCall.function.name, args)
-      const supabaseAdmin = getSupabaseAdmin()
-      const { data: pending, error } = await supabaseAdmin
-        .from('bot_pending_actions')
-        .insert({
-          organization_id: orgId,
-          telegram_chat_id: String(chatId),
-          telegram_user_id: telegramUserId,
-          action_type: mutatingCall.function.name,
-          payload: args,
-          summary_text: summary,
-        })
-        .select('id')
-        .single()
-
-      if (error || !pending) {
-        await sendMessage(chatId, '⚠️ Не смог сохранить действие для подтверждения. Попробуй ещё раз.')
-        return
-      }
-
-      await sendMessage(chatId, `Подтверди действие:\n\n${summary}`, {
-        inlineKeyboard: [
-          [
-            { text: '✅ Подтвердить', callback_data: `confirm:${pending.id}` },
-            { text: '❌ Отменить', callback_data: `cancel:${pending.id}` },
-          ],
-        ],
-      })
-      return
-    }
-
-    // Все tool calls в этом раунде — read-only, выполняем и продолжаем диалог с моделью
-    for (const call of message.tool_calls) {
-      let args: Record<string, unknown> = {}
-      try {
-        args = JSON.parse(call.function.arguments)
-      } catch {
-        // оставляем args пустым — dispatchReadOnlyTool сам вернёт осмысленную ошибку/пустой результат
-      }
-      const result = await dispatchReadOnlyTool(call.function.name, args)
-      messages.push({ role: 'tool', tool_call_id: call.id, content: JSON.stringify(result) })
-    }
+  const allowed = await isUserAllowed(orgId, telegramUserId, username)
+  if (!allowed) {
+    await sendMessage(chatId, '⛔ Этот аккаунт не имеет доступа к боту.')
+    return
   }
 
-  await sendMessage(chatId, 'Слишком много шагов для одного запроса — попробуй сформулировать проще.')
+  const chatIdStr = String(chatId)
+  const history = await loadConversation(chatIdStr)
+  // messages — рабочий буфер этого хода: история + всё, что добавится в этом раунде
+  // (новое сообщение пользователя, ответы модели, результаты read-only инструментов).
+  // Сохраняем его в конце в любом случае — что бы ни случилось (финальный ответ,
+  // запрос подтверждения, ошибка) — чтобы следующий ход помнил, о чём шла речь.
+  const messages: OpenRouterMessage[] = [...history, { role: 'user', content: text }]
+
+  try {
+    // До 4 раундов tool-calling — этого достаточно для наших сценариев и защищает от зацикливания
+    for (let round = 0; round < 4; round++) {
+      const completion = await callOpenRouter(messages)
+      const choice = completion.choices?.[0]
+      const message: OpenRouterMessage | undefined = choice?.message
+
+      if (!message) {
+        await sendMessage(chatId, 'Не удалось получить ответ от модели, попробуй ещё раз.')
+        return
+      }
+
+      if (!message.tool_calls || message.tool_calls.length === 0) {
+        messages.push(message)
+        await sendMessage(chatId, message.content?.trim() || 'Готово.')
+        return
+      }
+
+      messages.push(message)
+
+      // Мутирующий tool call — перехватываем ПЕРВЫЙ такой вызов, заводим подтверждение и
+      // останавливаем цикл (не даём модели считать действие выполненным).
+      const mutatingCall = message.tool_calls.find((tc) =>
+        (MUTATING_TOOLS as readonly string[]).includes(tc.function.name)
+      )
+
+      if (mutatingCall) {
+        let args: Record<string, unknown> = {}
+        try {
+          args = JSON.parse(mutatingCall.function.arguments)
+        } catch {
+          await sendMessage(chatId, 'Не смог разобрать параметры действия, попробуй переформулировать.')
+          return
+        }
+
+        const summary = describeMutation(mutatingCall.function.name, args)
+        const supabaseAdmin = getSupabaseAdmin()
+        const { data: pending, error } = await supabaseAdmin
+          .from('bot_pending_actions')
+          .insert({
+            organization_id: orgId,
+            telegram_chat_id: chatIdStr,
+            telegram_user_id: telegramUserId,
+            action_type: mutatingCall.function.name,
+            payload: args,
+            summary_text: summary,
+          })
+          .select('id')
+          .single()
+
+        if (error || !pending) {
+          await sendMessage(chatId, '⚠️ Не смог сохранить действие для подтверждения. Попробуй ещё раз.')
+          return
+        }
+
+        await sendMessage(chatId, `Подтверди действие:\n\n${summary}`, {
+          inlineKeyboard: [
+            [
+              { text: '✅ Подтвердить', callback_data: `confirm:${pending.id}` },
+              { text: '❌ Отменить', callback_data: `cancel:${pending.id}` },
+            ],
+          ],
+        })
+        return
+      }
+
+      // Все tool calls в этом раунде — read-only, выполняем и продолжаем диалог с моделью
+      for (const call of message.tool_calls) {
+        let args: Record<string, unknown> = {}
+        try {
+          args = JSON.parse(call.function.arguments)
+        } catch {
+          // оставляем args пустым — dispatchReadOnlyTool сам вернёт осмысленную ошибку/пустой результат
+        }
+        const result = await dispatchReadOnlyTool(call.function.name, args)
+        messages.push({ role: 'tool', tool_call_id: call.id, content: JSON.stringify(result) })
+      }
+    }
+
+    await sendMessage(chatId, 'Слишком много шагов для одного запроса — попробуй сформулировать проще.')
+  } finally {
+    // Сохраняем память диалога независимо от того, чем закончился ход (return/ошибка/лимит раундов)
+    await saveConversation(chatIdStr, orgId, messages).catch((e) =>
+      console.error('[telegram webhook] saveConversation error:', e)
+    )
+  }
 }
 
 async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_query']>) {
@@ -223,16 +300,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true }) // молча игнорируем мусор, Telegram не должен ретраить
   }
 
-  // Отвечаем Telegram сразу после обработки — синхронно в рамках одного вызова функции,
-  // но не держим соединение открытым дольше необходимого: вся работа ниже — awaited,
-  // без отложенных фоновых задач, чтобы не потерять результат при обрыве функции.
   try {
     if (update.callback_query) {
       await handleCallbackQuery(update.callback_query)
     } else if (update.message?.text) {
       const chatId = update.message.chat.id
       const userId = String(update.message.from?.id ?? chatId)
-      await handleTextMessage(chatId, userId, update.message.text)
+      const username = update.message.from?.username
+      await handleTextMessage(chatId, userId, username, update.message.text)
     }
   } catch (e) {
     console.error('[telegram webhook] error:', e)

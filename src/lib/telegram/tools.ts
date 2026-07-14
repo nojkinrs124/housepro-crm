@@ -6,7 +6,7 @@
 // перехватывает их до вызова dispatchTool() и заводит запись в bot_pending_actions,
 // ждёт подтверждения "да" от пользователя в Telegram.
 
-export const MUTATING_TOOLS = ['add_transaction', 'update_deal_status', 'generate_contract'] as const
+export const MUTATING_TOOLS = ['add_transaction', 'update_deal_status', 'generate_contract', 'create_lead'] as const
 
 function apiBase(): string {
   // NEXT_PUBLIC_SITE_URL — если явно задан (см. billing/checkout, тот же паттерн).
@@ -152,6 +152,23 @@ export const TOOL_DEFINITIONS = [
       },
     },
   },
+  {
+    type: 'function',
+    function: {
+      name: 'create_lead',
+      description: 'Создать новый лид/заявку. МУТИРУЮЩЕЕ действие — требует подтверждения пользователя.',
+      parameters: {
+        type: 'object',
+        properties: {
+          full_name: { type: 'string' },
+          phone: { type: 'string' },
+          email: { type: 'string' },
+          deal_type: { type: 'string', enum: ['rent', 'sale', 'commercial'] },
+          comment: { type: 'string' },
+        },
+      },
+    },
+  },
 ] as const
 
 /** Выполняет read-only инструмент. Мутирующие сюда не должны попадать — их перехватывает вебхук. */
@@ -201,6 +218,8 @@ export async function executeConfirmedMutation(actionType: string, payload: Reco
       })
     case 'generate_contract':
       return callApi(`/api/v1/contracts/${encodeURIComponent(String(payload.contract_id))}/generate`, { method: 'POST' })
+    case 'create_lead':
+      return callApi('/api/v1/leads', { method: 'POST', body: JSON.stringify(payload) })
     default:
       return { error: `Неизвестное мутирующее действие: ${actionType}` }
   }
@@ -215,6 +234,8 @@ export function describeMutation(actionType: string, args: Record<string, unknow
       return `📋 Изменить статус сделки ${args.deal_id} → ${args.status}`
     case 'generate_contract':
       return `📄 Сгенерировать DOCX договора ${args.contract_id}`
+    case 'create_lead':
+      return `👤 Новый лид: ${args.full_name ?? '(без имени)'}${args.phone ? `, ${args.phone}` : ''}`
     default:
       return `Действие: ${actionType}`
   }
