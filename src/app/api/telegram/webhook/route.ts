@@ -38,9 +38,20 @@ function getSupabaseAdmin() {
 
 async function resolveBotOrgId(): Promise<string | null> {
   const key = process.env.HOUSEPRO_BOT_API_KEY
-  if (!key) return null
+  if (!key) {
+    console.log('[telegram-debug-key]', JSON.stringify({ present: false }))
+    return null
+  }
   const fakeReq = new Request('http://internal.local/', { headers: { Authorization: `Bearer ${key}` } })
   const auth = await authenticateApiKey(fakeReq)
+  console.log('[telegram-debug-key]', JSON.stringify({
+    present: true,
+    len: key.length,
+    edges: `${key.slice(0, 8)}...${key.slice(-6)}`,
+    authError: auth.error ?? null,
+    authStatus: auth.status ?? null,
+    gotOrgId: !!auth.orgId,
+  }))
   return auth.orgId ?? null
 }
 
