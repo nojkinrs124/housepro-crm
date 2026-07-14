@@ -212,26 +212,6 @@ async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_
 
 export async function POST(request: Request) {
   const secret = request.headers.get('X-Telegram-Bot-Api-Secret-Token')
-
-  // ВРЕМЕННАЯ ДИАГНОСТИКА — убрать после того, как разберёмся с 401. Не логирует сами
-  // значения секретов целиком, только длины/первые-последние символы для сверки.
-  const envSecret = process.env.TELEGRAM_BOT_SECRET
-  console.log('[telegram-debug]', JSON.stringify({
-    envSecretPresent: !!envSecret,
-    envSecretLen: envSecret?.length ?? 0,
-    envSecretEdges: envSecret ? `${envSecret.slice(0, 4)}...${envSecret.slice(-4)}` : null,
-    headerPresent: !!secret,
-    headerLen: secret?.length ?? 0,
-    headerEdges: secret ? `${secret.slice(0, 4)}...${secret.slice(-4)}` : null,
-    match: secret === envSecret,
-    hasBotApiKey: !!process.env.HOUSEPRO_BOT_API_KEY,
-    hasOpenRouterKey: !!process.env.OPENROUTER_API_KEY,
-    hasTelegramToken: !!process.env.TELEGRAM_BOT_TOKEN,
-    hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-    hasServiceRoleKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-    serviceRoleKeyLen: process.env.SUPABASE_SERVICE_ROLE_KEY?.length ?? 0,
-  }))
-
   if (!process.env.TELEGRAM_BOT_SECRET || secret !== process.env.TELEGRAM_BOT_SECRET) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
