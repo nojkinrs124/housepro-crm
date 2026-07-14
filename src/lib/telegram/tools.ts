@@ -9,7 +9,13 @@
 export const MUTATING_TOOLS = ['add_transaction', 'update_deal_status', 'generate_contract'] as const
 
 function apiBase(): string {
-  return process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+  // NEXT_PUBLIC_SITE_URL — если явно задан (см. billing/checkout, тот же паттерн).
+  // Иначе — автоматическая переменная Vercel (без протокола, поэтому https:// вручную).
+  // localhost имеет смысл только при локальной разработке — на Vercel он не резолвится.
+  if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
+  return 'http://localhost:3000'
 }
 
 function botApiKey(): string {
