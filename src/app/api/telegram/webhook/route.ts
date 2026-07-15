@@ -5,8 +5,10 @@ import {
   sendMessage,
   answerCallbackQuery,
   editMessageReplyMarkup,
+  downloadTelegramFile,
   type TelegramUpdate,
 } from '@/lib/telegram/api'
+import { transcribeAudio } from '@/lib/telegram/stt'
 import {
   TOOL_DEFINITIONS,
   MUTATING_TOOLS,
@@ -28,7 +30,9 @@ const SYSTEM_PROMPT = `Ты — ассистент внутри Telegram-бот�
 после его согласия. Если не хватает данных для вызова инструмента (например, не найден deal_id) — сначала
 используй read-only инструмент, чтобы его найти, и только потом предлагай мутацию.
 У тебя есть история последних сообщений в этом чате — используй её для контекста
-(например, если пользователь пишет "а по нему" — посмотри, о ком речь, в предыдущих сообщениях).`
+(например, если пользователь пишет "а по нему" — посмотри, о ком речь, в предыдущих сообщениях).
+Если пользователь прислал фото чека/квитанции — определи сумму, дату и назначение платежа с фото
+и предложи add_transaction (доход или расход, в зависимости от того, что видно на фото).`
 
 // Сколько последних сообщений диалога храним и передаём модели (не считая system prompt).
 // Ограничивает рост payload'а и стоимость запроса — для чат-бота этого более чем достаточно.
@@ -83,9 +87,13 @@ async function isUserAllowed(orgId: string, telegramUserId: string, username?: s
   return !!data
 }
 
+type MessageContent =
+  | string
+  | Array<{ type: 'text'; text: string } | { type: 'image_url'; image_url: { url: string } }>
+
 interface OpenRouterMessage {
   role: 'system' | 'user' | 'assistant' | 'tool'
-  content?: string | null
+  content?: MessageContent | null
   tool_calls?: Array<{ id: string; type: 'function'; function: { name: string; arguments: string } }>
   tool_call_id?: string
 }
@@ -131,7 +139,12 @@ async function callOpenRouter(messages: OpenRouterMessage[]) {
   return res.json()
 }
 
-async function handleTextMessage(chatId: number, telegramUserId: string, username: string | undefined, text: string) {
+async function handleUserTurn(
+  chatId: number,
+  telegramUserId: string,
+  username: string | undefined,
+  content: MessageContent
+) {
   const orgId = await resolveBotOrgId()
   if (!orgId) {
     await sendMessage(chatId, '⚠️ Бот не настроен: не найден рабочий API-ключ (HOUSEPRO_BOT_API_KEY).')
@@ -146,11 +159,7 @@ async function handleTextMessage(chatId: number, telegramUserId: string, usernam
 
   const chatIdStr = String(chatId)
   const history = await loadConversation(chatIdStr)
-  // messages — рабочий буфер этого хода: история + всё, что добавится в этом раунде
-  // (новое сообщение пользователя, ответы модели, результаты read-only инструментов).
-  // Сохраняем его в конце в любом случае — что бы ни случилось (финальный ответ,
-  // запрос подтверждения, ошибка) — чтобы следующий ход помнил, о чём шла речь.
-  const messages: OpenRouterMessage[] = [...history, { role: 'user', content: text }]
+  const messages: OpenRouterMessage[] = [...history, { role: 'user', content }]
 
   try {
     // До 4 раундов tool-calling — этого достаточно для наших сценариев и защищает от зацикливания
@@ -166,7 +175,8 @@ async function handleTextMessage(chatId: number, telegramUserId: string, usernam
 
       if (!message.tool_calls || message.tool_calls.length === 0) {
         messages.push(message)
-        await sendMessage(chatId, message.content?.trim() || 'Готово.')
+        const replyText = typeof message.content === 'string' ? message.content.trim() : ''
+        await sendMessage(chatId, replyText || 'Готово.')
         return
       }
 
@@ -303,11 +313,36 @@ export async function POST(request: Request) {
   try {
     if (update.callback_query) {
       await handleCallbackQuery(update.callback_query)
+    } else if (update.message?.voice) {
+      const chatId = update.message.chat.id
+      const userId = String(update.message.from?.id ?? chatId)
+      const username = update.message.from?.username
+      const { base64 } = await downloadTelegramFile(update.message.voice.file_id)
+      const transcript = await transcribeAudio(base64, 'ogg')
+      await sendMessage(chatId, `🎤 <i>${transcript}</i>`)
+      await handleUserTurn(chatId, userId, username, transcript)
+    } else if (update.message?.photo && update.message.photo.length > 0) {
+      const chatId = update.message.chat.id
+      const userId = String(update.message.from?.id ?? chatId)
+      const username = update.message.from?.username
+      const largestPhoto = update.message.photo[update.message.photo.length - 1]
+      const { base64, mimeType } = await downloadTelegramFile(largestPhoto.file_id)
+      const caption = update.message.caption?.trim()
+      await handleUserTurn(chatId, userId, username, [
+        {
+          type: 'text',
+          text:
+            caption ||
+            'На фото чек, квитанция или расписка. Определи сумму, дату и назначение платежа, ' +
+              'предложи добавить как транзакцию (доход или расход — по смыслу).',
+        },
+        { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64}` } },
+      ])
     } else if (update.message?.text) {
       const chatId = update.message.chat.id
       const userId = String(update.message.from?.id ?? chatId)
       const username = update.message.from?.username
-      await handleTextMessage(chatId, userId, username, update.message.text)
+      await handleUserTurn(chatId, userId, username, update.message.text)
     }
   } catch (e) {
     console.error('[telegram webhook] error:', e)

@@ -71,6 +71,9 @@ export interface TelegramUpdate {
     chat: { id: number }
     from?: { id: number; username?: string }
     text?: string
+    caption?: string
+    voice?: { file_id: string; duration: number; mime_type?: string }
+    photo?: Array<{ file_id: string; width: number; height: number }>
   }
   callback_query?: {
     id: string
@@ -78,4 +81,31 @@ export interface TelegramUpdate {
     from: { id: number; username?: string }
     message?: { message_id: number; chat: { id: number } }
   }
+}
+
+/**
+ * Скачивает файл по file_id (голосовое сообщение или фото) и возвращает его
+ * содержимое в base64 + mime type. Используется для распознавания речи и анализа фото.
+ */
+export async function downloadTelegramFile(fileId: string): Promise<{ base64: string; mimeType: string }> {
+  const fileInfoRes = await fetch(`${TELEGRAM_API}/bot${botToken()}/getFile?file_id=${fileId}`)
+  const fileInfo = await fileInfoRes.json()
+  const filePath: string | undefined = fileInfo?.result?.file_path
+  if (!filePath) throw new Error('Не удалось получить file_path от Telegram')
+
+  const fileRes = await fetch(`${TELEGRAM_API}/file/bot${botToken()}/${filePath}`)
+  if (!fileRes.ok) throw new Error(`Не удалось скачать файл: HTTP ${fileRes.status}`)
+
+  const arrayBuffer = await fileRes.arrayBuffer()
+  const base64 = Buffer.from(arrayBuffer).toString('base64')
+
+  const ext = filePath.split('.').pop()?.toLowerCase() ?? ''
+  const mimeType =
+    ext === 'oga' || ext === 'ogg' ? 'audio/ogg' :
+    ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' :
+    ext === 'png' ? 'image/png' :
+    ext === 'webp' ? 'image/webp' :
+    'application/octet-stream'
+
+  return { base64, mimeType }
 }
