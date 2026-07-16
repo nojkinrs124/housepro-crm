@@ -35,7 +35,7 @@ export default async function DealsPage() {
         title="Сделки"
         subtitle={`${activeDealCount} активных${totalAmount > 0 ? ` · ${totalAmount.toLocaleString('ru-RU')} ₽ завершено` : ''}`}
         actions={
-          <Link href="/deals/new" className={buttonVariants({ size: 'sm' })} style={{ background: 'var(--hp-gradient-primary)' }}>
+          <Link href="/deals/new" className={buttonVariants({ size: 'sm' })}>
             <Plus style={{ width: 16, height: 16 }} />
             Новая сделка
           </Link>

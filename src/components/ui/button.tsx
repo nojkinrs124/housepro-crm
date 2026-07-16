@@ -13,8 +13,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
+        // Класс hp-gradient-primary-bg (globals.css) задаёт фон — раньше это
+        // был инлайн-стиль, который легко забыть при использовании
+        // buttonVariants() напрямую на <Link>. Теперь фон приходит вместе
+        // с классом, и его невозможно случайно не подключить.
         primary:
-          'text-white hover:-translate-y-0.5 shadow-[0_4px_16px_rgba(22,163,74,0.35)] hover:shadow-[0_6px_20px_rgba(22,163,74,0.45)]',
+          'hp-gradient-primary-bg text-white hover:-translate-y-0.5 shadow-[0_4px_16px_rgba(22,163,74,0.35)] hover:shadow-[0_6px_20px_rgba(22,163,74,0.45)]',
         secondary:
           'bg-white text-foreground border-[1.5px] border-[rgba(214,219,235,0.9)] hover:bg-background hover:border-[rgba(22,163,74,0.3)] hover:text-[#16A34A]',
         ghost:
@@ -42,16 +46,11 @@ export interface ButtonProps
     VariantProps<typeof buttonVariants> {}
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, style, ...props }, ref) => {
+  ({ className, variant, size, ...props }, ref) => {
     return (
       <button
         ref={ref}
         className={cn(buttonVariants({ variant, size }), className)}
-        style={
-          variant === 'primary' || variant === undefined
-            ? { background: 'var(--hp-gradient-primary)', ...style }
-            : style
-        }
         {...props}
       />
     )

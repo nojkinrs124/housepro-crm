@@ -42,6 +42,10 @@
     --hp-gradient-primary: linear-gradient(135deg, #16A34A 0%, #22C55E 100%);
   }
 
+  .hp-gradient-primary-bg {
+    background: var(--hp-gradient-primary);
+  }
+
   .dark {
     --background:         222 47% 4%;
     --foreground:         210 40% 98%;
