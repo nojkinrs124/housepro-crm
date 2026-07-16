@@ -3,6 +3,8 @@ import { createClient } from '@supabase/supabase-js'
 import { authenticateApiKey } from '@/lib/api-auth'
 import {
   sendMessage,
+  sendChatAction,
+  sendDocument,
   answerCallbackQuery,
   editMessageReplyMarkup,
   downloadTelegramFile,
@@ -32,7 +34,38 @@ const SYSTEM_PROMPT = `Ты — ассистент внутри Telegram-бот�
 У тебя есть история последних сообщений в этом чате — используй её для контекста
 (например, если пользователь пишет "а по нему" — посмотри, о ком речь, в предыдущих сообщениях).
 Если пользователь прислал фото чека/квитанции — определи сумму, дату и назначение платежа с фото
-и предложи add_transaction (доход или расход, в зависимости от того, что видно на фото).`
+и предложи add_transaction (доход или расход, в зависимости от того, что видно на фото).
+
+Форматирование ответа (важно, Telegram, НЕ обычный markdown):
+- Разрешены только HTML-теги: <b>жирный</b>, <i>курсив</i>, <code>код</code>. Заголовки через ###
+  НЕ поддерживаются — вместо них используй <b>жирный текст</b> на отдельной строке.
+- Никаких markdown-таблиц (| --- |) — Telegram их не рендерит. Для списков с несколькими полями
+  используй такой вид, по одной записи на абзац:
+  <b>Иванов, аренда 2к, Ленина 10</b>
+  Статус: показы · Бюджет: 45 000 ₽/мес
+- Списки — через "•" в начале строки, не через "-" или "*".
+  Никогда не используй '<', '>', '&' в свободном тексте вне HTML-тегов (ломает разметку) —
+  если нужно сравнение чисел, пиши словами ("больше", "меньше"), а амперсанд заменяй на "и".
+- Не отвечай "простыней" на 15 строк, если пользователь спросил что-то простое — 2-4 строки.
+  Для списков сделок/транзакций — не больше 5-7 записей в одном ответе, дальше предложи уточнить период/фильтр.`
+
+const HELP_TEXT = `<b>HousePro CRM — бот-ассистент</b>
+
+Пиши обычным текстом, голосом или присылай фото чеков — понимаю без специальных команд.
+
+<b>Можно спросить</b> (ответит сразу):
+• Какие сделки в работе?
+• Сколько заработали в этом месяце?
+• Какие объекты сдаются?
+• Найди клиента по телефону
+
+<b>Можно попросить сделать</b> (спрошу подтверждение):
+• Добавь расход 5000 на бензин
+• Переведи сделку в статус завершена
+• Сгенерируй договор для [сделка]
+• Создай лид: Иван, +7..., хочет снять квартиру
+
+Просто напиши, что нужно.`
 
 // Сколько последних сообщений диалога храним и передаём модели (не считая system prompt).
 // Ограничивает рост payload'а и стоимость запроса — для чат-бота этого более чем достаточно.
@@ -158,12 +191,14 @@ async function handleUserTurn(
   }
 
   const chatIdStr = String(chatId)
+  await sendChatAction(chatId, 'typing')
   const history = await loadConversation(chatIdStr)
   const messages: OpenRouterMessage[] = [...history, { role: 'user', content }]
 
   try {
     // До 4 раундов tool-calling — этого достаточно для наших сценариев и защищает от зацикливания
     for (let round = 0; round < 4; round++) {
+      if (round > 0) await sendChatAction(chatId, 'typing')
       const completion = await callOpenRouter(messages)
       const choice = completion.choices?.[0]
       const message: OpenRouterMessage | undefined = choice?.message
@@ -286,11 +321,14 @@ async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_
   }
 
   if (action === 'confirm') {
+    if (pending.action_type === 'generate_contract') await sendChatAction(chatId, 'upload_document')
     const result = await executeConfirmedMutation(pending.action_type, pending.payload)
     await supabaseAdmin.from('bot_pending_actions').update({ status: 'confirmed' }).eq('id', pendingId)
 
     if (result?.error) {
       await sendMessage(chatId, `⚠️ Не получилось выполнить: ${result.error}`)
+    } else if (pending.action_type === 'generate_contract' && result?.data?.docxUrl) {
+      await sendDocument(chatId, result.data.docxUrl, pending.summary_text)
     } else {
       await sendMessage(chatId, `✅ Выполнено:\n\n${pending.summary_text}`)
     }
@@ -342,7 +380,13 @@ export async function POST(request: Request) {
       const chatId = update.message.chat.id
       const userId = String(update.message.from?.id ?? chatId)
       const username = update.message.from?.username
-      await handleUserTurn(chatId, userId, username, update.message.text)
+      const text = update.message.text.trim()
+
+      if (text === '/start' || text === '/help') {
+        await sendMessage(chatId, HELP_TEXT)
+      } else {
+        await handleUserTurn(chatId, userId, username, text)
+      }
     }
   } catch (e) {
     console.error('[telegram webhook] error:', e)

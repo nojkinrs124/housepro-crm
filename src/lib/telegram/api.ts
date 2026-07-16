@@ -34,9 +34,40 @@ export async function sendMessage(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
+
   if (!res.ok) {
-    console.error('[telegram] sendMessage failed:', await res.text())
+    const errText = await res.text()
+    console.error('[telegram] sendMessage failed:', errText)
+    // Модель иногда выдаёт текст с "<"/">"/"&", ломающими HTML-парсинг Telegram
+    // (ошибка вида "can't parse entities"). Не роняем сообщение целиком — шлём тем же
+    // текстом, но без разметки, лучше без форматирования, чем вообще без ответа.
+    if (errText.includes("can't parse entities") || errText.includes('parse entities')) {
+      const retryRes = await fetch(`${TELEGRAM_API}/bot${botToken()}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: chatId, text, reply_markup: body.reply_markup }),
+      })
+      if (!retryRes.ok) console.error('[telegram] sendMessage plain-text retry failed:', await retryRes.text())
+    }
   }
+}
+
+export async function sendChatAction(chatId: string | number, action: 'typing' | 'upload_document' = 'typing'): Promise<void> {
+  await fetch(`${TELEGRAM_API}/bot${botToken()}/sendChatAction`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: chatId, action }),
+  }).catch(() => {}) // индикатор — не критично, если не отправился
+}
+
+/** Отправляет файл по прямой ссылке (например, подписанный Storage URL) — Telegram сам его скачает. */
+export async function sendDocument(chatId: string | number, documentUrl: string, caption?: string): Promise<void> {
+  const res = await fetch(`${TELEGRAM_API}/bot${botToken()}/sendDocument`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: chatId, document: documentUrl, caption }),
+  })
+  if (!res.ok) console.error('[telegram] sendDocument failed:', await res.text())
 }
 
 export async function answerCallbackQuery(callbackQueryId: string, text?: string): Promise<void> {
