@@ -6,7 +6,15 @@
 // перехватывает их до вызова dispatchTool() и заводит запись в bot_pending_actions,
 // ждёт подтверждения "да" от пользователя в Telegram.
 
-export const MUTATING_TOOLS = ['add_transaction', 'update_deal_status', 'generate_contract', 'create_lead'] as const
+export const MUTATING_TOOLS = [
+  'add_transaction',
+  'update_deal_status',
+  'generate_contract',
+  'create_lead',
+  'create_property',
+  'update_property_status',
+  'create_contact',
+] as const
 
 function apiBase(): string {
   // NEXT_PUBLIC_SITE_URL — если явно задан (см. billing/checkout, тот же паттерн).
@@ -169,6 +177,62 @@ export const TOOL_DEFINITIONS = [
       },
     },
   },
+  {
+    type: 'function',
+    function: {
+      name: 'create_property',
+      description: 'Добавить новый объект недвижимости. МУТИРУЮЩЕЕ действие — требует подтверждения.',
+      parameters: {
+        type: 'object',
+        properties: {
+          title: { type: 'string', description: 'Короткое название, например "2к на Ленина 10"' },
+          property_type: { type: 'string', enum: ['apartment', 'house', 'commercial', 'office', 'warehouse', 'land'] },
+          deal_type: { type: 'string', enum: ['rent', 'sale', 'management', 'subrent'] },
+          address: { type: 'string' },
+          district: { type: 'string' },
+          price: { type: 'number' },
+          deposit: { type: 'number' },
+          area: { type: 'number' },
+          rooms: { type: 'number' },
+          floor: { type: 'number' },
+          description: { type: 'string' },
+        },
+        required: ['title', 'property_type', 'deal_type', 'address'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'update_property_status',
+      description: 'Изменить статус объекта недвижимости (сдан/продан/доступен и т.п.). МУТИРУЮЩЕЕ действие.',
+      parameters: {
+        type: 'object',
+        properties: {
+          property_id: { type: 'string', description: 'UUID объекта' },
+          status: { type: 'string', enum: ['available', 'reserved', 'rented', 'sold', 'inactive'] },
+        },
+        required: ['property_id', 'status'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'create_contact',
+      description: 'Создать нового клиента/контакт (не лид, а именно контакт — владелец, клиент и т.п.). МУТИРУЮЩЕЕ действие.',
+      parameters: {
+        type: 'object',
+        properties: {
+          full_name: { type: 'string' },
+          phone: { type: 'string' },
+          email: { type: 'string' },
+          role: { type: 'string', enum: ['client', 'owner', 'both'] },
+        },
+        required: ['full_name'],
+      },
+    },
+  },
 ] as const
 
 /** Выполняет read-only инструмент. Мутирующие сюда не должны попадать — их перехватывает вебхук. */
@@ -220,6 +284,15 @@ export async function executeConfirmedMutation(actionType: string, payload: Reco
       return callApi(`/api/v1/contracts/${encodeURIComponent(String(payload.contract_id))}/generate`, { method: 'POST' })
     case 'create_lead':
       return callApi('/api/v1/leads', { method: 'POST', body: JSON.stringify(payload) })
+    case 'create_property':
+      return callApi('/api/v1/properties', { method: 'POST', body: JSON.stringify(payload) })
+    case 'update_property_status':
+      return callApi(`/api/v1/properties?id=${encodeURIComponent(String(payload.property_id))}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: payload.status }),
+      })
+    case 'create_contact':
+      return callApi('/api/v1/contacts', { method: 'POST', body: JSON.stringify(payload) })
     default:
       return { error: `Неизвестное мутирующее действие: ${actionType}` }
   }
@@ -236,6 +309,12 @@ export function describeMutation(actionType: string, args: Record<string, unknow
       return `📄 Сгенерировать DOCX договора ${args.contract_id}`
     case 'create_lead':
       return `👤 Новый лид: ${args.full_name ?? '(без имени)'}${args.phone ? `, ${args.phone}` : ''}`
+    case 'create_property':
+      return `🏠 Новый объект: ${args.title}, ${args.address}`
+    case 'update_property_status':
+      return `🏠 Изменить статус объекта ${args.property_id} → ${args.status}`
+    case 'create_contact':
+      return `👤 Новый контакт: ${args.full_name}${args.phone ? `, ${args.phone}` : ''}`
     default:
       return `Действие: ${actionType}`
   }
