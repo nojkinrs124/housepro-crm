@@ -6,7 +6,14 @@ import { FileText, Building2, User, Home, Briefcase, Link2 } from 'lucide-react'
 import Link from 'next/link'
 import { PartyContactSelect, type PartyContact, type PartyRepresentative } from '@/features/contacts/components/PartyContactSelect'
 import { CONTRACT_TYPES, CONTRACT_TYPE_MAP, type ContractPartyRole } from '../config/contract-types'
-import { RentApartmentExtraFields, type RentApartmentExtraData } from './RentApartmentExtraFields'
+import { RentApartmentExtraFields } from './RentApartmentExtraFields'
+import { CommercialRentExtraFields } from './CommercialRentExtraFields'
+import { SaleExtraFields } from './SaleExtraFields'
+import { AgencyServiceExtraFields } from './AgencyServiceExtraFields'
+import { PropertyManagementExtraFields } from './PropertyManagementExtraFields'
+import { SubleaseExtraFields } from './SubleaseExtraFields'
+
+const AGENCY_SERVICE_TYPES = ['agency_owner', 'agency_client', 'agency_legal_entity']
 
 const statusOptions = [
   { value: 'draft',     label: 'Черновик' },
@@ -47,7 +54,7 @@ interface ContractFormProps {
     end_date?: string | null
     notes?: string | null
     status?: string
-    contract_type_data?: Partial<RentApartmentExtraData>
+    contract_type_data?: Record<string, unknown> | null
   }
 }
 
@@ -281,9 +288,24 @@ export function ContractForm({
         </div>
       </div>
 
-      {/* Поля, специфичные для найма жилого помещения */}
+      {/* Поля, специфичные для выбранного типа договора */}
       {selectedType === 'rent_apartment' && (
-        <RentApartmentExtraFields defaultValue={defaults.contract_type_data} />
+        <RentApartmentExtraFields key={selectedType} defaultValue={defaults.contract_type_data} />
+      )}
+      {selectedType === 'rent_commercial' && (
+        <CommercialRentExtraFields key={selectedType} defaultValue={defaults.contract_type_data} />
+      )}
+      {selectedType === 'sale' && (
+        <SaleExtraFields key={selectedType} defaultValue={defaults.contract_type_data} />
+      )}
+      {AGENCY_SERVICE_TYPES.includes(selectedType) && (
+        <AgencyServiceExtraFields key={selectedType} defaultValue={defaults.contract_type_data} />
+      )}
+      {selectedType === 'property_management' && (
+        <PropertyManagementExtraFields key={selectedType} defaultValue={defaults.contract_type_data} />
+      )}
+      {selectedType === 'sublease' && (
+        <SubleaseExtraFields key={selectedType} defaultValue={defaults.contract_type_data} />
       )}
 
       {/* Примечания */}

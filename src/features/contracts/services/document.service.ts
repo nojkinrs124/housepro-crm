@@ -115,6 +115,35 @@ export interface ContractVariables {
   ОСНОВАНИЕ_НОМЕР_ДОГОВОРА: string
   ОСНОВАНИЕ_ДАТА_ДОГОВОРА: string
 
+  // ── Агентские услуги (agency_owner / agency_client / agency_legal_entity) ──
+  ПЕРЕЧЕНЬ_УСЛУГ: string
+  УСЛУГА_ДРУГОЕ: string
+  МОДЕЛЬ_ВОЗНАГРАЖДЕНИЯ: string
+  ПРОЦЕНТ_ВОЗНАГРАЖДЕНИЯ: string
+  УСЛОВИЯ_ОПЛАТЫ: string
+
+  // ── Аренда коммерческой недвижимости ──
+  НАЗНАЧЕНИЕ_ИСПОЛЬЗОВАНИЯ: string
+  НДС_ВКЛЮЧЕН: string
+  КТО_ДЕЛАЕТ_РЕМОНТ: string
+
+  // ── Купля-продажа ──
+  СПОСОБ_ОПЛАТЫ: string
+  РАСХОДЫ_НА_РЕГИСТРАЦИЮ_НЕСЕТ: string
+  ОБРЕМЕНЕНИЯ: string
+  ЗАРЕГИСТРИРОВАННЫЕ_ЛИЦА: string
+  ПОРЯДОК_ПЕРЕДАЧИ_КЛЮЧЕЙ: string
+  АВАНС: string
+
+  // ── Управление недвижимостью ──
+  ПЕРЕЧЕНЬ_УСЛУГ_УПРАВЛЕНИЯ: string
+  УСЛУГА_УПРАВЛЕНИЯ_ДРУГОЕ: string
+  ПЕРИОДИЧНОСТЬ_ОТЧЕТА: string
+
+  // ── Субаренда ──
+  СОГЛАСИЕ_СОБСТВЕННИКА: string
+  ДОКУМЕНТ_СОГЛАСИЯ_СОБСТВЕННИКА: string
+
   // ── Обратная совместимость (старые шаблоны) ───────────────
   CLIENT_NAME: string
   CLIENT_PHONE: string
@@ -212,6 +241,55 @@ function buildAddress(contact: Record<string, string> | null): string {
   const parts = [contact.region, contact.city, contact.street, contact.house_number, contact.apartment]
     .filter(Boolean)
   return parts.length > 0 ? parts.join(', ') : '_______________'
+}
+
+const agencyServiceLabels: Record<string, string> = {
+  search_property: 'поиск объекта недвижимости',
+  search_tenant_buyer: 'поиск арендатора/покупателя',
+  showings: 'организация показов объекта',
+  legal_support: 'юридическое сопровождение сделки',
+  advertising: 'рекламное продвижение объекта',
+  full_support: 'полное сопровождение сделки',
+}
+
+const rewardModelLabels: Record<string, string> = {
+  fixed: 'фиксированная сумма',
+  percent: 'процент от суммы сделки',
+  fixed_percent: 'фиксированная сумма и процент от суммы сделки',
+}
+
+const paymentTermsLabels: Record<string, string> = {
+  on_signing: 'в день подписания настоящего договора',
+  on_completion: 'по факту оказания услуги',
+  installments: 'поэтапно, согласно графику платежей',
+}
+
+const propertyManagementServiceLabels: Record<string, string> = {
+  tenant_search: 'поиск арендаторов',
+  rent_collection: 'сбор арендных платежей',
+  maintenance: 'организация технического обслуживания объекта',
+  reporting: 'предоставление отчётности собственнику',
+  utility_payments: 'оплата коммунальных услуг',
+  inspections: 'периодические осмотры объекта',
+}
+
+const reportFrequencyLabels: Record<string, string> = {
+  weekly: 'еженедельно',
+  monthly: 'ежемесячно',
+  quarterly: 'ежеквартально',
+}
+
+const paymentMethodLabels: Record<string, string> = {
+  cash: 'наличный расчёт',
+  bank_transfer: 'безналичный банковский перевод',
+  mortgage: 'с использованием ипотечных кредитных средств',
+  maternal_capital: 'с использованием средств материнского (семейного) капитала',
+}
+
+const registrationExpensesPayerLabels: Record<string, string> = {
+  buyer: 'Покупатель',
+  seller: 'Продавец',
+  both: 'Стороны в равных долях',
 }
 
 const basisLabels: Record<string, string> = {
@@ -330,6 +408,21 @@ export async function buildContractVariables(
         return `${idx + 1}. ${parts.join(', ')}`
       }).join('\n')
     : '_______________'
+
+  // ── Агентские услуги ──
+  const agencyServicesText = Array.isArray(td.services) && td.services.length > 0
+    ? (td.services as string[]).map(s => agencyServiceLabels[s] || s).join(', ')
+    : '_______________'
+  const rewardModelText = td.reward_model ? (rewardModelLabels[td.reward_model as string] || '_______________') : '_______________'
+  const paymentTermsText = td.payment_terms ? (paymentTermsLabels[td.payment_terms as string] || '_______________') : '_______________'
+
+  // ── Управление недвижимостью ──
+  const managementServicesText = Array.isArray(td.services) && td.services.length > 0
+    ? (td.services as string[]).map(s => propertyManagementServiceLabels[s] || s).join(', ')
+    : '_______________'
+
+  // ── Купля-продажа ──
+  const advanceAmount = Number(td.advance_amount) || 0
 
   const handoverDate = td.handover_date ? formatDateRu(td.handover_date) : today
   const returnDate = td.return_date ? formatDateRu(td.return_date) : null
@@ -466,6 +559,37 @@ export async function buildContractVariables(
       : baseContract?.created_at
         ? formatDateRu(baseContract.created_at).full
         : '_______________',
+
+    // ── Агентские услуги ──
+    ПЕРЕЧЕНЬ_УСЛУГ: agencyServicesText,
+    УСЛУГА_ДРУГОЕ: (td.service_other as string) || '',
+    МОДЕЛЬ_ВОЗНАГРАЖДЕНИЯ: rewardModelText,
+    ПРОЦЕНТ_ВОЗНАГРАЖДЕНИЯ: td.reward_percent != null && td.reward_percent !== '' ? String(td.reward_percent) : '___',
+    УСЛОВИЯ_ОПЛАТЫ: paymentTermsText,
+
+    // ── Аренда коммерческой недвижимости ──
+    НАЗНАЧЕНИЕ_ИСПОЛЬЗОВАНИЯ: (td.usage_purpose as string) || '_______________',
+    НДС_ВКЛЮЧЕН: td.vat_included ? 'включён' : 'не включён',
+    КТО_ДЕЛАЕТ_РЕМОНТ: td.renovation_by === 'landlord' ? 'Арендодатель' : 'Арендатор',
+
+    // ── Купля-продажа ──
+    СПОСОБ_ОПЛАТЫ: td.payment_method ? (paymentMethodLabels[td.payment_method as string] || '_______________') : '_______________',
+    РАСХОДЫ_НА_РЕГИСТРАЦИЮ_НЕСЕТ: td.registration_expenses_payer
+      ? (registrationExpensesPayerLabels[td.registration_expenses_payer as string] || '_______________')
+      : '_______________',
+    ОБРЕМЕНЕНИЯ: (td.encumbrances as string) || 'не имеется',
+    ЗАРЕГИСТРИРОВАННЫЕ_ЛИЦА: (td.registered_persons as string) || 'не имеется',
+    ПОРЯДОК_ПЕРЕДАЧИ_КЛЮЧЕЙ: (td.key_transfer_order as string) || '_______________',
+    АВАНС: advanceAmount > 0 ? advanceAmount.toLocaleString('ru-RU') : '0',
+
+    // ── Управление недвижимостью ──
+    ПЕРЕЧЕНЬ_УСЛУГ_УПРАВЛЕНИЯ: managementServicesText,
+    УСЛУГА_УПРАВЛЕНИЯ_ДРУГОЕ: (td.service_other as string) || '',
+    ПЕРИОДИЧНОСТЬ_ОТЧЕТА: td.report_frequency ? (reportFrequencyLabels[td.report_frequency as string] || '_______________') : '_______________',
+
+    // ── Субаренда ──
+    СОГЛАСИЕ_СОБСТВЕННИКА: td.owner_consent_given ? 'получено' : 'не получено',
+    ДОКУМЕНТ_СОГЛАСИЯ_СОБСТВЕННИКА: (td.owner_consent_document as string) || '_______________',
 
     // ── Обратная совместимость ──
     CLIENT_NAME: client?.full_name || '_______________',

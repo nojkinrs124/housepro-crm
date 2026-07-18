@@ -2,15 +2,37 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import type { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
-import { ContractSchema, RentApartmentDataSchema } from '@/lib/schemas'
+import {
+  ContractSchema,
+  RentApartmentDataSchema,
+  CommercialRentDataSchema,
+  SaleDataSchema,
+  AgencyServiceDataSchema,
+  PropertyManagementDataSchema,
+  SubleaseDataSchema,
+} from '@/lib/schemas'
 import { requireOrgId } from '@/lib/org'
 import { writeAuditLog } from '@/lib/audit'
 
+// Схема contract_type_data по каждому типу договора (см. config/contract-types.ts).
+const CONTRACT_TYPE_DATA_SCHEMAS: Record<string, z.ZodTypeAny> = {
+  rent_apartment: RentApartmentDataSchema,
+  rent_commercial: CommercialRentDataSchema,
+  sale: SaleDataSchema,
+  agency_owner: AgencyServiceDataSchema,
+  agency_client: AgencyServiceDataSchema,
+  agency_legal_entity: AgencyServiceDataSchema,
+  property_management: PropertyManagementDataSchema,
+  sublease: SubleaseDataSchema,
+}
+
 // Собирает и валидирует contract_type_data из формы.
-// Поле contract_type_data_json — hidden input с JSON-строкой (см. RentApartmentExtraFields.tsx).
+// Поле contract_type_data_json — hidden input с JSON-строкой (см. *ExtraFields.tsx компоненты).
 function parseContractTypeData(contractType: string, formData: FormData): Record<string, unknown> {
-  if (contractType !== 'rent_apartment') return {}
+  const schema = CONTRACT_TYPE_DATA_SCHEMAS[contractType]
+  if (!schema) return {}
 
   const raw = formData.get('contract_type_data_json')
   let parsed: unknown = {}
@@ -22,8 +44,8 @@ function parseContractTypeData(contractType: string, formData: FormData): Record
     }
   }
 
-  const result = RentApartmentDataSchema.safeParse(parsed)
-  return result.success ? result.data : {}
+  const result = schema.safeParse(parsed)
+  return result.success ? (result.data as Record<string, unknown>) : {}
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

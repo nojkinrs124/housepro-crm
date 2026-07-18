@@ -7,6 +7,7 @@ import {
   type InventoryItem,
   type RentApartmentExtraData,
   RENT_APARTMENT_EXTRA_DEFAULTS,
+  toExtraFieldsDefaults,
 } from '../utils/rent-apartment-data'
 
 export type { Cohabitant, InventoryItem, RentApartmentExtraData }
@@ -14,7 +15,7 @@ export type { Cohabitant, InventoryItem, RentApartmentExtraData }
 const DEFAULTS = RENT_APARTMENT_EXTRA_DEFAULTS
 
 interface Props {
-  defaultValue?: Partial<RentApartmentExtraData>
+  defaultValue?: unknown
 }
 
 const inp = 'w-full h-10 px-4 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all'
@@ -24,7 +25,10 @@ const smallBtn = 'text-xs font-medium text-primary hover:underline'
 const removeBtn = 'text-xs font-medium text-destructive hover:underline'
 
 export function RentApartmentExtraFields({ defaultValue }: Props) {
-  const [data, setData] = useState<RentApartmentExtraData>({ ...DEFAULTS, ...defaultValue })
+  const [data, setData] = useState<RentApartmentExtraData>(() => ({
+    ...DEFAULTS,
+    ...toExtraFieldsDefaults(defaultValue),
+  }))
   const hiddenRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {

@@ -249,3 +249,66 @@ export const RentApartmentDataSchema = z.object({
 })
 
 export type RentApartmentDataInput = z.infer<typeof RentApartmentDataSchema>
+
+// ─── Agency service data (agency_owner, agency_client, agency_legal_entity) ───
+
+export const AgencyServiceDataSchema = z.object({
+  services: z.array(z.string()).default([]),
+  service_other: optStr,
+  reward_model: z.enum(['fixed', 'percent', 'fixed_percent']).default('fixed'),
+  reward_percent: optNonNegNum,
+  payment_terms: z.enum(['on_signing', 'on_completion', 'installments']).default('on_signing'),
+})
+
+export type AgencyServiceDataInput = z.infer<typeof AgencyServiceDataSchema>
+
+// ─── Commercial rent extra data (rent_commercial) ─────────────────────────────
+
+export const CommercialRentDataSchema = z.object({
+  usage_purpose: optStr,
+  vat_included: optBool,
+  renovation_by: z.enum(['tenant', 'landlord']).optional(),
+  late_return_penalty_per_day: optNonNegNum,
+  copies_count: optNonNegNum,
+  inventory_items: z.array(InventoryItemSchema).default([]),
+})
+
+export type CommercialRentDataInput = z.infer<typeof CommercialRentDataSchema>
+
+// ─── Sale extra data (sale) ────────────────────────────────────────────────────
+
+export const SaleDataSchema = z.object({
+  payment_method: z.enum(['cash', 'bank_transfer', 'mortgage', 'maternal_capital']).default('bank_transfer'),
+  registration_expenses_payer: z.enum(['buyer', 'seller', 'both']).default('buyer'),
+  encumbrances: optStr,
+  registered_persons: optStr,
+  key_transfer_order: optStr,
+  advance_amount: optNonNegNum,
+  copies_count: optNonNegNum,
+})
+
+export type SaleDataInput = z.infer<typeof SaleDataSchema>
+
+// ─── Property management extra data (property_management) ────────────────────
+
+export const PropertyManagementDataSchema = z.object({
+  services: z.array(z.string()).default([]),
+  service_other: optStr,
+  report_frequency: z.enum(['weekly', 'monthly', 'quarterly']).default('monthly'),
+  reward_details: optStr,
+})
+
+export type PropertyManagementDataInput = z.infer<typeof PropertyManagementDataSchema>
+
+// ─── Sublease extra data (sublease) ────────────────────────────────────────────
+
+export const SubleaseDataSchema = z.object({
+  owner_consent_given: optBool,
+  owner_consent_document: optStr,
+  utilities_included_in_rent: optBool,
+  utilities_paid_by_tenant: optStr,
+  late_return_penalty_per_day: optNonNegNum,
+  copies_count: optNonNegNum,
+})
+
+export type SubleaseDataInput = z.infer<typeof SubleaseDataSchema>
