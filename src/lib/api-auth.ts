@@ -1,5 +1,17 @@
 import { createClient } from '@supabase/supabase-js'
-import { createHash } from 'crypto'
+import { createHmac, randomBytes } from 'crypto'
+
+// API-ключи (hp_<48 hex>, 192 бита энтропии) хешируются HMAC-SHA256 с
+// server-side pepper, а не голым SHA-256. Ключи — не пароли (их нельзя
+// перебрать по словарю), поэтому bcrypt/argon2 здесь не нужен и вреден
+// для латентности на каждый API-запрос; HMAC с секретом закрывает
+// единственный реальный риск — offline-подбор по утёкшей таблице hash'ей
+// без знания API_KEY_PEPPER.
+function hashApiKey(key: string): string {
+  const pepper = process.env.API_KEY_PEPPER
+  if (!pepper) throw new Error('API_KEY_PEPPER is not set')
+  return createHmac('sha256', pepper).update(key).digest('hex')
+}
 
 function getSupabaseAdmin() {
   return createClient(
@@ -26,7 +38,7 @@ export async function authenticateApiKey(request: Request): Promise<ApiAuthResul
   }
 
   const apiKey  = authHeader.replace('Bearer ', '')
-  const keyHash = createHash('sha256').update(apiKey).digest('hex')
+  const keyHash = hashApiKey(apiKey)
   const supabaseAdmin = getSupabaseAdmin()
 
   const { data: key } = await supabaseAdmin
@@ -64,9 +76,9 @@ export function hasScope(scopes: string[] | undefined, required: 'read' | 'write
  * Возвращает оба значения — plaintext (показать один раз пользователю) и hash (сохранить в БД)
  */
 export function generateApiKey(): { plaintext: string; hash: string; prefix: string } {
-  const random = require('crypto').randomBytes(24).toString('hex')
+  const random = randomBytes(24).toString('hex')
   const plaintext = `hp_${random}`
-  const hash = createHash('sha256').update(plaintext).digest('hex')
+  const hash = hashApiKey(plaintext)
   const prefix = plaintext.slice(0, 10)
   return { plaintext, hash, prefix }
 }
