@@ -14,6 +14,7 @@ export const MUTATING_TOOLS = [
   'create_property',
   'update_property_status',
   'create_contact',
+  'update_contact',
 ] as const
 
 function apiBase(): string {
@@ -228,8 +229,54 @@ export const TOOL_DEFINITIONS = [
           phone: { type: 'string' },
           email: { type: 'string' },
           role: { type: 'string', enum: ['client', 'owner', 'both'] },
+          passport_series: { type: 'string' },
+          passport_number: { type: 'string' },
+          passport_issued_date: { type: 'string', description: 'YYYY-MM-DD' },
+          passport_issued_by: { type: 'string' },
+          passport_department_code: { type: 'string' },
+          birth_date: { type: 'string', description: 'YYYY-MM-DD' },
+          country: { type: 'string' },
+          region: { type: 'string' },
+          city: { type: 'string' },
+          street: { type: 'string' },
+          house_number: { type: 'string' },
+          building: { type: 'string' },
+          apartment: { type: 'string' },
         },
         required: ['full_name'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'update_contact',
+      description:
+        'Обновить данные существующего контакта — паспорт, адрес регистрации, телефон, email и т.п. ' +
+        'Используй, когда нужно дополнить уже созданный контакт (например, паспортными данными для договора). ' +
+        'МУТИРУЮЩЕЕ действие. Если не знаешь contact_id — сначала найди контакт через get_client.',
+      parameters: {
+        type: 'object',
+        properties: {
+          contact_id: { type: 'string', description: 'UUID контакта' },
+          full_name: { type: 'string' },
+          phone: { type: 'string' },
+          email: { type: 'string' },
+          passport_series: { type: 'string' },
+          passport_number: { type: 'string' },
+          passport_issued_date: { type: 'string', description: 'YYYY-MM-DD' },
+          passport_issued_by: { type: 'string' },
+          passport_department_code: { type: 'string' },
+          birth_date: { type: 'string', description: 'YYYY-MM-DD' },
+          country: { type: 'string' },
+          region: { type: 'string' },
+          city: { type: 'string' },
+          street: { type: 'string' },
+          house_number: { type: 'string' },
+          building: { type: 'string' },
+          apartment: { type: 'string' },
+        },
+        required: ['contact_id'],
       },
     },
   },
@@ -293,6 +340,13 @@ export async function executeConfirmedMutation(actionType: string, payload: Reco
       })
     case 'create_contact':
       return callApi('/api/v1/contacts', { method: 'POST', body: JSON.stringify(payload) })
+    case 'update_contact': {
+      const { contact_id, ...fields } = payload
+      return callApi(`/api/v1/contacts/${encodeURIComponent(String(contact_id))}`, {
+        method: 'PUT',
+        body: JSON.stringify(fields),
+      })
+    }
     default:
       return { error: `Неизвестное мутирующее действие: ${actionType}` }
   }
@@ -315,6 +369,10 @@ export function describeMutation(actionType: string, args: Record<string, unknow
       return `🏠 Изменить статус объекта ${args.property_id} → ${args.status}`
     case 'create_contact':
       return `👤 Новый контакт: ${args.full_name}${args.phone ? `, ${args.phone}` : ''}`
+    case 'update_contact': {
+      const fields = Object.keys(args).filter((k) => k !== 'contact_id')
+      return `✏️ Обновить контакт ${args.contact_id}: ${fields.join(', ')}`
+    }
     default:
       return `Действие: ${actionType}`
   }

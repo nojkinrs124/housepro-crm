@@ -49,7 +49,12 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   }
 
   const body = await request.json()
-  const allowedFields = ['full_name', 'phone', 'email', 'role', 'status', 'comment', 'source']
+  const allowedFields = [
+    'full_name', 'phone', 'email', 'role', 'status', 'comment', 'source',
+    'passport_series', 'passport_number', 'passport_issued_date',
+    'passport_issued_by', 'passport_department_code', 'birth_date',
+    'country', 'region', 'city', 'street', 'house_number', 'building', 'apartment',
+  ]
   const updates: Record<string, unknown> = {}
   for (const f of allowedFields) {
     if (f in body) updates[f] = body[f]
