@@ -15,6 +15,7 @@ export const MUTATING_TOOLS = [
   'update_property_status',
   'create_contact',
   'update_contact',
+  'import_rental_contract',
 ] as const
 
 function apiBase(): string {
@@ -280,6 +281,97 @@ export const TOOL_DEFINITIONS = [
       },
     },
   },
+  {
+    type: 'function',
+    function: {
+      name: 'import_rental_contract',
+      description:
+        'Разобрать договор аренды (или похожий документ) и ОДНИМ вызовом создать/связать: ' +
+        'собственника, арендатора, объект недвижимости и сделку между ними. Используй это ' +
+        'вместо create_contact/create_property по отдельности, когда из одного документа/сообщения ' +
+        'нужно завести НЕСКОЛЬКО связанных сущностей сразу (это единственный способ действительно ' +
+        'связать их друг с другом — owner_id, client_contact_id и т.п. проставляются автоматически). ' +
+        'Если в документе не хватает каких-то данных — передавай только то, что есть, остальное можно ' +
+        'дополнить потом через update_contact/update_property_status. МУТИРУЮЩЕЕ действие.',
+      parameters: {
+        type: 'object',
+        properties: {
+          owner: {
+            type: 'object',
+            description: 'Собственник объекта',
+            properties: {
+              full_name: { type: 'string' },
+              phone: { type: 'string' },
+              email: { type: 'string' },
+              passport_series: { type: 'string' },
+              passport_number: { type: 'string' },
+              passport_issued_date: { type: 'string' },
+              passport_issued_by: { type: 'string' },
+              passport_department_code: { type: 'string' },
+              country: { type: 'string' },
+              region: { type: 'string' },
+              city: { type: 'string' },
+              street: { type: 'string' },
+              house_number: { type: 'string' },
+              building: { type: 'string' },
+              apartment: { type: 'string' },
+            },
+            required: ['full_name'],
+          },
+          tenant: {
+            type: 'object',
+            description: 'Арендатор',
+            properties: {
+              full_name: { type: 'string' },
+              phone: { type: 'string' },
+              email: { type: 'string' },
+              passport_series: { type: 'string' },
+              passport_number: { type: 'string' },
+              passport_issued_date: { type: 'string' },
+              passport_issued_by: { type: 'string' },
+              passport_department_code: { type: 'string' },
+              country: { type: 'string' },
+              region: { type: 'string' },
+              city: { type: 'string' },
+              street: { type: 'string' },
+              house_number: { type: 'string' },
+              building: { type: 'string' },
+              apartment: { type: 'string' },
+            },
+            required: ['full_name'],
+          },
+          property: {
+            type: 'object',
+            description: 'Объект недвижимости',
+            properties: {
+              title: { type: 'string' },
+              property_type: { type: 'string', enum: ['apartment', 'house', 'commercial', 'office', 'warehouse', 'land'] },
+              deal_type: { type: 'string', enum: ['rent', 'sale', 'management', 'subrent'] },
+              address: { type: 'string' },
+              district: { type: 'string' },
+              price: { type: 'number' },
+              deposit: { type: 'number' },
+              area: { type: 'number' },
+              rooms: { type: 'number' },
+              floor: { type: 'number' },
+            },
+            required: ['title', 'property_type', 'deal_type', 'address'],
+          },
+          deal: {
+            type: 'object',
+            description: 'Параметры сделки (опционально — статус по умолчанию "contract")',
+            properties: {
+              deal_type: { type: 'string' },
+              status: { type: 'string' },
+              amount: { type: 'number' },
+              notes: { type: 'string' },
+            },
+          },
+        },
+        required: ['owner', 'tenant', 'property'],
+      },
+    },
+  },
 ] as const
 
 /** Выполняет read-only инструмент. Мутирующие сюда не должны попадать — их перехватывает вебхук. */
@@ -347,6 +439,8 @@ export async function executeConfirmedMutation(actionType: string, payload: Reco
         body: JSON.stringify(fields),
       })
     }
+    case 'import_rental_contract':
+      return callApi('/api/v1/import/rental-contract', { method: 'POST', body: JSON.stringify(payload) })
     default:
       return { error: `Неизвестное мутирующее действие: ${actionType}` }
   }
@@ -372,6 +466,18 @@ export function describeMutation(actionType: string, args: Record<string, unknow
     case 'update_contact': {
       const fields = Object.keys(args).filter((k) => k !== 'contact_id')
       return `✏️ Обновить контакт ${args.contact_id}: ${fields.join(', ')}`
+    }
+    case 'import_rental_contract': {
+      const owner = args.owner as Record<string, unknown> | undefined
+      const tenant = args.tenant as Record<string, unknown> | undefined
+      const property = args.property as Record<string, unknown> | undefined
+      return (
+        `📥 Импорт договора аренды:\n` +
+        `• Собственник: ${owner?.full_name ?? '?'}${owner?.phone ? `, ${owner.phone}` : ''}\n` +
+        `• Арендатор: ${tenant?.full_name ?? '?'}${tenant?.phone ? `, ${tenant.phone}` : ''}\n` +
+        `• Объект: ${property?.title ?? '?'}, ${property?.address ?? ''}\n` +
+        `→ создаст 2 контакта, объект и сделку, всё связав между собой`
+      )
     }
     default:
       return `Действие: ${actionType}`

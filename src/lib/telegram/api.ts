@@ -105,6 +105,7 @@ export interface TelegramUpdate {
     caption?: string
     voice?: { file_id: string; duration: number; mime_type?: string }
     photo?: Array<{ file_id: string; width: number; height: number }>
+    document?: { file_id: string; file_name?: string; mime_type?: string; file_size?: number }
   }
   callback_query?: {
     id: string
@@ -136,6 +137,8 @@ export async function downloadTelegramFile(fileId: string): Promise<{ base64: st
     ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' :
     ext === 'png' ? 'image/png' :
     ext === 'webp' ? 'image/webp' :
+    ext === 'pdf' ? 'application/pdf' :
+    ext === 'docx' ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' :
     'application/octet-stream'
 
   return { base64, mimeType }

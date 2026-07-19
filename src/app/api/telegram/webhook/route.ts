@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { randomUUID } from 'crypto'
 import { createClient } from '@supabase/supabase-js'
 import { authenticateApiKey } from '@/lib/api-auth'
 import {
@@ -11,6 +12,7 @@ import {
   type TelegramUpdate,
 } from '@/lib/telegram/api'
 import { transcribeAudio } from '@/lib/telegram/stt'
+import { extractTextFromDocx } from '@/lib/telegram/docx-reader'
 import {
   TOOL_DEFINITIONS,
   MUTATING_TOOLS,
@@ -20,21 +22,47 @@ import {
 } from '@/lib/telegram/tools'
 
 // Node runtime (по умолчанию) — ОБЯЗАТЕЛЬНО, не ставить `export const runtime = 'edge'`.
-// Дальше по проекту этот роут может подключать генерацию договоров (docxtemplater,
-// Buffer) — это Node-only, в Edge runtime не заработает.
+// pizzip/docxtemplater — Node-only, в Edge runtime не заработают.
 export const dynamic = 'force-dynamic'
 
 const SYSTEM_PROMPT = `Ты — ассистент внутри Telegram-бота HousePro CRM (агентство недвижимости).
 Отвечай кратко, по-деловому, на русском. У тебя есть инструменты для чтения и изменения данных CRM.
 Суммы — в рублях. Если пользователь не указал дату — используй сегодняшнюю.
-Для мутирующих действий (add_transaction, update_deal_status, generate_contract, create_lead) НЕ считай,
-что действие уже выполнено — система сама покажет пользователю подтверждение и выполнит действие только
-после его согласия. Если не хватает данных для вызова инструмента (например, не найден deal_id) — сначала
-используй read-only инструмент, чтобы его найти, и только потом предлагай мутацию.
+
+Для ВСЕХ мутирующих действий (add_transaction, update_deal_status, generate_contract, create_lead,
+create_property, update_property_status, create_contact, update_contact, import_rental_contract)
+НЕ считай, что действие уже выполнено — система сама покажет пользователю подтверждение и выполнит
+действие только после его согласия.
+
+Если не хватает данных для вызова инструмента (например, не найден deal_id или contact_id) —
+сначала используй read-only инструмент (get_deals, get_client, list_properties), чтобы его найти,
+и только потом предлагай мутацию. Если нашлось несколько похожих совпадений — уточни у пользователя,
+какое имелось в виду, вместо того чтобы гадать.
+
+ПАКЕТНЫЕ запросы: если пользователь просит несколько независимых действий за раз
+("добавь трёх лидов: ...", "создай два объекта: ...") — вызови СООТВЕТСТВУЮЩИЙ инструмент
+НЕСКОЛЬКО РАЗ за один ответ (несколько tool_calls в одном сообщении), не по одному за раз —
+система сама соберёт их в одно общее подтверждение.
+
+СВЯЗАННЫЕ сущности из одного документа: если нужно создать НЕСКОЛЬКО СВЯЗАННЫХ между собой
+записей одновременно (например, из договора аренды — собственник + арендатор + объект + сделка,
+где сделка должна ссылаться на только что созданных собственника и арендатора) — НЕ используй
+create_contact/create_property по отдельности, потому что их ID заранее неизвестны и связь не
+получится. Вместо этого используй import_rental_contract — он создаёт и связывает всё правильно
+за один атомарный вызов. Если в документе не хватает каких-то полей — передай только то, что есть,
+остальное можно дополнить позже через update_contact/update_property_status.
+
+Пользователь может прислать фото, голосовое, PDF или DOCX документ:
+- Фото чека/квитанции — определи сумму, дату, назначение, предложи add_transaction.
+- PDF/DOCX (договор аренды, выписка ЕГРН и т.п.) — внимательно прочитай содержимое, определи,
+  какие сущности там описаны (стороны договора, объект, условия), и предложи подходящее действие —
+  чаще всего import_rental_contract, если документ описывает сделку между двумя сторонами по объекту.
+  Если документ не про сделку (например, просто выписка ЕГРН на один объект без сторон) —
+  предложи create_property и/или update_property_status по ситуации.
+- Всегда явно проговаривай в подтверждении, что именно нашёл в документе, прежде чем создавать.
+
 У тебя есть история последних сообщений в этом чате — используй её для контекста
 (например, если пользователь пишет "а по нему" — посмотри, о ком речь, в предыдущих сообщениях).
-Если пользователь прислал фото чека/квитанции — определи сумму, дату и назначение платежа с фото
-и предложи add_transaction (доход или расход, в зависимости от того, что видно на фото).
 
 Форматирование ответа (важно, Telegram, НЕ обычный markdown):
 - Разрешены только HTML-теги: <b>жирный</b>, <i>курсив</i>, <code>код</code>. Заголовки через ###
@@ -51,7 +79,7 @@ const SYSTEM_PROMPT = `Ты — ассистент внутри Telegram-бот�
 
 const HELP_TEXT = `<b>HousePro CRM — бот-ассистент</b>
 
-Пиши обычным текстом, голосом или присылай фото чеков — понимаю без специальных команд.
+Пиши обычным текстом, голосом, присылай фото чеков или PDF/DOCX документы — понимаю без специальных команд.
 
 <b>Можно спросить</b> (ответит сразу):
 • Какие сделки в работе?
@@ -62,13 +90,12 @@ const HELP_TEXT = `<b>HousePro CRM — бот-ассистент</b>
 <b>Можно попросить сделать</b> (спрошу подтверждение):
 • Добавь расход 5000 на бензин
 • Переведи сделку в статус завершена
-• Сгенерируй договор для [сделка]
-• Создай лид: Иван, +7..., хочет снять квартиру
+• Создай трёх лидов: ... (несколько сразу — одним подтверждением)
+• Пришли договор аренды PDF/DOCX — сам заведу собственника, арендатора, объект и сделку, всё связав
 
-Просто напиши, что нужно.`
+Просто напиши или пришли файл.`
 
 // Сколько последних сообщений диалога храним и передаём модели (не считая system prompt).
-// Ограничивает рост payload'а и стоимость запроса — для чат-бота этого более чем достаточно.
 const MAX_HISTORY_MESSAGES = 20
 
 function getSupabaseAdmin() {
@@ -87,12 +114,6 @@ async function resolveBotOrgId(): Promise<string | null> {
   return auth.orgId ?? null
 }
 
-/**
- * Проверяет, может ли этот telegram_user_id общаться с ботом. Если для организации
- * ещё нет ни одной записи в allowlist — считаем это первым запуском и автоматически
- * добавляем отправителя (bootstrap), чтобы владелец бота не оказался сам же заблокирован
- * без возможности себя туда вписать. После первой записи allowlist работает строго.
- */
 async function isUserAllowed(orgId: string, telegramUserId: string, username?: string): Promise<boolean> {
   const supabaseAdmin = getSupabaseAdmin()
 
@@ -122,7 +143,11 @@ async function isUserAllowed(orgId: string, telegramUserId: string, username?: s
 
 type MessageContent =
   | string
-  | Array<{ type: 'text'; text: string } | { type: 'image_url'; image_url: { url: string } }>
+  | Array<
+      | { type: 'text'; text: string }
+      | { type: 'image_url'; image_url: { url: string } }
+      | { type: 'file'; file: { filename: string; file_data: string } }
+    >
 
 interface OpenRouterMessage {
   role: 'system' | 'user' | 'assistant' | 'tool'
@@ -164,6 +189,9 @@ async function callOpenRouter(messages: OpenRouterMessage[]) {
       messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
       tools: TOOL_DEFINITIONS,
       tool_choice: 'auto',
+      // Разрешаем модели одновременно вызывать несколько tool_calls в одном ответе —
+      // это то, что делает пакетные запросы ("добавь трёх лидов") возможными.
+      parallel_tool_calls: true,
     }),
   })
   if (!res.ok) {
@@ -196,7 +224,6 @@ async function handleUserTurn(
   const messages: OpenRouterMessage[] = [...history, { role: 'user', content }]
 
   try {
-    // До 4 раундов tool-calling — этого достаточно для наших сценариев и защищает от зацикливания
     for (let round = 0; round < 4; round++) {
       if (round > 0) await sendChatAction(chatId, 'typing')
       const completion = await callOpenRouter(messages)
@@ -217,49 +244,63 @@ async function handleUserTurn(
 
       messages.push(message)
 
-      // Мутирующий tool call — перехватываем ПЕРВЫЙ такой вызов, заводим подтверждение и
-      // останавливаем цикл (не даём модели считать действие выполненным).
-      const mutatingCall = message.tool_calls.find((tc) =>
+      // ВСЕ мутирующие tool_calls этого раунда — собираем в ОДИН батч с общим подтверждением,
+      // а не только первый (иначе "сделай троих клиентов" реально создавало бы только одного,
+      // молча пропуская остальных — это и была жалоба на "пишет что сделал, по факту нет").
+      const mutatingCalls = message.tool_calls.filter((tc) =>
         (MUTATING_TOOLS as readonly string[]).includes(tc.function.name)
       )
 
-      if (mutatingCall) {
-        let args: Record<string, unknown> = {}
-        try {
-          args = JSON.parse(mutatingCall.function.arguments)
-        } catch {
+      if (mutatingCalls.length > 0) {
+        const batchId = randomUUID()
+        const supabaseAdmin = getSupabaseAdmin()
+        const summaries: string[] = []
+        let parseFailed = false
+
+        for (const call of mutatingCalls) {
+          let args: Record<string, unknown> = {}
+          try {
+            args = JSON.parse(call.function.arguments)
+          } catch {
+            parseFailed = true
+            continue
+          }
+          const summary = describeMutation(call.function.name, args)
+          summaries.push(summary)
+          await supabaseAdmin.from('bot_pending_actions').insert({
+            organization_id: orgId,
+            telegram_chat_id: chatIdStr,
+            telegram_user_id: telegramUserId,
+            action_type: call.function.name,
+            payload: args,
+            summary_text: summary,
+            batch_id: batchId,
+          })
+        }
+
+        if (summaries.length === 0) {
           await sendMessage(chatId, 'Не смог разобрать параметры действия, попробуй переформулировать.')
           return
         }
 
-        const summary = describeMutation(mutatingCall.function.name, args)
-        const supabaseAdmin = getSupabaseAdmin()
-        const { data: pending, error } = await supabaseAdmin
-          .from('bot_pending_actions')
-          .insert({
-            organization_id: orgId,
-            telegram_chat_id: chatIdStr,
-            telegram_user_id: telegramUserId,
-            action_type: mutatingCall.function.name,
-            payload: args,
-            summary_text: summary,
-          })
-          .select('id')
-          .single()
+        const combinedSummary =
+          summaries.length === 1
+            ? summaries[0]
+            : summaries.map((s, i) => `${i + 1}. ${s}`).join('\n\n')
 
-        if (error || !pending) {
-          await sendMessage(chatId, '⚠️ Не смог сохранить действие для подтверждения. Попробуй ещё раз.')
-          return
-        }
-
-        await sendMessage(chatId, `Подтверди действие:\n\n${summary}`, {
-          inlineKeyboard: [
-            [
-              { text: '✅ Подтвердить', callback_data: `confirm:${pending.id}` },
-              { text: '❌ Отменить', callback_data: `cancel:${pending.id}` },
+        await sendMessage(
+          chatId,
+          `Подтверди ${summaries.length > 1 ? `действия (${summaries.length})` : 'действие'}:\n\n${combinedSummary}` +
+            (parseFailed ? '\n\n⚠️ Часть действий не удалось разобрать и они пропущены.' : ''),
+          {
+            inlineKeyboard: [
+              [
+                { text: '✅ Подтвердить всё', callback_data: `confirm:${batchId}` },
+                { text: '❌ Отменить', callback_data: `cancel:${batchId}` },
+              ],
             ],
-          ],
-        })
+          }
+        )
         return
       }
 
@@ -278,7 +319,6 @@ async function handleUserTurn(
 
     await sendMessage(chatId, 'Слишком много шагов для одного запроса — попробуй сформулировать проще.')
   } finally {
-    // Сохраняем память диалога независимо от того, чем закончился ход (return/ошибка/лимит раундов)
     await saveConversation(chatIdStr, orgId, messages).catch((e) =>
       console.error('[telegram webhook] saveConversation error:', e)
     )
@@ -292,46 +332,56 @@ async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_
   const messageId = update.message?.message_id
   if (!chatId || !update.data) return
 
-  const [action, pendingId] = update.data.split(':')
-  if (!pendingId) return
+  const [action, batchId] = update.data.split(':')
+  if (!batchId) return
 
   const supabaseAdmin = getSupabaseAdmin()
-  const { data: pending } = await supabaseAdmin
+  const { data: batch } = await supabaseAdmin
     .from('bot_pending_actions')
     .select('*')
-    .eq('id', pendingId)
-    .maybeSingle()
+    .eq('batch_id', batchId)
+    .order('created_at', { ascending: true })
 
   if (messageId) await editMessageReplyMarkup(chatId, messageId, null)
 
-  if (!pending || pending.status !== 'pending') {
+  const pendingRows = (batch ?? []).filter((r) => r.status === 'pending')
+  if (pendingRows.length === 0) {
     await sendMessage(chatId, 'Это действие уже недоступно (истекло или уже обработано).')
     return
   }
-  if (new Date(pending.expires_at) < new Date()) {
-    await supabaseAdmin.from('bot_pending_actions').update({ status: 'expired' }).eq('id', pendingId)
+  if (new Date(pendingRows[0].expires_at) < new Date()) {
+    await supabaseAdmin.from('bot_pending_actions').update({ status: 'expired' }).eq('batch_id', batchId)
     await sendMessage(chatId, '⏱ Время подтверждения истекло, попробуй ещё раз.')
     return
   }
 
   if (action === 'cancel') {
-    await supabaseAdmin.from('bot_pending_actions').update({ status: 'cancelled' }).eq('id', pendingId)
+    await supabaseAdmin.from('bot_pending_actions').update({ status: 'cancelled' }).eq('batch_id', batchId)
     await sendMessage(chatId, '❌ Отменено.')
     return
   }
 
   if (action === 'confirm') {
-    if (pending.action_type === 'generate_contract') await sendChatAction(chatId, 'upload_document')
-    const result = await executeConfirmedMutation(pending.action_type, pending.payload)
-    await supabaseAdmin.from('bot_pending_actions').update({ status: 'confirmed' }).eq('id', pendingId)
-
-    if (result?.error) {
-      await sendMessage(chatId, `⚠️ Не получилось выполнить: ${result.error}`)
-    } else if (pending.action_type === 'generate_contract' && result?.data?.docxUrl) {
-      await sendDocument(chatId, result.data.docxUrl, pending.summary_text)
-    } else {
-      await sendMessage(chatId, `✅ Выполнено:\n\n${pending.summary_text}`)
+    if (pendingRows.some((r) => r.action_type === 'generate_contract')) {
+      await sendChatAction(chatId, 'upload_document')
     }
+
+    const results: string[] = []
+    for (const row of pendingRows) {
+      const result = await executeConfirmedMutation(row.action_type, row.payload)
+      await supabaseAdmin.from('bot_pending_actions').update({ status: 'confirmed' }).eq('id', row.id)
+
+      if (result?.error) {
+        results.push(`⚠️ Не получилось (${row.action_type}): ${result.error}`)
+      } else if (row.action_type === 'generate_contract' && result?.data?.docxUrl) {
+        await sendDocument(chatId, result.data.docxUrl, row.summary_text)
+        results.push(`✅ ${row.summary_text}`)
+      } else {
+        results.push(`✅ ${row.summary_text}`)
+      }
+    }
+
+    await sendMessage(chatId, results.join('\n\n'))
   }
 }
 
@@ -345,7 +395,7 @@ export async function POST(request: Request) {
   try {
     update = await request.json()
   } catch {
-    return NextResponse.json({ ok: true }) // молча игнорируем мусор, Telegram не должен ретраить
+    return NextResponse.json({ ok: true })
   }
 
   try {
@@ -376,6 +426,37 @@ export async function POST(request: Request) {
         },
         { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64}` } },
       ])
+    } else if (update.message?.document) {
+      const chatId = update.message.chat.id
+      const userId = String(update.message.from?.id ?? chatId)
+      const username = update.message.from?.username
+      const doc = update.message.document
+      const fileName = doc.file_name ?? 'document'
+      const caption = update.message.caption?.trim()
+      const prompt =
+        caption ||
+        'Это документ (договор, выписка ЕГРН и т.п.). Внимательно прочитай и определи, какие ' +
+          'сущности он описывает, предложи подходящее действие в CRM.'
+
+      await sendChatAction(chatId, 'typing')
+
+      if (doc.mime_type === 'application/pdf' || fileName.toLowerCase().endsWith('.pdf')) {
+        const { base64 } = await downloadTelegramFile(doc.file_id)
+        await handleUserTurn(chatId, userId, username, [
+          { type: 'text', text: prompt },
+          { type: 'file', file: { filename: fileName, file_data: `data:application/pdf;base64,${base64}` } },
+        ])
+      } else if (fileName.toLowerCase().endsWith('.docx')) {
+        const { base64 } = await downloadTelegramFile(doc.file_id)
+        try {
+          const text = extractTextFromDocx(Buffer.from(base64, 'base64'))
+          await handleUserTurn(chatId, userId, username, `${prompt}\n\n--- Текст документа "${fileName}" ---\n${text}`)
+        } catch (e) {
+          await sendMessage(chatId, `⚠️ Не смог прочитать DOCX: ${e instanceof Error ? e.message : 'ошибка'}`)
+        }
+      } else {
+        await sendMessage(chatId, '⚠️ Понимаю пока только PDF и DOCX документы.')
+      }
     } else if (update.message?.text) {
       const chatId = update.message.chat.id
       const userId = String(update.message.from?.id ?? chatId)
