@@ -26,7 +26,7 @@ export async function searchAction(query: string): Promise<SearchResults> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (user) {
-    const rl = rateLimitSearch(user.id)
+    const rl = await rateLimitSearch(user.id)
     if (!rl.success) return empty
   }
   const q = query.trim()

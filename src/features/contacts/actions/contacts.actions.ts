@@ -17,7 +17,7 @@ export async function createContactAction(_prevState: unknown, formData: FormDat
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
 
-  const rl = rateLimitCreate(user.id, 'contact')
+  const rl = await rateLimitCreate(user.id, 'contact')
   if (!rl.success) return { error: 'Слишком много запросов. Подождите минуту.' }
 
   const orgId = await requireOrgId().catch(() => null)
@@ -52,7 +52,7 @@ export async function updateContactAction(contactId: string, _prevState: unknown
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
 
-  const rl = rateLimitCreate(user.id, 'contact')
+  const rl = await rateLimitCreate(user.id, 'contact')
   if (!rl.success) return { error: 'Слишком много запросов. Подождите минуту.' }
 
   const orgId = await requireOrgId().catch(() => null)
@@ -111,7 +111,7 @@ export async function createContactQuickAction(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
 
-  const rl = rateLimitCreate(user.id, 'contact')
+  const rl = await rateLimitCreate(user.id, 'contact')
   if (!rl.success) return { error: 'Слишком много запросов. Подождите минуту.' }
 
   const orgId = await requireOrgId().catch(() => null)

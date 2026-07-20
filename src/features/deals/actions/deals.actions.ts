@@ -16,7 +16,7 @@ export async function createDealAction(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const rl = rateLimitCreate(user.id, 'deal')
+  const rl = await rateLimitCreate(user.id, 'deal')
   if (!rl.success) return { error: 'Слишком много запросов. Подождите минуту.' }
 
   const orgId = await requireOrgId().catch(() => null)
