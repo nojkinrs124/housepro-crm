@@ -14,7 +14,10 @@ const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const
 // надиктовать кейс, черновик из этого не собирается автоматически.
 export async function GET(request: Request) {
   const auth = request.headers.get('authorization')
-  if (!process.env.CRON_SECRET || auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  const url = new URL(request.url)
+  const querySecret = url.searchParams.get('secret')
+  const ok = process.env.CRON_SECRET && (auth === `Bearer ${process.env.CRON_SECRET}` || querySecret === process.env.CRON_SECRET)
+  if (!ok) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
