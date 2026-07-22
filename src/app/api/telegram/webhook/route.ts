@@ -20,6 +20,16 @@ import {
   executeConfirmedMutation,
   describeMutation,
 } from '@/lib/telegram/tools'
+import {
+  getChannelSettings,
+  isFromAdmin,
+  setAwaitingCase,
+  publishPost,
+  rejectPost,
+  createDraftRow,
+  sendDraftForReview,
+} from '@/lib/telegram/channel'
+import { generateCaseDraft, generateAnalyticsDraft, generateCtaDraft } from '@/lib/telegram/channel-generate'
 
 // Node runtime (по умолчанию) — ОБЯЗАТЕЛЬНО, не ставить `export const runtime = 'edge'`.
 // pizzip/docxtemplater — Node-only, в Edge runtime не заработают.
@@ -93,7 +103,12 @@ const HELP_TEXT = `<b>HousePro CRM — бот-ассистент</b>
 • Создай трёх лидов: ... (несколько сразу — одним подтверждением)
 • Пришли договор аренды PDF/DOCX — сам заведу собственника, арендатора, объект и сделку, всё связав
 
-Просто напиши или пришли файл.`
+Просто напиши или пришли файл.
+
+<b>Канал (контент-ассистент)</b>
+• По расписанию сам присылаю черновики постов на утверждение (пн — аналитика, ср — кейс, пт — оффер).
+• /case &lt;текст&gt; или голосовое — надиктуй кейс, оформлю в пост.
+• /post &lt;тема&gt; — разовый пост вне расписания.`
 
 // Сколько последних сообщений диалога храним и передаём модели (не считая system prompt).
 const MAX_HISTORY_MESSAGES = 20
@@ -325,6 +340,47 @@ async function handleUserTurn(
   }
 }
 
+async function handleChannelCallback(action: string, postId: string, chatId: number, messageId: number | undefined) {
+  if (messageId) await editMessageReplyMarkup(chatId, messageId, null)
+
+  if (action === 'chreject') {
+    await rejectPost(postId)
+    await sendMessage(chatId, '❌ Черновик отклонён.')
+    return
+  }
+
+  if (action === 'chregen') {
+    const supabaseAdmin = getSupabaseAdmin()
+    const { data: post } = await supabaseAdmin.from('channel_posts').select('*').eq('id', postId).maybeSingle()
+    if (!post) {
+      await sendMessage(chatId, 'Черновик не найден (возможно, уже обработан).')
+      return
+    }
+    const settings = await getChannelSettings(post.organization_id)
+    try {
+      const newText =
+        post.rubric === 'analytics'
+          ? await generateAnalyticsDraft(settings)
+          : post.rubric === 'cta'
+            ? await generateCtaDraft(settings)
+            : post.rubric === 'case'
+              ? await generateCaseDraft(settings, post.source_input ?? '')
+              : await generateCtaDraft(settings, 'разовый пост по теме из истории переписки')
+      const newPostId = await createDraftRow(post.organization_id, post.rubric, post.scheduled_for)
+      const ctaType = post.rubric === 'cta' ? 'dm_admin' : post.rubric === 'adhoc' ? 'none' : 'bot_qualifier'
+      await sendDraftForReview(post.organization_id, newPostId, post.rubric, newText, ctaType)
+    } catch (e) {
+      await sendMessage(chatId, `⚠️ Не удалось перегенерировать: ${e instanceof Error ? e.message : 'ошибка'}`)
+    }
+    return
+  }
+
+  if (action === 'chpub') {
+    const result = await publishPost(postId)
+    await sendMessage(chatId, result.error ? `⚠️ Не удалось опубликовать: ${result.error}` : '✅ Опубликовано в канале.')
+  }
+}
+
 async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_query']>) {
   await answerCallbackQuery(update.id)
 
@@ -334,6 +390,11 @@ async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_
 
   const [action, batchId] = update.data.split(':')
   if (!batchId) return
+
+  if (action === 'chpub' || action === 'chregen' || action === 'chreject') {
+    await handleChannelCallback(action, batchId, chatId, messageId)
+    return
+  }
 
   const supabaseAdmin = getSupabaseAdmin()
   const { data: batch } = await supabaseAdmin
@@ -385,6 +446,70 @@ async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_
   }
 }
 
+async function handleCaseInput(chatId: number, orgId: string, rawInput: string) {
+  await sendChatAction(chatId, 'typing')
+  const settings = await getChannelSettings(orgId)
+  try {
+    const text = await generateCaseDraft(settings, rawInput)
+    const postId = await createDraftRow(orgId, 'case', null)
+    await getSupabaseAdmin().from('channel_posts').update({ source_input: rawInput }).eq('id', postId)
+    await sendDraftForReview(orgId, postId, 'case', text, 'bot_qualifier')
+    await setAwaitingCase(orgId, false)
+  } catch (e) {
+    await sendMessage(chatId, `⚠️ Не удалось оформить кейс: ${e instanceof Error ? e.message : 'ошибка'}`)
+  }
+}
+
+async function handleAdhocPostCommand(chatId: number, orgId: string, topic: string) {
+  await sendChatAction(chatId, 'typing')
+  const settings = await getChannelSettings(orgId)
+  try {
+    const { generateAdhocDraft } = await import('@/lib/telegram/channel-generate')
+    const text = await generateAdhocDraft(settings, topic)
+    const postId = await createDraftRow(orgId, 'adhoc', null)
+    await sendDraftForReview(orgId, postId, 'adhoc', text, 'none')
+  } catch (e) {
+    await sendMessage(chatId, `⚠️ Не удалось сгенерировать пост: ${e instanceof Error ? e.message : 'ошибка'}`)
+  }
+}
+
+// Возвращает true, если сообщение было перехвачено под нужды канала (кейс/разовый пост)
+// и НЕ должно попадать в обычный CRM-диалог с моделью.
+async function tryHandleChannelInput(chatId: number, telegramUserId: string, text: string): Promise<boolean> {
+  const orgId = await resolveBotOrgId()
+  if (!orgId) return false
+  const settings = await getChannelSettings(orgId)
+  if (!isFromAdmin(settings, telegramUserId)) return false
+
+  if (text.startsWith('/case')) {
+    const rawInput = text.replace('/case', '').trim()
+    if (!rawInput) {
+      await sendMessage(chatId, 'Опиши кейс текстом после команды или просто надиктуй голосовым — я жду.')
+      await setAwaitingCase(orgId, true)
+      return true
+    }
+    await handleCaseInput(chatId, orgId, rawInput)
+    return true
+  }
+
+  if (text.startsWith('/post')) {
+    const topic = text.replace('/post', '').trim()
+    if (!topic) {
+      await sendMessage(chatId, 'Укажи тему: /post <тема поста>')
+      return true
+    }
+    await handleAdhocPostCommand(chatId, orgId, topic)
+    return true
+  }
+
+  if (settings?.awaiting_case) {
+    await handleCaseInput(chatId, orgId, text)
+    return true
+  }
+
+  return false
+}
+
 export async function POST(request: Request) {
   const secret = request.headers.get('X-Telegram-Bot-Api-Secret-Token')
   if (!process.env.TELEGRAM_BOT_SECRET || secret !== process.env.TELEGRAM_BOT_SECRET) {
@@ -408,7 +533,9 @@ export async function POST(request: Request) {
       const { base64 } = await downloadTelegramFile(update.message.voice.file_id)
       const transcript = await transcribeAudio(base64, 'ogg')
       await sendMessage(chatId, `🎤 <i>${transcript}</i>`)
-      await handleUserTurn(chatId, userId, username, transcript)
+      if (!(await tryHandleChannelInput(chatId, userId, transcript))) {
+        await handleUserTurn(chatId, userId, username, transcript)
+      }
     } else if (update.message?.photo && update.message.photo.length > 0) {
       const chatId = update.message.chat.id
       const userId = String(update.message.from?.id ?? chatId)
@@ -465,7 +592,7 @@ export async function POST(request: Request) {
 
       if (text === '/start' || text === '/help') {
         await sendMessage(chatId, HELP_TEXT)
-      } else {
+      } else if (!(await tryHandleChannelInput(chatId, userId, text))) {
         await handleUserTurn(chatId, userId, username, text)
       }
     }

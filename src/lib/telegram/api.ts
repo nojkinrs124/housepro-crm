@@ -15,11 +15,17 @@ export interface InlineKeyboardButton {
   callback_data: string
 }
 
+export interface SendMessageResult {
+  result?: { message_id?: number }
+}
+
+// Возвращаемое значение — расширение (было Promise<void>): существующие вызовы,
+// игнорирующие результат, продолжают работать без изменений.
 export async function sendMessage(
   chatId: string | number,
   text: string,
   opts?: { inlineKeyboard?: InlineKeyboardButton[][] }
-): Promise<void> {
+): Promise<SendMessageResult | void> {
   const body: Record<string, unknown> = {
     chat_id: chatId,
     text,
@@ -48,8 +54,23 @@ export async function sendMessage(
         body: JSON.stringify({ chat_id: chatId, text, reply_markup: body.reply_markup }),
       })
       if (!retryRes.ok) console.error('[telegram] sendMessage plain-text retry failed:', await retryRes.text())
+      else return retryRes.json().catch(() => undefined)
     }
+    return undefined
   }
+
+  return res.json().catch(() => undefined)
+}
+
+/** Число участников чата/канала — используется для еженедельной сводки. */
+export async function getChatMemberCount(chatId: string | number): Promise<number | null> {
+  const res = await fetch(`${TELEGRAM_API}/bot${botToken()}/getChatMemberCount?chat_id=${encodeURIComponent(String(chatId))}`)
+  if (!res.ok) {
+    console.error('[telegram] getChatMemberCount failed:', await res.text())
+    return null
+  }
+  const data = await res.json().catch(() => null)
+  return typeof data?.result === 'number' ? data.result : null
 }
 
 export async function sendChatAction(chatId: string | number, action: 'typing' | 'upload_document' = 'typing'): Promise<void> {
