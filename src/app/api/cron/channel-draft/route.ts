@@ -53,7 +53,9 @@ export async function GET(request: Request) {
       rubric === 'analytics' ? await generateAnalyticsDraft(settings) : await generateCtaDraft(settings)
 
     const postId = await createDraftRow(orgId, rubric, scheduledFor)
-    const ctaType = rubric === 'cta' ? 'dm_admin' : 'bot_qualifier'
+    // bot_qualifier временно не используем — квалифицирующий диалог с лидами отложен
+    // до отдельного бота без доступа к CRM (см. решение от 23.07.2026). Пока все CTA — на Руслана напрямую.
+    const ctaType = 'dm_admin'
     await sendDraftForReview(orgId, postId, rubric, draftText, ctaType)
 
     return NextResponse.json({ ok: true, action: 'draft_sent', rubric, postId })

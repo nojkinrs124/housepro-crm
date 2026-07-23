@@ -411,7 +411,7 @@ async function handleChannelCallback(action: string, postId: string, chatId: num
               ? await generateCaseDraft(settings, post.source_input ?? '')
               : await generateCtaDraft(settings, 'разовый пост по теме из истории переписки')
       const newPostId = await createDraftRow(post.organization_id, post.rubric, post.scheduled_for)
-      const ctaType = post.rubric === 'cta' ? 'dm_admin' : post.rubric === 'adhoc' ? 'none' : 'bot_qualifier'
+      const ctaType = post.rubric === 'adhoc' ? 'none' : 'dm_admin'
       await sendDraftForReview(post.organization_id, newPostId, post.rubric, newText, ctaType)
     } catch (e) {
       await sendMessage(chatId, `⚠️ Не удалось перегенерировать: ${e instanceof Error ? e.message : 'ошибка'}`)
@@ -509,7 +509,7 @@ async function handleCaseInput(chatId: number, orgId: string, rawInput: string) 
     const text = await generateCaseDraft(settings, rawInput)
     const postId = await createDraftRow(orgId, 'case', null)
     await getSupabaseAdmin().from('channel_posts').update({ source_input: rawInput }).eq('id', postId)
-    await sendDraftForReview(orgId, postId, 'case', text, 'bot_qualifier')
+    await sendDraftForReview(orgId, postId, 'case', text, 'dm_admin')
   } catch (e) {
     await sendMessage(chatId, `⚠️ Не удалось оформить кейс: ${e instanceof Error ? e.message : 'ошибка'}`)
   } finally {
