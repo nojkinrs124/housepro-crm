@@ -14,7 +14,7 @@ export interface ChannelSettings {
   admin_telegram_username: string | null
   style_prompt: string
   schedule_json: Record<string, ChannelRubric>
-  awaiting_case: boolean
+  awaiting_intent: 'case' | 'post' | null
 }
 
 // dm_admin — жёсткий оффер, ведёт прямо в личку к Руслану.
@@ -244,11 +244,73 @@ export async function getPendingReviewByMessageId(messageId: number) {
   return data
 }
 
-export async function setAwaitingCase(orgId: string, awaiting: boolean): Promise<void> {
+export async function setAwaitingIntent(orgId: string, intent: 'case' | 'post' | null): Promise<void> {
   const supabaseAdmin = getSupabaseAdmin()
-  await supabaseAdmin.from('channel_bot_settings').update({ awaiting_case: awaiting }).eq('organization_id', orgId)
+  await supabaseAdmin.from('channel_bot_settings').update({ awaiting_intent: intent }).eq('organization_id', orgId)
 }
 
 export function isFromAdmin(settings: ChannelSettings | null, telegramUserId: string): boolean {
   return !!settings?.admin_telegram_user_id && settings.admin_telegram_user_id === telegramUserId
+}
+
+export function getSettingsText(settings: ChannelSettings | null): string {
+  if (!settings) return '⚠️ Настройки канала не заведены.'
+  const scheduleLabels: Record<ChannelRubric, string> = { analytics: 'аналитика', case: 'кейс', cta: 'CTA/оффер', adhoc: 'разовое' }
+  const scheduleLines = Object.entries(settings.schedule_json)
+    .map(([day, rubric]) => `  ${day} — ${scheduleLabels[rubric] ?? rubric}`)
+    .join('\n')
+  return [
+    '⚙️ <b>Настройки канала</b>',
+    '',
+    `Канал: ${settings.channel_chat_id ?? '—'}`,
+    `Админ: @${settings.admin_telegram_username ?? '—'}`,
+    'Расписание:',
+    scheduleLines,
+    '',
+    'Изменить расписание/канал можно только через разработчика (напиши мне здесь в чате).',
+  ].join('\n')
+}
+
+// Быстрая сводка по запросу из меню (в отличие от еженедельного cron — ничего не пишет
+// в channel_weekly_stats, просто показывает текущее состояние).
+export async function getLiveStatsText(orgId: string, settings: ChannelSettings): Promise<string> {
+  const { getChatMemberCount } = await import('@/lib/telegram/api')
+  const supabaseAdmin = getSupabaseAdmin()
+  const weekAgo = new Date()
+  weekAgo.setUTCDate(weekAgo.getUTCDate() - 7)
+
+  const subscriberCount = settings.channel_chat_id ? await getChatMemberCount(settings.channel_chat_id) : null
+
+  const { count: publishedCount } = await supabaseAdmin
+    .from('channel_posts')
+    .select('id', { count: 'exact', head: true })
+    .eq('organization_id', orgId)
+    .eq('status', 'published')
+    .gte('published_at', weekAgo.toISOString())
+
+  const { data: links } = await supabaseAdmin.from('channel_links').select('code').eq('organization_id', orgId)
+  let totalClicks = 0
+  if (links && links.length > 0) {
+    const { count } = await supabaseAdmin
+      .from('channel_link_clicks')
+      .select('id', { count: 'exact', head: true })
+      .in('code', links.map((l) => l.code))
+      .gte('clicked_at', weekAgo.toISOString())
+    totalClicks = count ?? 0
+  }
+
+  const { count: pendingCount } = await supabaseAdmin
+    .from('channel_posts')
+    .select('id', { count: 'exact', head: true })
+    .eq('organization_id', orgId)
+    .eq('status', 'pending_review')
+
+  return [
+    '📊 <b>Статистика (сейчас)</b>',
+    '',
+    `Подписчики: ${subscriberCount ?? '—'}`,
+    `Опубликовано за 7 дней: ${publishedCount ?? 0}`,
+    `Кликов по CTA за 7 дней: ${totalClicks}`,
+    `Ждут утверждения: ${pendingCount ?? 0}`,
+  ].join('\n')
 }

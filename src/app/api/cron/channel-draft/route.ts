@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { resolveBotOrgId } from '@/lib/telegram/org'
-import { getChannelSettings, createDraftRow, sendDraftForReview, type ChannelRubric } from '@/lib/telegram/channel'
+import { getChannelSettings, createDraftRow, sendDraftForReview, setAwaitingIntent, type ChannelRubric } from '@/lib/telegram/channel'
 import { generateAnalyticsDraft, generateCtaDraft } from '@/lib/telegram/channel-generate'
 import { sendMessage } from '@/lib/telegram/api'
 
@@ -39,6 +39,7 @@ export async function GET(request: Request) {
   const scheduledFor = tomorrow.toISOString().slice(0, 10)
 
   if (rubric === 'case') {
+    await setAwaitingIntent(orgId, 'case')
     await sendMessage(
       settings.admin_telegram_user_id,
       '🎙 Завтра по расписанию пост-кейс. Надиктуй голосом или напиши текстом: с чем пришёл клиент, ' +

@@ -23,12 +23,14 @@ import {
 import {
   getChannelSettings,
   isFromAdmin,
-  setAwaitingCase,
+  setAwaitingIntent,
   publishPost,
   rejectPost,
   createDraftRow,
   sendDraftForReview,
   regenerateImage,
+  getLiveStatsText,
+  getSettingsText,
 } from '@/lib/telegram/channel'
 import { generateCaseDraft, generateAnalyticsDraft, generateCtaDraft } from '@/lib/telegram/channel-generate'
 
@@ -107,6 +109,7 @@ const HELP_TEXT = `<b>HousePro CRM — бот-ассистент</b>
 Просто напиши или пришли файл.
 
 <b>Канал (контент-ассистент)</b>
+• /menu — меню с кнопками (пост, кейс, статистика, настройки).
 • По расписанию сам присылаю черновики постов на утверждение (пн — аналитика, ср — кейс, пт — оффер).
 • /case &lt;текст&gt; или голосовое — надиктуй кейс, оформлю в пост.
 • /post &lt;тема&gt; — разовый пост вне расписания.`
@@ -341,6 +344,46 @@ async function handleUserTurn(
   }
 }
 
+function mainMenuKeyboard() {
+  return [
+    [
+      { text: '📝 Разовый пост', callback_data: 'chmenu:post' },
+      { text: '🎙 Кейс из практики', callback_data: 'chmenu:case' },
+    ],
+    [
+      { text: '📊 Статистика', callback_data: 'chmenu:stats' },
+      { text: '⚙️ Настройки', callback_data: 'chmenu:settings' },
+    ],
+    [{ text: '❓ Помощь', callback_data: 'chmenu:help' }],
+  ]
+}
+
+async function sendMainMenu(chatId: number) {
+  await sendMessage(chatId, '📋 <b>Меню</b>\nВыбери действие:', { inlineKeyboard: mainMenuKeyboard() })
+}
+
+async function handleMenuCallback(item: string, chatId: number, telegramUserId: string) {
+  const orgId = await resolveBotOrgId()
+  if (!orgId) return
+  const settings = await getChannelSettings(orgId)
+  if (!isFromAdmin(settings, telegramUserId)) return
+
+  if (item === 'post') {
+    await setAwaitingIntent(orgId, 'post')
+    await sendMessage(chatId, '📝 Напиши тему одним сообщением — подготовлю черновик поста.')
+  } else if (item === 'case') {
+    await setAwaitingIntent(orgId, 'case')
+    await sendMessage(chatId, '🎙 Надиктуй голосом или напиши текстом: с чем пришёл клиент, в чём была сложность, как решили, результат.')
+  } else if (item === 'stats') {
+    await sendChatAction(chatId, 'typing')
+    await sendMessage(chatId, await getLiveStatsText(orgId, settings!))
+  } else if (item === 'settings') {
+    await sendMessage(chatId, getSettingsText(settings))
+  } else if (item === 'help') {
+    await sendMessage(chatId, HELP_TEXT)
+  }
+}
+
 async function handleChannelCallback(action: string, postId: string, chatId: number, messageId: number | undefined) {
   if (messageId) await editMessageReplyMarkup(chatId, messageId, null)
 
@@ -397,6 +440,12 @@ async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_
 
   const [action, batchId] = update.data.split(':')
   if (!batchId) return
+
+  if (action === 'chmenu') {
+    if (messageId) await editMessageReplyMarkup(chatId, messageId, null)
+    await handleMenuCallback(batchId, chatId, String(chatId))
+    return
+  }
 
   if (action === 'chpub' || action === 'chregen' || action === 'chreject' || action === 'chregenimg') {
     await handleChannelCallback(action, batchId, chatId, messageId)
@@ -461,9 +510,10 @@ async function handleCaseInput(chatId: number, orgId: string, rawInput: string) 
     const postId = await createDraftRow(orgId, 'case', null)
     await getSupabaseAdmin().from('channel_posts').update({ source_input: rawInput }).eq('id', postId)
     await sendDraftForReview(orgId, postId, 'case', text, 'bot_qualifier')
-    await setAwaitingCase(orgId, false)
   } catch (e) {
     await sendMessage(chatId, `⚠️ Не удалось оформить кейс: ${e instanceof Error ? e.message : 'ошибка'}`)
+  } finally {
+    await setAwaitingIntent(orgId, null)
   }
 }
 
@@ -477,10 +527,12 @@ async function handleAdhocPostCommand(chatId: number, orgId: string, topic: stri
     await sendDraftForReview(orgId, postId, 'adhoc', text, 'none')
   } catch (e) {
     await sendMessage(chatId, `⚠️ Не удалось сгенерировать пост: ${e instanceof Error ? e.message : 'ошибка'}`)
+  } finally {
+    await setAwaitingIntent(orgId, null)
   }
 }
 
-// Возвращает true, если сообщение было перехвачено под нужды канала (кейс/разовый пост)
+// Возвращает true, если сообщение было перехвачено под нужды канала (меню/кейс/разовый пост)
 // и НЕ должно попадать в обычный CRM-диалог с моделью.
 async function tryHandleChannelInput(chatId: number, telegramUserId: string, text: string): Promise<boolean> {
   const orgId = await resolveBotOrgId()
@@ -488,11 +540,16 @@ async function tryHandleChannelInput(chatId: number, telegramUserId: string, tex
   const settings = await getChannelSettings(orgId)
   if (!isFromAdmin(settings, telegramUserId)) return false
 
+  if (text === '/menu') {
+    await sendMainMenu(chatId)
+    return true
+  }
+
   if (text.startsWith('/case')) {
     const rawInput = text.replace('/case', '').trim()
     if (!rawInput) {
       await sendMessage(chatId, 'Опиши кейс текстом после команды или просто надиктуй голосовым — я жду.')
-      await setAwaitingCase(orgId, true)
+      await setAwaitingIntent(orgId, 'case')
       return true
     }
     await handleCaseInput(chatId, orgId, rawInput)
@@ -503,14 +560,19 @@ async function tryHandleChannelInput(chatId: number, telegramUserId: string, tex
     const topic = text.replace('/post', '').trim()
     if (!topic) {
       await sendMessage(chatId, 'Укажи тему: /post <тема поста>')
+      await setAwaitingIntent(orgId, 'post')
       return true
     }
     await handleAdhocPostCommand(chatId, orgId, topic)
     return true
   }
 
-  if (settings?.awaiting_case) {
+  if (settings?.awaiting_intent === 'case') {
     await handleCaseInput(chatId, orgId, text)
+    return true
+  }
+  if (settings?.awaiting_intent === 'post') {
+    await handleAdhocPostCommand(chatId, orgId, text)
     return true
   }
 
@@ -599,6 +661,7 @@ export async function POST(request: Request) {
 
       if (text === '/start' || text === '/help') {
         await sendMessage(chatId, HELP_TEXT)
+        await sendMainMenu(chatId)
       } else if (!(await tryHandleChannelInput(chatId, userId, text))) {
         await handleUserTurn(chatId, userId, username, text)
       }

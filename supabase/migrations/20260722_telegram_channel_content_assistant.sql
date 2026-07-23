@@ -97,3 +97,9 @@ alter table public.channel_bot_settings add column if not exists awaiting_case b
 alter table public.channel_bot_settings add column if not exists admin_telegram_username text;
 
 alter table public.channel_posts add column if not exists image_url text;
+
+-- Обобщаем awaiting_case (bool) до awaiting_intent (text) — теперь то же самое ожидание
+-- нужно и для /post из меню, не только для /case.
+alter table public.channel_bot_settings add column if not exists awaiting_intent text check (awaiting_intent in ('case','post'));
+update public.channel_bot_settings set awaiting_intent = 'case' where awaiting_case = true;
+alter table public.channel_bot_settings drop column if exists awaiting_case;

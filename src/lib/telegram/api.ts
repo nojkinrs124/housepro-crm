@@ -62,6 +62,19 @@ export async function sendMessage(
   return res.json().catch(() => undefined)
 }
 
+export async function setMyCommands(commands: { command: string; description: string }[]): Promise<boolean> {
+  const res = await fetch(`${TELEGRAM_API}/bot${botToken()}/setMyCommands`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ commands }),
+  })
+  if (!res.ok) {
+    console.error('[telegram] setMyCommands failed:', await res.text())
+    return false
+  }
+  return true
+}
+
 /** Число участников чата/канала — используется для еженедельной сводки. */
 export async function getChatMemberCount(chatId: string | number): Promise<number | null> {
   const res = await fetch(`${TELEGRAM_API}/bot${botToken()}/getChatMemberCount?chat_id=${encodeURIComponent(String(chatId))}`)
