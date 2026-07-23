@@ -82,6 +82,29 @@ export async function sendChatAction(chatId: string | number, action: 'typing' |
 }
 
 /** Отправляет файл по прямой ссылке (например, подписанный Storage URL) — Telegram сам его скачает. */
+/** Отправляет фото по прямой ссылке (Storage public URL) с опциональной подписью и клавиатурой. */
+export async function sendPhoto(
+  chatId: string | number,
+  photoUrl: string,
+  caption?: string,
+  opts?: { inlineKeyboard?: InlineKeyboardButton[][] }
+): Promise<SendMessageResult | void> {
+  const body: Record<string, unknown> = { chat_id: chatId, photo: photoUrl, parse_mode: 'HTML' }
+  if (caption) body.caption = caption
+  if (opts?.inlineKeyboard) body.reply_markup = { inline_keyboard: opts.inlineKeyboard }
+
+  const res = await fetch(`${TELEGRAM_API}/bot${botToken()}/sendPhoto`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) {
+    console.error('[telegram] sendPhoto failed:', await res.text())
+    return undefined
+  }
+  return res.json().catch(() => undefined)
+}
+
 export async function sendDocument(chatId: string | number, documentUrl: string, caption?: string): Promise<void> {
   const res = await fetch(`${TELEGRAM_API}/bot${botToken()}/sendDocument`, {
     method: 'POST',

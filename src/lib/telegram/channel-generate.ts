@@ -66,6 +66,51 @@ export async function generateCtaDraft(settings: ChannelSettings | null, offerHi
   return callOpenRouter(system, user, false)
 }
 
+// Картинка — иллюстративная, НЕ инфографика с цифрами (модель рисует картинки, не диаграммы,
+// и придуманные на картинке цифры выглядели бы как реальная статистика — риск дезинформации).
+// Для рубрики "аналитика" в перспективе можно добавить отдельный рендер реального графика
+// по данным веб-поиска (canvas/QuickChart) — здесь сознательно не делаем, чтобы не путать
+// сгенерированную иллюстрацию с настоящей статистикой.
+export async function generateChannelImage(rubric: string, postText: string): Promise<Buffer | null> {
+  const model = process.env.OPENROUTER_IMAGE_MODEL ?? 'google/gemini-2.5-flash-image'
+  const styleHint =
+    'Фотореалистичный современный стиль, тёплый естественный свет, без текста и надписей на картинке, ' +
+    'без логотипов и водяных знаков, горизонтальная ориентация 16:9.'
+  const topicHint = postText.slice(0, 300)
+
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}` },
+    body: JSON.stringify({
+      model,
+      modalities: ['image', 'text'],
+      messages: [
+        {
+          role: 'user',
+          content: `Нарисуй обложку для поста в Telegram-канале агентства недвижимости (рубрика: ${rubric}).
+Тема поста: ${topicHint}
+${styleHint}`,
+        },
+      ],
+    }),
+  })
+
+  if (!res.ok) {
+    console.error('[channel-generate] image generation failed:', res.status, await res.text())
+    return null
+  }
+
+  const data = await res.json()
+  const dataUrl: string | undefined = data?.choices?.[0]?.message?.images?.[0]?.image_url?.url
+  if (!dataUrl?.startsWith('data:image')) {
+    console.error('[channel-generate] image generation: неожиданный формат ответа', JSON.stringify(data).slice(0, 300))
+    return null
+  }
+
+  const base64 = dataUrl.split(',')[1]
+  return Buffer.from(base64, 'base64')
+}
+
 export async function generateAdhocDraft(settings: ChannelSettings | null, topic: string): Promise<string> {
   const system = baseSystemPrompt(settings)
   const user = `Напиши пост на тему: "${topic}". Если тема требует актуальных фактов — используй веб-поиск,

@@ -28,6 +28,7 @@ import {
   rejectPost,
   createDraftRow,
   sendDraftForReview,
+  regenerateImage,
 } from '@/lib/telegram/channel'
 import { generateCaseDraft, generateAnalyticsDraft, generateCtaDraft } from '@/lib/telegram/channel-generate'
 
@@ -375,6 +376,12 @@ async function handleChannelCallback(action: string, postId: string, chatId: num
     return
   }
 
+  if (action === 'chregenimg') {
+    const result = await regenerateImage(postId)
+    if (result.error) await sendMessage(chatId, `⚠️ Не удалось перегенерировать картинку: ${result.error}`)
+    return
+  }
+
   if (action === 'chpub') {
     const result = await publishPost(postId)
     await sendMessage(chatId, result.error ? `⚠️ Не удалось опубликовать: ${result.error}` : '✅ Опубликовано в канале.')
@@ -391,7 +398,7 @@ async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_
   const [action, batchId] = update.data.split(':')
   if (!batchId) return
 
-  if (action === 'chpub' || action === 'chregen' || action === 'chreject') {
+  if (action === 'chpub' || action === 'chregen' || action === 'chreject' || action === 'chregenimg') {
     await handleChannelCallback(action, batchId, chatId, messageId)
     return
   }

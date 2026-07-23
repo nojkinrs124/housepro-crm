@@ -1,6 +1,8 @@
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
-import { sendMessage } from '@/lib/telegram/api'
+import { sendMessage, sendPhoto } from '@/lib/telegram/api'
 import { createChannelLink } from '@/lib/telegram/channel-links'
+import { generateChannelImage } from '@/lib/telegram/channel-generate'
+import { uploadChannelImage } from '@/lib/telegram/channel-image'
 
 export type ChannelRubric = 'analytics' | 'case' | 'cta' | 'adhoc'
 export type ChannelCtaType = 'dm_admin' | 'bot_qualifier' | 'none'
@@ -75,9 +77,12 @@ function reviewKeyboard(postId: string) {
     inlineKeyboard: [
       [
         { text: '✅ Опубликовать', callback_data: `chpub:${postId}` },
-        { text: '🔄 Другой вариант', callback_data: `chregen:${postId}` },
+        { text: '🔄 Другой текст', callback_data: `chregen:${postId}` },
       ],
-      [{ text: '❌ Отклонить', callback_data: `chreject:${postId}` }],
+      [
+        { text: '🖼 Другая картинка', callback_data: `chregenimg:${postId}` },
+        { text: '❌ Отклонить', callback_data: `chreject:${postId}` },
+      ],
     ],
   }
 }
@@ -85,6 +90,28 @@ function reviewKeyboard(postId: string) {
 // Отправляет готовый текст админу на утверждение и переводит пост в pending_review.
 // Правка текста — просто ответом в чат с новой формулировкой (обрабатывается в webhook),
 // поэтому отдельной кнопки "Править" не делаем — это было бы вторым способом ввода текста.
+// Telegram ограничивает подпись к фото 1024 символами. Наши посты обычно короче (см.
+// FORMAT_RULES в channel-generate.ts, 400-900 символов), но CTA-ссылка может добавить лишнего —
+// на этот случай шлём фото без подписи и текст отдельным сообщением следом.
+async function sendPostVisual(
+  chatId: string | number,
+  text: string,
+  imageUrl: string | null,
+  inlineKeyboard?: { text: string; callback_data: string }[][]
+): Promise<{ message_id?: number }> {
+  if (!imageUrl) {
+    const res = await sendMessage(chatId, text, inlineKeyboard ? { inlineKeyboard } : undefined)
+    return { message_id: res?.result?.message_id }
+  }
+  if (text.length <= 1024) {
+    const res = await sendPhoto(chatId, imageUrl, text, inlineKeyboard ? { inlineKeyboard } : undefined)
+    return { message_id: res?.result?.message_id }
+  }
+  await sendPhoto(chatId, imageUrl)
+  const res = await sendMessage(chatId, text, inlineKeyboard ? { inlineKeyboard } : undefined)
+  return { message_id: res?.result?.message_id }
+}
+
 export async function sendDraftForReview(
   orgId: string,
   postId: string,
@@ -101,6 +128,8 @@ export async function sendDraftForReview(
   const ctaLine = await resolveCtaLine(orgId, postId, settings, ctaType)
   const fullText = `${text}${ctaLine}`
 
+  const imageUrl = await generateAndStoreImage(postId, rubric, text)
+
   const supabaseAdmin = getSupabaseAdmin()
   await supabaseAdmin
     .from('channel_posts')
@@ -108,6 +137,7 @@ export async function sendDraftForReview(
       draft_text: fullText,
       cta_type: ctaType,
       status: 'pending_review',
+      image_url: imageUrl,
       updated_at: new Date().toISOString(),
     })
     .eq('id', postId)
@@ -115,14 +145,58 @@ export async function sendDraftForReview(
   const rubricLabel = { analytics: '📊 Аналитика', case: '🏠 Кейс', cta: '📣 CTA/оффер', adhoc: '✍️ Разовый пост' }[rubric]
   const preview = `<b>Черновик поста (${rubricLabel})</b>\n\n${fullText}`
 
-  const res = await sendMessage(settings.admin_telegram_user_id, preview, {
-    inlineKeyboard: reviewKeyboard(postId).inlineKeyboard,
-  })
-
-  const messageId = res?.result?.message_id
+  const { message_id: messageId } = await sendPostVisual(
+    settings.admin_telegram_user_id,
+    preview,
+    imageUrl,
+    reviewKeyboard(postId).inlineKeyboard
+  )
   if (messageId) {
     await supabaseAdmin.from('channel_posts').update({ review_message_id: messageId }).eq('id', postId)
   }
+}
+
+// Генерирует картинку и грузит в Storage; при любой ошибке (модель недоступна, превышен лимит
+// и т.п.) молча возвращает null — пост уходит на утверждение текстом, без картинки, а не падает целиком.
+async function generateAndStoreImage(postId: string, rubric: ChannelRubric, postText: string): Promise<string | null> {
+  try {
+    const imageBuffer = await generateChannelImage(rubric, postText)
+    if (!imageBuffer) return null
+    return await uploadChannelImage(postId, imageBuffer)
+  } catch (e) {
+    console.error('[channel] генерация/загрузка картинки не удалась:', e)
+    return null
+  }
+}
+
+// Перегенерирует только картинку у уже существующего черновика, текст и CTA не трогает.
+export async function regenerateImage(postId: string): Promise<{ error?: string }> {
+  const supabaseAdmin = getSupabaseAdmin()
+  const { data: post } = await supabaseAdmin.from('channel_posts').select('*').eq('id', postId).maybeSingle()
+  if (!post) return { error: 'Черновик не найден' }
+
+  const settings = await getChannelSettings(post.organization_id)
+  if (!settings?.admin_telegram_user_id) return { error: 'admin_telegram_user_id не настроен' }
+
+  const imageUrl = await generateAndStoreImage(postId, post.rubric, post.draft_text ?? '')
+  if (!imageUrl) return { error: 'Не удалось сгенерировать картинку' }
+
+  await supabaseAdmin.from('channel_posts').update({ image_url: imageUrl }).eq('id', postId)
+
+  const rubricLabel = { analytics: '📊 Аналитика', case: '🏠 Кейс', cta: '📣 CTA/оффер', adhoc: '✍️ Разовый пост' }[
+    post.rubric as ChannelRubric
+  ]
+  const preview = `<b>Черновик поста (${rubricLabel})</b>\n\n${post.draft_text}`
+  const { message_id: messageId } = await sendPostVisual(
+    settings.admin_telegram_user_id,
+    preview,
+    imageUrl,
+    reviewKeyboard(postId).inlineKeyboard
+  )
+  if (messageId) {
+    await supabaseAdmin.from('channel_posts').update({ review_message_id: messageId }).eq('id', postId)
+  }
+  return {}
 }
 
 export async function publishPost(postId: string): Promise<{ error?: string }> {
@@ -137,8 +211,7 @@ export async function publishPost(postId: string): Promise<{ error?: string }> {
   if (!textToPublish) return { error: 'Пустой текст поста' }
 
   try {
-    const res = await sendMessage(settings.channel_chat_id, textToPublish)
-    const channelMessageId = res?.result?.message_id
+    const { message_id: channelMessageId } = await sendPostVisual(settings.channel_chat_id, textToPublish, post.image_url)
     await supabaseAdmin
       .from('channel_posts')
       .update({

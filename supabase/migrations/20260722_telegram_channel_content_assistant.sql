@@ -95,3 +95,5 @@ end $$;
 alter table public.channel_bot_settings add column if not exists awaiting_case boolean not null default false;
 
 alter table public.channel_bot_settings add column if not exists admin_telegram_username text;
+
+alter table public.channel_posts add column if not exists image_url text;
