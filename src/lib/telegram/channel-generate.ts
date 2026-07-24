@@ -3,12 +3,29 @@ import type { ChannelSettings } from '@/lib/telegram/channel'
 // Форматирование поста — те же правила Telegram HTML, что и в основном боте
 // (см. SYSTEM_PROMPT в webhook route.ts): только <b>/<i>/<code>, никаких markdown-таблиц,
 // списки через "•".
+const MAX_POST_CHARS = 900 // с запасом от лимита подписи к фото в 1024 (ссылка/эмодзи добавляются потом)
+
 const FORMAT_RULES = `Форматирование (Telegram HTML, НЕ markdown):
 - Разрешены только <b>, <i>, <code>. Никаких ### заголовков и markdown-таблиц.
 - Списки — через "•".
 - Не используй "<", ">", "&" в свободном тексте (ломает разметку).
-- Пост для канала агентства недвижимости: длина 400-900 символов, без лишней воды.
+- Используй эмодзи к месту (1-3 на пост) — как акценты в начале смысловых блоков или в заголовке,
+  не как украшение через слово. Пост для агентства недвижимости — эмодзи уместные, не кричащие.
+- Разбивай текст на смысловые абзацы пустой строкой между ними — не сплошной "простынёй".
+  2-4 абзаца по 1-3 предложения — комфортно читать с телефона.
+- <b>Жирным</b> — только 1-2 ключевые фразы на весь пост (главная цифра, вывод), не подряд идущие слова.
+- Пост для канала агентства недвижимости: СТРОГО не длиннее ${MAX_POST_CHARS} символов (считая пробелы,
+  без учёта тегов), без лишней воды. Это жёсткий лимит — влезает в подпись к фото в Telegram.
 - Не подписывай пост именем — просто текст поста, без "Пост:" в начале.`
+
+// Модель иногда всё равно превышает лимит — режем по последней точке/переносу строки перед лимитом,
+// чтобы не обрывать предложение на середине слова.
+export function enforcePostLength(text: string, maxChars = MAX_POST_CHARS): string {
+  if (text.length <= maxChars) return text
+  const cut = text.slice(0, maxChars)
+  const lastBreak = Math.max(cut.lastIndexOf('\n\n'), cut.lastIndexOf('. '), cut.lastIndexOf('!'), cut.lastIndexOf('?'))
+  return (lastBreak > maxChars * 0.6 ? cut.slice(0, lastBreak + 1) : cut).trim()
+}
 
 async function callOpenRouter(systemPrompt: string, userPrompt: string, useWebSearch: boolean): Promise<string> {
   const baseModel = process.env.OPENROUTER_MODEL ?? 'anthropic/claude-sonnet-5'
@@ -37,7 +54,7 @@ async function callOpenRouter(systemPrompt: string, userPrompt: string, useWebSe
   const data = await res.json()
   const text = data?.choices?.[0]?.message?.content
   if (!text || typeof text !== 'string') throw new Error('OpenRouter вернул пустой ответ')
-  return text.trim()
+  return enforcePostLength(text.trim())
 }
 
 function baseSystemPrompt(settings: ChannelSettings | null): string {

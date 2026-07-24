@@ -43,8 +43,27 @@ async function resolveCtaLine(orgId: string, postId: string, settings: ChannelSe
   }
 
   const label = ctaType === 'dm_admin' ? '👉 Написать напрямую' : '👉 Узнать подробнее'
-  const trackedUrl = await createChannelLink(orgId, postId, destination, label)
+
+  // Переиспользуем уже существующую ссылку этого поста (если она уже создавалась при
+  // первой отправке на утверждение), а не плодим новую при каждой правке текста/картинки —
+  // иначе клики по одному и тому же посту размазались бы по нескольким кодам в статистике.
+  const supabaseAdmin = getSupabaseAdmin()
+  const { data: existing } = await supabaseAdmin
+    .from('channel_links')
+    .select('code')
+    .eq('post_id', postId)
+    .maybeSingle()
+
+  const trackedUrl = existing ? `${siteUrlFromEnv()}/r/${existing.code}` : await createChannelLink(orgId, postId, destination, label)
   return `\n\n<b>${label}:</b> ${trackedUrl}`
+}
+
+function siteUrlFromEnv(): string {
+  return (
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : null) ??
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+  )
 }
 
 export async function getChannelSettings(orgId: string): Promise<ChannelSettings | null> {
@@ -193,6 +212,38 @@ export async function regenerateImage(postId: string): Promise<{ error?: string 
     settings.admin_telegram_user_id,
     preview,
     imageUrl,
+    reviewKeyboard(postId).inlineKeyboard
+  )
+  if (messageId) {
+    await supabaseAdmin.from('channel_posts').update({ review_message_id: messageId }).eq('id', postId)
+  }
+  return {}
+}
+
+// Ручная правка текста — админ отвечает на сообщение с черновиком своим текстом.
+// Без обращения к модели: то, что написал Руслан, идёт как есть (плюс CTA-строка).
+// Картинка не трогается.
+export async function applyManualEdit(postId: string, newBodyText: string): Promise<{ error?: string }> {
+  const supabaseAdmin = getSupabaseAdmin()
+  const { data: post } = await supabaseAdmin.from('channel_posts').select('*').eq('id', postId).maybeSingle()
+  if (!post) return { error: 'Черновик не найден' }
+
+  const settings = await getChannelSettings(post.organization_id)
+  if (!settings?.admin_telegram_user_id) return { error: 'admin_telegram_user_id не настроен' }
+
+  const ctaLine = await resolveCtaLine(post.organization_id, postId, settings, post.cta_type as ChannelCtaType)
+  const fullText = `${newBodyText.trim()}${ctaLine}`
+
+  await supabaseAdmin.from('channel_posts').update({ draft_text: fullText, updated_at: new Date().toISOString() }).eq('id', postId)
+
+  const rubricLabel = { analytics: '📊 Аналитика', case: '🏠 Кейс', cta: '📣 CTA/оффер', adhoc: '✍️ Разовый пост' }[
+    post.rubric as ChannelRubric
+  ]
+  const preview = `<b>Черновик поста (${rubricLabel}, правка)</b>\n\n${fullText}`
+  const { message_id: messageId } = await sendPostVisual(
+    settings.admin_telegram_user_id,
+    preview,
+    post.image_url,
     reviewKeyboard(postId).inlineKeyboard
   )
   if (messageId) {

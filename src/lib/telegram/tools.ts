@@ -372,6 +372,31 @@ export const TOOL_DEFINITIONS = [
       },
     },
   },
+  {
+    type: 'function',
+    function: {
+      name: 'create_channel_post',
+      description:
+        'Сгенерировать разовый пост для Telegram-канала @housepro24 по заданной теме (с иллюстрацией, ' +
+        'с веб-поиском при необходимости) и отправить на утверждение кнопками в этот же чат. ' +
+        'НЕ публикует сразу — только готовит черновик.',
+      parameters: {
+        type: 'object',
+        properties: {
+          topic: { type: 'string', description: 'Тема поста, например "новые правила ипотеки" или "аренда апартаментов в центре"' },
+        },
+        required: ['topic'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_channel_stats',
+      description: 'Статистика Telegram-канала @housepro24 прямо сейчас: подписчики, посты и клики по CTA за 7 дней, черновики на утверждении.',
+      parameters: { type: 'object', properties: {} },
+    },
+  },
 ] as const
 
 /** Выполняет read-only инструмент. Мутирующие сюда не должны попадать — их перехватывает вебхук. */
@@ -403,6 +428,29 @@ export async function dispatchReadOnlyTool(name: string, args: Record<string, un
     }
     case 'check_contract': {
       return callApi(`/api/v1/contracts/${encodeURIComponent(String(args.contract_id))}/check`, { method: 'POST' })
+    }
+    case 'create_channel_post': {
+      const { resolveBotOrgId } = await import('@/lib/telegram/org')
+      const { createDraftRow, sendDraftForReview, getChannelSettings } = await import('@/lib/telegram/channel')
+      const { generateAdhocDraft } = await import('@/lib/telegram/channel-generate')
+      const orgId = await resolveBotOrgId()
+      if (!orgId) return { error: 'Не удалось определить организацию' }
+      const settings = await getChannelSettings(orgId)
+      const topic = String(args.topic ?? '').trim()
+      if (!topic) return { error: 'Не указана тема поста' }
+      const text = await generateAdhocDraft(settings, topic)
+      const postId = await createDraftRow(orgId, 'adhoc', null)
+      await sendDraftForReview(orgId, postId, 'adhoc', text, 'none')
+      return { status: 'Черновик отправлен на утверждение кнопками в этот чат', postId }
+    }
+    case 'get_channel_stats': {
+      const { resolveBotOrgId } = await import('@/lib/telegram/org')
+      const { getChannelSettings, getLiveStatsText } = await import('@/lib/telegram/channel')
+      const orgId = await resolveBotOrgId()
+      if (!orgId) return { error: 'Не удалось определить организацию' }
+      const settings = await getChannelSettings(orgId)
+      if (!settings) return { error: 'Настройки канала не заведены' }
+      return { text: await getLiveStatsText(orgId, settings) }
     }
     default:
       return { error: `Неизвестный read-only инструмент: ${name}` }

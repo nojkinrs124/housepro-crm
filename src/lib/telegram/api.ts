@@ -163,6 +163,7 @@ export interface TelegramUpdate {
     voice?: { file_id: string; duration: number; mime_type?: string }
     photo?: Array<{ file_id: string; width: number; height: number }>
     document?: { file_id: string; file_name?: string; mime_type?: string; file_size?: number }
+    reply_to_message?: { message_id: number }
   }
   callback_query?: {
     id: string

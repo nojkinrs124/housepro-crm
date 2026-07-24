@@ -31,6 +31,8 @@ import {
   regenerateImage,
   getLiveStatsText,
   getSettingsText,
+  applyManualEdit,
+  getPendingReviewByMessageId,
 } from '@/lib/telegram/channel'
 import { generateCaseDraft, generateAnalyticsDraft, generateCtaDraft } from '@/lib/telegram/channel-generate'
 
@@ -77,6 +79,20 @@ create_contact/create_property по отдельности, потому что 
 У тебя есть история последних сообщений в этом чате — используй её для контекста
 (например, если пользователь пишет "а по нему" — посмотри, о ком речь, в предыдущих сообщениях).
 
+У ЭТОГО ЖЕ бота есть ВТОРОЙ модуль — контент-ассистент Telegram-канала @housepro24 (посты, картинки
+к ним, статистика, CTA-ссылки). Это НЕ CRM-функции, но ты про них знаешь и можешь ими пользоваться:
+- create_channel_post(topic) — сгенерировать разовый пост для канала по теме (с иллюстрацией и веб-поиском
+  при необходимости), отправить тебе на утверждение кнопками. Используй, когда просят "сделай пост про...",
+  "напиши в канал про...", "выложи в группу/канал что-то про...".
+- get_channel_stats() — подписчики канала, посты/клики за 7 дней, сколько черновиков ждёт утверждения.
+Того, что НЕ умеет ни один инструмент бота: строить графики/диаграммы с числами (только иллюстративные
+картинки без цифр — так безопаснее, реальные цифры не выдумываются картинкой), редактировать уже
+опубликованные посты, публиковать в другие каналы/группы кроме @housepro24. Если просят именно это —
+честно скажи, что не умеешь, а не придумывай похожий ответ.
+Полное расписание рубрик (пн/ср/пт), кейсы из надиктовки, кнопочное меню — доступны только напрямую
+через /menu, /case, /post в этом же чате (не через тебя как диалог) — если пользователь спрашивает,
+как этим пользоваться, подскажи именно эти команды.
+
 Форматирование ответа (важно, Telegram, НЕ обычный markdown):
 - Разрешены только HTML-теги: <b>жирный</b>, <i>курсив</i>, <code>код</code>. Заголовки через ###
   НЕ поддерживаются — вместо них используй <b>жирный текст</b> на отдельной строке.
@@ -112,7 +128,8 @@ const HELP_TEXT = `<b>HousePro CRM — бот-ассистент</b>
 • /menu — меню с кнопками (пост, кейс, статистика, настройки).
 • По расписанию сам присылаю черновики постов на утверждение (пн — аналитика, ср — кейс, пт — оффер).
 • /case &lt;текст&gt; или голосовое — надиктуй кейс, оформлю в пост.
-• /post &lt;тема&gt; — разовый пост вне расписания.`
+• /post &lt;тема&gt; — разовый пост вне расписания.
+• Ответь текстом на черновик — заменю текст твоим вариантом (без модели, картинка останется).`
 
 // Сколько последних сообщений диалога храним и передаём модели (не считая system prompt).
 const MAX_HISTORY_MESSAGES = 20
@@ -532,13 +549,29 @@ async function handleAdhocPostCommand(chatId: number, orgId: string, topic: stri
   }
 }
 
-// Возвращает true, если сообщение было перехвачено под нужды канала (меню/кейс/разовый пост)
+// Возвращает true, если сообщение было перехвачено под нужды канала (правка/меню/кейс/пост)
 // и НЕ должно попадать в обычный CRM-диалог с моделью.
-async function tryHandleChannelInput(chatId: number, telegramUserId: string, text: string): Promise<boolean> {
+async function tryHandleChannelInput(
+  chatId: number,
+  telegramUserId: string,
+  text: string,
+  replyToMessageId?: number
+): Promise<boolean> {
   const orgId = await resolveBotOrgId()
   if (!orgId) return false
   const settings = await getChannelSettings(orgId)
   if (!isFromAdmin(settings, telegramUserId)) return false
+
+  // Ответ (reply) на сообщение с черновиком — прямая правка текста без обращения к модели.
+  if (replyToMessageId) {
+    const pendingPost = await getPendingReviewByMessageId(replyToMessageId)
+    if (pendingPost) {
+      await editMessageReplyMarkup(chatId, replyToMessageId, null)
+      const result = await applyManualEdit(pendingPost.id, text)
+      if (result.error) await sendMessage(chatId, `⚠️ Не удалось применить правку: ${result.error}`)
+      return true
+    }
+  }
 
   if (text === '/menu') {
     await sendMainMenu(chatId)
@@ -662,7 +695,7 @@ export async function POST(request: Request) {
       if (text === '/start' || text === '/help') {
         await sendMessage(chatId, HELP_TEXT)
         await sendMainMenu(chatId)
-      } else if (!(await tryHandleChannelInput(chatId, userId, text))) {
+      } else if (!(await tryHandleChannelInput(chatId, userId, text, update.message.reply_to_message?.message_id))) {
         await handleUserTurn(chatId, userId, username, text)
       }
     }
