@@ -34,6 +34,7 @@ import {
   getSettingsText,
   applyManualEdit,
   getPendingReviewByMessageId,
+  updatePostReactionCount,
 } from '@/lib/telegram/channel'
 import { generateCaseDraft, generateAnalyticsDraft, generateCtaDraft } from '@/lib/telegram/channel-generate'
 
@@ -640,7 +641,10 @@ export async function POST(request: Request) {
   }
 
   try {
-    if (update.callback_query) {
+    if (update.message_reaction_count) {
+      const totalCount = update.message_reaction_count.reactions.reduce((sum, r) => sum + r.total_count, 0)
+      await updatePostReactionCount(update.message_reaction_count.message_id, totalCount)
+    } else if (update.callback_query) {
       await handleCallbackQuery(update.callback_query)
     } else if (update.message?.voice) {
       const chatId = update.message.chat.id

@@ -37,18 +37,24 @@ export async function GET(request: Request) {
 
   const { data: publishedPosts } = await supabaseAdmin
     .from('channel_posts')
-    .select('id, rubric, final_text')
+    .select('id, rubric, final_text, reaction_count')
     .eq('organization_id', orgId)
     .eq('status', 'published')
     .gte('published_at', weekAgo.toISOString())
 
   const postIds = (publishedPosts ?? []).map((p) => p.id)
+  const totalReactions = (publishedPosts ?? []).reduce((sum, p) => sum + (p.reaction_count ?? 0), 0)
   let totalClicks = 0
   let topPostId: string | null = null
 
   if (postIds.length > 0) {
     const { data: links } = await supabaseAdmin.from('channel_links').select('code, post_id').in('post_id', postIds)
     const codeToPost = new Map((links ?? []).map((l) => [l.code, l.post_id]))
+    const perPost = new Map<string, number>()
+    // Реакции сразу идут в счёт "популярности" поста — считаем как клики (пост, лайкнутый
+    // без единого клика по ссылке, всё равно заслуживает быть "лучшим постом недели").
+    for (const p of publishedPosts ?? []) perPost.set(p.id, p.reaction_count ?? 0)
+
     if (links && links.length > 0) {
       const { data: clicks } = await supabaseAdmin
         .from('channel_link_clicks')
@@ -57,17 +63,16 @@ export async function GET(request: Request) {
         .gte('clicked_at', weekAgo.toISOString())
 
       totalClicks = clicks?.length ?? 0
-      const perPost = new Map<string, number>()
       for (const c of clicks ?? []) {
         const postId = codeToPost.get(c.code)
         if (postId) perPost.set(postId, (perPost.get(postId) ?? 0) + 1)
       }
-      let max = 0
-      for (const [postId, count] of perPost) {
-        if (count > max) {
-          max = count
-          topPostId = postId
-        }
+    }
+    let max = 0
+    for (const [postId, score] of perPost) {
+      if (score > max) {
+        max = score
+        topPostId = postId
       }
     }
   }
@@ -85,6 +90,7 @@ export async function GET(request: Request) {
       subscriber_count_end: subscriberCountEnd,
       posts_published: publishedPosts?.length ?? 0,
       total_clicks: totalClicks,
+      total_reactions: totalReactions,
       top_post_id: topPostId,
     },
     { onConflict: 'organization_id,week_start' }
@@ -97,6 +103,7 @@ export async function GET(request: Request) {
     `Подписчики: ${subscriberCountEnd ?? '—'}${delta !== null ? ` (${delta >= 0 ? '+' : ''}${delta})` : ''}`,
     `Опубликовано постов: ${publishedPosts?.length ?? 0}`,
     `Кликов по CTA-ссылкам: ${totalClicks}`,
+    `Реакций: ${totalReactions}`,
   ]
   if (topPost) {
     lines.push('', `Лучший пост (${topPost.rubric}): ${(topPost.final_text ?? '').slice(0, 80)}...`)

@@ -62,6 +62,21 @@ export async function sendMessage(
   return res.json().catch(() => undefined)
 }
 
+export async function setWebhook(url: string, allowedUpdates: string[]): Promise<boolean> {
+  const body: Record<string, unknown> = { url, allowed_updates: allowedUpdates }
+  if (process.env.TELEGRAM_BOT_SECRET) body.secret_token = process.env.TELEGRAM_BOT_SECRET
+  const res = await fetch(`${TELEGRAM_API}/bot${botToken()}/setWebhook`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) {
+    console.error('[telegram] setWebhook failed:', await res.text())
+    return false
+  }
+  return true
+}
+
 export async function setMyCommands(commands: { command: string; description: string }[]): Promise<boolean> {
   const res = await fetch(`${TELEGRAM_API}/bot${botToken()}/setMyCommands`, {
     method: 'POST',
@@ -164,6 +179,11 @@ export interface TelegramUpdate {
     photo?: Array<{ file_id: string; width: number; height: number }>
     document?: { file_id: string; file_name?: string; mime_type?: string; file_size?: number }
     reply_to_message?: { message_id: number }
+  }
+  message_reaction_count?: {
+    chat: { id: number }
+    message_id: number
+    reactions: Array<{ type: { type: string; emoji?: string }; total_count: number }>
   }
   callback_query?: {
     id: string

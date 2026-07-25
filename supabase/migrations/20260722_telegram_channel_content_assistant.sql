@@ -105,3 +105,7 @@ update public.channel_bot_settings set awaiting_intent = 'case' where awaiting_c
 alter table public.channel_bot_settings drop column if exists awaiting_case;
 
 alter table public.channel_bot_settings add column if not exists schedule_paused boolean not null default false;
+
+alter table public.channel_posts add column if not exists reaction_count int not null default 0;
+
+alter table public.channel_weekly_stats add column if not exists total_reactions int not null default 0;

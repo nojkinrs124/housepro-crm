@@ -308,6 +308,17 @@ export async function setSchedulePaused(orgId: string, paused: boolean): Promise
   await supabaseAdmin.from('channel_bot_settings').update({ schedule_paused: paused }).eq('organization_id', orgId)
 }
 
+// Обновляет счётчик реакций поста по данным апдейта message_reaction_count (агрегированные,
+// анонимные — Telegram присылает их для каналов, где бот админ, без данных о конкретном пользователе).
+export async function updatePostReactionCount(messageId: number, totalCount: number): Promise<void> {
+  const supabaseAdmin = getSupabaseAdmin()
+  await supabaseAdmin
+    .from('channel_posts')
+    .update({ reaction_count: totalCount })
+    .eq('channel_message_id', messageId)
+    .eq('status', 'published')
+}
+
 export function isFromAdmin(settings: ChannelSettings | null, telegramUserId: string): boolean {
   return !!settings?.admin_telegram_user_id && settings.admin_telegram_user_id === telegramUserId
 }
@@ -365,12 +376,21 @@ export async function getLiveStatsText(orgId: string, settings: ChannelSettings)
     .eq('organization_id', orgId)
     .eq('status', 'pending_review')
 
+  const { data: reactionRows } = await supabaseAdmin
+    .from('channel_posts')
+    .select('reaction_count')
+    .eq('organization_id', orgId)
+    .eq('status', 'published')
+    .gte('published_at', weekAgo.toISOString())
+  const totalReactions = (reactionRows ?? []).reduce((sum, p) => sum + (p.reaction_count ?? 0), 0)
+
   return [
     '📊 <b>Статистика (сейчас)</b>',
     '',
     `Подписчики: ${subscriberCount ?? '—'}`,
     `Опубликовано за 7 дней: ${publishedCount ?? 0}`,
     `Кликов по CTA за 7 дней: ${totalClicks}`,
+    `Реакций на посты за 7 дней: ${totalReactions}`,
     `Ждут утверждения: ${pendingCount ?? 0}`,
   ].join('\n')
 }
