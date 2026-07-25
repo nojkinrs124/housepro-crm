@@ -24,6 +24,7 @@ import {
   getChannelSettings,
   isFromAdmin,
   setAwaitingIntent,
+  setSchedulePaused,
   publishPost,
   rejectPost,
   createDraftRow,
@@ -129,6 +130,7 @@ const HELP_TEXT = `<b>HousePro CRM — бот-ассистент</b>
 • По расписанию сам присылаю черновики постов на утверждение (пн — аналитика, ср — кейс, пт — оффер).
 • /case &lt;текст&gt; или голосовое — надиктуй кейс, оформлю в пост.
 • /post &lt;тема&gt; — разовый пост вне расписания.
+• /pause /resume — приостановить/включить автопостинг по расписанию (отпуск и т.п.).
 • Ответь текстом на черновик — заменю текст твоим вариантом (без модели, картинка останется).`
 
 // Сколько последних сообщений диалога храним и передаём модели (не считая system prompt).
@@ -575,6 +577,18 @@ async function tryHandleChannelInput(
 
   if (text === '/menu') {
     await sendMainMenu(chatId)
+    return true
+  }
+
+  if (text === '/pause') {
+    await setSchedulePaused(orgId, true)
+    await sendMessage(chatId, '⏸ Автопостинг по расписанию приостановлен. Черновики по пн/ср/пт присылать не буду, пока не скажешь /resume.')
+    return true
+  }
+
+  if (text === '/resume') {
+    await setSchedulePaused(orgId, false)
+    await sendMessage(chatId, '▶️ Автопостинг по расписанию снова включён.')
     return true
   }
 

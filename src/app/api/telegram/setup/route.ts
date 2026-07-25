@@ -7,6 +7,8 @@ const COMMANDS = [
   { command: 'menu', description: '📋 Меню — выбрать действие' },
   { command: 'post', description: '📝 Разовый пост по теме' },
   { command: 'case', description: '🎙 Оформить кейс из практики' },
+  { command: 'pause', description: '⏸ Приостановить автопостинг' },
+  { command: 'resume', description: '▶️ Включить автопостинг обратно' },
   { command: 'help', description: '❓ Справка' },
 ]
 

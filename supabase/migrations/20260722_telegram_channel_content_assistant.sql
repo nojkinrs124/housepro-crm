@@ -103,3 +103,5 @@ alter table public.channel_posts add column if not exists image_url text;
 alter table public.channel_bot_settings add column if not exists awaiting_intent text check (awaiting_intent in ('case','post'));
 update public.channel_bot_settings set awaiting_intent = 'case' where awaiting_case = true;
 alter table public.channel_bot_settings drop column if exists awaiting_case;
+
+alter table public.channel_bot_settings add column if not exists schedule_paused boolean not null default false;

@@ -15,6 +15,7 @@ export interface ChannelSettings {
   style_prompt: string
   schedule_json: Record<string, ChannelRubric>
   awaiting_intent: 'case' | 'post' | null
+  schedule_paused: boolean
 }
 
 // dm_admin — ведёт прямо в личку к Руслану. Используется для ВСЕХ CTA на данный момент.
@@ -302,6 +303,11 @@ export async function setAwaitingIntent(orgId: string, intent: 'case' | 'post' |
   await supabaseAdmin.from('channel_bot_settings').update({ awaiting_intent: intent }).eq('organization_id', orgId)
 }
 
+export async function setSchedulePaused(orgId: string, paused: boolean): Promise<void> {
+  const supabaseAdmin = getSupabaseAdmin()
+  await supabaseAdmin.from('channel_bot_settings').update({ schedule_paused: paused }).eq('organization_id', orgId)
+}
+
 export function isFromAdmin(settings: ChannelSettings | null, telegramUserId: string): boolean {
   return !!settings?.admin_telegram_user_id && settings.admin_telegram_user_id === telegramUserId
 }
@@ -317,6 +323,7 @@ export function getSettingsText(settings: ChannelSettings | null): string {
     '',
     `Канал: ${settings.channel_chat_id ?? '—'}`,
     `Админ: @${settings.admin_telegram_username ?? '—'}`,
+    `Автопостинг: ${settings.schedule_paused ? '⏸ на паузе (/resume — включить)' : '▶️ активен (/pause — приостановить)'}`,
     'Расписание:',
     scheduleLines,
     '',

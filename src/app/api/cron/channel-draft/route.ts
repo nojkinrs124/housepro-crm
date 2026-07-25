@@ -28,6 +28,9 @@ export async function GET(request: Request) {
   if (!settings?.admin_telegram_user_id) {
     return NextResponse.json({ skipped: 'channel_bot_settings не настроен' })
   }
+  if (settings.schedule_paused) {
+    return NextResponse.json({ skipped: 'расписание на паузе (/resume в боте — включить)' })
+  }
 
   const tomorrow = new Date()
   tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
