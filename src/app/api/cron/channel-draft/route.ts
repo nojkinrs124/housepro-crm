@@ -32,14 +32,16 @@ export async function GET(request: Request) {
     return NextResponse.json({ skipped: 'расписание на паузе (/resume в боте — включить)' })
   }
 
-  const tomorrow = new Date()
-  tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
-  const dayKey = DAY_KEYS[tomorrow.getUTCDay()]
+  const now = new Date()
+  const localNow = new Date(now.toLocaleString('en-US', { timeZone: settings.timezone }))
+  const tomorrow = new Date(localNow)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const dayKey = DAY_KEYS[tomorrow.getDay()]
   const rubric = (settings.schedule_json as Record<string, ChannelRubric>)[dayKey]
 
   if (!rubric) return NextResponse.json({ skipped: `нет рубрики на ${dayKey}` })
 
-  const scheduledFor = tomorrow.toISOString().slice(0, 10)
+  const scheduledFor = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')}`
 
   if (rubric === 'case') {
     await setAwaitingIntent(orgId, 'case')

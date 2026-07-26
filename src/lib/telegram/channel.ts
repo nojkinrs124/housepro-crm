@@ -16,6 +16,8 @@ export interface ChannelSettings {
   schedule_json: Record<string, ChannelRubric>
   awaiting_intent: 'case' | 'post' | null
   schedule_paused: boolean
+  timezone: string
+  draft_send_hour: number
 }
 
 // dm_admin — ведёт прямо в личку к Руслану. Используется для ВСЕХ CTA на данный момент.
@@ -335,6 +337,7 @@ export function getSettingsText(settings: ChannelSettings | null): string {
     `Канал: ${settings.channel_chat_id ?? '—'}`,
     `Админ: @${settings.admin_telegram_username ?? '—'}`,
     `Автопостинг: ${settings.schedule_paused ? '⏸ на паузе (/resume — включить)' : '▶️ активен (/pause — приостановить)'}`,
+    `Часовой пояс: ${settings.timezone} · черновики на утверждение приходят в ${settings.draft_send_hour}:00 по нему`,
     'Расписание:',
     scheduleLines,
     '',

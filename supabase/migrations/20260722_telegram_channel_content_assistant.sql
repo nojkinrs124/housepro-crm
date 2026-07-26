@@ -109,3 +109,8 @@ alter table public.channel_bot_settings add column if not exists schedule_paused
 alter table public.channel_posts add column if not exists reaction_count int not null default 0;
 
 alter table public.channel_weekly_stats add column if not exists total_reactions int not null default 0;
+
+-- Часовой пояс канала (для расчёта "завтра" при генерации черновика) и локальный час,
+-- в который черновик уходит на утверждение. GMT+7 = Etc/GMT-7 (фиксированный офсет, без DST).
+alter table public.channel_bot_settings add column if not exists timezone text not null default 'Etc/GMT-7';
+alter table public.channel_bot_settings add column if not exists draft_send_hour int not null default 19 check (draft_send_hour between 0 and 23);
