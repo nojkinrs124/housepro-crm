@@ -10,6 +10,7 @@ const PUBLIC_PATHS = [
   '/api/billing',
   '/api/stripe',
   '/c/',
+  '/r/', // редирект-сервис для CTA-ссылок Telegram-канала — публичный, без авторизации
 ]
 
 export async function middleware(request: NextRequest) {

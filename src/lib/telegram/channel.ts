@@ -165,7 +165,7 @@ export async function sendDraftForReview(
     .eq('id', postId)
 
   const rubricLabel = { analytics: '📊 Аналитика', case: '🏠 Кейс', cta: '📣 CTA/оффер', adhoc: '✍️ Разовый пост' }[rubric]
-  const preview = `<b>Черновик поста (${rubricLabel})</b>\n\n${fullText}`
+  const preview = `<b>Черновик поста (${rubricLabel})</b>\n\n${fullText}\n\n<i>💬 Чтобы поправить текст — ответь на это сообщение своим вариантом.</i>`
 
   const { message_id: messageId } = await sendPostVisual(
     settings.admin_telegram_user_id,
@@ -208,7 +208,7 @@ export async function regenerateImage(postId: string): Promise<{ error?: string 
   const rubricLabel = { analytics: '📊 Аналитика', case: '🏠 Кейс', cta: '📣 CTA/оффер', adhoc: '✍️ Разовый пост' }[
     post.rubric as ChannelRubric
   ]
-  const preview = `<b>Черновик поста (${rubricLabel})</b>\n\n${post.draft_text}`
+  const preview = `<b>Черновик поста (${rubricLabel})</b>\n\n${post.draft_text}\n\n<i>💬 Чтобы поправить текст — ответь на это сообщение своим вариантом.</i>`
   const { message_id: messageId } = await sendPostVisual(
     settings.admin_telegram_user_id,
     preview,
@@ -240,7 +240,7 @@ export async function applyManualEdit(postId: string, newBodyText: string): Prom
   const rubricLabel = { analytics: '📊 Аналитика', case: '🏠 Кейс', cta: '📣 CTA/оффер', adhoc: '✍️ Разовый пост' }[
     post.rubric as ChannelRubric
   ]
-  const preview = `<b>Черновик поста (${rubricLabel}, правка)</b>\n\n${fullText}`
+  const preview = `<b>Черновик поста (${rubricLabel}, правка)</b>\n\n${fullText}\n\n<i>💬 Чтобы поправить текст ещё раз — ответь на это сообщение своим вариантом.</i>`
   const { message_id: messageId } = await sendPostVisual(
     settings.admin_telegram_user_id,
     preview,
