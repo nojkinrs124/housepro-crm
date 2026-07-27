@@ -2,6 +2,7 @@ import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { editMessageText, sendMessage, type InlineKeyboardButton } from '@/lib/telegram/api'
 import { getChannelSettings, setSchedulePaused, type ChannelSettings } from '@/lib/telegram/channel'
 import { buildLeadsScreen, buildDealsScreen, buildPaymentsScreen, buildTasksScreen } from '@/lib/telegram/crm-menu'
+import { buildChannelPostsScreen } from '@/lib/telegram/channel-menu'
 
 // Разделы главного меню. 'multiagent' пока заглушка (фаза 4 роадмапа).
 export type MenuScreen =
@@ -12,6 +13,7 @@ export type MenuScreen =
   | 'crm_payments'
   | 'crm_tasks'
   | 'channel'
+  | 'channel_posts'
   | 'multiagent'
   | 'settings'
   | 'settings_users'
@@ -79,6 +81,7 @@ function channelScreen(): ScreenContent {
         { text: '🎙 Кейс из практики', callback_data: 'chmenu:case' },
       ],
       [{ text: '📊 Статистика', callback_data: 'chmenu:stats' }],
+      [{ text: '🗂 Последние посты', callback_data: 'nav:channel_posts' }],
       [BACK_TO_ROOT],
     ],
   }
@@ -145,6 +148,8 @@ async function buildScreen(screen: MenuScreen, orgId: string, helpText: string):
       return multiagentScreen()
     case 'channel':
       return channelScreen()
+    case 'channel_posts':
+      return buildChannelPostsScreen(orgId)
     case 'settings':
       return settingsScreen(await getChannelSettings(orgId))
     case 'settings_users':

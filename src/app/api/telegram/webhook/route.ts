@@ -379,7 +379,7 @@ async function sendMainMenu(chatId: number) {
   await showMenuScreen(chatId, orgId, 'root', HELP_TEXT)
 }
 
-const NAV_SCREENS: MenuScreen[] = ['root', 'crm', 'crm_leads', 'crm_deals', 'crm_payments', 'crm_tasks', 'channel', 'multiagent', 'settings', 'settings_users', 'help']
+const NAV_SCREENS: MenuScreen[] = ['root', 'crm', 'crm_leads', 'crm_deals', 'crm_payments', 'crm_tasks', 'channel', 'channel_posts', 'multiagent', 'settings', 'settings_users', 'help']
 
 // Навигация верхнеуровневого меню: nav:<screen> — просто перерисовывает "экран" в том же сообщении.
 async function handleNavCallback(screen: string, chatId: number, orgId: string, messageId: number | undefined, telegramUserId: string) {
@@ -527,6 +527,19 @@ async function handleCrmQuickAction(action: string, entityId: string, chatId: nu
   await showMenuScreen(chatId, orgId, CRM_ACTION_SCREEN[action], HELP_TEXT, messageId)
 }
 
+async function handleChannelListAction(action: string, postId: string, chatId: number, orgId: string, messageId: number | undefined, telegramUserId: string) {
+  const settings = await getChannelSettings(orgId)
+  if (!isFromAdmin(settings, telegramUserId)) return
+
+  if (action === 'chlistpub') {
+    const result = await publishPost(postId)
+    if (result.error) await sendMessage(chatId, `⚠️ Не удалось опубликовать: ${result.error}`)
+  } else if (action === 'chlistreject') {
+    await rejectPost(postId)
+  }
+  await showMenuScreen(chatId, orgId, 'channel_posts', HELP_TEXT, messageId)
+}
+
 async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_query']>) {
   await answerCallbackQuery(update.id)
 
@@ -574,6 +587,13 @@ async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_
     const orgId = await resolveBotOrgId()
     if (!orgId) return
     await handleCrmQuickAction(action, batchId, chatId, orgId, messageId, String(chatId))
+    return
+  }
+
+  if (action === 'chlistpub' || action === 'chlistreject') {
+    const orgId = await resolveBotOrgId()
+    if (!orgId) return
+    await handleChannelListAction(action, batchId, chatId, orgId, messageId, String(chatId))
     return
   }
 
