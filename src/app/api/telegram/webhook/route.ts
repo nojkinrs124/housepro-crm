@@ -11,6 +11,13 @@ import {
   downloadTelegramFile,
   type TelegramUpdate,
 } from '@/lib/telegram/api'
+import {
+  showMenuScreen,
+  addAllowedUser,
+  removeAllowedUser,
+  setAddUserAwaiting,
+  type MenuScreen,
+} from '@/lib/telegram/menu'
 import { transcribeAudio } from '@/lib/telegram/stt'
 import { extractTextFromDocx } from '@/lib/telegram/docx-reader'
 import {
@@ -31,7 +38,6 @@ import {
   sendDraftForReview,
   regenerateImage,
   getLiveStatsText,
-  getSettingsText,
   applyManualEdit,
   getPendingReviewByMessageId,
   updatePostReactionCount,
@@ -126,8 +132,10 @@ const HELP_TEXT = `<b>HousePro CRM — бот-ассистент</b>
 
 Просто напиши или пришли файл.
 
+<b>Меню</b>
+• /menu — главное меню с разделами: CRM, Канал, Мультиагент, Настройки.
+
 <b>Канал (контент-ассистент)</b>
-• /menu — меню с кнопками (пост, кейс, статистика, настройки).
 • По расписанию сам присылаю черновики постов на утверждение (пн — аналитика, ср — кейс, пт — оффер).
 • /case &lt;текст&gt; или голосовое — надиктуй кейс, оформлю в пост.
 • /post &lt;тема&gt; — разовый пост вне расписания.
@@ -364,44 +372,88 @@ async function handleUserTurn(
   }
 }
 
-function mainMenuKeyboard() {
-  return [
-    [
-      { text: '📝 Разовый пост', callback_data: 'chmenu:post' },
-      { text: '🎙 Кейс из практики', callback_data: 'chmenu:case' },
-    ],
-    [
-      { text: '📊 Статистика', callback_data: 'chmenu:stats' },
-      { text: '⚙️ Настройки', callback_data: 'chmenu:settings' },
-    ],
-    [{ text: '❓ Помощь', callback_data: 'chmenu:help' }],
-  ]
-}
-
 async function sendMainMenu(chatId: number) {
-  await sendMessage(chatId, '📋 <b>Меню</b>\nВыбери действие:', { inlineKeyboard: mainMenuKeyboard() })
-}
-
-async function handleMenuCallback(item: string, chatId: number, telegramUserId: string) {
   const orgId = await resolveBotOrgId()
   if (!orgId) return
+  await showMenuScreen(chatId, orgId, 'root', HELP_TEXT)
+}
+
+const NAV_SCREENS: MenuScreen[] = ['root', 'crm', 'channel', 'multiagent', 'settings', 'settings_users', 'help']
+
+// Навигация верхнеуровневого меню: nav:<screen> — просто перерисовывает "экран" в том же сообщении.
+async function handleNavCallback(screen: string, chatId: number, orgId: string, messageId: number | undefined, telegramUserId: string) {
+  const settings = await getChannelSettings(orgId)
+  if (!isFromAdmin(settings, telegramUserId)) return
+  if (!NAV_SCREENS.includes(screen as MenuScreen)) return
+  await showMenuScreen(chatId, orgId, screen as MenuScreen, HELP_TEXT, messageId)
+}
+
+// Действия внутри раздела "Настройки": set:pause / set:resume / set:adduser, а также deluser:<id>.
+async function handleSettingsAction(action: string, arg: string | undefined, chatId: number, orgId: string, messageId: number | undefined, telegramUserId: string) {
   const settings = await getChannelSettings(orgId)
   if (!isFromAdmin(settings, telegramUserId)) return
 
-  if (item === 'post') {
-    await setAwaitingIntent(orgId, 'post')
-    await sendMessage(chatId, '📝 Напиши тему одним сообщением — подготовлю черновик поста.')
-  } else if (item === 'case') {
-    await setAwaitingIntent(orgId, 'case')
-    await sendMessage(chatId, '🎙 Надиктуй голосом или напиши текстом: с чем пришёл клиент, в чём была сложность, как решили, результат.')
-  } else if (item === 'stats') {
-    await sendChatAction(chatId, 'typing')
-    await sendMessage(chatId, await getLiveStatsText(orgId, settings!))
-  } else if (item === 'settings') {
-    await sendMessage(chatId, getSettingsText(settings))
-  } else if (item === 'help') {
-    await sendMessage(chatId, HELP_TEXT)
+  if (action === 'set' && arg === 'pause') {
+    await setSchedulePaused(orgId, true)
+    await showMenuScreen(chatId, orgId, 'settings', HELP_TEXT, messageId)
+    return
   }
+  if (action === 'set' && arg === 'resume') {
+    await setSchedulePaused(orgId, false)
+    await showMenuScreen(chatId, orgId, 'settings', HELP_TEXT, messageId)
+    return
+  }
+  if (action === 'set' && arg === 'adduser') {
+    await setAddUserAwaiting(orgId, true)
+    await sendMessage(
+      chatId,
+      '➕ Перешли мне любое сообщение от нужного человека (чтобы я узнал его Telegram ID), ' +
+        'или пришли его ID числом — при желании через пробел подпись, например:\n<code>395803926 Ольга, риелтор</code>'
+    )
+    return
+  }
+  if (action === 'deluser' && arg) {
+    await removeAllowedUser(orgId, arg)
+    await showMenuScreen(chatId, orgId, 'settings_users', HELP_TEXT, messageId)
+    return
+  }
+}
+
+// Обрабатывает текст, который бот ждёт после "➕ Добавить пользователя": пересланное
+// сообщение (forward_from) или "<telegram_id> [подпись]" текстом. Возвращает true, если
+// ввод был перехвачен под эту нужду (и не должен уходить в обычный CRM-диалог).
+async function tryHandleAddUserInput(chatId: number, orgId: string, text: string, forwardFromId?: number, forwardFromName?: string): Promise<boolean> {
+  const settings = await getChannelSettings(orgId)
+  if (settings?.awaiting_intent !== 'add_bot_user') return false
+
+  let telegramUserId: string | undefined
+  let label: string | undefined
+
+  if (forwardFromId) {
+    telegramUserId = String(forwardFromId)
+    label = forwardFromName
+  } else {
+    const match = text.trim().match(/^(\d+)\s*(.*)$/)
+    if (match) {
+      telegramUserId = match[1]
+      label = match[2]?.trim() || undefined
+    }
+  }
+
+  if (!telegramUserId) {
+    await sendMessage(chatId, '⚠️ Не распознал ID. Перешли сообщение от человека или пришли его числовой Telegram ID.')
+    return true
+  }
+
+  const result = await addAllowedUser(orgId, telegramUserId, label)
+  await setAddUserAwaiting(orgId, false)
+  if (result.error) {
+    await sendMessage(chatId, `⚠️ Не удалось добавить: ${result.error}`)
+  } else {
+    await sendMessage(chatId, `✅ Добавлено: ${label || telegramUserId} (${telegramUserId})`)
+  }
+  await showMenuScreen(chatId, orgId, 'settings_users', HELP_TEXT)
+  return true
 }
 
 async function handleChannelCallback(action: string, postId: string, chatId: number, messageId: number | undefined) {
@@ -462,8 +514,35 @@ async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_
   if (!batchId) return
 
   if (action === 'chmenu') {
-    if (messageId) await editMessageReplyMarkup(chatId, messageId, null)
-    await handleMenuCallback(batchId, chatId, String(chatId))
+    const orgId = await resolveBotOrgId()
+    if (!orgId) return
+    const settings = await getChannelSettings(orgId)
+    if (!isFromAdmin(settings, String(chatId))) return
+
+    if (batchId === 'post') {
+      await setAwaitingIntent(orgId, 'post')
+      await sendMessage(chatId, '📝 Напиши тему одним сообщением — подготовлю черновик поста.')
+    } else if (batchId === 'case') {
+      await setAwaitingIntent(orgId, 'case')
+      await sendMessage(chatId, '🎙 Надиктуй голосом или напиши текстом: с чем пришёл клиент, в чём была сложность, как решили, результат.')
+    } else if (batchId === 'stats') {
+      await sendChatAction(chatId, 'typing')
+      await sendMessage(chatId, await getLiveStatsText(orgId, settings!))
+    }
+    return
+  }
+
+  if (action === 'nav') {
+    const orgId = await resolveBotOrgId()
+    if (!orgId) return
+    await handleNavCallback(batchId, chatId, orgId, messageId, String(chatId))
+    return
+  }
+
+  if (action === 'set' || action === 'deluser') {
+    const orgId = await resolveBotOrgId()
+    if (!orgId) return
+    await handleSettingsAction(action, batchId, chatId, orgId, messageId, String(chatId))
     return
   }
 
@@ -710,9 +789,17 @@ export async function POST(request: Request) {
       const username = update.message.from?.username
       const text = update.message.text.trim()
 
+      const orgIdForAddUser = await resolveBotOrgId()
+      const forwardFrom = update.message.forward_from
+
       if (text === '/start' || text === '/help') {
         await sendMessage(chatId, HELP_TEXT)
         await sendMainMenu(chatId)
+      } else if (
+        orgIdForAddUser &&
+        (await tryHandleAddUserInput(chatId, orgIdForAddUser, text, forwardFrom?.id, forwardFrom?.first_name || forwardFrom?.username))
+      ) {
+        // перехвачено — ID добавлен в allowlist
       } else if (!(await tryHandleChannelInput(chatId, userId, text, update.message.reply_to_message?.message_id))) {
         await handleUserTurn(chatId, userId, username, text)
       }

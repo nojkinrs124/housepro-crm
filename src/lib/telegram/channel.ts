@@ -14,7 +14,7 @@ export interface ChannelSettings {
   admin_telegram_username: string | null
   style_prompt: string
   schedule_json: Record<string, ChannelRubric>
-  awaiting_intent: 'case' | 'post' | null
+  awaiting_intent: 'case' | 'post' | 'add_bot_user' | null
   schedule_paused: boolean
   timezone: string
   draft_send_hour: number

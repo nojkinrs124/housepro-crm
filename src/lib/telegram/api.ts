@@ -150,6 +150,42 @@ export async function answerCallbackQuery(callbackQueryId: string, text?: string
   })
 }
 
+/**
+ * Перерисовывает текст (и опционально клавиатуру) уже отправленного сообщения —
+ * основа "экрана" главного меню: одно сообщение, которое просто обновляется,
+ * вместо потока новых сообщений на каждое нажатие.
+ */
+export async function editMessageText(
+  chatId: string | number,
+  messageId: number,
+  text: string,
+  opts?: { inlineKeyboard?: InlineKeyboardButton[][] | null }
+): Promise<boolean> {
+  const body: Record<string, unknown> = {
+    chat_id: chatId,
+    message_id: messageId,
+    text,
+    parse_mode: 'HTML',
+  }
+  if (opts?.inlineKeyboard !== undefined) {
+    body.reply_markup = opts.inlineKeyboard ? { inline_keyboard: opts.inlineKeyboard } : undefined
+  }
+  const res = await fetch(`${TELEGRAM_API}/bot${botToken()}/editMessageText`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) {
+    // Не критично: "message is not modified" — Telegram шлёт 400, если текст не изменился.
+    const errText = await res.text()
+    if (!errText.includes('message is not modified')) {
+      console.error('[telegram] editMessageText failed:', errText)
+    }
+    return false
+  }
+  return true
+}
+
 export async function editMessageReplyMarkup(
   chatId: string | number,
   messageId: number,
@@ -179,6 +215,7 @@ export interface TelegramUpdate {
     photo?: Array<{ file_id: string; width: number; height: number }>
     document?: { file_id: string; file_name?: string; mime_type?: string; file_size?: number }
     reply_to_message?: { message_id: number }
+    forward_from?: { id: number; username?: string; first_name?: string }
   }
   message_reaction_count?: {
     chat: { id: number }
