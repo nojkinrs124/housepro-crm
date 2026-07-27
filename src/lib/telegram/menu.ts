@@ -1,12 +1,23 @@
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { editMessageText, sendMessage, type InlineKeyboardButton } from '@/lib/telegram/api'
 import { getChannelSettings, setSchedulePaused, type ChannelSettings } from '@/lib/telegram/channel'
+import { buildLeadsScreen, buildDealsScreen, buildPaymentsScreen, buildTasksScreen } from '@/lib/telegram/crm-menu'
 
-// Разделы главного меню. 'crm' и 'multiagent' пока заглушки (фаза 2 и 4 роадмапа),
-// 'channel' и 'settings' — рабочие разделы.
-export type MenuScreen = 'root' | 'crm' | 'channel' | 'multiagent' | 'settings' | 'settings_users' | 'help'
+// Разделы главного меню. 'multiagent' пока заглушка (фаза 4 роадмапа).
+export type MenuScreen =
+  | 'root'
+  | 'crm'
+  | 'crm_leads'
+  | 'crm_deals'
+  | 'crm_payments'
+  | 'crm_tasks'
+  | 'channel'
+  | 'multiagent'
+  | 'settings'
+  | 'settings_users'
+  | 'help'
 
-interface ScreenContent {
+export interface ScreenContent {
   text: string
   keyboard: InlineKeyboardButton[][]
 }
@@ -32,12 +43,18 @@ function rootScreen(): ScreenContent {
 
 function crmScreen(): ScreenContent {
   return {
-    text:
-      '📋 <b>CRM</b>\n\n' +
-      'Раздел с кнопками для CRM (лиды, сделки, объекты, оплаты) в разработке.\n' +
-      'Пока всё это работает через обычный текст — просто напиши, что нужно ' +
-      '("добавь лида...", "какие сделки в работе?" и т.п.), я отвечу или спрошу подтверждение.',
-    keyboard: [[BACK_TO_ROOT]],
+    text: '📋 <b>CRM</b>\nВыбери раздел:',
+    keyboard: [
+      [
+        { text: '🧲 Лиды', callback_data: 'nav:crm_leads' },
+        { text: '🤝 Сделки', callback_data: 'nav:crm_deals' },
+      ],
+      [
+        { text: '💰 Оплаты', callback_data: 'nav:crm_payments' },
+        { text: '✅ Задачи', callback_data: 'nav:crm_tasks' },
+      ],
+      [BACK_TO_ROOT],
+    ],
   }
 }
 
@@ -116,6 +133,14 @@ async function buildScreen(screen: MenuScreen, orgId: string, helpText: string):
       return rootScreen()
     case 'crm':
       return crmScreen()
+    case 'crm_leads':
+      return buildLeadsScreen(orgId)
+    case 'crm_deals':
+      return buildDealsScreen(orgId)
+    case 'crm_payments':
+      return buildPaymentsScreen(orgId)
+    case 'crm_tasks':
+      return buildTasksScreen(orgId)
     case 'multiagent':
       return multiagentScreen()
     case 'channel':

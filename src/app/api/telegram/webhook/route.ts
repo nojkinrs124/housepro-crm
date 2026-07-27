@@ -18,6 +18,7 @@ import {
   setAddUserAwaiting,
   type MenuScreen,
 } from '@/lib/telegram/menu'
+import { advanceLeadStatus, advanceDealStatus, markPaymentPaid, markTaskDone } from '@/lib/telegram/crm-menu'
 import { transcribeAudio } from '@/lib/telegram/stt'
 import { extractTextFromDocx } from '@/lib/telegram/docx-reader'
 import {
@@ -378,7 +379,7 @@ async function sendMainMenu(chatId: number) {
   await showMenuScreen(chatId, orgId, 'root', HELP_TEXT)
 }
 
-const NAV_SCREENS: MenuScreen[] = ['root', 'crm', 'channel', 'multiagent', 'settings', 'settings_users', 'help']
+const NAV_SCREENS: MenuScreen[] = ['root', 'crm', 'crm_leads', 'crm_deals', 'crm_payments', 'crm_tasks', 'channel', 'multiagent', 'settings', 'settings_users', 'help']
 
 // Навигация верхнеуровневого меню: nav:<screen> — просто перерисовывает "экран" в том же сообщении.
 async function handleNavCallback(screen: string, chatId: number, orgId: string, messageId: number | undefined, telegramUserId: string) {
@@ -503,6 +504,29 @@ async function handleChannelCallback(action: string, postId: string, chatId: num
   }
 }
 
+// Быстрые действия внутри списков CRM (лиды/сделки/оплаты/задачи): выполняет мутацию
+// и перерисовывает тот же экран-список, откуда пришло нажатие.
+const CRM_ACTION_SCREEN: Record<string, MenuScreen> = {
+  leadnext: 'crm_leads',
+  dealnext: 'crm_deals',
+  paypaid: 'crm_payments',
+  taskdone: 'crm_tasks',
+}
+
+async function handleCrmQuickAction(action: string, entityId: string, chatId: number, orgId: string, messageId: number | undefined, telegramUserId: string) {
+  const settings = await getChannelSettings(orgId)
+  if (!isFromAdmin(settings, telegramUserId)) return
+
+  let result: { error?: string } = {}
+  if (action === 'leadnext') result = await advanceLeadStatus(orgId, entityId)
+  else if (action === 'dealnext') result = await advanceDealStatus(orgId, entityId)
+  else if (action === 'paypaid') result = await markPaymentPaid(orgId, entityId)
+  else if (action === 'taskdone') result = await markTaskDone(orgId, entityId)
+
+  if (result.error) await sendMessage(chatId, `⚠️ Не получилось: ${result.error}`)
+  await showMenuScreen(chatId, orgId, CRM_ACTION_SCREEN[action], HELP_TEXT, messageId)
+}
+
 async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_query']>) {
   await answerCallbackQuery(update.id)
 
@@ -543,6 +567,13 @@ async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_
     const orgId = await resolveBotOrgId()
     if (!orgId) return
     await handleSettingsAction(action, batchId, chatId, orgId, messageId, String(chatId))
+    return
+  }
+
+  if (action === 'leadnext' || action === 'dealnext' || action === 'paypaid' || action === 'taskdone') {
+    const orgId = await resolveBotOrgId()
+    if (!orgId) return
+    await handleCrmQuickAction(action, batchId, chatId, orgId, messageId, String(chatId))
     return
   }
 
