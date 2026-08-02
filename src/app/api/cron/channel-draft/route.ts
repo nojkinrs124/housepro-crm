@@ -48,7 +48,7 @@ export async function GET(request: Request) {
     await sendMessage(
       settings.admin_telegram_user_id,
       '🎙 Завтра по расписанию пост-кейс. Надиктуй голосом или напиши текстом: с чем пришёл клиент, ' +
-        'в чём была сложность, как решили, какой результат — оформлю в пост. Команда: /case <текст или голосовое>'
+        'в чём была сложность, как решили, какой результат — оформлю в пост. Команда: /case «текст или голосовое»'
     )
     return NextResponse.json({ ok: true, action: 'reminder_sent', rubric })
   }

@@ -745,7 +745,7 @@ async function tryHandleChannelInput(
   if (text.startsWith('/post')) {
     const topic = text.replace('/post', '').trim()
     if (!topic) {
-      await sendMessage(chatId, 'Укажи тему: /post <тема поста>')
+      await sendMessage(chatId, 'Укажи тему: /post «тема поста»')
       await setAwaitingIntent(orgId, 'post')
       return true
     }

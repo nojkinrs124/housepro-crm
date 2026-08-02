@@ -151,7 +151,7 @@ ${styleHint}${preferenceHint}`,
   const data = await res.json()
   const dataUrl: string | undefined = data?.choices?.[0]?.message?.images?.[0]?.image_url?.url
   if (!dataUrl?.startsWith('data:image')) {
-    console.error('[channel-generate] image generation: неожиданный формат ответа', JSON.stringify(data).slice(0, 300))
+    console.error('[channel-generate] image generation: неожиданный формат ответа', JSON.stringify(data).slice(0, 800))
     return null
   }
 

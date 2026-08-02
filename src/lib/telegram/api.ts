@@ -10,6 +10,21 @@ function botToken(): string {
   return token
 }
 
+// Экранирует "<", ">", "&" везде, КРОМЕ трёх разрешённых тегов (<b> <i> <code> и их закрывающих
+// пар). Без этого любой сырой текст — от модели, из БД, напечатанный вручную ("<тема поста>" и т.п.) —
+// мог сломать HTML-парсинг Telegram ("can't parse entities") и уронить отправку целиком, особенно
+// критично для sendPhoto/editMessageText, у которых (в отличие от sendMessage) нет ретрая без разметки.
+const ALLOWED_TAG_RE = /<\/?(b|i|code)>/gi
+function sanitizeTelegramHtml(text: string): string {
+  const placeholders: string[] = []
+  const protectedText = text.replace(ALLOWED_TAG_RE, (match) => {
+    placeholders.push(match)
+    return `\u0000${placeholders.length - 1}\u0000`
+  })
+  const escaped = protectedText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  return escaped.replace(/\u0000(\d+)\u0000/g, (_, i) => placeholders[Number(i)] ?? '')
+}
+
 export interface InlineKeyboardButton {
   text: string
   callback_data: string
@@ -28,7 +43,7 @@ export async function sendMessage(
 ): Promise<SendMessageResult | void> {
   const body: Record<string, unknown> = {
     chat_id: chatId,
-    text,
+    text: sanitizeTelegramHtml(text),
     parse_mode: 'HTML',
   }
   if (opts?.inlineKeyboard) {
@@ -118,7 +133,7 @@ export async function sendPhoto(
   opts?: { inlineKeyboard?: InlineKeyboardButton[][] }
 ): Promise<SendMessageResult | void> {
   const body: Record<string, unknown> = { chat_id: chatId, photo: photoUrl, parse_mode: 'HTML' }
-  if (caption) body.caption = caption
+  if (caption) body.caption = sanitizeTelegramHtml(caption)
   if (opts?.inlineKeyboard) body.reply_markup = { inline_keyboard: opts.inlineKeyboard }
 
   const res = await fetch(`${TELEGRAM_API}/bot${botToken()}/sendPhoto`, {
@@ -164,7 +179,7 @@ export async function editMessageText(
   const body: Record<string, unknown> = {
     chat_id: chatId,
     message_id: messageId,
-    text,
+    text: sanitizeTelegramHtml(text),
     parse_mode: 'HTML',
   }
   if (opts?.inlineKeyboard !== undefined) {
