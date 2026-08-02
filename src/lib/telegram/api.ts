@@ -101,7 +101,7 @@ export async function getChatMemberCount(chatId: string | number): Promise<numbe
   return typeof data?.result === 'number' ? data.result : null
 }
 
-export async function sendChatAction(chatId: string | number, action: 'typing' | 'upload_document' = 'typing'): Promise<void> {
+export async function sendChatAction(chatId: string | number, action: 'typing' | 'upload_document' | 'upload_photo' = 'typing'): Promise<void> {
   await fetch(`${TELEGRAM_API}/bot${botToken()}/sendChatAction`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

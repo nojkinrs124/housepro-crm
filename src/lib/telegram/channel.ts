@@ -96,6 +96,13 @@ export async function createDraftRow(
   return data.id as string
 }
 
+// Единая подсказка под превью черновика: два независимых способа правки простым ответом на сообщение —
+// без спецсимволов в начале текст идёт как новая версия поста, с префиксом "фото:"/"картинка:" — как
+// пожелание к перегенерации картинки (см. разбор в webhook route.ts, tryHandleChannelInput).
+const EDIT_HINT =
+  '<i>💬 Чтобы поправить текст — ответь на это сообщение своим вариантом.\n' +
+  '🖼 Чтобы поправить картинку конкретно — ответь так: «фото: сделай на закате, без людей».</i>'
+
 function reviewKeyboard(postId: string) {
   return {
     inlineKeyboard: [
@@ -167,7 +174,7 @@ export async function sendDraftForReview(
     .eq('id', postId)
 
   const rubricLabel = { analytics: '📊 Аналитика', case: '🏠 Кейс', cta: '📣 CTA/оффер', adhoc: '✍️ Разовый пост' }[rubric]
-  const preview = `<b>Черновик поста (${rubricLabel})</b>\n\n${fullText}\n\n<i>💬 Чтобы поправить текст — ответь на это сообщение своим вариантом.</i>`
+  const preview = `<b>Черновик поста (${rubricLabel})</b>\n\n${fullText}\n\n${EDIT_HINT}`
 
   const { message_id: messageId } = await sendPostVisual(
     settings.admin_telegram_user_id,
@@ -182,9 +189,9 @@ export async function sendDraftForReview(
 
 // Генерирует картинку и грузит в Storage; при любой ошибке (модель недоступна, превышен лимит
 // и т.п.) молча возвращает null — пост уходит на утверждение текстом, без картинки, а не падает целиком.
-async function generateAndStoreImage(postId: string, rubric: ChannelRubric, postText: string): Promise<string | null> {
+async function generateAndStoreImage(postId: string, rubric: ChannelRubric, postText: string, extraInstruction?: string): Promise<string | null> {
   try {
-    const imageBuffer = await generateChannelImage(rubric, postText)
+    const imageBuffer = await generateChannelImage(rubric, postText, extraInstruction)
     if (!imageBuffer) return null
     return await uploadChannelImage(postId, imageBuffer)
   } catch (e) {
@@ -194,7 +201,9 @@ async function generateAndStoreImage(postId: string, rubric: ChannelRubric, post
 }
 
 // Перегенерирует только картинку у уже существующего черновика, текст и CTA не трогает.
-export async function regenerateImage(postId: string): Promise<{ error?: string }> {
+// extraInstruction — конкретные пожелания к картинке от админа (например, ответ на черновик
+// вида "фото: без людей, добавь закат") — передаются в промпт модели картинки как есть.
+export async function regenerateImage(postId: string, extraInstruction?: string): Promise<{ error?: string }> {
   const supabaseAdmin = getSupabaseAdmin()
   const { data: post } = await supabaseAdmin.from('channel_posts').select('*').eq('id', postId).maybeSingle()
   if (!post) return { error: 'Черновик не найден' }
@@ -202,7 +211,7 @@ export async function regenerateImage(postId: string): Promise<{ error?: string 
   const settings = await getChannelSettings(post.organization_id)
   if (!settings?.admin_telegram_user_id) return { error: 'admin_telegram_user_id не настроен' }
 
-  const imageUrl = await generateAndStoreImage(postId, post.rubric, post.draft_text ?? '')
+  const imageUrl = await generateAndStoreImage(postId, post.rubric, post.draft_text ?? '', extraInstruction)
   if (!imageUrl) return { error: 'Не удалось сгенерировать картинку' }
 
   await supabaseAdmin.from('channel_posts').update({ image_url: imageUrl }).eq('id', postId)
@@ -210,7 +219,7 @@ export async function regenerateImage(postId: string): Promise<{ error?: string 
   const rubricLabel = { analytics: '📊 Аналитика', case: '🏠 Кейс', cta: '📣 CTA/оффер', adhoc: '✍️ Разовый пост' }[
     post.rubric as ChannelRubric
   ]
-  const preview = `<b>Черновик поста (${rubricLabel})</b>\n\n${post.draft_text}\n\n<i>💬 Чтобы поправить текст — ответь на это сообщение своим вариантом.</i>`
+  const preview = `<b>Черновик поста (${rubricLabel})</b>\n\n${post.draft_text}\n\n${EDIT_HINT}`
   const { message_id: messageId } = await sendPostVisual(
     settings.admin_telegram_user_id,
     preview,
@@ -242,7 +251,7 @@ export async function applyManualEdit(postId: string, newBodyText: string): Prom
   const rubricLabel = { analytics: '📊 Аналитика', case: '🏠 Кейс', cta: '📣 CTA/оффер', adhoc: '✍️ Разовый пост' }[
     post.rubric as ChannelRubric
   ]
-  const preview = `<b>Черновик поста (${rubricLabel}, правка)</b>\n\n${fullText}\n\n<i>💬 Чтобы поправить текст ещё раз — ответь на это сообщение своим вариантом.</i>`
+  const preview = `<b>Черновик поста (${rubricLabel}, правка)</b>\n\n${fullText}\n\n${EDIT_HINT}`
   const { message_id: messageId } = await sendPostVisual(
     settings.admin_telegram_user_id,
     preview,

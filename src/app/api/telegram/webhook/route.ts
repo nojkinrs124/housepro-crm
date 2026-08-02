@@ -695,13 +695,21 @@ async function tryHandleChannelInput(
   const settings = await getChannelSettings(orgId)
   if (!isFromAdmin(settings, telegramUserId)) return false
 
-  // Ответ (reply) на сообщение с черновиком — прямая правка текста без обращения к модели.
+  // Ответ (reply) на сообщение с черновиком — прямая правка текста без обращения к модели,
+  // либо (если начинается с "фото:"/"картинка:") — перегенерация картинки с конкретными пожеланиями.
   if (replyToMessageId) {
     const pendingPost = await getPendingReviewByMessageId(replyToMessageId)
     if (pendingPost) {
       await editMessageReplyMarkup(chatId, replyToMessageId, null)
-      const result = await applyManualEdit(pendingPost.id, text)
-      if (result.error) await sendMessage(chatId, `⚠️ Не удалось применить правку: ${result.error}`)
+      const imageNoteMatch = text.match(/^(?:фото|картинка|изображение)\s*:\s*([\s\S]+)/i)
+      if (imageNoteMatch) {
+        await sendChatAction(chatId, 'upload_photo')
+        const result = await regenerateImage(pendingPost.id, imageNoteMatch[1])
+        if (result.error) await sendMessage(chatId, `⚠️ Не удалось перегенерировать картинку: ${result.error}`)
+      } else {
+        const result = await applyManualEdit(pendingPost.id, text)
+        if (result.error) await sendMessage(chatId, `⚠️ Не удалось применить правку: ${result.error}`)
+      }
       return true
     }
   }
