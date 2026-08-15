@@ -42,6 +42,13 @@ import {
   applyManualEdit,
   getPendingReviewByMessageId,
   updatePostReactionCount,
+  getRubrics,
+  getRubricById,
+  updateRubricPrompt,
+  toggleRubricActive,
+  addScheduleSlot,
+  deleteScheduleSlot,
+  toggleScheduleSlot,
 } from '@/lib/telegram/channel'
 import { generateCaseDraft, generateAnalyticsDraft, generateCtaDraft } from '@/lib/telegram/channel-generate'
 
@@ -457,6 +464,122 @@ async function tryHandleAddUserInput(chatId: number, orgId: string, text: string
   return true
 }
 
+const DAY_ALIASES: Record<string, string> = {
+  пн: 'mon', вт: 'tue', ср: 'wed', чт: 'thu', пт: 'fri', сб: 'sat', вс: 'sun',
+  mon: 'mon', tue: 'tue', wed: 'wed', thu: 'thu', fri: 'fri', sat: 'sat', sun: 'sun',
+}
+
+// Действия в разделе "⏰ Расписание": toggle/delete слота, + запрос на добавление нового.
+async function handleScheduleAction(action: string, arg: string, chatId: number, orgId: string, messageId: number | undefined, telegramUserId: string) {
+  const settings = await getChannelSettings(orgId)
+  if (!isFromAdmin(settings, telegramUserId)) return
+
+  if (action === 'chschedtoggle') {
+    // текущее состояние неизвестно без чтения — просто читаем список заново после переключения,
+    // проще прочитать текущий enabled прямо тут не нужно: toggle делает инверсию на уровне запроса.
+    const { getScheduleWithRubrics } = await import('@/lib/telegram/channel')
+    const slots = await getScheduleWithRubrics(orgId)
+    const slot = slots.find((s) => s.id === arg)
+    if (slot) await toggleScheduleSlot(arg, !slot.enabled)
+    await showMenuScreen(chatId, orgId, 'channel_schedule', HELP_TEXT, messageId)
+    return
+  }
+  if (action === 'chscheddel') {
+    await deleteScheduleSlot(arg)
+    await showMenuScreen(chatId, orgId, 'channel_schedule', HELP_TEXT, messageId)
+    return
+  }
+  if (action === 'chschedadd') {
+    await setAwaitingIntent(orgId, 'add_slot')
+    const rubrics = await getRubrics(orgId)
+    const rubricKeys = rubrics.map((r) => r.key).join(', ')
+    await sendMessage(
+      chatId,
+      '➕ Пришли одной строкой: день, время (ЧЧ:ММ) и рубрику.\n' +
+        `Дни: пн вт ср чт пт сб вс. Рубрики: ${rubricKeys}.\n` +
+        'Например: <code>пн 08:00 cta</code>'
+    )
+    return
+  }
+}
+
+// Действия в разделе "✍️ Рубрики": показать/начать правку промпта, вкл/выкл рубрику.
+async function handleRubricAction(action: string, rubricId: string, chatId: number, orgId: string, messageId: number | undefined, telegramUserId: string) {
+  const settings = await getChannelSettings(orgId)
+  if (!isFromAdmin(settings, telegramUserId)) return
+
+  if (action === 'chrubtoggle') {
+    const rubric = await getRubricById(rubricId)
+    if (rubric) await toggleRubricActive(rubricId, !rubric.active)
+    await showMenuScreen(chatId, orgId, 'channel_rubrics', HELP_TEXT, messageId)
+    return
+  }
+  if (action === 'chrubedit') {
+    const rubric = await getRubricById(rubricId)
+    if (!rubric) return
+    await setAwaitingIntent(orgId, `edit_rubric:${rubricId}`)
+    await sendMessage(
+      chatId,
+      `<b>${rubric.label}</b>\n\nТекущий промпт:\n<i>${rubric.prompt_template}</i>\n\n` +
+        '✏️ Ответь на это сообщение новым текстом промпта, чтобы заменить его.'
+    )
+    return
+  }
+}
+
+// Перехватывает текст, если бот ждёт добавление слота ('add_slot') или новый промпт
+// рубрики ('edit_rubric:<id>') — awaiting_intent выставляется в handleScheduleAction/
+// handleRubricAction выше. Возвращает true, если ввод был перехвачен.
+async function tryHandleScheduleOrRubricInput(chatId: number, orgId: string, text: string): Promise<boolean> {
+  const settings = await getChannelSettings(orgId)
+  const intent = settings?.awaiting_intent
+  if (!intent) return false
+
+  if (intent === 'add_slot') {
+    const match = text.trim().toLowerCase().match(/^(\S+)\s+(\d{1,2}:\d{2})\s+(\S+)$/)
+    if (!match) {
+      await sendMessage(chatId, '⚠️ Не разобрал формат. Пример: <code>пн 08:00 cta</code>')
+      return true
+    }
+    const [, dayRaw, time, rubricKey] = match
+    const dayKey = DAY_ALIASES[dayRaw]
+    if (!dayKey) {
+      await sendMessage(chatId, '⚠️ Не узнал день. Используй: пн вт ср чт пт сб вс.')
+      return true
+    }
+    const rubrics = await getRubrics(orgId)
+    const rubric = rubrics.find((r) => r.key === rubricKey)
+    if (!rubric) {
+      await sendMessage(chatId, `⚠️ Не знаю рубрику «${rubricKey}». Доступные: ${rubrics.map((r) => r.key).join(', ')}`)
+      return true
+    }
+    const result = await addScheduleSlot(orgId, rubric.id, dayKey, time.padStart(5, '0'))
+    await setAwaitingIntent(orgId, null)
+    if (result.error) {
+      await sendMessage(chatId, `⚠️ Не удалось добавить слот: ${result.error}`)
+    } else {
+      await sendMessage(chatId, `✅ Слот добавлен: ${dayRaw} ${time} — ${rubric.label}`)
+    }
+    await showMenuScreen(chatId, orgId, 'channel_schedule', HELP_TEXT)
+    return true
+  }
+
+  if (intent.startsWith('edit_rubric:')) {
+    const rubricId = intent.slice('edit_rubric:'.length)
+    const result = await updateRubricPrompt(rubricId, text.trim())
+    await setAwaitingIntent(orgId, null)
+    if (result.error) {
+      await sendMessage(chatId, `⚠️ Не удалось сохранить промпт: ${result.error}`)
+    } else {
+      await sendMessage(chatId, '✅ Промпт рубрики обновлён.')
+    }
+    await showMenuScreen(chatId, orgId, 'channel_rubrics', HELP_TEXT)
+    return true
+  }
+
+  return false
+}
+
 async function handleChannelCallback(action: string, postId: string, chatId: number, messageId: number | undefined) {
   if (messageId) await editMessageReplyMarkup(chatId, messageId, null)
 
@@ -599,6 +722,20 @@ async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_
 
   if (action === 'chpub' || action === 'chregen' || action === 'chreject' || action === 'chregenimg') {
     await handleChannelCallback(action, batchId, chatId, messageId)
+    return
+  }
+
+  if (action === 'chschedtoggle' || action === 'chscheddel' || action === 'chschedadd') {
+    const orgId = await resolveBotOrgId()
+    if (!orgId) return
+    await handleScheduleAction(action, batchId, chatId, orgId, messageId, String(chatId))
+    return
+  }
+
+  if (action === 'chrubedit' || action === 'chrubtoggle') {
+    const orgId = await resolveBotOrgId()
+    if (!orgId) return
+    await handleRubricAction(action, batchId, chatId, orgId, messageId, String(chatId))
     return
   }
 
@@ -859,6 +996,8 @@ export async function POST(request: Request) {
         (await tryHandleAddUserInput(chatId, orgIdForAddUser, text, forwardFrom?.id, forwardFrom?.first_name || forwardFrom?.username))
       ) {
         // перехвачено — ID добавлен в allowlist
+      } else if (orgIdForAddUser && (await tryHandleScheduleOrRubricInput(chatId, orgIdForAddUser, text))) {
+        // перехвачено — добавлен слот расписания или обновлён промпт рубрики
       } else if (!(await tryHandleChannelInput(chatId, userId, text, update.message.reply_to_message?.message_id))) {
         await handleUserTurn(chatId, userId, username, text)
       }

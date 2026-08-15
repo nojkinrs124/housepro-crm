@@ -14,7 +14,10 @@ export interface ChannelSettings {
   admin_telegram_username: string | null
   style_prompt: string
   schedule_json: Record<string, ChannelRubric>
-  awaiting_intent: 'case' | 'post' | 'add_bot_user' | null
+  // Раньше был union из 3 фиксированных значений — расширен до string, чтобы кодировать
+  // составные состояния вида 'edit_rubric:<uuid>' и 'add_slot' (см. Phase 3, менюшка
+  // расписания/рубрик в боте). Фактическую валидацию значений делает CHECK в БД.
+  awaiting_intent: string | null
   schedule_paused: boolean
   timezone: string
   draft_send_hour: number
@@ -367,9 +370,79 @@ export async function getPendingReviewByMessageId(messageId: number) {
   return data
 }
 
-export async function setAwaitingIntent(orgId: string, intent: 'case' | 'post' | null): Promise<void> {
+export async function setAwaitingIntent(orgId: string, intent: string | null): Promise<void> {
   const supabaseAdmin = getSupabaseAdmin()
   await supabaseAdmin.from('channel_bot_settings').update({ awaiting_intent: intent }).eq('organization_id', orgId)
+}
+
+// --- Phase 3: управление рубриками и расписанием из бот-меню ---
+
+export async function getRubrics(orgId: string): Promise<ChannelRubricRow[]> {
+  const supabaseAdmin = getSupabaseAdmin()
+  const { data } = await supabaseAdmin
+    .from('channel_rubrics')
+    .select('*')
+    .eq('organization_id', orgId)
+    .order('sort_order', { ascending: true })
+  return (data as ChannelRubricRow[]) ?? []
+}
+
+export async function getRubricById(id: string): Promise<ChannelRubricRow | null> {
+  const supabaseAdmin = getSupabaseAdmin()
+  const { data } = await supabaseAdmin.from('channel_rubrics').select('*').eq('id', id).maybeSingle()
+  return (data as ChannelRubricRow | null) ?? null
+}
+
+export async function updateRubricPrompt(id: string, promptTemplate: string): Promise<{ error?: string }> {
+  const supabaseAdmin = getSupabaseAdmin()
+  const { error } = await supabaseAdmin
+    .from('channel_rubrics')
+    .update({ prompt_template: promptTemplate, updated_at: new Date().toISOString() })
+    .eq('id', id)
+  return { error: error?.message }
+}
+
+export async function toggleRubricActive(id: string, active: boolean): Promise<void> {
+  const supabaseAdmin = getSupabaseAdmin()
+  await supabaseAdmin.from('channel_rubrics').update({ active }).eq('id', id)
+}
+
+const DAY_ORDER = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+
+export async function getScheduleWithRubrics(orgId: string): Promise<ChannelScheduleRow[]> {
+  const supabaseAdmin = getSupabaseAdmin()
+  const { data } = await supabaseAdmin
+    .from('channel_schedule')
+    .select('*, rubric:channel_rubrics(*)')
+    .eq('organization_id', orgId)
+  const rows = (data as unknown as ChannelScheduleRow[]) ?? []
+  return rows.sort((a, b) => {
+    const dayDiff = DAY_ORDER.indexOf(a.day_key) - DAY_ORDER.indexOf(b.day_key)
+    return dayDiff !== 0 ? dayDiff : a.send_time_local.localeCompare(b.send_time_local)
+  })
+}
+
+export async function addScheduleSlot(
+  orgId: string,
+  rubricId: string,
+  dayKey: string,
+  sendTimeLocal: string
+): Promise<{ error?: string }> {
+  const supabaseAdmin = getSupabaseAdmin()
+  const { error } = await supabaseAdmin
+    .from('channel_schedule')
+    .insert({ organization_id: orgId, rubric_id: rubricId, day_key: dayKey, send_time_local: sendTimeLocal, enabled: true })
+  return { error: error?.message }
+}
+
+export async function deleteScheduleSlot(id: string): Promise<void> {
+  const supabaseAdmin = getSupabaseAdmin()
+  await supabaseAdmin.from('channel_schedule').delete().eq('id', id)
+}
+
+export async function toggleScheduleSlot(id: string, enabled: boolean): Promise<void> {
+  const supabaseAdmin = getSupabaseAdmin()
+  await supabaseAdmin.from('channel_schedule').update({ enabled }).eq('id', id)
 }
 
 export async function setSchedulePaused(orgId: string, paused: boolean): Promise<void> {

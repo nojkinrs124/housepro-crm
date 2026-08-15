@@ -2,7 +2,7 @@ import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { editMessageText, sendMessage, type InlineKeyboardButton } from '@/lib/telegram/api'
 import { getChannelSettings, setSchedulePaused, type ChannelSettings } from '@/lib/telegram/channel'
 import { buildLeadsScreen, buildDealsScreen, buildPaymentsScreen, buildTasksScreen } from '@/lib/telegram/crm-menu'
-import { buildChannelPostsScreen } from '@/lib/telegram/channel-menu'
+import { buildChannelPostsScreen, buildChannelScheduleScreen, buildChannelRubricsScreen } from '@/lib/telegram/channel-menu'
 
 // Разделы главного меню. 'multiagent' пока заглушка (фаза 4 роадмапа).
 export type MenuScreen =
@@ -14,6 +14,8 @@ export type MenuScreen =
   | 'crm_tasks'
   | 'channel'
   | 'channel_posts'
+  | 'channel_schedule'
+  | 'channel_rubrics'
   | 'multiagent'
   | 'settings'
   | 'settings_users'
@@ -82,6 +84,10 @@ function channelScreen(): ScreenContent {
       ],
       [{ text: '📊 Статистика', callback_data: 'chmenu:stats' }],
       [{ text: '🗂 Последние посты', callback_data: 'nav:channel_posts' }],
+      [
+        { text: '⏰ Расписание', callback_data: 'nav:channel_schedule' },
+        { text: '✍️ Рубрики', callback_data: 'nav:channel_rubrics' },
+      ],
       [BACK_TO_ROOT],
     ],
   }
@@ -90,14 +96,13 @@ function channelScreen(): ScreenContent {
 function settingsScreen(settings: ChannelSettings | null): ScreenContent {
   const paused = settings?.schedule_paused ?? false
   const tz = settings?.timezone ?? 'Etc/GMT-7'
-  const hour = settings?.draft_send_hour ?? 19
 
   return {
     text:
       '⚙️ <b>Настройки</b>\n\n' +
       `Автопостинг в канал: ${paused ? '⏸ на паузе' : '▶️ включён'}\n` +
-      `Часовой пояс: ${tz}\n` +
-      `Время отправки черновика: ${hour}:00`,
+      `Часовой пояс: ${tz}\n\n` +
+      'Точное время и рубрики по дням — в разделе 📢 Канал → ⏰ Расписание.',
     keyboard: [
       [paused
         ? { text: '▶️ Возобновить автопостинг', callback_data: 'set:resume' }
@@ -150,6 +155,10 @@ async function buildScreen(screen: MenuScreen, orgId: string, helpText: string):
       return channelScreen()
     case 'channel_posts':
       return buildChannelPostsScreen(orgId)
+    case 'channel_schedule':
+      return buildChannelScheduleScreen(orgId)
+    case 'channel_rubrics':
+      return buildChannelRubricsScreen(orgId)
     case 'settings':
       return settingsScreen(await getChannelSettings(orgId))
     case 'settings_users':
