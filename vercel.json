@@ -1,6 +1,5 @@
 {
   "crons": [
-    { "path": "/api/cron/channel-draft", "schedule": "0 12 * * *" },
     { "path": "/api/cron/channel-weekly-summary", "schedule": "0 12 * * 0" }
   ]
 }

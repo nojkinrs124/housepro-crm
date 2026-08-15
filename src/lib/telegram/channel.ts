@@ -69,6 +69,56 @@ function siteUrlFromEnv(): string {
   )
 }
 
+// Phase 1/2 гибкого расписания: рубрики и слоты — теперь данные в БД (channel_rubrics/
+// channel_schedule), а не хардкод. Читаются heartbeat-кроном (api/cron/channel-heartbeat).
+export interface ChannelRubricRow {
+  id: string
+  organization_id: string
+  key: string
+  label: string
+  prompt_template: string
+  use_web_search: boolean
+  requires_input: boolean
+  input_prompt: string | null
+  image_style_override: string | null
+  active: boolean
+  sort_order: number
+}
+
+export interface ChannelScheduleRow {
+  id: string
+  organization_id: string
+  rubric_id: string
+  day_key: string
+  send_time_local: string
+  enabled: boolean
+  rubric: ChannelRubricRow | null
+}
+
+export async function getActiveScheduleForDay(orgId: string, dayKey: string): Promise<ChannelScheduleRow[]> {
+  const supabaseAdmin = getSupabaseAdmin()
+  const { data } = await supabaseAdmin
+    .from('channel_schedule')
+    .select('*, rubric:channel_rubrics(*)')
+    .eq('organization_id', orgId)
+    .eq('day_key', dayKey)
+    .eq('enabled', true)
+  return (data as unknown as ChannelScheduleRow[]) ?? []
+}
+
+// Дедупликация heartbeat-тиков: слот уже обработан сегодня (черновик отправлен или
+// запрошена надиктовка), не нужно слать повторно на следующем тике раз в ~15 мин.
+export async function hasPostForSchedule(scheduleId: string, scheduledFor: string): Promise<boolean> {
+  const supabaseAdmin = getSupabaseAdmin()
+  const { data } = await supabaseAdmin
+    .from('channel_posts')
+    .select('id')
+    .eq('schedule_id', scheduleId)
+    .eq('scheduled_for', scheduledFor)
+    .maybeSingle()
+  return !!data
+}
+
 export async function getChannelSettings(orgId: string): Promise<ChannelSettings | null> {
   const supabaseAdmin = getSupabaseAdmin()
   const { data } = await supabaseAdmin
@@ -84,12 +134,20 @@ export async function getChannelSettings(orgId: string): Promise<ChannelSettings
 export async function createDraftRow(
   orgId: string,
   rubric: ChannelRubric,
-  scheduledFor: string | null
+  scheduledFor: string | null,
+  linkedTo?: { rubricId?: string; scheduleId?: string }
 ): Promise<string> {
   const supabaseAdmin = getSupabaseAdmin()
   const { data, error } = await supabaseAdmin
     .from('channel_posts')
-    .insert({ organization_id: orgId, rubric, status: 'draft', scheduled_for: scheduledFor })
+    .insert({
+      organization_id: orgId,
+      rubric,
+      status: 'draft',
+      scheduled_for: scheduledFor,
+      rubric_id: linkedTo?.rubricId ?? null,
+      schedule_id: linkedTo?.scheduleId ?? null,
+    })
     .select('id')
     .single()
   if (error || !data) throw new Error(`createDraftRow: ${error?.message}`)

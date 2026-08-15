@@ -159,6 +159,18 @@ ${styleHint}${preferenceHint}`,
   return Buffer.from(base64, 'base64')
 }
 
+// Обобщённая генерация по рубрике из БД (channel_rubrics.prompt_template) — используется
+// heartbeat-кроном (см. api/cron/channel-heartbeat). Отдельные хардкод-функции ниже
+// (generateAnalyticsDraft/generateCtaDraft/generateAdhocDraft) пока остаются нетронутыми —
+// их использует ручная перегенерация в webhook.ts/tools.ts; унификация всех путей — Phase 4.
+export async function generateRubricDraft(
+  settings: ChannelSettings | null,
+  rubric: { prompt_template: string; use_web_search: boolean }
+): Promise<string> {
+  const system = baseSystemPrompt(settings)
+  return callOpenRouter(system, rubric.prompt_template, rubric.use_web_search)
+}
+
 export async function generateAdhocDraft(settings: ChannelSettings | null, topic: string): Promise<string> {
   const system = baseSystemPrompt(settings)
   const user = `Напиши пост на тему: "${topic}". Если тема требует актуальных фактов — используй веб-поиск,

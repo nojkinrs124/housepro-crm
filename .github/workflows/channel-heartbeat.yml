@@ -1,0 +1,19 @@
+name: Channel heartbeat
+
+# Vercel Hobby-план ограничивает встроенный крон 1 запуском в сутки — этого не хватает
+# для нескольких слотов расписания в день. GitHub Actions не подчиняется этому лимиту,
+# поэтому дёргаем /api/cron/channel-heartbeat отсюда каждые 15 минут (бесплатно).
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call channel-heartbeat endpoint
+        run: |
+          curl -sf --max-time 60 \
+            -H "Authorization: Bearer ${{ secrets.CHANNEL_CRON_SECRET }}" \
+            "${{ secrets.CHANNEL_SITE_URL }}/api/cron/channel-heartbeat"
