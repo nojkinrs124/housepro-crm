@@ -397,6 +397,9 @@ async function handleNavCallback(screen: string, chatId: number, orgId: string, 
   const settings = await getChannelSettings(orgId)
   if (!isFromAdmin(settings, telegramUserId)) return
   if (!NAV_SCREENS.includes(screen as MenuScreen)) return
+  // Навигация по меню = отказ от любого незавершённого текстового ввода (добавление слота,
+  // правка промпта/картинки и т.п.) — иначе застрявший awaiting_intent потом глотает команды.
+  if (settings?.awaiting_intent) await setAwaitingIntent(orgId, null)
   await showMenuScreen(chatId, orgId, screen as MenuScreen, HELP_TEXT, messageId)
 }
 
@@ -556,6 +559,11 @@ async function handleRubricAction(action: string, rubricId: string, chatId: numb
 // рубрики ('edit_rubric:<id>') — awaiting_intent выставляется в handleScheduleAction/
 // handleRubricAction выше. Возвращает true, если ввод был перехвачен.
 async function tryHandleScheduleOrRubricInput(chatId: number, orgId: string, text: string): Promise<boolean> {
+  // Команды (/menu, /pause, /case и т.п.) не должны глотаться "застрявшим" awaiting_intent —
+  // иначе после незавершённого добавления слота/правки промпта бот перестаёт реагировать
+  // на команды, пока их случайно не распознает как невалидный ввод формы.
+  if (text.startsWith('/')) return false
+
   const settings = await getChannelSettings(orgId)
   const intent = settings?.awaiting_intent
   if (!intent) return false
@@ -947,6 +955,7 @@ async function tryHandleChannelInput(
   }
 
   if (text === '/menu') {
+    await setAwaitingIntent(orgId, null)
     await sendMainMenu(chatId)
     return true
   }
