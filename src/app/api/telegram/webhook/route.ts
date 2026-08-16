@@ -46,11 +46,13 @@ import {
   getRubricById,
   getRubricByKey,
   updateRubricPrompt,
+  updateRubricImageStyle,
   toggleRubricActive,
   addRubric,
   addScheduleSlot,
   deleteScheduleSlot,
   toggleScheduleSlot,
+  type ChannelRubric,
 } from '@/lib/telegram/channel'
 import { generateRubricDraft } from '@/lib/telegram/channel-generate'
 
@@ -527,6 +529,18 @@ async function handleRubricAction(action: string, rubricId: string, chatId: numb
     )
     return
   }
+  if (action === 'chrubimg') {
+    const rubric = await getRubricById(rubricId)
+    if (!rubric) return
+    await setAwaitingIntent(orgId, `edit_rubric_image:${rubricId}`)
+    await sendMessage(
+      chatId,
+      `<b>${rubric.label}</b> — стиль картинки\n\n` +
+        `Сейчас: <i>${rubric.image_style_override ?? 'не задан (общий фотореалистичный стиль)'}</i>\n\n` +
+        '🖼 Ответь на это сообщение текстом стиля (например «в тёплых тонах, минимализм») или пришли «-», чтобы сбросить.'
+    )
+    return
+  }
   if (action === 'chrubadd') {
     await setAwaitingIntent(orgId, 'add_rubric')
     await sendMessage(
@@ -607,6 +621,45 @@ async function tryHandleScheduleOrRubricInput(chatId: number, orgId: string, tex
       await sendMessage(chatId, '✅ Промпт рубрики обновлён.')
     }
     await showMenuScreen(chatId, orgId, 'channel_rubrics', HELP_TEXT)
+    return true
+  }
+
+  if (intent.startsWith('edit_rubric_image:')) {
+    const rubricId = intent.slice('edit_rubric_image:'.length)
+    const trimmed = text.trim()
+    const value = trimmed === '-' || trimmed === '' ? null : trimmed
+    const result = await updateRubricImageStyle(rubricId, value)
+    await setAwaitingIntent(orgId, null)
+    if (result.error) {
+      await sendMessage(chatId, `⚠️ Не удалось сохранить стиль картинки: ${result.error}`)
+    } else {
+      await sendMessage(chatId, value ? '✅ Стиль картинки для рубрики обновлён.' : '✅ Стиль картинки сброшен на общий.')
+    }
+    await showMenuScreen(chatId, orgId, 'channel_rubrics', HELP_TEXT)
+    return true
+  }
+
+  // Кастомные requires_input-рубрики (не 'case'/'post', у которых свой отдельный флоу выше
+  // по файлу) — единая точка входа для генерации по тексту от админа, независимо от того,
+  // сколько таких рубрик заведено через "➕ Новая рубрика".
+  if (intent.startsWith('input_rubric:')) {
+    const rubricId = intent.slice('input_rubric:'.length)
+    await setAwaitingIntent(orgId, null)
+    const rubric = await getRubricById(rubricId)
+    if (!rubric) {
+      await sendMessage(chatId, '⚠️ Рубрика не найдена (возможно, удалена).')
+      return true
+    }
+    await sendChatAction(chatId, 'typing')
+    const settings2 = await getChannelSettings(orgId)
+    try {
+      const draftText = await generateRubricDraft(settings2, rubric, text)
+      const postId = await createDraftRow(orgId, rubric.key as ChannelRubric, null, { rubricId: rubric.id })
+      await getSupabaseAdmin().from('channel_posts').update({ source_input: text }).eq('id', postId)
+      await sendDraftForReview(orgId, postId, rubric.key as ChannelRubric, draftText, 'dm_admin')
+    } catch (e) {
+      await sendMessage(chatId, `⚠️ Не удалось сгенерировать черновик: ${e instanceof Error ? e.message : 'ошибка'}`)
+    }
     return true
   }
 
@@ -771,7 +824,7 @@ async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_
     return
   }
 
-  if (action === 'chrubedit' || action === 'chrubtoggle' || action === 'chrubadd') {
+  if (action === 'chrubedit' || action === 'chrubtoggle' || action === 'chrubadd' || action === 'chrubimg') {
     const orgId = await resolveBotOrgId()
     if (!orgId) return
     await handleRubricAction(action, batchId, chatId, orgId, messageId, String(chatId))

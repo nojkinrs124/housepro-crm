@@ -67,10 +67,12 @@ export async function GET(request: Request) {
     if (await hasPostForSchedule(slot.id, scheduledFor)) continue
 
     if (rubric.requires_input) {
-      // Только 'case' и 'adhoc' пока умеют работать через awaiting_intent (см. webhook.ts) —
-      // произвольные кастомные requires_input-рубрики ждут обобщения этого механизма в Phase 4.
-      const intent = rubric.key === 'case' ? 'case' : rubric.key === 'adhoc' ? 'post' : null
-      if (intent) await setAwaitingIntent(orgId, intent)
+      // 'case' и 'adhoc' — старые флоу с собственной логикой в webhook.ts (setAwaitingIntent
+      // 'case'/'post'). Любая другая requires_input-рубрика (заведённая через "➕ Новая
+      // рубрика" в боте) идёт по единому generic-флоу 'input_rubric:<id>' — см. обработчик
+      // в tryHandleScheduleOrRubricInput в webhook.ts.
+      const intent = rubric.key === 'case' ? 'case' : rubric.key === 'adhoc' ? 'post' : `input_rubric:${rubric.id}`
+      await setAwaitingIntent(orgId, intent)
       await sendMessage(
         settings.admin_telegram_user_id,
         rubric.input_prompt ?? `🎙 По расписанию сегодня рубрика «${rubric.label}» — пришли текст или голосовое.`

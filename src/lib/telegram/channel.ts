@@ -7,6 +7,15 @@ import { uploadChannelImage } from '@/lib/telegram/channel-image'
 export type ChannelRubric = 'analytics' | 'case' | 'cta' | 'adhoc'
 export type ChannelCtaType = 'dm_admin' | 'bot_qualifier' | 'none'
 
+// Фолбэк на случай, если запись рубрики почему-то не нашлась в channel_rubrics (не должно
+// происходить в норме — рубрики теперь основной источник label, см. RubricRow.label).
+const RUBRIC_LABEL_FALLBACK: Record<ChannelRubric, string> = {
+  analytics: '📊 Аналитика',
+  case: '🏠 Кейс',
+  cta: '📣 CTA/оффер',
+  adhoc: '✍️ Разовый пост',
+}
+
 export interface ChannelSettings {
   organization_id: string
   channel_chat_id: string | null
@@ -215,10 +224,11 @@ export async function sendDraftForReview(
     return
   }
 
+  const rubricRow = await getRubricByKey(orgId, rubric)
   const ctaLine = await resolveCtaLine(orgId, postId, settings, ctaType)
   const fullText = `${text}${ctaLine}`
 
-  const imageUrl = await generateAndStoreImage(postId, rubric, text)
+  const imageUrl = await generateAndStoreImage(postId, rubric, text, rubricRow?.image_style_override ?? undefined)
 
   const supabaseAdmin = getSupabaseAdmin()
   await supabaseAdmin
@@ -232,7 +242,7 @@ export async function sendDraftForReview(
     })
     .eq('id', postId)
 
-  const rubricLabel = { analytics: '📊 Аналитика', case: '🏠 Кейс', cta: '📣 CTA/оффер', adhoc: '✍️ Разовый пост' }[rubric]
+  const rubricLabel = rubricRow?.label ?? RUBRIC_LABEL_FALLBACK[rubric] ?? rubric
   const preview = `<b>Черновик поста (${rubricLabel})</b>\n\n${fullText}\n\n${EDIT_HINT}`
 
   const { message_id: messageId } = await sendPostVisual(
@@ -270,14 +280,15 @@ export async function regenerateImage(postId: string, extraInstruction?: string)
   const settings = await getChannelSettings(post.organization_id)
   if (!settings?.admin_telegram_user_id) return { error: 'admin_telegram_user_id не настроен' }
 
-  const imageUrl = await generateAndStoreImage(postId, post.rubric, post.draft_text ?? '', extraInstruction)
+  const rubricRow = await getRubricByKey(post.organization_id, post.rubric)
+  // Дефолтный стиль рубрики + разовое пожелание админа (если есть) — оба применяются вместе.
+  const combinedInstruction = [rubricRow?.image_style_override, extraInstruction].filter(Boolean).join('. ') || undefined
+  const imageUrl = await generateAndStoreImage(postId, post.rubric, post.draft_text ?? '', combinedInstruction)
   if (!imageUrl) return { error: 'Не удалось сгенерировать картинку' }
 
   await supabaseAdmin.from('channel_posts').update({ image_url: imageUrl }).eq('id', postId)
 
-  const rubricLabel = { analytics: '📊 Аналитика', case: '🏠 Кейс', cta: '📣 CTA/оффер', adhoc: '✍️ Разовый пост' }[
-    post.rubric as ChannelRubric
-  ]
+  const rubricLabel = rubricRow?.label ?? RUBRIC_LABEL_FALLBACK[post.rubric as ChannelRubric] ?? post.rubric
   const preview = `<b>Черновик поста (${rubricLabel})</b>\n\n${post.draft_text}\n\n${EDIT_HINT}`
   const { message_id: messageId } = await sendPostVisual(
     settings.admin_telegram_user_id,
@@ -307,9 +318,8 @@ export async function applyManualEdit(postId: string, newBodyText: string): Prom
 
   await supabaseAdmin.from('channel_posts').update({ draft_text: fullText, updated_at: new Date().toISOString() }).eq('id', postId)
 
-  const rubricLabel = { analytics: '📊 Аналитика', case: '🏠 Кейс', cta: '📣 CTA/оффер', adhoc: '✍️ Разовый пост' }[
-    post.rubric as ChannelRubric
-  ]
+  const rubricRow = await getRubricByKey(post.organization_id, post.rubric)
+  const rubricLabel = rubricRow?.label ?? RUBRIC_LABEL_FALLBACK[post.rubric as ChannelRubric] ?? post.rubric
   const preview = `<b>Черновик поста (${rubricLabel}, правка)</b>\n\n${fullText}\n\n${EDIT_HINT}`
   const { message_id: messageId } = await sendPostVisual(
     settings.admin_telegram_user_id,
@@ -435,6 +445,15 @@ export async function updateRubricPrompt(id: string, promptTemplate: string): Pr
   const { error } = await supabaseAdmin
     .from('channel_rubrics')
     .update({ prompt_template: promptTemplate, updated_at: new Date().toISOString() })
+    .eq('id', id)
+  return { error: error?.message }
+}
+
+export async function updateRubricImageStyle(id: string, imageStyleOverride: string | null): Promise<{ error?: string }> {
+  const supabaseAdmin = getSupabaseAdmin()
+  const { error } = await supabaseAdmin
+    .from('channel_rubrics')
+    .update({ image_style_override: imageStyleOverride, updated_at: new Date().toISOString() })
     .eq('id', id)
   return { error: error?.message }
 }
