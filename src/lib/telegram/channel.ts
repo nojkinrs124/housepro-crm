@@ -13,14 +13,12 @@ export interface ChannelSettings {
   admin_telegram_user_id: string | null
   admin_telegram_username: string | null
   style_prompt: string
-  schedule_json: Record<string, ChannelRubric>
   // Раньше был union из 3 фиксированных значений — расширен до string, чтобы кодировать
   // составные состояния вида 'edit_rubric:<uuid>' и 'add_slot' (см. Phase 3, менюшка
   // расписания/рубрик в боте). Фактическую валидацию значений делает CHECK в БД.
   awaiting_intent: string | null
   schedule_paused: boolean
   timezone: string
-  draft_send_hour: number
 }
 
 // dm_admin — ведёт прямо в личку к Руслану. Используется для ВСЕХ CTA на данный момент.
@@ -393,6 +391,45 @@ export async function getRubricById(id: string): Promise<ChannelRubricRow | null
   return (data as ChannelRubricRow | null) ?? null
 }
 
+export async function getRubricByKey(orgId: string, key: string): Promise<ChannelRubricRow | null> {
+  const supabaseAdmin = getSupabaseAdmin()
+  const { data } = await supabaseAdmin
+    .from('channel_rubrics')
+    .select('*')
+    .eq('organization_id', orgId)
+    .eq('key', key)
+    .maybeSingle()
+  return (data as ChannelRubricRow | null) ?? null
+}
+
+export async function addRubric(
+  orgId: string,
+  key: string,
+  label: string,
+  promptTemplate: string
+): Promise<{ error?: string; id?: string }> {
+  const supabaseAdmin = getSupabaseAdmin()
+  const { data: maxRow } = await supabaseAdmin
+    .from('channel_rubrics')
+    .select('sort_order')
+    .eq('organization_id', orgId)
+    .order('sort_order', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  const { data, error } = await supabaseAdmin
+    .from('channel_rubrics')
+    .insert({
+      organization_id: orgId,
+      key,
+      label,
+      prompt_template: promptTemplate,
+      sort_order: (maxRow?.sort_order ?? 0) + 1,
+    })
+    .select('id')
+    .single()
+  return { error: error?.message, id: data?.id }
+}
+
 export async function updateRubricPrompt(id: string, promptTemplate: string): Promise<{ error?: string }> {
   const supabaseAdmin = getSupabaseAdmin()
   const { error } = await supabaseAdmin
@@ -463,26 +500,6 @@ export async function updatePostReactionCount(messageId: number, totalCount: num
 
 export function isFromAdmin(settings: ChannelSettings | null, telegramUserId: string): boolean {
   return !!settings?.admin_telegram_user_id && settings.admin_telegram_user_id === telegramUserId
-}
-
-export function getSettingsText(settings: ChannelSettings | null): string {
-  if (!settings) return '⚠️ Настройки канала не заведены.'
-  const scheduleLabels: Record<ChannelRubric, string> = { analytics: 'аналитика', case: 'кейс', cta: 'CTA/оффер', adhoc: 'разовое' }
-  const scheduleLines = Object.entries(settings.schedule_json)
-    .map(([day, rubric]) => `  ${day} — ${scheduleLabels[rubric] ?? rubric}`)
-    .join('\n')
-  return [
-    '⚙️ <b>Настройки канала</b>',
-    '',
-    `Канал: ${settings.channel_chat_id ?? '—'}`,
-    `Админ: @${settings.admin_telegram_username ?? '—'}`,
-    `Автопостинг: ${settings.schedule_paused ? '⏸ на паузе (/resume — включить)' : '▶️ активен (/pause — приостановить)'}`,
-    `Часовой пояс: ${settings.timezone} · черновики на утверждение приходят в ${settings.draft_send_hour}:00 по нему`,
-    'Расписание:',
-    scheduleLines,
-    '',
-    'Изменить расписание/канал можно только через разработчика (напиши мне здесь в чате).',
-  ].join('\n')
 }
 
 // Быстрая сводка по запросу из меню (в отличие от еженедельного cron — ничего не пишет

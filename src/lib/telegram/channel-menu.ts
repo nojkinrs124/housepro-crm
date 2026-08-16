@@ -104,10 +104,14 @@ export async function buildChannelRubricsScreen(orgId: string): Promise<ScreenCo
     { text: `${r.active ? '' : '💤 '}${r.label}`, callback_data: `chrubedit:${r.id}` },
     { text: r.active ? '⏸' : '▶️', callback_data: `chrubtoggle:${r.id}` },
   ])
+  keyboard.push([{ text: '➕ Новая рубрика', callback_data: 'chrubadd:new' }])
   keyboard.push([BACK_TO_CHANNEL])
 
   return {
-    text: '✍️ <b>Рубрики</b>\n\nТапни по рубрике, чтобы посмотреть и изменить её промпт.',
+    text:
+      '✍️ <b>Рубрики</b>\n\nТапни по рубрике, чтобы посмотреть и изменить её промпт.\n\n' +
+      '<i>➕ Новая рубрика — формат: key | Название | текст промпта, например:\n' +
+      '<code>listing | 🏠 Объект дня | Расскажи об одном актуальном объекте из базы, его сильных сторонах.</code></i>',
     keyboard,
   }
 }

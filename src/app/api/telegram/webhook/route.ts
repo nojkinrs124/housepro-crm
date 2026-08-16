@@ -44,13 +44,15 @@ import {
   updatePostReactionCount,
   getRubrics,
   getRubricById,
+  getRubricByKey,
   updateRubricPrompt,
   toggleRubricActive,
+  addRubric,
   addScheduleSlot,
   deleteScheduleSlot,
   toggleScheduleSlot,
 } from '@/lib/telegram/channel'
-import { generateCaseDraft, generateAnalyticsDraft, generateCtaDraft } from '@/lib/telegram/channel-generate'
+import { generateRubricDraft } from '@/lib/telegram/channel-generate'
 
 // Node runtime (по умолчанию) — ОБЯЗАТЕЛЬНО, не ставить `export const runtime = 'edge'`.
 // pizzip/docxtemplater — Node-only, в Edge runtime не заработают.
@@ -525,6 +527,15 @@ async function handleRubricAction(action: string, rubricId: string, chatId: numb
     )
     return
   }
+  if (action === 'chrubadd') {
+    await setAwaitingIntent(orgId, 'add_rubric')
+    await sendMessage(
+      chatId,
+      '➕ Пришли одной строкой: key | Название | текст промпта.\n' +
+        'Например: <code>listing | 🏠 Объект дня | Расскажи об одном актуальном объекте из базы.</code>'
+    )
+    return
+  }
 }
 
 // Перехватывает текст, если бот ждёт добавление слота ('add_slot') или новый промпт
@@ -564,6 +575,28 @@ async function tryHandleScheduleOrRubricInput(chatId: number, orgId: string, tex
     return true
   }
 
+  if (intent === 'add_rubric') {
+    const parts = text.split('|').map((p) => p.trim())
+    if (parts.length !== 3 || !parts[0] || !parts[1] || !parts[2]) {
+      await sendMessage(chatId, '⚠️ Формат: <code>key | Название | текст промпта</code>')
+      return true
+    }
+    const [key, label, prompt] = parts
+    if (!/^[a-z0-9_]+$/.test(key)) {
+      await sendMessage(chatId, '⚠️ key — латиницей в нижнем регистре, без пробелов (например: listing).')
+      return true
+    }
+    const result = await addRubric(orgId, key, label, prompt)
+    await setAwaitingIntent(orgId, null)
+    if (result.error) {
+      await sendMessage(chatId, `⚠️ Не удалось добавить рубрику: ${result.error}`)
+    } else {
+      await sendMessage(chatId, `✅ Рубрика «${label}» добавлена.`)
+    }
+    await showMenuScreen(chatId, orgId, 'channel_rubrics', HELP_TEXT)
+    return true
+  }
+
   if (intent.startsWith('edit_rubric:')) {
     const rubricId = intent.slice('edit_rubric:'.length)
     const result = await updateRubricPrompt(rubricId, text.trim())
@@ -598,15 +631,21 @@ async function handleChannelCallback(action: string, postId: string, chatId: num
     }
     const settings = await getChannelSettings(post.organization_id)
     try {
-      const newText =
-        post.rubric === 'analytics'
-          ? await generateAnalyticsDraft(settings)
-          : post.rubric === 'cta'
-            ? await generateCtaDraft(settings)
-            : post.rubric === 'case'
-              ? await generateCaseDraft(settings, post.source_input ?? '')
-              : await generateCtaDraft(settings, 'разовый пост по теме из истории переписки')
-      const newPostId = await createDraftRow(post.organization_id, post.rubric, post.scheduled_for)
+      const rubric = await getRubricByKey(post.organization_id, post.rubric)
+      if (!rubric) throw new Error(`рубрика «${post.rubric}» не найдена в БД`)
+      let newText: string
+      if (post.rubric === 'case') {
+        newText = await generateRubricDraft(settings, rubric, post.source_input ?? '')
+      } else if (rubric.requires_input) {
+        // Для рубрик без сохранённой вводной (например adhoc — тема нигде не хранится на
+        // посте) перегенерация не может восстановить исходную тему. Разумный дефолт —
+        // рубрика CTA, как и было в старой хардкод-версии этой кнопки.
+        const ctaRubric = await getRubricByKey(post.organization_id, 'cta')
+        newText = await generateRubricDraft(settings, ctaRubric ?? rubric)
+      } else {
+        newText = await generateRubricDraft(settings, rubric)
+      }
+      const newPostId = await createDraftRow(post.organization_id, post.rubric, post.scheduled_for, { rubricId: rubric.id })
       const ctaType = post.rubric === 'adhoc' ? 'none' : 'dm_admin'
       await sendDraftForReview(post.organization_id, newPostId, post.rubric, newText, ctaType)
     } catch (e) {
@@ -732,7 +771,7 @@ async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_
     return
   }
 
-  if (action === 'chrubedit' || action === 'chrubtoggle') {
+  if (action === 'chrubedit' || action === 'chrubtoggle' || action === 'chrubadd') {
     const orgId = await resolveBotOrgId()
     if (!orgId) return
     await handleRubricAction(action, batchId, chatId, orgId, messageId, String(chatId))
@@ -793,8 +832,10 @@ async function handleCaseInput(chatId: number, orgId: string, rawInput: string) 
   await sendChatAction(chatId, 'typing')
   const settings = await getChannelSettings(orgId)
   try {
-    const text = await generateCaseDraft(settings, rawInput)
-    const postId = await createDraftRow(orgId, 'case', null)
+    const rubric = await getRubricByKey(orgId, 'case')
+    if (!rubric) throw new Error('рубрика «case» не найдена в БД')
+    const text = await generateRubricDraft(settings, rubric, rawInput)
+    const postId = await createDraftRow(orgId, 'case', null, { rubricId: rubric.id })
     await getSupabaseAdmin().from('channel_posts').update({ source_input: rawInput }).eq('id', postId)
     await sendDraftForReview(orgId, postId, 'case', text, 'dm_admin')
   } catch (e) {
@@ -808,9 +849,10 @@ async function handleAdhocPostCommand(chatId: number, orgId: string, topic: stri
   await sendChatAction(chatId, 'typing')
   const settings = await getChannelSettings(orgId)
   try {
-    const { generateAdhocDraft } = await import('@/lib/telegram/channel-generate')
-    const text = await generateAdhocDraft(settings, topic)
-    const postId = await createDraftRow(orgId, 'adhoc', null)
+    const rubric = await getRubricByKey(orgId, 'adhoc')
+    if (!rubric) throw new Error('рубрика «adhoc» не найдена в БД')
+    const text = await generateRubricDraft(settings, rubric, topic)
+    const postId = await createDraftRow(orgId, 'adhoc', null, { rubricId: rubric.id })
     await sendDraftForReview(orgId, postId, 'adhoc', text, 'none')
   } catch (e) {
     await sendMessage(chatId, `⚠️ Не удалось сгенерировать пост: ${e instanceof Error ? e.message : 'ошибка'}`)

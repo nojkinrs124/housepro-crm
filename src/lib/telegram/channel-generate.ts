@@ -63,26 +63,6 @@ function baseSystemPrompt(settings: ChannelSettings | null): string {
 ${FORMAT_RULES}`
 }
 
-export async function generateAnalyticsDraft(settings: ChannelSettings | null): Promise<string> {
-  const system = baseSystemPrompt(settings)
-  const user = `Напиши пост-аналитику по рынку недвижимости (актуальные тренды, цены, ставки ипотеки,
-изменения в законодательстве — то, что реально происходит СЕЙЧАС, а не общие рассуждения).
-Используй свежие данные из веб-поиска. В конце — короткий вывод, что это значит для тех,
-кто сейчас покупает/продаёт/сдаёт недвижимость. Без CTA в конце — его добавит система отдельно.`
-  return callOpenRouter(system, user, true)
-}
-
-export async function generateCtaDraft(settings: ChannelSettings | null, offerHint?: string): Promise<string> {
-  const system = baseSystemPrompt(settings)
-  const user = offerHint
-    ? `Напиши продающий пост-оффер на основе этой вводной: ${offerHint}`
-    : `Напиши продающий пост-оффер общего плана — предложи услуги агентства недвижимости
-(подбор объекта, сопровождение сделки, оценка перед продажей). Сделай конкретный, не расплывчатый оффер,
-с понятной причиной написать прямо сейчас. Без явного CTA-текста в конце ("напишите в личку" и т.п.) —
-призыв к действию добавит система отдельно, ниже основного текста.`
-  return callOpenRouter(system, user, false)
-}
-
 // Убирает цифры/проценты/деньги из текста поста перед тем, как отдать его модели как
 // "тему" картинки. Без этого модель видит "128,1 тыс. руб/м²" в теме и пытается нарисовать
 // инфографику с этими цифрами текстом — а рисовать читаемый текст (тем более кириллицу)
@@ -159,36 +139,17 @@ ${styleHint}${preferenceHint}`,
   return Buffer.from(base64, 'base64')
 }
 
-// Обобщённая генерация по рубрике из БД (channel_rubrics.prompt_template) — используется
-// heartbeat-кроном (см. api/cron/channel-heartbeat). Отдельные хардкод-функции ниже
-// (generateAnalyticsDraft/generateCtaDraft/generateAdhocDraft) пока остаются нетронутыми —
-// их использует ручная перегенерация в webhook.ts/tools.ts; унификация всех путей — Phase 4.
+// Обобщённая генерация по рубрике из БД (channel_rubrics.prompt_template) — единая точка
+// генерации черновиков, используется и heartbeat-кроном, и ручными путями (webhook.ts/
+// tools.ts): кнопка "🔄 Другой текст", надиктовка кейса, разовый пост по теме.
+// extraInput — вводные от админа (тема разового поста, надиктовка кейса), если рубрика
+// requires_input; подставляются вторым абзацем к prompt_template.
 export async function generateRubricDraft(
   settings: ChannelSettings | null,
-  rubric: { prompt_template: string; use_web_search: boolean }
+  rubric: { prompt_template: string; use_web_search: boolean },
+  extraInput?: string
 ): Promise<string> {
   const system = baseSystemPrompt(settings)
-  return callOpenRouter(system, rubric.prompt_template, rubric.use_web_search)
-}
-
-export async function generateAdhocDraft(settings: ChannelSettings | null, topic: string): Promise<string> {
-  const system = baseSystemPrompt(settings)
-  const user = `Напиши пост на тему: "${topic}". Если тема требует актуальных фактов — используй веб-поиск,
-не выдумывай цифры. Без явного CTA в конце — его добавит система отдельно.`
-  return callOpenRouter(system, user, true)
-}
-
-// Кейс собирается ИЗ надиктовки/текста от Руслана — не выдумывается моделью.
-// Задача модели — только литературно оформить вводные в связный пост, не придумывая деталей.
-export async function generateCaseDraft(settings: ChannelSettings | null, rawInput: string): Promise<string> {
-  const system = `${baseSystemPrompt(settings)}
-
-КРИТИЧЕСКИ ВАЖНО: используй ТОЛЬКО факты, которые реально есть во вводных ниже. Ничего не придумывай —
-ни цифры, ни детали, ни цитаты клиента. Если каких-то деталей не хватает для связного рассказа —
-просто опусти их, не заполняй фантазией. Структура кейса: с чем пришёл клиент → в чём была сложность →
-как решили → результат.`
-  const user = `Вводные (голосовая надиктовка или текст от агента): "${rawInput}"
-
-Оформи это в пост-кейс для канала.`
-  return callOpenRouter(system, user, false)
+  const user = extraInput ? `${rubric.prompt_template}\n\nВводные от админа: "${extraInput.trim()}"` : rubric.prompt_template
+  return callOpenRouter(system, user, rubric.use_web_search)
 }

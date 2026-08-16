@@ -431,15 +431,17 @@ export async function dispatchReadOnlyTool(name: string, args: Record<string, un
     }
     case 'create_channel_post': {
       const { resolveBotOrgId } = await import('@/lib/telegram/org')
-      const { createDraftRow, sendDraftForReview, getChannelSettings } = await import('@/lib/telegram/channel')
-      const { generateAdhocDraft } = await import('@/lib/telegram/channel-generate')
+      const { createDraftRow, sendDraftForReview, getChannelSettings, getRubricByKey } = await import('@/lib/telegram/channel')
+      const { generateRubricDraft } = await import('@/lib/telegram/channel-generate')
       const orgId = await resolveBotOrgId()
       if (!orgId) return { error: 'Не удалось определить организацию' }
       const settings = await getChannelSettings(orgId)
       const topic = String(args.topic ?? '').trim()
       if (!topic) return { error: 'Не указана тема поста' }
-      const text = await generateAdhocDraft(settings, topic)
-      const postId = await createDraftRow(orgId, 'adhoc', null)
+      const rubric = await getRubricByKey(orgId, 'adhoc')
+      if (!rubric) return { error: 'Рубрика «adhoc» не найдена в БД' }
+      const text = await generateRubricDraft(settings, rubric, topic)
+      const postId = await createDraftRow(orgId, 'adhoc', null, { rubricId: rubric.id })
       await sendDraftForReview(orgId, postId, 'adhoc', text, 'none')
       return { status: 'Черновик отправлен на утверждение кнопками в этот чат', postId }
     }
