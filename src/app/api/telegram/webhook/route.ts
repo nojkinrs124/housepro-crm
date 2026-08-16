@@ -390,7 +390,7 @@ async function sendMainMenu(chatId: number) {
   await showMenuScreen(chatId, orgId, 'root', HELP_TEXT)
 }
 
-const NAV_SCREENS: MenuScreen[] = ['root', 'crm', 'crm_leads', 'crm_deals', 'crm_payments', 'crm_tasks', 'channel', 'channel_posts', 'multiagent', 'settings', 'settings_users', 'help']
+const NAV_SCREENS: MenuScreen[] = ['root', 'crm', 'crm_leads', 'crm_deals', 'crm_payments', 'crm_tasks', 'channel', 'channel_posts', 'channel_schedule', 'channel_rubrics', 'multiagent', 'settings', 'settings_users', 'help']
 
 // Навигация верхнеуровневого меню: nav:<screen> — просто перерисовывает "экран" в том же сообщении.
 async function handleNavCallback(screen: string, chatId: number, orgId: string, messageId: number | undefined, telegramUserId: string) {
