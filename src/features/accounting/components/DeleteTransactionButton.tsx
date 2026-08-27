@@ -19,7 +19,7 @@ export function DeleteTransactionButton({ id, redirectAfter }: Props) {
     if (!confirm('Удалить транзакцию?')) return
     startTransition(async () => {
       const res = await deleteTransactionAction(id)
-      if (res?.error) {
+      if (res && 'error' in res) {
         toast.error(res.error)
       } else {
         toast.success('Транзакция удалена')

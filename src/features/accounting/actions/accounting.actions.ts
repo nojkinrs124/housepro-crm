@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { requirePermission } from '@/lib/permissions'
 import type {
   AccountingTransactionStatus,
   AccountingTransactionType,
@@ -168,6 +169,9 @@ export async function createTransactionAction(_prevState: unknown, formData: For
   if (!amount) return { error: 'Укажите корректную сумму (больше 0)' }
   if (!date)   return { error: 'Дата обязательна' }
 
+  const permError = await requirePermission(user.id, 'accounting', 'create')
+  if (permError) return permError
+
   const payload = {
     type,
     amount,
@@ -220,6 +224,9 @@ export async function updateTransactionAction(id: string, _prevState: unknown, f
   const contactId  = formData.get('contact_id') as string | null
   const employeeId = formData.get('employee_id') as string | null
 
+  const permError = await requirePermission(user.id, 'accounting', 'update')
+  if (permError) return permError
+
   const payload: Record<string, unknown> = {
     amount, date, status,
     category_id:    categoryId  || null,
@@ -248,6 +255,9 @@ export async function deleteTransactionAction(id: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
+
+  const permError = await requirePermission(user.id, 'accounting', 'delete')
+  if (permError) return permError
 
   const { error } = await supabase
     .from('accounting_transactions')

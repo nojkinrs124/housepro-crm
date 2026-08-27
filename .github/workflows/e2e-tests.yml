@@ -1,0 +1,53 @@
+name: E2E tests (Playwright + OpenRouter vision)
+
+# Гоняет реальный браузер против прода/указанного BASE_URL под тестовым
+# аккаунтом, плюс vision-модель через OpenRouter проверяет скриншоты на
+# визуальные регрессии, которые обычные Playwright-ассерты не ловят.
+# Запуск вручную (workflow_dispatch) — это не gate на каждый пуш, а
+# инструмент "прощупать" изменения перед/после деплоя.
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: npx playwright test
+        env:
+          E2E_BASE_URL: ${{ secrets.E2E_BASE_URL }}
+          E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
+          E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_VISION_MODEL: google/gemini-2.5-flash
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Upload screenshots/traces on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-failure-artifacts
+          path: test-results/
+          retention-days: 14
