@@ -23,7 +23,7 @@ test.describe('Платежи и бухгалтерия — после прав�
 
   test('отметить платёж оплаченным и удалить — из карточки договора (PaymentsSection на accounting_transactions)', async ({ page }) => {
     await page.goto('/contracts')
-    const firstContract = page.locator('a[href^="/contracts/"]').first()
+    const firstContract = page.locator('a[href^="/contracts/"]:not([href="/contracts/new"])').first()
     await firstContract.click()
     await expect(page.locator('text=Недостаточно прав')).toHaveCount(0)
     await visionAssert(page, 'Страница договора с блоком "Платежи" (список или пустое состояние + кнопка "Добавить"), без ошибки прав доступа')
@@ -43,8 +43,11 @@ test.describe('Платежи и бухгалтерия — после прав�
     // Здесь проверяется только то, что UI не падает при заходе на страницу и при удалении.
   })
 
-  test('карточка клиента (легаси /clients) всё ещё рендерится', async ({ page }) => {
+  test('легаси /clients корректно редиректит на /contacts', async ({ page }) => {
+    // /clients — тоже редирект-заглушка (как и /payments), реальные данные
+    // живут в /contacts (правило проекта: новые фичи только через contacts).
     await page.goto('/clients')
-    await visionAssert(page, 'Страница списка клиентов — таблица/список клиентов ИЛИ корректное пустое состояние ("клиентов нет" и т.п.). Ошибка/крах — это провал, пустое состояние — это норма.')
+    await expect(page).toHaveURL(/\/contacts/)
+    await visionAssert(page, 'Страница контактов CRM — таблица/список контактов ИЛИ корректное пустое состояние. Ошибка/крах — это провал, пустое состояние — норма.')
   })
 })
