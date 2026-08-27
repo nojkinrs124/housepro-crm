@@ -9,6 +9,9 @@ name: E2E tests (Playwright + OpenRouter vision)
 on:
   workflow_dispatch: {}
 
+permissions:
+  contents: write
+
 jobs:
   e2e:
     runs-on: ubuntu-latest
@@ -28,13 +31,40 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run E2E tests
-        run: npx playwright test
+        id: run_tests
+        continue-on-error: true
+        run: npx playwright test 2>&1 | tee test-output.log
         env:
           E2E_BASE_URL: ${{ secrets.E2E_BASE_URL }}
           E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
           E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           OPENROUTER_VISION_MODEL: google/gemini-2.5-flash
+
+      - name: Post results as commit comment (api.github.com — readable without artifact download)
+        if: always()
+        env:
+          OUTCOME: ${{ steps.run_tests.outcome }}
+        run: |
+          tail -c 60000 test-output.log > truncated.log
+          python3 - <<'PYEOF'
+          import json, os
+          with open('truncated.log') as f:
+              log = f.read()
+          outcome = os.environ.get('OUTCOME', 'unknown')
+          body = "### E2E run: " + outcome + "\n\n```\n" + log + "\n```"
+          with open('comment_body.json', 'w') as f:
+              json.dump({'body': body}, f)
+          PYEOF
+          curl -s -X POST \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/commits/${{ github.sha }}/comments" \
+            -d @comment_body.json
+
+      - name: Fail job if tests failed
+        if: steps.run_tests.outcome == 'failure'
+        run: exit 1
 
       - name: Upload Playwright report
         if: always()
@@ -45,7 +75,7 @@ jobs:
           retention-days: 14
 
       - name: Upload screenshots/traces on failure
-        if: failure()
+        if: steps.run_tests.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
           name: e2e-failure-artifacts
