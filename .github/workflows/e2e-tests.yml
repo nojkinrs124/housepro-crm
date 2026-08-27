@@ -46,7 +46,12 @@ jobs:
         env:
           OUTCOME: ${{ steps.run_tests.outcome }}
         run: |
-          tail -c 60000 test-output.log > truncated.log
+          tail -c 40000 test-output.log > truncated.log
+          echo "" >> truncated.log
+          echo "=== error-context (accessibility snapshot at failure) ===" >> truncated.log
+          find test-results -name "error-context.md" -exec sh -c 'echo "--- {} ---"; cat "{}"' \; >> truncated.log 2>/dev/null || true
+          tail -c 60000 truncated.log > final.log
+          mv final.log truncated.log
           python3 - <<'PYEOF'
           import json, os
           with open('truncated.log') as f:
