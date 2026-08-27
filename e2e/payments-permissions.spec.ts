@@ -23,8 +23,9 @@ test.describe('Платежи и бухгалтерия — после прав�
 
   test('отметить платёж оплаченным и удалить — из карточки договора (PaymentsSection на accounting_transactions)', async ({ page }) => {
     await page.goto('/contracts')
-    const firstContract = page.locator('a[href^="/contracts/"]:not([href="/contracts/new"])').first()
+    const firstContract = page.getByRole('link', { name: 'Открыть' }).first()
     await firstContract.click()
+    await expect(page).toHaveURL(/\/contracts\/[^/?]+$/)
     await expect(page.locator('text=Недостаточно прав')).toHaveCount(0)
     await visionAssert(page, 'Страница договора с блоком "Платежи" (список или пустое состояние + кнопка "Добавить"), без ошибки прав доступа')
   })
