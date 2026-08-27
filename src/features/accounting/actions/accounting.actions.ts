@@ -202,6 +202,56 @@ export async function createTransactionAction(_prevState: unknown, formData: For
   redirect(`/accounting/transactions/${data.id}`)
 }
 
+/**
+ * Упрощённая версия createTransactionAction для инлайн-формы на карточке
+ * договора: без redirect() (остаёмся на странице договора), amount/date/
+ * type заданы контекстом виджета вместо полной формы транзакции.
+ */
+export async function createContractPaymentAction(
+  contractId: string,
+  _prevState: unknown,
+  formData: FormData
+): Promise<{ error?: string; success?: boolean }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Не авторизован' }
+
+  const { requireOrgId } = await import('@/lib/org')
+  const orgId = await requireOrgId().catch(() => null)
+  if (!orgId) return { error: 'Организация не найдена' }
+
+  const amount   = parseAmount(formData.get('amount'))
+  const dueDate  = (formData.get('due_date') as string) || null
+  const category = (formData.get('category') as string) || null
+  const notes    = (formData.get('description') as string) || null
+
+  if (!amount) return { error: 'Укажите корректную сумму (больше 0)' }
+
+  const permError = await requirePermission(user.id, 'accounting', 'create')
+  if (permError) return permError
+
+  const today = new Date().toISOString().slice(0, 10)
+
+  const { error } = await supabase.from('accounting_transactions').insert({
+    type: 'income' as AccountingTransactionType,
+    amount,
+    date: dueDate || today,
+    status: 'planned' as AccountingTransactionStatus,
+    contract_id: contractId,
+    created_by: user.id,
+    organization_id: orgId,
+    ...(dueDate && { due_date: dueDate }),
+    ...(category && { description: `${category}${notes ? ' — ' + notes : ''}` }),
+    ...(!category && notes && { description: notes }),
+  })
+
+  if (error) return { error: error.message }
+
+  revalidatePath(`/contracts/${contractId}`)
+  revalidatePath('/accounting')
+  return { success: true }
+}
+
 export async function updateTransactionAction(id: string, _prevState: unknown, formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -259,6 +309,12 @@ export async function deleteTransactionAction(id: string) {
   const permError = await requirePermission(user.id, 'accounting', 'delete')
   if (permError) return permError
 
+  const { data: existing } = await supabase
+    .from('accounting_transactions')
+    .select('contract_id')
+    .eq('id', id)
+    .single()
+
   const { error } = await supabase
     .from('accounting_transactions')
     .delete()
@@ -267,5 +323,35 @@ export async function deleteTransactionAction(id: string) {
   if (error) return { error: error.message }
 
   revalidatePath('/accounting')
+  if (existing?.contract_id) revalidatePath(`/contracts/${existing.contract_id}`)
+  return { success: true }
+}
+
+/**
+ * Быстрая отметка "оплачено/проведено" без полной формы редактирования —
+ * аналог старого markPaidAction из payments-модуля (заменённого accounting
+ * в июне 2026), нужен для инлайн-кнопки на карточке договора.
+ */
+export async function completeTransactionAction(id: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Не авторизован' }
+
+  const permError = await requirePermission(user.id, 'accounting', 'update')
+  if (permError) return permError
+
+  const { data: updated, error } = await supabase
+    .from('accounting_transactions')
+    .update({ status: 'completed' as AccountingTransactionStatus })
+    .eq('id', id)
+    .neq('status', 'completed')
+    .select('id, contract_id')
+    .single()
+
+  if (error) return { error: error.message }
+  if (!updated) return { error: 'Транзакция уже отмечена как проведённая' }
+
+  revalidatePath('/accounting')
+  if (updated.contract_id) revalidatePath(`/contracts/${updated.contract_id}`)
   return { success: true }
 }

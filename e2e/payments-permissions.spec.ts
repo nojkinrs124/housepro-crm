@@ -21,15 +21,12 @@ test.describe('Платежи и бухгалтерия — после прав�
     await visionAssert(page, 'Страница бухгалтерии CRM — сводка/список транзакций, без текста ошибки/exception на экране')
   })
 
-  test('отметить платёж оплаченным и удалить — из карточки договора (PaymentsSection)', async ({ page }) => {
-    // Реальный путь к markPaidAction/deletePaymentAction — не /payments/[id]/edit
-    // (тот роут ничем не заполнен, на него никто не ссылается), а встроенный
-    // блок "Платежи" на странице договора.
+  test('отметить платёж оплаченным и удалить — из карточки договора (PaymentsSection на accounting_transactions)', async ({ page }) => {
     await page.goto('/contracts')
     const firstContract = page.locator('a[href^="/contracts/"]').first()
     await firstContract.click()
     await expect(page.locator('text=Недостаточно прав')).toHaveCount(0)
-    await visionAssert(page, 'Страница договора со списком платежей, без ошибки прав доступа')
+    await visionAssert(page, 'Страница договора с блоком "Платежи" (список или пустое состояние + кнопка "Добавить"), без ошибки прав доступа')
   })
 
   test('создание транзакции (реальный путь создания платежа) проходит без ошибки прав', async ({ page }) => {

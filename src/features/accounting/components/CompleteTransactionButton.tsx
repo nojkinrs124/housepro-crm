@@ -2,21 +2,21 @@
 
 import { useTransition } from 'react'
 import { CheckCircle, Loader2 } from 'lucide-react'
-import { markPaidAction } from '../actions/payments.actions'
+import { completeTransactionAction } from '../actions/accounting.actions'
 
 interface Props {
-  paymentId: string
+  transactionId: string
   status: string
 }
 
-export function MarkPaidButton({ paymentId, status }: Props) {
+export function CompleteTransactionButton({ transactionId, status }: Props) {
   const [isPending, startTransition] = useTransition()
 
-  if (status === 'paid') return null
+  if (status === 'completed' || status === 'cancelled') return null
 
   return (
     <button
-      onClick={() => startTransition(async () => { await markPaidAction(paymentId) })}
+      onClick={() => startTransition(async () => { await completeTransactionAction(transactionId) })}
       disabled={isPending}
       title="Отметить оплаченным"
       className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg transition-all disabled:opacity-50"

@@ -2,16 +2,20 @@
 
 import { useTransition } from 'react'
 import { Trash2, Loader2 } from 'lucide-react'
-import { deletePaymentAction } from '../actions/payments.actions'
+import { deleteTransactionAction } from '../actions/accounting.actions'
+import { toast } from 'sonner'
 
-export function DeletePaymentButton({ paymentId }: { paymentId: string }) {
+export function DeleteContractTransactionButton({ transactionId }: { transactionId: string }) {
   const [isPending, startTransition] = useTransition()
 
   return (
     <button
       onClick={() => {
         if (!confirm('Удалить платёж?')) return
-        startTransition(async () => { await deletePaymentAction(paymentId) })
+        startTransition(async () => {
+          const res = await deleteTransactionAction(transactionId)
+          if (res && 'error' in res) toast.error(res.error)
+        })
       }}
       disabled={isPending}
       title="Удалить"
