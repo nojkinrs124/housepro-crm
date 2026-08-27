@@ -9,7 +9,7 @@ export default defineConfig({
   testDir: './e2e',
   timeout: 60_000,
   retries: 1,
-  reporter: [['list'], ['json', { outputFile: 'e2e-results.json' }]],
+  reporter: [['list'], ['html', { open: 'never' }], ['json', { outputFile: 'e2e-results.json' }]],
   use: {
     baseURL: process.env.E2E_BASE_URL || 'https://housepro-crm.vercel.app',
     screenshot: 'on',
