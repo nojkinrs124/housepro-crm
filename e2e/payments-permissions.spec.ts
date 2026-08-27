@@ -3,7 +3,8 @@ import { login } from './helpers/auth'
 import { checkScreenshotWithVision } from './helpers/vision-check'
 
 async function visionAssert(page: import('@playwright/test').Page, expectation: string) {
-  const screenshot = await page.screenshot()
+  await page.waitForLoadState('networkidle').catch(() => {})
+  const screenshot = await page.screenshot({ fullPage: true })
   const result = await checkScreenshotWithVision(screenshot.toString('base64'), expectation)
   expect(result.ok, `Vision-проверка провалилась: ${result.reason}`).toBeTruthy()
 }
