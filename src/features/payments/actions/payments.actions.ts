@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import type { PaymentStatus } from '@/types/database'
 import { PaymentCreateSchema, PaymentUpdateSchema } from '@/lib/schemas'
 import { requireOrgId } from '@/lib/org'
+import { requirePermission } from '@/lib/permissions'
 
 const VALID_PAYMENT_STATUSES: PaymentStatus[] = ['pending', 'paid', 'partial', 'overdue', 'cancelled']
 
@@ -14,14 +15,17 @@ export async function createPaymentAction(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
 
-  const orgId = await requireOrgId().catch(() => null)
-  if (!orgId) return { error: 'Организация не найдена' }
-
   const parsed = PaymentCreateSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
     const first = parsed.error.issues[0]
     return { error: first.message, fields: parsed.error.flatten().fieldErrors }
   }
+
+  const orgId = await requireOrgId().catch(() => null)
+  if (!orgId) return { error: 'Организация не найдена' }
+
+  const permError = await requirePermission(user.id, 'payments', 'create')
+  if (permError) return permError
 
   const { contract_id, amount, payment_type, due_date, notes } = parsed.data
   const isOverdue = due_date ? new Date(due_date) < new Date() : false
@@ -52,6 +56,9 @@ export async function updatePaymentAction(paymentId: string, formData: FormData)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
 
+  const permError = await requirePermission(user.id, 'payments', 'update')
+  if (permError) return permError
+
   const parsed = PaymentUpdateSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
     const first = parsed.error.issues[0]
@@ -74,6 +81,9 @@ export async function markPaidAction(paymentId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
+
+  const permError = await requirePermission(user.id, 'payments', 'update')
+  if (permError) return permError
 
   const { data: updated, error } = await supabase
     .from('payments')
@@ -99,6 +109,9 @@ export async function updatePaymentStatusAction(paymentId: string, status: strin
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
 
+  const permError = await requirePermission(user.id, 'payments', 'update')
+  if (permError) return permError
+
   if (!VALID_PAYMENT_STATUSES.includes(status as PaymentStatus)) {
     return { error: `Недопустимый статус платежа: ${status}` }
   }
@@ -122,15 +135,8 @@ export async function deletePaymentAction(paymentId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
 
-  const { data: userRole } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (!userRole || !['admin', 'manager'].includes(userRole.role)) {
-    return { error: 'Недостаточно прав для удаления платежа' }
-  }
+  const permError = await requirePermission(user.id, 'payments', 'delete')
+  if (permError) return permError
 
   const { data: payment } = await supabase
     .from('payments')

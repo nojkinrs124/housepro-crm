@@ -29,7 +29,7 @@ const PERMISSIONS: Record<UserRole, Partial<Record<Resource, Action[]>>> = {
     analytics:  ['read'],
     leads:      ['read', 'create', 'update'],
     properties: ['read', 'create', 'update'],
-    payments:   ['read', 'create'],
+    payments:   ['read', 'create', 'update', 'delete'],
     settings:   ['read'],
   },
   agent: {

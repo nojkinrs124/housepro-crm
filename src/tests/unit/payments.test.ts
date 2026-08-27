@@ -108,7 +108,7 @@ describe('updatePaymentStatusAction', () => {
 
     const { updatePaymentStatusAction } = await import('@/features/payments/actions/payments.actions')
     const result = await updatePaymentStatusAction('pay-1', 'unknown_status')
-    expect(result?.error).toContain('Недопустимый статус')
+    expect((result as { error?: string } | undefined)?.error).toContain('Недопустимый статус')
   })
 
   it('принимает все валидные статусы', async () => {
@@ -119,7 +119,7 @@ describe('updatePaymentStatusAction', () => {
 
       const { updatePaymentStatusAction } = await import('@/features/payments/actions/payments.actions')
       const result = await updatePaymentStatusAction('pay-1', status)
-      expect(result?.error).toBeUndefined()
+      expect((result as { error?: string } | undefined)?.error).toBeUndefined()
     }
   })
 })

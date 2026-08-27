@@ -13,8 +13,21 @@ export function createSupabaseMock(overrides: {
   data?: unknown
   error?: { message: string } | null
   single?: unknown
+  /**
+   * Роль пользователя, которую вернёт lookup в таблице `users` внутри
+   * requirePermission()/lib/permissions.ts. По умолчанию 'admin' — проходит
+   * любую проверку прав, чтобы существующие тесты не ломались на пустом месте.
+   * Передайте другую роль (или null) для теста именно проверки прав.
+   */
+  role?: string | null
 }) {
-  const { user = { id: 'test-user-id', email: 'test@test.com' }, data = [], error = null, single } = overrides
+  const { user = { id: 'test-user-id', email: 'test@test.com' }, data = [], error = null, single, role = 'admin' } = overrides
+
+  const usersRoleBuilder = {
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    single: vi.fn().mockResolvedValue({ data: role ? { role } : null, error: null }),
+  }
 
   const queryBuilder = {
     select: vi.fn().mockReturnThis(),
@@ -57,7 +70,7 @@ export function createSupabaseMock(overrides: {
         error: null,
       }),
     },
-    from: vi.fn().mockReturnValue(queryBuilder),
+    from: vi.fn((table: string) => (table === 'users' ? usersRoleBuilder : queryBuilder)),
     _queryBuilder: queryBuilder,
   }
 

@@ -56,7 +56,23 @@ export async function deleteTemplateAction(templateId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
 
+  const { data: template } = await supabase
+    .from('document_templates')
+    .select('storage_path')
+    .eq('id', templateId)
+    .single()
+
   await supabase.from('document_templates').delete().eq('id', templateId)
+
+  if (template?.storage_path) {
+    const { error: storageError } = await supabase.storage
+      .from('document-templates')
+      .remove([template.storage_path])
+    // Не блокируем удаление записи из-за ошибки Storage — только логируем,
+    // чтобы не оставить "битую" запись в БД, если файл уже удалён вручную.
+    if (storageError) console.error('Не удалось удалить файл шаблона из Storage:', storageError.message)
+  }
+
   revalidatePath('/settings/templates')
   return { success: true }
 }
