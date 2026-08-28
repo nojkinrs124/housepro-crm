@@ -13,11 +13,11 @@ const roleLabels: Record<string, string> = {
   both:   'Клиент + Собственник',
 }
 
-const statusLabels: Record<string, { label: string; color: string }> = {
-  new:      { label: 'Новый',      color: 'bg-gray-100 text-gray-700' },
-  active:   { label: 'Активный',   color: 'bg-blue-100 text-blue-700' },
-  vip:      { label: 'VIP',        color: 'bg-yellow-100 text-yellow-700' },
-  inactive: { label: 'Неактивный', color: 'bg-red-100 text-red-700' },
+const statusLabels: Record<string, { label: string; badgeCls: string }> = {
+  new:      { label: 'Новый',      badgeCls: 'hp-badge-info' },
+  active:   { label: 'Активный',   badgeCls: 'hp-badge-good' },
+  vip:      { label: 'VIP',        badgeCls: 'hp-badge-warn' },
+  inactive: { label: 'Неактивный', badgeCls: 'hp-badge-neutral' },
 }
 
 const sourceLabels: Record<string, string> = {
@@ -78,12 +78,12 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
           <span className="flex items-center gap-2 flex-wrap">
             <span className="text-base">{roleLabels[c.role]}</span>
             {c.client_type === 'legal_entity' && (
-              <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium shrink-0 bg-indigo-100 text-indigo-700">
+              <span className="hp-badge hp-badge-neutral">
                 <Building2 className="w-3 h-3" />
                 Юр. лицо
               </span>
             )}
-            <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${statusInfo.color}`}>
+            <span className={`hp-badge ${statusInfo.badgeCls}`}>
               {statusInfo.label}
             </span>
           </span>
@@ -91,12 +91,12 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
         actions={
           <>
             <Link href={`/tasks/new?client_id=${id}`}
-              className="flex items-center gap-2 px-3 py-2 border border-border rounded-xl text-sm font-medium hover:bg-accent transition whitespace-nowrap">
+              className="flex items-center gap-2 px-3 py-2 border border-[var(--hp-border)] rounded-[var(--hp-radius)] text-sm font-medium text-[var(--hp-ink)] hover:border-[var(--hp-sub)] transition-colors whitespace-nowrap">
               <Plus className="w-4 h-4" />
               Задача
             </Link>
             <Link href={`/contacts/${id}/edit`}
-              className="flex items-center gap-2 px-4 py-2 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition whitespace-nowrap" style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+              className="flex items-center gap-2 px-4 py-2 text-white rounded-[var(--hp-radius)] text-sm font-semibold transition-colors whitespace-nowrap bg-[var(--hp-accent)] hover:bg-[var(--hp-accent-hover)]">
               <Edit className="w-4 h-4" />
               Редактировать
             </Link>
@@ -109,167 +109,154 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
         <div className="lg:col-span-2 space-y-4">
 
           {/* Contacts */}
-          <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
-            <h2 className="font-semibold text-foreground mb-4">Контактные данные</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {c.phone && (
-                <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-xl">
-                  <Phone className="w-4 h-4 text-muted-foreground shrink-0" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Телефон</p>
-                    <a href={`tel:${c.phone}`} className="text-sm font-medium text-foreground hover:text-primary transition">{c.phone}</a>
-                  </div>
-                </div>
-              )}
-              {c.email && (
-                <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-xl">
-                  <Mail className="w-4 h-4 text-muted-foreground shrink-0" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Email</p>
-                    <a href={`mailto:${c.email}`} className="text-sm font-medium text-foreground hover:text-primary transition truncate block">{c.email}</a>
-                  </div>
-                </div>
-              )}
-              {c.telegram && (
-                <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-xl">
-                  <MessageCircle className="w-4 h-4 text-muted-foreground shrink-0" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">Telegram</p>
-                    <p className="text-sm font-medium text-foreground">{c.telegram}</p>
-                  </div>
-                </div>
-              )}
-              {c.whatsapp && (
-                <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-xl">
-                  <MessageCircle className="w-4 h-4 text-green-500 shrink-0" />
-                  <div>
-                    <p className="text-xs text-muted-foreground">WhatsApp</p>
-                    <p className="text-sm font-medium text-foreground">{c.whatsapp}</p>
-                  </div>
-                </div>
-              )}
-            </div>
+          <div className="hp-block">
+            <div className="hp-block-header">Контактные данные</div>
+            {c.phone && (
+              <div className="hp-block-row">
+                <span className="label flex items-center gap-2"><Phone className="w-3.5 h-3.5 shrink-0" />Телефон</span>
+                <a href={`tel:${c.phone}`} className="value hover:text-[var(--hp-accent)] transition-colors">{c.phone}</a>
+              </div>
+            )}
+            {c.email && (
+              <div className="hp-block-row">
+                <span className="label flex items-center gap-2"><Mail className="w-3.5 h-3.5 shrink-0" />Email</span>
+                <a href={`mailto:${c.email}`} className="value truncate hover:text-[var(--hp-accent)] transition-colors">{c.email}</a>
+              </div>
+            )}
+            {c.telegram && (
+              <div className="hp-block-row">
+                <span className="label flex items-center gap-2"><MessageCircle className="w-3.5 h-3.5 shrink-0" />Telegram</span>
+                <span className="value">{c.telegram}</span>
+              </div>
+            )}
+            {c.whatsapp && (
+              <div className="hp-block-row">
+                <span className="label flex items-center gap-2"><MessageCircle className="w-3.5 h-3.5 shrink-0" />WhatsApp</span>
+                <span className="value">{c.whatsapp}</span>
+              </div>
+            )}
+            {!c.phone && !c.email && !c.telegram && !c.whatsapp && (
+              <div className="hp-block-row"><span className="label">Контакты не указаны</span></div>
+            )}
           </div>
 
           {/* Passport */}
           {!isLegalEntity && hasPassport && (
-            <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
-              <h2 className="font-semibold text-foreground mb-4">Паспортные данные</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                {(c.passport_series || c.passport_number) && (
-                  <div>
-                    <p className="text-xs text-muted-foreground">Серия и номер</p>
-                    <p className="font-mono text-foreground">{c.passport_series} {c.passport_number}</p>
-                  </div>
-                )}
-                {c.passport_issued_date && (
-                  <div>
-                    <p className="text-xs text-muted-foreground">Дата выдачи</p>
-                    <p className="text-foreground">{new Date(c.passport_issued_date).toLocaleDateString('ru-RU')}</p>
-                  </div>
-                )}
-                {c.passport_department_code && (
-                  <div>
-                    <p className="text-xs text-muted-foreground">Код подразделения</p>
-                    <p className="font-mono text-foreground">{c.passport_department_code}</p>
-                  </div>
-                )}
-                {c.passport_issued_by && (
-                  <div className="col-span-2">
-                    <p className="text-xs text-muted-foreground">Кем выдан</p>
-                    <p className="text-foreground">{c.passport_issued_by}</p>
-                  </div>
-                )}
-                {/* Legacy field */}
-                {!hasPassport && c.passport && (
-                  <div className="col-span-2">
-                    <p className="text-xs text-muted-foreground">Паспорт</p>
-                    <p className="font-mono text-foreground">{c.passport}</p>
-                  </div>
-                )}
-              </div>
+            <div className="hp-block">
+              <div className="hp-block-header">Паспортные данные</div>
+              {(c.passport_series || c.passport_number) && (
+                <div className="hp-block-row">
+                  <span className="label">Серия и номер</span>
+                  <span className="value">{c.passport_series} {c.passport_number}</span>
+                </div>
+              )}
+              {c.passport_issued_date && (
+                <div className="hp-block-row">
+                  <span className="label">Дата выдачи</span>
+                  <span className="value">{new Date(c.passport_issued_date).toLocaleDateString('ru-RU')}</span>
+                </div>
+              )}
+              {c.passport_department_code && (
+                <div className="hp-block-row">
+                  <span className="label">Код подразделения</span>
+                  <span className="value">{c.passport_department_code}</span>
+                </div>
+              )}
+              {c.passport_issued_by && (
+                <div className="hp-block-row">
+                  <span className="label">Кем выдан</span>
+                  <span className="value">{c.passport_issued_by}</span>
+                </div>
+              )}
+              {/* Legacy field */}
+              {!hasPassport && c.passport && (
+                <div className="hp-block-row">
+                  <span className="label">Паспорт</span>
+                  <span className="value">{c.passport}</span>
+                </div>
+              )}
             </div>
           )}
 
           {/* Address */}
           {!isLegalEntity && hasAddress && (
-            <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
-              <h2 className="font-semibold text-foreground mb-3 flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
+            <div className="hp-block">
+              <div className="hp-block-header flex items-center gap-1.5">
+                <MapPin className="w-3 h-3" />
                 Адрес регистрации
-              </h2>
-              <p className="text-sm text-foreground">
-                {[
-                  c.country, c.region, c.city,
-                  c.street && `ул. ${c.street}`,
-                  c.house_number && `д. ${c.house_number}`,
-                  c.building && `корп. ${c.building}`,
-                  c.apartment && `кв. ${c.apartment}`,
-                ].filter(Boolean).join(', ')}
-              </p>
+              </div>
+              <div className="hp-block-row">
+                <span className="value text-left">
+                  {[
+                    c.country, c.region, c.city,
+                    c.street && `ул. ${c.street}`,
+                    c.house_number && `д. ${c.house_number}`,
+                    c.building && `корп. ${c.building}`,
+                    c.apartment && `кв. ${c.apartment}`,
+                  ].filter(Boolean).join(', ')}
+                </span>
+              </div>
             </div>
           )}
 
           {/* Company requisites */}
           {isLegalEntity && (
-            <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
-              <h2 className="font-semibold text-foreground mb-4">Реквизиты организации</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                {c.company_name && (
-                  <div className="col-span-2">
-                    <p className="text-xs text-muted-foreground">Название</p>
-                    <p className="text-foreground font-medium">{c.company_name}</p>
-                  </div>
-                )}
-                {c.inn && (
-                  <div>
-                    <p className="text-xs text-muted-foreground">ИНН</p>
-                    <p className="font-mono text-foreground">{c.inn}</p>
-                  </div>
-                )}
-                {c.kpp && (
-                  <div>
-                    <p className="text-xs text-muted-foreground">КПП</p>
-                    <p className="font-mono text-foreground">{c.kpp}</p>
-                  </div>
-                )}
-                {c.ogrn && (
-                  <div>
-                    <p className="text-xs text-muted-foreground">ОГРН</p>
-                    <p className="font-mono text-foreground">{c.ogrn}</p>
-                  </div>
-                )}
-                {c.legal_address && (
-                  <div className="col-span-2">
-                    <p className="text-xs text-muted-foreground">Юридический адрес</p>
-                    <p className="text-foreground">{c.legal_address}</p>
-                  </div>
-                )}
-                {c.bank_name && (
-                  <div className="col-span-2">
-                    <p className="text-xs text-muted-foreground">Банк</p>
-                    <p className="text-foreground">{c.bank_name}</p>
-                  </div>
-                )}
-                {c.bank_account && (
-                  <div>
-                    <p className="text-xs text-muted-foreground">Расчётный счёт</p>
-                    <p className="font-mono text-foreground">{c.bank_account}</p>
-                  </div>
-                )}
-                {c.corr_account && (
-                  <div>
-                    <p className="text-xs text-muted-foreground">Корр. счёт</p>
-                    <p className="font-mono text-foreground">{c.corr_account}</p>
-                  </div>
-                )}
-                {c.bik && (
-                  <div>
-                    <p className="text-xs text-muted-foreground">БИК</p>
-                    <p className="font-mono text-foreground">{c.bik}</p>
-                  </div>
-                )}
-              </div>
+            <div className="hp-block">
+              <div className="hp-block-header">Реквизиты организации</div>
+              {c.company_name && (
+                <div className="hp-block-row">
+                  <span className="label">Название</span>
+                  <span className="value">{c.company_name}</span>
+                </div>
+              )}
+              {c.inn && (
+                <div className="hp-block-row">
+                  <span className="label">ИНН</span>
+                  <span className="value">{c.inn}</span>
+                </div>
+              )}
+              {c.kpp && (
+                <div className="hp-block-row">
+                  <span className="label">КПП</span>
+                  <span className="value">{c.kpp}</span>
+                </div>
+              )}
+              {c.ogrn && (
+                <div className="hp-block-row">
+                  <span className="label">ОГРН</span>
+                  <span className="value">{c.ogrn}</span>
+                </div>
+              )}
+              {c.legal_address && (
+                <div className="hp-block-row">
+                  <span className="label">Юридический адрес</span>
+                  <span className="value">{c.legal_address}</span>
+                </div>
+              )}
+              {c.bank_name && (
+                <div className="hp-block-row">
+                  <span className="label">Банк</span>
+                  <span className="value">{c.bank_name}</span>
+                </div>
+              )}
+              {c.bank_account && (
+                <div className="hp-block-row">
+                  <span className="label">Расчётный счёт</span>
+                  <span className="value">{c.bank_account}</span>
+                </div>
+              )}
+              {c.corr_account && (
+                <div className="hp-block-row">
+                  <span className="label">Корр. счёт</span>
+                  <span className="value">{c.corr_account}</span>
+                </div>
+              )}
+              {c.bik && (
+                <div className="hp-block-row">
+                  <span className="label">БИК</span>
+                  <span className="value">{c.bik}</span>
+                </div>
+              )}
             </div>
           )}
 
@@ -279,7 +266,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
           )}
 
           {/* Deals */}
-          <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
+          <div className="bg-[var(--hp-surface)] border border-[var(--hp-border)] rounded-[var(--hp-radius)] p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-foreground flex items-center gap-2">
                 <TrendingUp className="w-4 h-4" />
@@ -294,7 +281,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
               <div className="space-y-2">
                 {deals.map(deal => (
                   <Link key={deal.id} href={`/deals/${deal.id}`}
-                    className="flex items-center justify-between p-3 rounded-xl hover:bg-accent/50 transition">
+                    className="flex items-center justify-between p-3 rounded-[var(--hp-radius)] hover:bg-accent/50 transition">
                     <div>
                       <p className="text-sm font-medium text-foreground">
                         {dealTypeLabels[deal.deal_type] ?? deal.deal_type}
@@ -314,7 +301,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
           </div>
 
           {/* Tasks */}
-          <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
+          <div className="bg-[var(--hp-surface)] border border-[var(--hp-border)] rounded-[var(--hp-radius)] p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-foreground flex items-center gap-2">
                 <CheckSquare className="w-4 h-4" />
@@ -328,7 +315,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
             ) : (
               <div className="space-y-2">
                 {tasks.map(task => (
-                  <div key={task.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
+                  <div key={task.id} className="flex items-center justify-between p-3 rounded-[var(--hp-radius)] bg-muted/30">
                     <div>
                       <p className="text-sm font-medium text-foreground">{task.title}</p>
                       <p className="text-xs text-muted-foreground">{taskStatusLabels[task.status] ?? task.status}</p>
@@ -346,43 +333,41 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
 
         {/* Right column */}
         <div className="space-y-4">
-          <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
-            <h2 className="font-semibold text-foreground mb-4">Информация</h2>
-            <div className="space-y-3 text-sm">
-              {c.birth_date && (
-                <div>
-                  <p className="text-xs text-muted-foreground">Дата рождения</p>
-                  <p className="text-foreground">{new Date(c.birth_date).toLocaleDateString('ru-RU')}</p>
-                </div>
-              )}
-              {c.source && (
-                <div>
-                  <p className="text-xs text-muted-foreground">Источник</p>
-                  <p className="text-foreground">{sourceLabels[c.source] ?? c.source}</p>
-                </div>
-              )}
-              <div>
-                <p className="text-xs text-muted-foreground">Добавлен</p>
-                <p className="text-foreground">{new Date(c.created_at).toLocaleDateString('ru-RU')}</p>
+          <div className="hp-block">
+            <div className="hp-block-header">Информация</div>
+            {c.birth_date && (
+              <div className="hp-block-row">
+                <span className="label">Дата рождения</span>
+                <span className="value">{new Date(c.birth_date).toLocaleDateString('ru-RU')}</span>
               </div>
+            )}
+            {c.source && (
+              <div className="hp-block-row">
+                <span className="label">Источник</span>
+                <span className="value">{sourceLabels[c.source] ?? c.source}</span>
+              </div>
+            )}
+            <div className="hp-block-row">
+              <span className="label">Добавлен</span>
+              <span className="value">{new Date(c.created_at).toLocaleDateString('ru-RU')}</span>
             </div>
           </div>
 
           {c.comment && (
-            <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
-              <h2 className="font-semibold text-foreground mb-2">Комментарий</h2>
-              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{c.comment}</p>
+            <div className="hp-block">
+              <div className="hp-block-header">Комментарий</div>
+              <p className="text-sm text-[var(--hp-sub)] whitespace-pre-wrap px-[18px] py-3">{c.comment}</p>
             </div>
           )}
 
-          <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-4 space-y-2">
+          <div className="bg-[var(--hp-surface)] border border-[var(--hp-border)] rounded-[var(--hp-radius)] p-4 space-y-2">
             <Link href={`/deals/new?contact_id=${id}`}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-xl text-sm font-medium hover:bg-primary/20 transition">
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-[var(--hp-radius)] text-sm font-medium hover:bg-primary/20 transition">
               <TrendingUp className="w-4 h-4" />
               Создать сделку
             </Link>
             <Link href={`/contracts/new?contact_id=${id}`}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-border rounded-xl text-sm font-medium hover:bg-accent transition">
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-border rounded-[var(--hp-radius)] text-sm font-medium hover:bg-accent transition">
               <FileText className="w-4 h-4" />
               Создать договор
             </Link>

@@ -4,10 +4,10 @@ import { useState, useActionState } from 'react'
 import Link from 'next/link'
 import { AlertCircle, User, Building2 } from 'lucide-react'
 
-const inputCls = "w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-const selectCls = "w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all"
-const labelCls = "block text-sm font-medium text-foreground mb-1.5"
-const cardCls = "bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4"
+const inputCls = "w-full h-10 px-4 rounded-[var(--hp-radius)] border border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-ink)] placeholder:text-[var(--hp-tertiary)] text-sm outline-none focus:border-[var(--hp-ink)] transition-colors"
+const selectCls = "w-full h-10 px-4 rounded-[var(--hp-radius)] border border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-ink)] text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer transition-colors"
+const labelCls = "hp-label"
+const cardCls = "bg-[var(--hp-surface)] border border-[var(--hp-border)] rounded-[var(--hp-radius)] p-6 space-y-4"
 
 interface ContactFormDefaults {
   full_name?: string
@@ -60,29 +60,35 @@ export function ContactForm({ action, defaults = {}, backHref, submitLabel }: Co
   return (
     <form action={formAction} className="space-y-4">
       {state?.error && (
-        <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="flex items-center gap-2 rounded-[var(--hp-radius)] border border-[var(--hp-danger-tint)] bg-[var(--hp-danger-tint)] px-4 py-3 text-sm text-[var(--hp-danger)]">
           <AlertCircle className="w-4 h-4 shrink-0" />
           {state.error}
         </div>
       )}
       {/* Тип лица */}
       <div className={cardCls}>
-        <h2 className="font-semibold text-foreground">Тип контакта</h2>
+        <h2 className="font-semibold text-[var(--hp-ink)]">Тип контакта</h2>
         <div className="grid grid-cols-2 gap-2.5">
-          <label className="flex items-center gap-3 p-3 border border-border rounded-xl cursor-pointer hover:bg-accent transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5 text-sm">
+          <label
+            className="flex items-center gap-3 p-3 rounded-[var(--hp-radius)] cursor-pointer transition-colors text-sm border"
+            style={{ borderColor: clientType === 'individual' ? 'var(--hp-ink)' : 'var(--hp-border)', background: clientType === 'individual' ? 'var(--hp-neutral-tint)' : 'transparent' }}
+          >
             <input type="radio" name="client_type" value="individual"
               checked={clientType === 'individual'}
               onChange={() => setClientType('individual')}
-              className="accent-primary shrink-0" />
-            <User className="w-4 h-4 text-muted-foreground shrink-0" />
+              className="shrink-0" />
+            <User className="w-4 h-4 text-[var(--hp-sub)] shrink-0" />
             Физическое лицо
           </label>
-          <label className="flex items-center gap-3 p-3 border border-border rounded-xl cursor-pointer hover:bg-accent transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5 text-sm">
+          <label
+            className="flex items-center gap-3 p-3 rounded-[var(--hp-radius)] cursor-pointer transition-colors text-sm border"
+            style={{ borderColor: clientType === 'legal_entity' ? 'var(--hp-ink)' : 'var(--hp-border)', background: clientType === 'legal_entity' ? 'var(--hp-neutral-tint)' : 'transparent' }}
+          >
             <input type="radio" name="client_type" value="legal_entity"
               checked={clientType === 'legal_entity'}
               onChange={() => setClientType('legal_entity')}
-              className="accent-primary shrink-0" />
-            <Building2 className="w-4 h-4 text-muted-foreground shrink-0" />
+              className="shrink-0" />
+            <Building2 className="w-4 h-4 text-[var(--hp-sub)] shrink-0" />
             Юридическое лицо
           </label>
         </div>
@@ -90,7 +96,7 @@ export function ContactForm({ action, defaults = {}, backHref, submitLabel }: Co
 
       {/* Основное */}
       <div className={cardCls}>
-        <h2 className="font-semibold text-foreground">Основные данные</h2>
+        <h2 className="font-semibold text-[var(--hp-ink)]">Основные данные</h2>
         <div>
           <label className={labelCls}>{clientType === 'legal_entity' ? 'Контактное лицо (ФИО) *' : 'Полное имя *'}</label>
           <input type="text" name="full_name" required defaultValue={defaults.full_name ?? ''}
@@ -128,7 +134,7 @@ export function ContactForm({ action, defaults = {}, backHref, submitLabel }: Co
 
       {/* Контакты */}
       <div className={cardCls}>
-        <h2 className="font-semibold text-foreground">Контактные данные</h2>
+        <h2 className="font-semibold text-[var(--hp-ink)]">Контактные данные</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className={labelCls}>Телефон</label>
@@ -153,7 +159,7 @@ export function ContactForm({ action, defaults = {}, backHref, submitLabel }: Co
         <>
           {/* Паспорт */}
           <div className={cardCls}>
-            <h2 className="font-semibold text-foreground">Паспортные данные</h2>
+            <h2 className="font-semibold text-[var(--hp-ink)]">Паспортные данные</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className={labelCls}>Серия</label>
@@ -180,7 +186,7 @@ export function ContactForm({ action, defaults = {}, backHref, submitLabel }: Co
 
           {/* Адрес */}
           <div className={cardCls}>
-            <h2 className="font-semibold text-foreground">Адрес регистрации</h2>
+            <h2 className="font-semibold text-[var(--hp-ink)]">Адрес регистрации</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
                 { label: 'Страна', name: 'country', placeholder: 'Россия', val: defaults.country ?? 'Россия' },
@@ -202,7 +208,7 @@ export function ContactForm({ action, defaults = {}, backHref, submitLabel }: Co
       ) : (
         /* Реквизиты юрлица */
         <div className={cardCls}>
-          <h2 className="font-semibold text-foreground">Реквизиты организации</h2>
+          <h2 className="font-semibold text-[var(--hp-ink)]">Реквизиты организации</h2>
           <div>
             <label className={labelCls}>Название организации *</label>
             <input type="text" name="company_name" defaultValue={defaults.company_name ?? ''} placeholder='ООО "Ромашка"' className={inputCls} />
@@ -243,7 +249,7 @@ export function ContactForm({ action, defaults = {}, backHref, submitLabel }: Co
               <input type="text" name="corr_account" defaultValue={defaults.corr_account ?? ''} className={inputCls} />
             </div>
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-[var(--hp-sub)]">
             Поле «Контактное лицо» выше — это сотрудник, через которого вы общаетесь. Уполномоченных подписантов (с указанием доверенности) можно будет добавить на странице контакта после создания.
           </p>
         </div>
@@ -251,7 +257,7 @@ export function ContactForm({ action, defaults = {}, backHref, submitLabel }: Co
 
       {/* Дополнительно */}
       <div className={cardCls}>
-        <h2 className="font-semibold text-foreground">Дополнительно</h2>
+        <h2 className="font-semibold text-[var(--hp-ink)]">Дополнительно</h2>
         <div>
           <label className={labelCls}>Источник</label>
           <select name="source" defaultValue={defaults.source ?? ''} className={selectCls}>
@@ -272,17 +278,16 @@ export function ContactForm({ action, defaults = {}, backHref, submitLabel }: Co
           <label className={labelCls}>Комментарий</label>
           <textarea name="comment" rows={3} defaultValue={defaults.comment ?? ''}
             placeholder="Дополнительная информация о контакте..."
-            className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all resize-none" />
+            className="w-full px-4 py-2.5 rounded-[var(--hp-radius)] border border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-ink)] placeholder:text-[var(--hp-tertiary)] text-sm outline-none focus:border-[var(--hp-ink)] transition-colors resize-none" />
         </div>
       </div>
 
       <div className="flex items-center gap-3">
         <button type="submit" disabled={isPending}
-          className="px-6 py-2.5 rounded-[14px] text-white font-medium hover:-translate-y-0.5 transition text-sm disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
-          style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+          className="px-6 py-2.5 rounded-[var(--hp-radius)] text-white font-semibold transition-colors text-sm bg-[var(--hp-accent)] hover:bg-[var(--hp-accent-hover)] disabled:opacity-60 disabled:cursor-not-allowed">
           {isPending ? 'Сохранение…' : submitLabel}
         </button>
-        <Link href={backHref} className="px-6 py-2.5 border border-border text-foreground rounded-[14px] text-sm font-medium hover:bg-accent transition">
+        <Link href={backHref} className="px-6 py-2.5 border border-[var(--hp-border)] text-[var(--hp-ink)] rounded-[var(--hp-radius)] text-sm font-semibold hover:border-[var(--hp-sub)] transition-colors">
           Отмена
         </Link>
       </div>

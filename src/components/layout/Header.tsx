@@ -42,21 +42,15 @@ export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCou
 
   return (
     <header
-      className="h-[68px] flex items-center px-5 gap-4 shrink-0 sticky top-0 z-30 overflow-x-hidden w-full"
-      style={{
-        background: 'rgba(248, 250, 252, 0.85)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderBottom: '1px solid rgba(214, 219, 235, 0.5)',
-        boxShadow: '0 1px 0 rgba(255,255,255,0.9), 0 4px 16px rgba(0,0,0,0.03)',
-      }}
+      className="h-[68px] flex items-center px-5 gap-4 shrink-0 sticky top-0 z-30 overflow-x-hidden w-full bg-white"
+      style={{ borderBottom: '1px solid var(--hp-border)' }}
     >
       {/* Search bar */}
       <form onSubmit={handleSearch} className="hidden sm:block flex-1 max-w-[440px]">
         <div className="relative">
           <Search
-            className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none transition-colors duration-200"
-            style={{ width: 15, height: 15, color: focused ? '#16A34A' : '#94A3B8' }}
+            className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none transition-colors duration-150"
+            style={{ width: 15, height: 15, color: focused ? 'var(--hp-ink)' : 'var(--hp-tertiary)' }}
           />
           <input
             ref={inputRef}
@@ -65,20 +59,17 @@ export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCou
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
             placeholder="Поиск по CRM..."
-            className="w-full h-[42px] pl-11 pr-16 text-sm text-foreground placeholder:text-slate-400 outline-none transition-all duration-200"
+            className="w-full h-[40px] pl-11 pr-16 text-sm text-foreground placeholder:text-[var(--hp-tertiary)] outline-none transition-colors duration-150"
             style={{
-              background: focused ? '#ffffff' : 'rgba(255,255,255,0.85)',
-              border: `1.5px solid ${focused ? '#22C55E' : 'rgba(214,219,235,0.8)'}`,
-              borderRadius: '14px',
-              boxShadow: focused
-                ? '0 0 0 4px rgba(34,197,94,0.08), 0 2px 8px rgba(0,0,0,0.04)'
-                : '0 1px 4px rgba(0,0,0,0.04)',
+              background: 'var(--hp-surface)',
+              border: `1px solid ${focused ? 'var(--hp-ink)' : 'var(--hp-border)'}`,
+              borderRadius: 'var(--hp-radius)',
             }}
           />
           <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
             <kbd
-              className="hidden sm:flex items-center px-1.5 py-0.5 text-[10px] font-mono text-slate-400 rounded-md"
-              style={{ background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.08)' }}
+              className="hidden sm:flex items-center px-1.5 py-0.5 text-[10px] font-mono text-[var(--hp-tertiary)] rounded-[var(--hp-radius)]"
+              style={{ background: 'var(--hp-neutral-tint)', border: '1px solid var(--hp-border)' }}
             >
               ⌘K
             </kbd>
@@ -88,7 +79,7 @@ export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCou
 
       {/* Mobile search */}
       <button
-        className="sm:hidden w-10 h-10 flex items-center justify-center rounded-[12px] text-muted-foreground hover:bg-white hover:shadow-sm transition-all duration-200"
+        className="sm:hidden w-10 h-10 flex items-center justify-center rounded-[var(--hp-radius)] text-muted-foreground hover:bg-[var(--hp-neutral-tint)] transition-colors duration-150"
         onClick={() => router.push('/search')}
       >
         <Search style={{ width: 18, height: 18 }} />
@@ -101,20 +92,15 @@ export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCou
         <div className="relative">
           <button
             onClick={(e) => { e.stopPropagation(); setCreateOpen(!createOpen) }}
-            className="flex items-center gap-2 h-[42px] px-4 text-sm font-semibold text-white rounded-[14px] transition-all duration-200"
-            style={{
-              background: 'var(--hp-gradient-primary)',
-              boxShadow: createOpen
-                ? '0 4px 20px rgba(22,163,74,0.5), 0 0 0 3px rgba(34,197,94,0.15)'
-                : '0 2px 12px rgba(22,163,74,0.35)',
-            }}
+            className="flex items-center gap-2 h-[40px] px-4 text-sm font-semibold text-white rounded-[var(--hp-radius)] transition-colors duration-150"
+            style={{ background: createOpen ? 'var(--hp-accent-hover)' : 'var(--hp-accent)' }}
           >
             <Plus style={{ width: 16, height: 16 }} />
             <span className="hidden sm:block">Создать</span>
             <ChevronDown
               style={{
                 width: 14, height: 14,
-                transition: 'transform 0.2s',
+                transition: 'transform 0.15s',
                 transform: createOpen ? 'rotate(180deg)' : 'rotate(0)',
               }}
               className="hidden sm:block opacity-80"
@@ -123,33 +109,31 @@ export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCou
 
           {createOpen && (
             <div
-              className="absolute right-0 top-full mt-2.5 w-52 py-2 rounded-[18px] z-50"
-              style={{
-                background: '#ffffff',
-                border: '1px solid rgba(214,219,235,0.7)',
-                boxShadow: '0 8px 40px rgba(0,0,0,0.12), 0 2px 12px rgba(0,0,0,0.06)',
-              }}
+              className="absolute right-0 top-full mt-2 w-52 py-2 rounded-[var(--hp-radius)] z-50 bg-white"
+              style={{ border: '1px solid var(--hp-border)' }}
               onClick={e => e.stopPropagation()}
             >
               <div className="px-3 pb-1.5">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                <span
+                  className="text-[10px] font-bold text-[var(--hp-tertiary)] uppercase tracking-widest flex items-center gap-1"
+                >
                   <Sparkles style={{ width: 10, height: 10 }} />
                   Быстрое создание
                 </span>
               </div>
               {[
-                { label: 'Контакт',  href: '/contacts/new',   Icon: UserIcon,   color: 'hover:bg-violet-50 hover:text-violet-700', iconColor: 'text-violet-500' },
-                { label: 'Объект',   href: '/properties/new', Icon: Home,       color: 'hover:bg-emerald-50 hover:text-emerald-700', iconColor: 'text-emerald-500' },
-                { label: 'Сделку',   href: '/deals/new',      Icon: TrendingUp, color: 'hover:bg-green-50 hover:text-green-700', iconColor: 'text-green-500' },
-                { label: 'Договор',  href: '/contracts/new',  Icon: FileText,   color: 'hover:bg-orange-50 hover:text-orange-700', iconColor: 'text-orange-500' },
-                { label: 'Задачу',   href: '/tasks/new',      Icon: CheckSquare, color: 'hover:bg-blue-50 hover:text-blue-700', iconColor: 'text-blue-500' },
+                { label: 'Контакт',  href: '/contacts/new',   Icon: UserIcon },
+                { label: 'Объект',   href: '/properties/new', Icon: Home },
+                { label: 'Сделку',   href: '/deals/new',      Icon: TrendingUp },
+                { label: 'Договор',  href: '/contracts/new',  Icon: FileText },
+                { label: 'Задачу',   href: '/tasks/new',      Icon: CheckSquare },
               ].map(item => (
                 <a
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-3 mx-1.5 px-3 py-2.5 text-sm text-[#374151] font-medium transition-all duration-150 rounded-[12px] ${item.color}`}
+                  className="flex items-center gap-3 mx-1.5 px-3 py-2.5 text-sm text-[var(--hp-ink)] font-medium transition-colors duration-150 rounded-[var(--hp-radius)] hover:bg-[var(--hp-neutral-tint)]"
                 >
-                  <item.Icon className={`w-4 h-4 ${item.iconColor}`} />
+                  <item.Icon className="w-4 h-4 text-[var(--hp-sub)]" />
                   {item.label}
                 </a>
               ))}
@@ -158,16 +142,14 @@ export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCou
         </div>
 
         {/* Notifications */}
-        <div
-          className="relative w-10 h-10 flex items-center justify-center rounded-[12px] transition-all duration-200 hover:bg-white hover:shadow-sm"
-        >
+        <div className="relative w-10 h-10 flex items-center justify-center rounded-[var(--hp-radius)] transition-colors duration-150 hover:bg-[var(--hp-neutral-tint)]">
           <NotificationBell unreadCount={unreadCount} />
         </div>
 
         {/* User avatar */}
         <a
           href="/settings/profile"
-          className="flex items-center gap-2.5 pl-1 transition-all duration-200 group"
+          className="flex items-center gap-2.5 pl-1 transition-colors duration-150 group"
           title={user?.full_name ?? 'Профиль'}
         >
           {user?.avatar_url ? (
@@ -175,22 +157,18 @@ export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCou
             <img
               src={user.avatar_url}
               alt="avatar"
-              className="w-[38px] h-[38px] rounded-full object-cover"
-              style={{ boxShadow: '0 0 0 2.5px rgba(34,197,94,0.25)' }}
+              className="w-[36px] h-[36px] rounded-full object-cover border border-[var(--hp-border)]"
             />
           ) : (
             <div
-              className="w-[38px] h-[38px] rounded-full flex items-center justify-center text-white text-sm font-bold group-hover:shadow-md transition-shadow"
-              style={{
-                background: 'var(--hp-gradient-primary)',
-                boxShadow: '0 0 0 2.5px rgba(34,197,94,0.2)',
-              }}
+              className="w-[36px] h-[36px] rounded-full flex items-center justify-center text-white text-sm font-bold"
+              style={{ background: 'var(--hp-accent)' }}
             >
               {initials}
             </div>
           )}
           {firstName && (
-            <span className="hidden lg:block text-sm font-semibold text-[#374151] group-hover:text-foreground transition-colors">
+            <span className="hidden lg:block text-sm font-semibold text-[var(--hp-ink)] transition-colors">
               {firstName}
             </span>
           )}

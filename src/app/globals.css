@@ -1,86 +1,125 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&family=Source+Sans+3:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 @config "../../tailwind.config.ts";
 
+/* ══════════════════════════════════════════════════════════════════
+   «КАБИНЕТ» — визуальная система HousePro (v2, 29.08.2026)
+   Тёплая шалфейно-моховая палитра, плоские скруглённые панели (radius 12px),
+   ноль теней. Source Serif 4 (заголовки) + Source Sans 3 (интерфейс) —
+   пара из суперсемьи Adobe «Source», обе поддерживают кириллицу.
+   Структура «блоков» (секция с капс-заголовком + линованные строки
+   лейбл/значение) — из направления «Инженерный реестр», переодета в
+   шрифты и цвета «Кабинета».
+
+   Заменяет предыдущую систему «Тихий фасад» (IBM Plex, монохром, radius 4px,
+   прямоугольные бейджи) — источник: хэндофф из Claude Design
+   («UI mockups for four directions», направления 1c + 1b).
+   См. docs/DESIGN_SYSTEM_AUDIT.md — история предыдущего перехода.
+
+   ВАЖНО: в референсном мокапе 1c интерфейсный шрифт — Public Sans, но у
+   Public Sans нет кириллицы (только latin/latin-ext/vietnamese — проверено
+   через fonts.google.com/metadata). Заменён на Source Sans 3 — кириллица
+   подтверждена, и это официальная пара к Source Serif 4 у Adobe.
+   ══════════════════════════════════════════════════════════════════ */
+
 @layer base {
   :root {
-    /* ── shadcn/ui tokens mapped to HousePro design system ── */
-    --background:         210 40% 98%;       /* #F8FAFC */
-    --foreground:         222 47% 11%;       /* #111827 */
-    --card:               0 0% 100%;         /* #FFFFFF */
-    --card-foreground:    222 47% 11%;
-    --popover:            0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary:            142 76% 36%;       /* #16A34A */
+    /* ── shadcn/ui токены — приведены к той же палитре, что и --hp-*,
+       чтобы bg-primary/text-foreground/border-input (51 файл в src/features)
+       больше не жили отдельной жизнью от остального стиля ── */
+    --background:         77 19% 93%;      /* #EEF0E9 */
+    --foreground:         129 9% 15%;      /* #232A24 */
+    --card:               60 27% 98%;      /* #FBFBF8 */
+    --card-foreground:    129 9% 15%;
+    --popover:            60 27% 98%;
+    --popover-foreground: 129 9% 15%;
+    --primary:            112 21% 35%;     /* #4B6B46 — мховый акцент, плоский, без градиента */
     --primary-foreground: 0 0% 100%;
-    --secondary:          210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
-    --muted:              210 40% 96%;
-    --muted-foreground:   215 16% 47%;       /* #64748B */
-    --accent:             210 40% 96%;
-    --accent-foreground:  222 47% 11%;
-    --destructive:        0 84% 60%;
+    --secondary:          77 23% 88%;
+    --secondary-foreground: 129 9% 15%;
+    --muted:              77 23% 88%;
+    --muted-foreground:   106 7% 37%;      /* #5C6659 */
+    --accent:             77 23% 88%;
+    --accent-foreground:  129 9% 15%;
+    --destructive:        14 54% 41%;      /* #A24B30 — терракота, не ярко-красный */
     --destructive-foreground: 0 0% 100%;
-    --border:             214 32% 91%;       /* soft blue-grey */
-    --input:              214 32% 91%;
-    --ring:               142 76% 36%;
-    --radius:             0.75rem;           /* 12px — base radius for rounded-lg */
+    --border:             81 21% 87%;      /* #DFE4D6 */
+    --input:              81 21% 87%;
+    --ring:               112 21% 35%;
+    --radius:             0.75rem;         /* 12px — единый мягкий радиус на весь проект */
 
-    /* ── HousePro design tokens (direct use) ── */
-    --hp-green:           #16A34A;
-    --hp-green-light:     #22C55E;
-    --hp-bg:              #F8FAFC;
-    --hp-card:            #FFFFFF;
-    --hp-text:            #111827;
-    --hp-text-secondary:  #64748B;
-    --hp-border:          rgba(214, 219, 235, 0.7);
-    --hp-shadow-sm:       0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06);
-    --hp-shadow-md:       0 4px 16px rgba(0,0,0,0.06), 0 12px 40px rgba(0,0,0,0.08);
-    --hp-shadow-lg:       0 8px 32px rgba(0,0,0,0.10), 0 20px 60px rgba(0,0,0,0.12);
-    --hp-radius:          20px;
-    --hp-radius-sm:       12px;
-    --hp-gradient-primary: linear-gradient(135deg, #16A34A 0%, #22C55E 100%);
-  }
+    /* ── HousePro design tokens (прямое использование) ── */
+    --hp-ink:             #232A24;   /* основной текст */
+    --hp-sub:             #5C6659;  /* вторичный текст — роли, лейблы, метаданные */
+    --hp-tertiary:        #8A9382;  /* плейсхолдеры, неактивное */
+    --hp-bg:              #EEF0E9; /* фон страницы — тёплый шалфей */
+    --hp-surface:         #FBFBF8; /* фон карточек/панелей */
+    --hp-border:          #DFE4D6; /* базовая hairline-граница */
+    --hp-border-soft:     #EAEEE2; /* граница между строками таблицы/блока */
 
-  .hp-gradient-primary-bg {
-    background: var(--hp-gradient-primary);
+    --hp-accent:          #4B6B46; /* мховый зелёный — плоский, без градиента */
+    --hp-accent-hover:    #3D5A39;
+    --hp-neutral-tint:    #E4E8DA; /* нейтральные плашки/иконки-боксы/фон сайдбара */
+    --hp-accent-tint:     #DBE1CF; /* активный пункт меню, выбранный фильтр-чип */
+
+    /* семантика статусов — отдельно от --hp-accent */
+    --hp-good:            #3D6238; --hp-good-tint:  #E2ECDD; /* активен / завершено */
+    --hp-warn:            #7A6B3F; --hp-warn-tint:  #F0ECDD; /* VIP / требует внимания */
+    --hp-danger:          #A24B30; --hp-danger-tint:#F3E5E0; /* просрочено / удаление — только тревожное */
+    --hp-info:            #41546B; --hp-info-tint:  #E6EAF0; /* новое / информационное */
+
+    --hp-radius:          12px;  /* карточки, кнопки, инпуты, иконки-боксы — единый радиус */
+    --hp-radius-badge:    999px; /* бейджи — pill, как в «Кабинете» */
+    --hp-shadow:          none;  /* теней в системе нет — только плоский тон и граница */
+
+    /* ── legacy-алиас ──
+       --hp-gradient-primary использовался через var(...) в 36 файлах
+       (все CTA-кнопки старых страниц). Не удалять до тех пор, пока эти
+       страницы не переведены на .hp-btn-primary явно (см. WORKFLOW.md). */
+    --hp-gradient-primary: var(--hp-accent);
   }
 
   .dark {
-    --background:         222 47% 4%;
-    --foreground:         210 40% 98%;
-    --card:               222 47% 8%;
-    --card-foreground:    210 40% 98%;
-    --popover:            222 47% 8%;
-    --popover-foreground: 210 40% 98%;
-    --primary:            142 70% 45%;
-    --primary-foreground: 0 0% 100%;
-    --secondary:          217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
-    --muted:              217 33% 17%;
-    --muted-foreground:   215 20% 65%;
-    --accent:             217 33% 17%;
-    --accent-foreground:  210 40% 98%;
-    --destructive:        0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-    --border:             217 33% 17%;
-    --input:              217 33% 17%;
-    --ring:               142 70% 45%;
+    --background:         129 12% 9%;
+    --foreground:         77 15% 92%;
+    --card:               129 10% 13%;
+    --card-foreground:    77 15% 92%;
+    --popover:            129 10% 13%;
+    --popover-foreground: 77 15% 92%;
+    --primary:            112 25% 55%;
+    --primary-foreground: 129 12% 9%;
+    --secondary:          129 8% 20%;
+    --secondary-foreground: 77 15% 92%;
+    --muted:              129 8% 20%;
+    --muted-foreground:   92 7% 65%;
+    --accent:             129 8% 20%;
+    --accent-foreground:  77 15% 92%;
+    --destructive:        14 54% 52%;
+    --destructive-foreground: 0 0% 100%;
+    --border:             129 8% 24%;
+    --input:              129 8% 24%;
+    --ring:               112 25% 55%;
   }
 }
 
 @layer base {
   * { border-color: hsl(var(--border)); }
-  html {
-    overflow-x: hidden;
-  }
+  html { overflow-x: hidden; }
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Source Sans 3', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
+  }
+  /* Заголовки — засечный Source Serif 4 (см. «Кабинет»). Не декоративный
+     приём сам по себе, но и не функциональный, как моно-цифры раньше —
+     здесь это чисто про тональность: тёплый, читаемый на весь день интерфейс. */
+  h1, h2, h3 {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-weight: 700;
+    letter-spacing: -0.015em;
   }
 }
 
@@ -94,147 +133,129 @@ input[type="week"] {
   box-sizing: border-box;
   -webkit-min-logical-width: 0;
 }
-input[type="date"]::-webkit-date-and-time-value {
-  text-align: left;
-  min-width: 0;
-}
-input[type="date"]::-webkit-calendar-picker-indicator {
-  margin-left: 4px;
-}
+input[type="date"]::-webkit-date-and-time-value { text-align: left; min-width: 0; }
+input[type="date"]::-webkit-calendar-picker-indicator { margin-left: 4px; }
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(100,116,139,0.25); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(100,116,139,0.4); }
+::-webkit-scrollbar-thumb { background: rgba(92,102,89,0.3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(92,102,89,0.5); }
 
-/* ── Base card ── */
+/* ── Базовая карточка ── */
 .hp-card {
-  background: var(--hp-card);
+  background: var(--hp-surface);
   border-radius: var(--hp-radius);
-  box-shadow: var(--hp-shadow-sm);
   border: 1px solid var(--hp-border);
+  box-shadow: none;
 }
-.hp-card-hover {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.hp-card-hover:hover {
-  box-shadow: var(--hp-shadow-md);
-  transform: translateY(-2px);
-}
+.hp-card-hover { transition: border-color 0.15s ease; }
+.hp-card-hover:hover { border-color: var(--hp-sub); }
 
-/* ── Unified page heading ── */
+/* ── Единый заголовок страницы ── */
 .hp-h1 {
-  font-size: 28px;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 27px;
   font-weight: 700;
-  color: var(--hp-text);
-  letter-spacing: -0.025em;
-  line-height: 1.2;
+  color: var(--hp-ink);
+  letter-spacing: -0.015em;
+  line-height: 1.1;
 }
 .hp-h2 {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--hp-text);
-  letter-spacing: -0.015em;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--hp-ink);
 }
 
-/* ── CTA button ── */
+/* ── CTA-кнопка — плоский цвет, без градиента и подъёма ── */
 .hp-btn-primary {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
+  padding: 10px 18px;
   color: #fff;
-  border-radius: 14px;
-  font-size: 14px;
-  font-weight: 700;
-  background: linear-gradient(135deg, #16A34A 0%, #22C55E 100%);
-  box-shadow: 0 4px 16px rgba(22,163,74,0.35);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: var(--hp-radius);
+  font-size: 13.5px;
+  font-weight: 600;
+  background: var(--hp-accent);
+  border: 1px solid var(--hp-accent);
+  box-shadow: none;
+  transition: background-color 0.15s ease;
 }
-.hp-btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(22,163,74,0.45);
-}
+.hp-btn-primary:hover { background: var(--hp-accent-hover); border-color: var(--hp-accent-hover); }
 
 .hp-btn-secondary {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
-  color: var(--hp-text);
-  border-radius: 14px;
-  font-size: 14px;
-  font-weight: 600;
-  background: #fff;
-  border: 1.5px solid rgba(214,219,235,0.9);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.hp-btn-secondary:hover {
-  background: #F8FAFC;
-  border-color: rgba(22,163,74,0.3);
-  color: #16A34A;
-}
-
-/* ── Form card (used in new/edit pages) ── */
-.hp-form-card {
-  background: #fff;
+  padding: 10px 18px;
+  color: var(--hp-ink);
   border-radius: var(--hp-radius);
-  border: 1px solid rgba(214,219,235,0.7);
-  padding: 24px;
-  box-shadow: var(--hp-shadow-sm);
+  font-size: 13.5px;
+  font-weight: 600;
+  background: var(--hp-surface);
+  border: 1px solid var(--hp-border);
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.hp-btn-secondary:hover { border-color: var(--hp-sub); color: var(--hp-ink); }
+
+/* ── Форма-карточка ── */
+.hp-form-card {
+  background: var(--hp-surface);
+  border-radius: var(--hp-radius);
+  border: 1px solid var(--hp-border);
+  padding: 22px;
+  box-shadow: none;
 }
 
-/* ── Form controls ── */
+/* ── Поля форм ── */
 .hp-input {
   width: 100%;
-  height: 44px;
-  padding: 0 16px;
-  border-radius: var(--hp-radius-sm);
-  border: 1.5px solid rgba(214,219,235,0.9);
-  background: #fff;
-  color: var(--hp-text);
-  font-size: 14px;
-  transition: all 0.15s ease;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: var(--hp-radius);
+  border: 1px solid var(--hp-border);
+  background: var(--hp-surface);
+  color: var(--hp-ink);
+  font-size: 13.5px;
+  transition: border-color 0.15s ease;
   outline: none;
 }
-.hp-input:focus {
-  border-color: #22C55E;
-  box-shadow: 0 0 0 3px rgba(34,197,94,0.10);
-}
-.hp-input::placeholder { color: #94A3B8; }
+.hp-input:focus { border-color: var(--hp-ink); box-shadow: 0 0 0 1px var(--hp-ink); }
+.hp-input::placeholder { color: var(--hp-tertiary); }
 
 .hp-label {
   display: block;
-  font-size: 13px;
+  font-size: 11.5px;
   font-weight: 600;
-  color: var(--hp-text);
+  color: var(--hp-sub);
   margin-bottom: 6px;
 }
 
-/* ── Back link ── */
+/* ── Back-link ── */
 .hp-back-link {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 500;
-  color: var(--hp-text-secondary);
+  color: var(--hp-sub);
   transition: color 0.15s;
 }
-.hp-back-link:hover { color: var(--hp-text); }
+.hp-back-link:hover { color: var(--hp-ink); }
 
-/* ── Stats card mini ── */
+/* ── Мини stat-карточка ── */
 .hp-stat-card {
-  background: #fff;
+  background: var(--hp-surface);
   border-radius: var(--hp-radius);
-  border: 1px solid rgba(214,219,235,0.6);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-  padding: 20px;
+  border: 1px solid var(--hp-border);
+  box-shadow: none;
+  padding: 18px 20px;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
 }
 
-/* ── Section header ── */
+/* ── Заголовок секции ── */
 .hp-section-header {
   display: flex;
   align-items: flex-start;
@@ -245,55 +266,76 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 /* ── Empty state ── */
-.hp-empty {
-  text-align: center;
-  padding: 64px 24px;
-}
+.hp-empty { text-align: center; padding: 64px 24px; }
 
-/* ── Page icon header (used in form pages) ── */
+/* ── Иконка-бокс в шапке формы ── */
 .hp-page-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--hp-radius-sm);
+  width: 42px;
+  height: 42px;
+  border-radius: var(--hp-radius);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  background: var(--hp-neutral-tint);
+  border: 1px solid var(--hp-border);
 }
 
-/* ── Animations — uniform across all pages ── */
-.hp-lift {
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-              box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+/* ── Бейдж статуса — pill, как в «Кабинете» ── */
+.hp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 11px;
+  border-radius: var(--hp-radius-badge);
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
 }
-.hp-lift:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--hp-shadow-md);
-}
+.hp-badge-neutral { background: var(--hp-neutral-tint); color: var(--hp-sub); }
+.hp-badge-good    { background: var(--hp-good-tint);    color: var(--hp-good); }
+.hp-badge-warn    { background: var(--hp-warn-tint);    color: var(--hp-warn); }
+.hp-badge-danger  { background: var(--hp-danger-tint);  color: var(--hp-danger); }
+.hp-badge-info    { background: var(--hp-info-tint);    color: var(--hp-info); }
 
-/* ── Mobile: ensure readable tap targets ── */
+/* ── «Блок» — секция-реестр: капс-заголовок + линованные строки лейбл/значение.
+   Структура из направления «Инженерный реестр», шрифт/цвет — «Кабинет».
+   Живёт внутри уже скруглённой панели (радиус на .hp-block), ряды внутри —
+   прямые линии, без вложенных карточек. ── */
+.hp-block {
+  background: var(--hp-surface);
+  border-radius: var(--hp-radius);
+  border: 1px solid var(--hp-border);
+  overflow: hidden;
+}
+.hp-block-header {
+  padding: 11px 18px;
+  border-bottom: 1px solid var(--hp-border);
+  font: 600 10px 'Source Sans 3', sans-serif;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--hp-sub);
+}
+.hp-block-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 18px;
+  border-top: 1px solid var(--hp-border-soft);
+  font-size: 13px;
+}
+.hp-block-header + .hp-block-row { border-top: none; }
+.hp-block-row > .label { color: var(--hp-sub); flex-shrink: 0; }
+.hp-block-row > .value { color: var(--hp-ink); font-weight: 500; text-align: right; min-width: 0; }
+
+/* ── Анимации — только hover-состояние границы, без translateY/скейлов ── */
+.hp-lift { transition: border-color 0.15s ease; }
+.hp-lift:hover { border-color: var(--hp-sub); }
+
+/* ── Mobile ── */
 @media (max-width: 640px) {
-  .hp-btn-primary,
-  .hp-btn-secondary {
-    padding: 10px 16px;
-    font-size: 13px;
-  }
-  .hp-form-card {
-    padding: 16px;
-  }
-  .hp-h1 {
-    font-size: 24px;
-  }
-}
-
-/* ── Sidebar (тёмный вариант) — дышащее свечение за лого ── */
-@keyframes sidebar-glow-breathe {
-  0%, 100% { transform: scale(0.85); opacity: 0.35; }
-  50%      { transform: scale(1.15); opacity: 0.7; }
-}
-.sidebar-logo-glow {
-  animation: sidebar-glow-breathe 5s ease-in-out infinite;
-}
-@media (prefers-reduced-motion: reduce) {
-  .sidebar-logo-glow { animation: none; opacity: 0.5; }
+  .hp-btn-primary, .hp-btn-secondary { padding: 10px 16px; font-size: 13px; }
+  .hp-form-card { padding: 16px; }
+  .hp-h1 { font-size: 23px; }
 }

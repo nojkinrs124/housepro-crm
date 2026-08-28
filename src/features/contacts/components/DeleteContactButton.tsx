@@ -12,7 +12,7 @@ export function DeleteContactButton({ contactId }: { contactId: string }) {
   return (
     <button
       onClick={handleClick}
-      className="flex items-center gap-2 px-4 py-2 border border-red-200 text-red-600 rounded-xl text-sm font-medium hover:bg-red-50 transition"
+      className="flex items-center gap-2 px-4 py-2 border border-[var(--hp-border)] text-[var(--hp-danger)] rounded-[var(--hp-radius)] text-sm font-medium hover:border-[var(--hp-danger)] hover:bg-[var(--hp-danger-tint)] transition-colors"
       title="Удалить контакт"
     >
       <Trash2 className="w-4 h-4" />

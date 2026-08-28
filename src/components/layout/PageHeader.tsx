@@ -15,8 +15,8 @@ export function PageHeader({
   backHref,
   backLabel,
   icon,
-  iconBg = 'bg-green-50',
-  iconBoxClassName = 'w-11 h-11 rounded-[12px]',
+  iconBg = 'bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)]',
+  iconBoxClassName = 'w-11 h-11 rounded-[var(--hp-radius)]',
 }: {
   title: ReactNode
   subtitle?: ReactNode
@@ -33,7 +33,7 @@ export function PageHeader({
         {backHref && (
           <Link
             href={backHref}
-            className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-3"
+            className="hp-back-link inline-flex items-center gap-2 mb-3"
           >
             <ArrowLeft className="w-4 h-4" />
             {backLabel ?? 'Назад'}
@@ -48,7 +48,7 @@ export function PageHeader({
           <div className="min-w-0">
             <h1 className="hp-h1 break-words">{title}</h1>
             {subtitle && (
-              <p className="text-sm text-muted-foreground mt-1">{subtitle}</p>
+              <p className="text-sm text-[var(--hp-sub)] mt-1">{subtitle}</p>
             )}
           </div>
         </div>

@@ -297,37 +297,72 @@ const data: Contact = {}
 
 ---
 
-## 🎨 ВИЗУАЛЬНЫЙ СТАНДАРТ — ОБЯЗАТЕЛЕН ДЛЯ ВСЕХ НОВЫХ СТРАНИЦ И КОМПОНЕНТОВ
+## 🎨 ВИЗУАЛЬНЫЙ СТАНДАРТ — «КАБИНЕТ» (ОБЯЗАТЕЛЕН ДЛЯ ВСЕХ НОВЫХ СТРАНИЦ И КОМПОНЕНТОВ)
 
 > **Правило**: при создании любой новой страницы, формы, карточки или компонента — строго следовать этому разделу. Отклонения от стандарта не допускаются.
+>
+> **История**: 28.08.2026 проект был переведён с «зелёного AI-SaaS» стиля на монохромную
+> систему «Тихий фасад» (IBM Plex, radius 4px, прямоугольные бейджи — см.
+> [`docs/DESIGN_SYSTEM_AUDIT.md`](./docs/DESIGN_SYSTEM_AUDIT.md)). 29.08.2026 — редизайн
+> на **«Кабинет»**: источник — хэндофф-бандл из Claude Design («UI mockups for four
+> directions»), гибрид направлений **1c «Кабинет»** (тёплая шалфейно-моховая палитра,
+> Source Serif 4 + Source Sans 3, плоские панели radius 12px, без теней) и **1b
+> «Инженерный реестр»** (структура «блоков» — секция с капс-заголовком и линованными
+> строками лейбл/значение вместо рассыпанных мини-карточек, см. `.hp-block*` ниже).
+> Миграция каталогом: `src/app/globals.css` (токены, обязательны к прочтению вместе с
+> этим разделом), общий chrome (`Sidebar.tsx`, `Header.tsx`, `PageHeader.tsx`,
+> `components/ui/button.tsx`) и модуль `contacts` уже переведены — это эталон. Остальные
+> модули переводятся по мере работы с ними (см. `docs/WORKFLOW.md`), старые страницы пока
+> держатся на псевдониме `--hp-gradient-primary → var(--hp-accent)` в `globals.css`,
+> поэтому визуально не сломаны, но ещё не приведены к новым классам/радиусам/блокам.
+>
+> **Важно про шрифты**: в референсном мокапе 1c интерфейсный шрифт — Public Sans, но у
+> него нет кириллицы (проверено на `fonts.google.com/metadata/fonts` — только
+> latin/latin-ext/vietnamese). Заменён на **Source Sans 3** — кириллица подтверждена, и
+> это официальная пара к Source Serif 4 у Adobe (та же суперсемья «Source»).
 
 ---
 
 ### Цветовая палитра и токены
 
+Все значения — CSS-переменные в `src/app/globals.css` (`:root`). **В новом коде
+использовать переменные** (`var(--hp-ink)` и т.д.) через inline `style` или Tailwind
+arbitrary-классы (`text-[var(--hp-ink)]`), а не повторно хардкодить хекс — так любое
+изменение палитры делается в одном файле, а не в 75 страницах, как было раньше.
+
 ```tsx
-// ✅ ВСЕГДА использовать эти значения напрямую (хардкодом через inline style или Tailwind arbitrary)
-// НЕ использовать bg-primary, text-foreground, bg-card и другие shadcn-токены
-// в новом коде — они существуют в legacy-коде, их не трогать, но в новом не писать
+// ── Текст и поверхности — тёплый шалфейно-моховый тон ──
+'var(--hp-ink)'          // #232A24 — основной текст
+'var(--hp-sub)'          // #5C6659 — вторичный текст, роли, лейблы, метаданные
+'var(--hp-tertiary)'     // #8A9382 — плейсхолдеры, неактивное
+'var(--hp-bg)'           // #EEF0E9 — фон страницы
+'var(--hp-surface)'      // #FBFBF8 — фон карточек/панелей
+'var(--hp-border)'       // #DFE4D6 — hairline-граница
+'var(--hp-border-soft)'  // #EAEEE2 — граница между строками таблицы/блока
 
-// Основные цвета
-'#111827'   // text — основной тёмный текст
-'#64748B'   // text secondary — подписи, лейблы
-'#94A3B8'   // text tertiary — плейсхолдеры, неактивное
-'#F8FAFC'   // background страницы
-'#FFFFFF'   // background карточек
-'#16A34A'   // brand green primary
-'#22C55E'   // brand green lighter
+// ── Акцент — ПЛОСКИЙ мховый зелёный, без градиента ──
+'var(--hp-accent)'       // #4B6B46 — CTA-кнопки, активные состояния nav
+'var(--hp-accent-hover)' // #3D5A39 — hover CTA
+'var(--hp-neutral-tint)' // #E4E8DA — нейтральные плашки/иконки-боксы/фон сайдбара
+'var(--hp-accent-tint)'  // #DBE1CF — активный пункт меню, выбранный фильтр-чип
 
-// Границы и тени
-'rgba(214,219,235,0.7)'  // border карточек
-'0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)'   // shadow-sm карточек
-'0 4px 16px rgba(0,0,0,0.06), 0 12px 40px rgba(0,0,0,0.08)' // shadow-md hover
+// ── Семантика статусов (НЕ путать с акцентом — это разные вещи) ──
+'var(--hp-good)'   / 'var(--hp-good-tint)'    // #3D6238 / #E2ECDD — активен, завершено
+'var(--hp-warn)'   / 'var(--hp-warn-tint)'    // #7A6B3F / #F0ECDD — VIP, требует внимания
+'var(--hp-danger)' / 'var(--hp-danger-tint)'  // #A24B30 / #F3E5E0 — просрочено, удаление — только тревожное
+'var(--hp-info)'   / 'var(--hp-info-tint)'    // #41546B / #E6EAF0 — новое, информационное
 
-// Градиент CTA-кнопки (зелёная)
-'linear-gradient(135deg, #16A34A, #22C55E)'
-'0 4px 16px rgba(22,163,74,0.35)'  // boxShadow для CTA-кнопки
+// Радиус и тени — ОДНО значение на весь проект
+'var(--hp-radius)'        // 12px — карточки, кнопки, инпуты, иконки-боксы. Разных радиусов нет.
+'var(--hp-radius-badge)'  // 999px — бейджи-pill
+'none'                    // теней в системе нет вообще — только плоский тон и hairline-граница
 ```
+
+**Шрифты** (подключены в `globals.css`, ничего дополнительно импортировать не нужно):
+- `Source Sans 3` — весь интерфейсный текст (body, лейблы, значения полей, кнопки, данные таблиц).
+- `Source Serif 4` — H1/H2/H3 (уже настроено глобально на теге, специально указывать не нужно), крупные суммы на стат-карточках, заголовки секций форм. Засечный шрифт — задаёт тёплую, читаемую на весь день тональность.
+- **Моно-шрифта для чисел в системе больше нет** (в отличие от «Тихого фасада») — телефоны/даты/суммы набираются обычным интерфейсным шрифтом, как в референсе 1c. Не добавлять `font-mono` в новом коде.
+- Оба шрифта официально поддерживают кириллицу на Google Fonts — не заменять на Public Sans/Archivo/Sora/Work Sans/Karla без проверки кириллицы (`fonts.google.com/metadata/fonts` → поле `coverage`/`subsets`), у них её нет.
 
 ---
 
@@ -335,33 +370,54 @@ const data: Contact = {}
 
 **Стандартная карточка:**
 ```tsx
-<div
-  className="bg-white rounded-[20px] border border-slate-100 p-5"
-  style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
->
+<div className="bg-[var(--hp-surface)] rounded-[var(--hp-radius)] border border-[var(--hp-border)] p-5">
   ...
 </div>
 ```
 
 **Карточки в grid-строке (выровнять по высоте):**
 ```tsx
-// На родительском grid
 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
   {/* Карточки должны иметь h-full flex flex-col для равной высоты строки */}
-  <div className="bg-white rounded-[20px] border border-slate-100 p-5 h-full flex flex-col"
-    style={{ boxShadow: '...' }}>
+  <div className="bg-[var(--hp-surface)] rounded-[var(--hp-radius)] border border-[var(--hp-border)] p-5 h-full flex flex-col">
     ...
   </div>
 </div>
 ```
 
 **Правила карточек:**
-- Радиус: всегда `rounded-[20px]`
+- Радиус: всегда `rounded-[var(--hp-radius)]` (12px) — единственный радиус в системе, включая вложенные карточки
 - Padding: `p-5` (стандарт) — одинаково на всех страницах
-- Border: `border border-slate-100`
-- Shadow: всегда через inline `style` (Tailwind не умеет точные значения)
-- Вложенные карточки (секции внутри формы): `rounded-[20px]` тоже
-- Заголовок секции внутри карточки: `font-bold text-[#111827] text-[15px]`
+- Border: `border border-[var(--hp-border)]` — **это и есть форма карточки**, тень не добавлять
+- Hover (если карточка кликабельна): `hover:border-[var(--hp-sub)]` — граница темнеет, ничего не поднимается и не светится
+- Заголовок секции внутри карточки: `font-bold text-[var(--hp-ink)] text-[15px]` (наследует Source Serif 4 через тег `h2`)
+
+---
+
+### «Блок» — секция-реестр (лейбл/значение), из направления «Инженерный реестр»
+
+Для панелей с набором полей «подпись — значение» (детальная карточка, инфо-сайдбар) —
+**не** рассыпать поля по мини-карточкам (`bg-muted/30 p-3` на каждое поле, старый паттерн
+«Тихого фасада»), а собирать их в один `.hp-block` с капс-заголовком и линованными
+строками. Полный рабочий пример — `src/app/(dashboard)/contacts/[id]/page.tsx` (эталон).
+
+```tsx
+<div className="hp-block">
+  <div className="hp-block-header">Контактные данные</div>
+  <div className="hp-block-row">
+    <span className="label">Телефон</span>
+    <a href={`tel:${phone}`} className="value hover:text-[var(--hp-accent)] transition-colors">{phone}</a>
+  </div>
+  <div className="hp-block-row">
+    <span className="label">Email</span>
+    <span className="value">{email}</span>
+  </div>
+</div>
+```
+
+`.hp-block` даёт скруглённую панель (радиус 12px, как у всех контейнеров в «Кабинете»);
+`.hp-block-row` рисует ряды прямыми линиями внутри неё — сама секция скруглена, а данные
+внутри читаются как реестр, а не как отдельные карточки. Готовые классы — в `globals.css`.
 
 ---
 
@@ -369,17 +425,18 @@ const data: Contact = {}
 
 ```tsx
 // ✅ ЕДИНСТВЕННЫЙ допустимый стандарт для главного заголовка страницы
-<h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">
+// font-family: Source Serif 4 подключается глобально через тег h1 — доп. класс не нужен
+<h1 className="text-[27px] font-bold text-[var(--hp-ink)] tracking-tight leading-tight">
   Название страницы
 </h1>
 
 // Подзаголовок/описание под H1
-<p className="text-[#64748B] mt-1.5 text-sm font-medium">
+<p className="text-[var(--hp-sub)] mt-1.5 text-sm font-medium">
   Описание или количество записей
 </p>
 
 // Заголовок секции внутри карточки (H2)
-<h2 className="font-bold text-[#111827] text-[15px]">
+<h2 className="font-bold text-[var(--hp-ink)] text-[15px]">
   Название секции
 </h2>
 ```
@@ -389,38 +446,25 @@ const data: Contact = {}
 ### CTA-кнопки (главные действия — Создать, Сохранить, Добавить)
 
 ```tsx
-// ✅ СТАНДАРТ: всегда градиент + inline style (Tailwind не поддерживает градиент)
-<button
-  type="submit"
-  className="flex items-center gap-2 px-5 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all"
-  style={{
-    background: 'linear-gradient(135deg, #16A34A, #22C55E)',
-    boxShadow: '0 4px 16px rgba(22,163,74,0.35)'
-  }}
->
-  <Plus className="w-4 h-4" />
-  Создать
-</button>
-
-// Link-версия CTA (для href)
+// ✅ СТАНДАРТ: плоский цвет, БЕЗ градиента, БЕЗ hover-подъёма — только смена фона
 <Link
   href="/module/new"
-  className="flex items-center gap-2 px-5 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all"
-  style={{
-    background: 'linear-gradient(135deg, #16A34A, #22C55E)',
-    boxShadow: '0 4px 16px rgba(22,163,74,0.35)'
-  }}
+  className="flex items-center gap-2 px-5 py-2.5 text-white rounded-[var(--hp-radius)] text-sm font-semibold transition-colors bg-[var(--hp-accent)] hover:bg-[var(--hp-accent-hover)]"
 >
   <Plus className="w-4 h-4" />
   Добавить
 </Link>
+
+// Или готовый компонент (предпочтительно для новых страниц):
+import { Button } from '@/components/ui/button'
+<Button variant="primary"><Plus className="w-4 h-4" />Добавить</Button>
 ```
 
 **Вторичная кнопка (Отмена, Назад, Редактировать):**
 ```tsx
 <Link
   href="/module"
-  className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-[14px] text-sm font-semibold text-[#374151] hover:bg-slate-50 hover:border-slate-300 transition-all"
+  className="flex items-center gap-2 px-5 py-2.5 bg-[var(--hp-surface)] border border-[var(--hp-border)] rounded-[var(--hp-radius)] text-sm font-semibold text-[var(--hp-ink)] hover:border-[var(--hp-sub)] transition-colors"
 >
   Отмена
 </Link>
@@ -433,23 +477,21 @@ const data: Contact = {}
 **ЕДИНСТВЕННЫЙ допустимый стандарт для всех полей:**
 
 ```tsx
-// Лейбл
-<label className="block text-sm font-semibold text-[#111827] mb-1.5">
-  Название поля
-</label>
+// Лейбл — обычный регистр, не капс (см. .hp-label в globals.css)
+<label className="hp-label">Название поля</label>
 
 // Input
 <input
   type="text"
   name="field"
   placeholder="Подсказка"
-  className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+  className="w-full h-10 px-4 rounded-[var(--hp-radius)] border border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-ink)] placeholder:text-[var(--hp-tertiary)] text-sm outline-none focus:border-[var(--hp-ink)] transition-colors"
 />
 
 // Select
 <select
   name="field"
-  className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all"
+  className="w-full h-10 px-4 rounded-[var(--hp-radius)] border border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-ink)] text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer transition-colors"
 >
   <option value="">— выберите —</option>
 </select>
@@ -459,29 +501,33 @@ const data: Contact = {}
   name="field"
   rows={3}
   placeholder="Подсказка"
-  className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all resize-none"
+  className="w-full px-4 py-2.5 rounded-[var(--hp-radius)] border border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-ink)] placeholder:text-[var(--hp-tertiary)] text-sm outline-none focus:border-[var(--hp-ink)] transition-colors resize-none"
 />
 
 // Date input (min-width важен для iOS Safari)
 <input
   type="date"
   name="field"
-  className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+  className="w-full min-w-0 h-10 px-4 rounded-[var(--hp-radius)] border border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-ink)] text-sm outline-none focus:border-[var(--hp-ink)] transition-colors"
 />
 ```
+
+Готовые классы `.hp-input` / `.hp-label` в `globals.css` делают то же самое — можно
+использовать их напрямую вместо повторения classNames.
 
 **Правила полей:**
 - Высота: `h-10` (40px) для input и select — жёстко везде
 - Padding: `px-4` — жёстко везде (не px-3!)
-- Радиус: `rounded-xl` (12px) для полей, `rounded-[14px]` для кнопок
-- Граница: `border border-input`
-- Фокус: `focus:ring-2 focus:ring-primary/30` — везде
-- Переход: `transition-all` — везде
+- Радиус: `rounded-[var(--hp-radius)]` — везде, полей и кнопок это тоже касается (радиус один на всё)
+- Граница: `border border-[var(--hp-border)]`
+- Фокус: `focus:border-[var(--hp-ink)]` — граница темнеет, **не `ring`** (кольца — не часть системы)
 - Select: всегда `cursor-pointer`
 
 ---
 
 ### Структура страницы-списка (list page)
+
+Полный рабочий пример — `src/app/(dashboard)/contacts/page.tsx` (эталон).
 
 ```tsx
 export default async function ModulePage() {
@@ -491,13 +537,13 @@ export default async function ModulePage() {
       {/* 1. Шапка страницы */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">
+          <h1 className="text-[27px] font-bold text-[var(--hp-ink)] tracking-tight leading-tight">
             Название раздела
           </h1>
-          <p className="text-[#64748B] mt-1 text-sm font-medium">N записей</p>
+          <p className="text-[var(--hp-sub)] mt-1 text-sm font-medium">N записей</p>
         </div>
-        <Link href="/module/new" className="flex items-center gap-2 px-5 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all"
-          style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+        <Link href="/module/new"
+          className="flex items-center gap-2 px-5 py-2.5 text-white rounded-[var(--hp-radius)] text-sm font-semibold transition-colors bg-[var(--hp-accent)] hover:bg-[var(--hp-accent-hover)]">
           <Plus style={{ width: 16, height: 16 }} />
           Добавить
         </Link>
@@ -506,13 +552,13 @@ export default async function ModulePage() {
       {/* 2. Stat-карточки (опционально) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map(stat => (
-          <div key={stat.label} className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm p-5 flex items-center gap-3 sm:gap-4">
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${stat.iconBg}`}>
-              <stat.Icon style={{ width: 20, height: 20 }} />
+          <div key={stat.label} className="bg-[var(--hp-surface)] rounded-[var(--hp-radius)] border border-[var(--hp-border)] p-5 flex items-center gap-3 sm:gap-4">
+            <div className="w-11 h-11 rounded-[var(--hp-radius)] flex items-center justify-center shrink-0 bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)]">
+              <stat.Icon style={{ width: 20, height: 20, color: 'var(--hp-sub)' }} />
             </div>
             <div className="min-w-0"> {/* ← ОБЯЗАТЕЛЕН для предотвращения overflow */}
-              <p className="text-2xl font-bold text-[#111827]">{stat.value}</p>
-              <p className="text-xs text-[#64748B] font-medium mt-0.5 leading-tight break-words">
+              <p className="text-2xl font-bold text-[var(--hp-ink)]">{stat.value}</p>
+              <p className="text-xs text-[var(--hp-sub)] font-medium mt-0.5 leading-tight break-words">
                 {stat.label}
               </p>
             </div>
@@ -521,23 +567,21 @@ export default async function ModulePage() {
       </div>
 
       {/* 3. Основная таблица/список */}
-      <div className="bg-white rounded-[20px] border border-slate-100 overflow-hidden"
-        style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+      <div className="bg-[var(--hp-surface)] rounded-[var(--hp-radius)] border border-[var(--hp-border)] overflow-hidden">
         {!items?.length ? (
           /* Empty state */
           <div className="text-center py-16">
-            <div className="w-14 h-14 rounded-[20px] flex items-center justify-center mx-auto mb-4"
-              style={{ background: 'linear-gradient(135deg, rgba(22,163,74,0.1), rgba(34,197,94,0.1))' }}>
-              <Icon style={{ width: 24, height: 24, color: '#16A34A' }} />
+            <div className="w-14 h-14 rounded-[var(--hp-radius)] flex items-center justify-center mx-auto mb-4 bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)]">
+              <Icon style={{ width: 24, height: 24, color: 'var(--hp-sub)' }} />
             </div>
-            <p className="text-[#111827] font-bold text-base">Записей ещё нет</p>
-            <p className="text-[#64748B] text-sm mt-1">Добавьте первую запись</p>
+            <p className="text-[var(--hp-ink)] font-bold text-base">Записей ещё нет</p>
+            <p className="text-[var(--hp-sub)] text-sm mt-1">Добавьте первую запись</p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-[var(--hp-border-soft)]">
             {items.map(item => (
               <Link key={item.id} href={`/module/${item.id}`}
-                className="flex items-center gap-4 px-6 py-4 hover:bg-[#F8FAFC] transition-all duration-200 group">
+                className="flex items-center gap-4 px-6 py-4 hover:bg-[var(--hp-neutral-tint)] transition-colors duration-150 group">
                 {/* контент строки */}
               </Link>
             ))}
@@ -554,69 +598,66 @@ export default async function ModulePage() {
 
 ### Структура страницы-формы (new/edit page)
 
+Полный рабочий пример — `src/app/(dashboard)/contacts/new/page.tsx` (эталон).
+
 ```tsx
 export default async function NewModulePage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
 
       {/* 1. Back link */}
-      <Link href="/module"
-        className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+      <Link href="/module" className="hp-back-link inline-flex items-center gap-2">
         <ArrowLeft style={{ width: 16, height: 16 }} />
         Вернуться к разделу
       </Link>
 
       {/* 2. Заголовок с иконкой */}
       <div className="flex items-center gap-3">
-        <div className="w-11 h-11 rounded-[12px] flex items-center justify-center shrink-0 bg-green-50">
-          <Icon className="text-[#16A34A]" style={{ width: 20, height: 20 }} />
+        <div className="w-11 h-11 rounded-[var(--hp-radius)] flex items-center justify-center shrink-0 bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)]">
+          <Icon style={{ width: 20, height: 20, color: 'var(--hp-ink)' }} />
         </div>
         <div>
-          <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">
+          <h1 className="text-[27px] font-bold text-[var(--hp-ink)] tracking-tight leading-tight">
             Новая запись
           </h1>
-          <p className="text-[#64748B] text-sm font-medium mt-0.5">Описание</p>
+          <p className="text-[var(--hp-sub)] text-sm font-medium mt-0.5">Описание</p>
         </div>
       </div>
 
       {/* 3. Форма с секциями */}
       <form action={createAction}>
-        {/* Секция */}
-        <div className="bg-white rounded-[20px] border border-slate-100 p-5 space-y-4"
-          style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
-          <h2 className="font-bold text-[#111827] text-[15px]">Основные данные</h2>
+        <div className="bg-[var(--hp-surface)] rounded-[var(--hp-radius)] border border-[var(--hp-border)] p-5 space-y-4">
+          <h2 className="font-bold text-[var(--hp-ink)] text-[15px]">Основные данные</h2>
 
           <div className="space-y-1.5">
-            <label className="block text-sm font-semibold text-[#111827]">Название *</label>
-            <input type="text" name="title"
-              className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-              placeholder="Введите название" />
+            <label className="hp-label">Название *</label>
+            <input type="text" name="title" placeholder="Введите название"
+              className="w-full h-10 px-4 rounded-[var(--hp-radius)] border border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-ink)] placeholder:text-[var(--hp-tertiary)] text-sm outline-none focus:border-[var(--hp-ink)] transition-colors" />
           </div>
 
           {/* Сетка из нескольких полей — ВСЕГДА responsive */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="block text-sm font-semibold text-[#111827]">Поле 1</label>
+              <label className="hp-label">Поле 1</label>
               <input type="text" name="field1"
-                className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all" />
+                className="w-full h-10 px-4 rounded-[var(--hp-radius)] border border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-ink)] text-sm outline-none focus:border-[var(--hp-ink)] transition-colors" />
             </div>
             <div className="space-y-1.5">
-              <label className="block text-sm font-semibold text-[#111827]">Поле 2</label>
+              <label className="hp-label">Поле 2</label>
               <input type="text" name="field2"
-                className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all" />
+                className="w-full h-10 px-4 rounded-[var(--hp-radius)] border border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-ink)] text-sm outline-none focus:border-[var(--hp-ink)] transition-colors" />
             </div>
           </div>
         </div>
 
         {/* 4. Кнопки действий */}
-        <div className="flex items-center gap-3 pt-2">
+        <div className="flex items-center gap-3 pt-4">
           <button type="submit"
-            className="flex items-center gap-2 px-6 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all"
-            style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+            className="flex items-center gap-2 px-6 py-2.5 text-white rounded-[var(--hp-radius)] text-sm font-semibold transition-colors bg-[var(--hp-accent)] hover:bg-[var(--hp-accent-hover)]">
             Создать
           </button>
           <Link href="/module"
-            className="px-6 py-2.5 bg-white border border-slate-200 rounded-[14px] text-sm font-semibold text-[#374151] hover:bg-slate-50 transition-all">
+            className="px-6 py-2.5 bg-[var(--hp-surface)] border border-[var(--hp-border)] rounded-[var(--hp-radius)] text-sm font-semibold text-[var(--hp-ink)] hover:border-[var(--hp-sub)] transition-colors">
             Отмена
           </Link>
         </div>
@@ -631,39 +672,39 @@ export default async function NewModulePage() {
 
 ### Структура детальной страницы ([id]/page.tsx)
 
+Полный рабочий пример — `src/app/(dashboard)/contacts/[id]/page.tsx` (эталон): секции
+данных собраны через `.hp-block` (см. выше), а не через мини-карточки на каждое поле.
+
 ```tsx
 export default async function ModuleDetailPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
 
       {/* 1. Back link */}
-      <Link href="/module"
-        className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+      <Link href="/module" className="hp-back-link inline-flex items-center gap-2">
         <ArrowLeft style={{ width: 16, height: 16 }} />
         Назад
       </Link>
 
-      {/* 2. Шапка — ОБЯЗАТЕЛЬНО flex-col sm:flex-row (防止 overflow на мобилке) */}
+      {/* 2. Шапка — ОБЯЗАТЕЛЬНО flex-col sm:flex-row (защита от overflow на мобилке) */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div className="flex items-center gap-4 min-w-0"> {/* ← min-w-0 обязателен */}
-          <div className="w-14 h-14 rounded-[20px] bg-green-100 flex items-center justify-center shrink-0">
-            <Icon className="w-7 h-7 text-green-600" />
+          <div className="w-14 h-14 rounded-[var(--hp-radius)] bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)] flex items-center justify-center shrink-0">
+            <Icon className="w-7 h-7" style={{ color: 'var(--hp-ink)' }} />
           </div>
           <div className="min-w-0"> {/* ← min-w-0 обязателен */}
-            <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight break-words">
+            <h1 className="text-[27px] font-bold text-[var(--hp-ink)] tracking-tight leading-tight break-words">
               {item.title}
             </h1>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
-              <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-green-100 text-green-700">
-                Статус
-              </span>
+              <span className="hp-badge hp-badge-good">Активен</span>
             </div>
           </div>
         </div>
         {/* Кнопки действий — flex-wrap + shrink-0 + whitespace-nowrap */}
         <div className="flex items-center gap-2 flex-wrap shrink-0">
           <Link href={`/module/${id}/edit`}
-            className="flex items-center gap-2 px-4 py-2 border border-border rounded-[14px] text-sm font-medium hover:bg-accent transition whitespace-nowrap">
+            className="flex items-center gap-2 px-4 py-2 border border-[var(--hp-border)] rounded-[var(--hp-radius)] text-sm font-medium text-[var(--hp-ink)] hover:border-[var(--hp-sub)] transition-colors whitespace-nowrap">
             <Edit className="w-4 h-4" />
             Редактировать
           </Link>
@@ -671,17 +712,19 @@ export default async function ModuleDetailPage() {
         </div>
       </div>
 
-      {/* 3. Секции данных */}
+      {/* 3. Секции данных — .hp-block, не мини-карточки на поле */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-white rounded-[20px] border border-slate-100 p-5 space-y-4"
-            style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
-            <h2 className="font-bold text-[#111827] text-[15px]">Основная информация</h2>
-            {/* поля */}
+          <div className="hp-block">
+            <div className="hp-block-header">Основная информация</div>
+            <div className="hp-block-row">
+              <span className="label">Поле</span>
+              <span className="value">Значение</span>
+            </div>
           </div>
         </div>
         <div className="space-y-4">
-          {/* боковые карточки */}
+          {/* боковые .hp-block */}
         </div>
       </div>
 
@@ -689,6 +732,30 @@ export default async function ModuleDetailPage() {
   )
 }
 ```
+
+---
+
+### Бейджи статусов — pill
+
+```tsx
+// ✅ СТАНДАРТ — используй готовые классы из globals.css
+<span className="hp-badge hp-badge-good">Активен</span>      {/* зелёный — успех/завершено */}
+<span className="hp-badge hp-badge-warn">VIP</span>          {/* охра — требует внимания */}
+<span className="hp-badge hp-badge-info">Новый</span>        {/* синий — новое/информационное */}
+<span className="hp-badge hp-badge-danger">Просрочено</span> {/* терракота — только тревожное, не «неактивный» */}
+<span className="hp-badge hp-badge-neutral">Клиент</span>    {/* серо-зелёный — роль, неактивный статус */}
+
+// Если готового класса не хватает — руками, но радиус и шрифт те же:
+<span className="inline-flex items-center gap-1 px-[11px] py-1 rounded-[var(--hp-radius-badge)] text-[11.5px] font-semibold"
+  style={{ background: 'var(--hp-good-tint)', color: 'var(--hp-good)' }}>
+  Активен
+</span>
+```
+
+**Важно**: бейдж — это заливка цветом самого текста/фона, **не** обводка слева
+цветной полосой на карточке (частый AI-generated паттерн — в этом проекте не используется).
+`hp-danger` — только для по-настоящему тревожных состояний (просрочено, удаление); статус
+«неактивный» — это `hp-badge-neutral`, а не danger.
 
 ---
 
@@ -736,8 +803,8 @@ export default async function ModuleDetailPage() {
 <div className="flex items-center gap-3 sm:gap-4">
   <Icon className="shrink-0" />
   <div className="min-w-0">                    {/* ← ОБЯЗАТЕЛЕН */}
-    <p className="text-2xl font-bold text-[#111827]">{count}</p>
-    <p className="text-xs text-[#64748B] font-medium mt-0.5 leading-tight break-words">
+    <p className="text-2xl font-bold text-[var(--hp-ink)]">{count}</p>
+    <p className="text-xs text-[var(--hp-sub)] font-medium mt-0.5 leading-tight break-words">
       {label}                                  {/* ← break-words ОБЯЗАТЕЛЕН */}
     </p>
   </div>
@@ -746,42 +813,40 @@ export default async function ModuleDetailPage() {
 
 ---
 
-### Иконки в карточках и бейджах
+### Иконки, аватары и цветовое кодирование модулей
 
 ```tsx
-// Иконка-бокс (цветной квадрат с иконкой) — стандарт
-<div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 bg-green-50">
-  <Icon className="text-green-600" style={{ width: 20, height: 20 }} />
+// Иконка-бокс — стандарт: нейтральная заливка + hairline-граница, НЕ цветной bg-green-50
+<div className="w-11 h-11 rounded-[var(--hp-radius)] flex items-center justify-center shrink-0 bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)]">
+  <Icon style={{ width: 20, height: 20, color: 'var(--hp-ink)' }} />
 </div>
 
-// Аватар-инициал
+// Аватар-инициал — плоский акцент, без градиента
 <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-white text-sm font-bold"
-  style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)', boxShadow: '0 2px 8px rgba(22,163,74,0.25)' }}>
+  style={{ background: 'var(--hp-accent)' }}>
   {name?.charAt(0)?.toUpperCase() ?? '?'}
 </div>
-
-// Бейдж статуса
-<span className="text-xs px-2.5 py-1 rounded-full font-medium bg-green-100 text-green-700 shrink-0 whitespace-nowrap">
-  Активный
-</span>
 ```
+
+Цветовое кодирование модулей по разным цветам Tailwind (`bg-blue-100` для лидов,
+`bg-violet-100` для договоров и т.п., унаследовано из старых страниц) — **legacy,
+не копировать в новый код**: единственный акцент в системе — `var(--hp-accent)`,
+цвет несёт только семантика статуса (good/warn/danger), не принадлежность к модулю.
 
 ---
 
 ### Анимации — единый стандарт
 
 ```tsx
-// Hover-подъём карточки
-className="... transition-all hover:-translate-y-0.5"
+// Hover на карточке/строке — ТОЛЬКО смена цвета границы или фона, без transform
+className="transition-colors hover:border-[var(--hp-sub)]"
+className="transition-colors duration-150 hover:bg-[var(--hp-neutral-tint)]"
 
-// Hover-подъём CTA-кнопки (уже в стандарте кнопки выше)
-className="... hover:-translate-y-0.5 transition-all"
+// ❌ ЗАПРЕЩЕНО — подъём/скейл/тень при hover (был стандартом в старой системе)
+className="hover:-translate-y-0.5 hover:shadow-lg"
 
-// Transition на интерактивных элементах списка
-className="... hover:bg-[#F8FAFC] transition-all duration-200"
-
-// Framer Motion — только для dashboard KPI карточек и Kanban
-// Для обычных страниц не использовать — перегружает рендер
+// Framer Motion — только для активного пункта Sidebar (layoutId, уже реализовано)
+// и Kanban drag-and-drop. Для обычных страниц не использовать.
 ```
 
 ---
@@ -803,7 +868,6 @@ className="... hover:bg-[#F8FAFC] transition-all duration-200"
 </div>
 
 // Date inputs — НИКОГДА без min-w-0 (iOS Safari overflow)
-// Глобальное правило уже в globals.css, но для явности добавлять min-w-0
 <input type="date" className="w-full min-w-0 h-10 ..." />
 ```
 
@@ -833,16 +897,21 @@ className="... hover:bg-[#F8FAFC] transition-all duration-200"
 
 Перед push ОБЯЗАТЕЛЬНО проверить:
 
-- [ ] H1 — `text-[28px] font-bold text-[#111827] tracking-tight leading-tight`
-- [ ] Карточки — `rounded-[20px] border border-slate-100 p-5` + inline shadow
-- [ ] CTA-кнопка — градиент через inline `style`, `rounded-[14px]`, `font-bold`
-- [ ] Поля форм — `h-10 px-4 rounded-xl border border-input focus:ring-2 focus:ring-primary/30`
+- [ ] H1 — `text-[27px] font-bold text-[var(--hp-ink)] tracking-tight leading-tight` (шрифт Source Serif 4 — уже глобально на теге)
+- [ ] Карточки — `rounded-[var(--hp-radius)] border border-[var(--hp-border)] p-5`, **без** `boxShadow`/`shadow-*`
+- [ ] CTA-кнопка — `bg-[var(--hp-accent)] hover:bg-[var(--hp-accent-hover)]`, `rounded-[var(--hp-radius)]`, без градиента и без `hover:-translate-y`
+- [ ] Поля форм — `h-10 px-4 rounded-[var(--hp-radius)] border border-[var(--hp-border)] focus:border-[var(--hp-ink)]` (не `ring`)
+- [ ] Секции «лейбл/значение» на детальных страницах — `.hp-block` + `.hp-block-row`, не мини-карточки на поле
+- [ ] Бейджи — `.hp-badge hp-badge-{good|warn|info|danger|neutral}` (pill), `hp-danger` — только для тревожного (не для «неактивный»)
+- [ ] Радиус везде один — `12px` (карточки, кнопки, инпуты, иконки-боксы); бейджи — `999px` (pill)
+- [ ] Нет `font-mono`/IBM Plex Mono в новом коде — числа набираются обычным интерфейсным шрифтом
 - [ ] Сетки — `grid-cols-1 sm:grid-cols-N` (НЕ `grid-cols-N` без breakpoint)
 - [ ] Шапка detail — `flex flex-col sm:flex-row sm:justify-between gap-4`
 - [ ] Кнопки в шапке — `flex-wrap shrink-0 whitespace-nowrap`
 - [ ] Stat-карточки — `min-w-0` + `break-words` на текстовом блоке
-- [ ] Back link — `inline-flex items-center gap-2 text-sm font-medium text-muted-foreground`
+- [ ] Back link — класс `.hp-back-link`
 - [ ] `space-y-6` на корневом div страницы
+- [ ] Нет захардкоженных `#16A34A`/`#22C55E`/`linear-gradient`/`rounded-[4px]`/`rounded-[20px]` — только токены `var(--hp-*)`
 
 
 

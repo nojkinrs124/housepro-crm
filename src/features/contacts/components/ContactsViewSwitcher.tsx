@@ -64,17 +64,17 @@ export function ContactsViewSwitcher({ contacts }: { contacts: Contact[] }) {
       <div className="flex flex-wrap items-center gap-3">
         {/* Search */}
         <div className="relative flex-1 min-w-[200px] max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--hp-tertiary)] pointer-events-none" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Поиск по контактам..."
-            className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-100 placeholder:text-slate-400 transition-all"
+            className="w-full pl-9 pr-4 py-2.5 bg-[var(--hp-surface)] border border-[var(--hp-border)] rounded-[var(--hp-radius)] text-sm outline-none focus:border-[var(--hp-ink)] placeholder:text-[var(--hp-tertiary)] transition-colors"
           />
           {search && (
             <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2">
-              <X className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600" />
+              <X className="w-3.5 h-3.5 text-[var(--hp-tertiary)] hover:text-[var(--hp-ink)]" />
             </button>
           )}
         </div>
@@ -83,7 +83,8 @@ export function ContactsViewSwitcher({ contacts }: { contacts: Contact[] }) {
         <div className="relative">
           <button
             onClick={() => { setRoleOpen(p => !p); setStatusOpen(false) }}
-            className={`flex items-center gap-2 px-3.5 py-2.5 bg-white border rounded-xl text-sm font-medium transition-all ${roleFilter !== 'all' ? 'border-green-400 text-green-700 bg-green-50' : 'border-slate-200 text-slate-600 hover:border-slate-300'}`}
+            className="flex items-center gap-2 px-3.5 py-2.5 bg-[var(--hp-surface)] border rounded-[var(--hp-radius)] text-sm font-medium transition-colors"
+            style={{ borderColor: roleFilter !== 'all' ? 'var(--hp-ink)' : 'var(--hp-border)', color: roleFilter !== 'all' ? 'var(--hp-ink)' : 'var(--hp-sub)' }}
           >
             {currentRole?.label}
             <ChevronDown className={`w-3.5 h-3.5 transition-transform ${roleOpen ? 'rotate-180' : ''}`} />
@@ -91,17 +92,17 @@ export function ContactsViewSwitcher({ contacts }: { contacts: Contact[] }) {
           <AnimatePresence>
             {roleOpen && (
               <motion.div
-                initial={{ opacity: 0, y: -6, scale: 0.97 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.15 }}
-                className="absolute top-full mt-1.5 left-0 z-50 bg-white border border-slate-200 rounded-xl shadow-lg py-1 min-w-[160px]"
+                className="absolute top-full mt-1.5 left-0 z-50 bg-[var(--hp-surface)] border border-[var(--hp-border)] rounded-[var(--hp-radius)] py-1 min-w-[160px]"
               >
                 {roleOptions.map(opt => (
                   <button
                     key={opt.value}
                     onClick={() => { setRoleFilter(opt.value); setRoleOpen(false) }}
-                    className={`w-full text-left px-3.5 py-2 text-sm hover:bg-slate-50 transition-colors ${roleFilter === opt.value ? 'text-green-700 font-semibold' : 'text-[#374151]'}`}
+                    className={`w-full text-left px-3.5 py-2 text-sm hover:bg-[var(--hp-neutral-tint)] transition-colors ${roleFilter === opt.value ? 'font-semibold text-[var(--hp-ink)]' : 'text-[var(--hp-sub)]'}`}
                   >
                     {opt.label}
                   </button>
@@ -115,7 +116,8 @@ export function ContactsViewSwitcher({ contacts }: { contacts: Contact[] }) {
         <div className="relative">
           <button
             onClick={() => { setStatusOpen(p => !p); setRoleOpen(false) }}
-            className={`flex items-center gap-2 px-3.5 py-2.5 bg-white border rounded-xl text-sm font-medium transition-all ${statusFilter !== 'all' ? 'border-green-400 text-green-700 bg-green-50' : 'border-slate-200 text-slate-600 hover:border-slate-300'}`}
+            className="flex items-center gap-2 px-3.5 py-2.5 bg-[var(--hp-surface)] border rounded-[var(--hp-radius)] text-sm font-medium transition-colors"
+            style={{ borderColor: statusFilter !== 'all' ? 'var(--hp-ink)' : 'var(--hp-border)', color: statusFilter !== 'all' ? 'var(--hp-ink)' : 'var(--hp-sub)' }}
           >
             {currentStatus?.label}
             <ChevronDown className={`w-3.5 h-3.5 transition-transform ${statusOpen ? 'rotate-180' : ''}`} />
@@ -123,17 +125,17 @@ export function ContactsViewSwitcher({ contacts }: { contacts: Contact[] }) {
           <AnimatePresence>
             {statusOpen && (
               <motion.div
-                initial={{ opacity: 0, y: -6, scale: 0.97 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.15 }}
-                className="absolute top-full mt-1.5 left-0 z-50 bg-white border border-slate-200 rounded-xl shadow-lg py-1 min-w-[160px]"
+                className="absolute top-full mt-1.5 left-0 z-50 bg-[var(--hp-surface)] border border-[var(--hp-border)] rounded-[var(--hp-radius)] py-1 min-w-[160px]"
               >
                 {statusOptions.map(opt => (
                   <button
                     key={opt.value}
                     onClick={() => { setStatusFilter(opt.value); setStatusOpen(false) }}
-                    className={`w-full text-left px-3.5 py-2 text-sm hover:bg-slate-50 transition-colors ${statusFilter === opt.value ? 'text-green-700 font-semibold' : 'text-[#374151]'}`}
+                    className={`w-full text-left px-3.5 py-2 text-sm hover:bg-[var(--hp-neutral-tint)] transition-colors ${statusFilter === opt.value ? 'font-semibold text-[var(--hp-ink)]' : 'text-[var(--hp-sub)]'}`}
                   >
                     {opt.label}
                   </button>
@@ -145,11 +147,11 @@ export function ContactsViewSwitcher({ contacts }: { contacts: Contact[] }) {
 
         {hasFilters && (
           <motion.button
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             onClick={clearFilters}
-            className="flex items-center gap-1.5 px-3 py-2.5 text-sm text-slate-500 hover:text-slate-700 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2.5 text-sm text-[var(--hp-sub)] hover:text-[var(--hp-ink)] transition-colors"
           >
             <X className="w-3.5 h-3.5" />
             Сбросить
@@ -158,17 +160,19 @@ export function ContactsViewSwitcher({ contacts }: { contacts: Contact[] }) {
 
         <div className="flex-1" />
 
-        <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-1">
+        <div className="flex items-center gap-1 bg-[var(--hp-surface)] border border-[var(--hp-border)] rounded-[var(--hp-radius)] p-1">
           <button
             onClick={() => setView('cards')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${view === 'cards' ? 'bg-[#16A34A] text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--hp-radius)] text-sm font-medium transition-colors"
+            style={view === 'cards' ? { background: 'var(--hp-accent)', color: '#fff' } : { color: 'var(--hp-sub)' }}
           >
             <LayoutGrid className="w-4 h-4" />
             <span className="hidden sm:inline">Карточки</span>
           </button>
           <button
             onClick={() => setView('list')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${view === 'list' ? 'bg-[#16A34A] text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--hp-radius)] text-sm font-medium transition-colors"
+            style={view === 'list' ? { background: 'var(--hp-accent)', color: '#fff' } : { color: 'var(--hp-sub)' }}
           >
             <List className="w-4 h-4" />
             <span className="hidden sm:inline">Список</span>
@@ -177,8 +181,8 @@ export function ContactsViewSwitcher({ contacts }: { contacts: Contact[] }) {
       </div>
 
       {hasFilters && (
-        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-slate-500">
-          Найдено: <span className="font-semibold text-foreground">{filteredContacts.length}</span> из {contacts.length}
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-[var(--hp-sub)]">
+          Найдено: <span className="font-semibold text-[var(--hp-ink)]">{filteredContacts.length}</span> из {contacts.length}
         </motion.p>
       )}
 
@@ -191,8 +195,8 @@ export function ContactsViewSwitcher({ contacts }: { contacts: Contact[] }) {
           transition={{ duration: 0.18 }}
         >
           {filteredContacts.length === 0 ? (
-            <div className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm p-16 text-center">
-              <p className="text-muted-foreground text-sm">Нет контактов по выбранным фильтрам</p>
+            <div className="hp-card hp-empty">
+              <p className="text-[var(--hp-sub)] text-sm">Нет контактов по выбранным фильтрам</p>
             </div>
           ) : view === 'cards' ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">

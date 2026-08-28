@@ -34,20 +34,20 @@ export default async function ContactsPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Всего',         value: total,   Icon: Users,     iconCls: 'bg-blue-50',   iconColor: 'text-blue-500' },
-          { label: 'Клиентов',      value: clients, Icon: UserCheck, iconCls: 'bg-green-50',  iconColor: 'text-green-600' },
-          { label: 'Собственников', value: owners,  Icon: Users,     iconCls: 'bg-violet-50', iconColor: 'text-violet-600' },
-          { label: 'VIP',           value: vip,     Icon: Crown,     iconCls: 'bg-amber-50',  iconColor: 'text-amber-500' },
+          { label: 'Всего',         value: total,   Icon: Users },
+          { label: 'Клиентов',      value: clients, Icon: UserCheck },
+          { label: 'Собственников', value: owners,  Icon: Users },
+          { label: 'VIP',           value: vip,     Icon: Crown },
         ].map(stat => {
           const Icon = stat.Icon
           return (
-            <div key={stat.label} className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm p-5 flex items-center gap-3 sm:gap-4">
-              <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${stat.iconCls}`}>
-                <Icon className={stat.iconColor} style={{ width: 20, height: 20 }} />
+            <div key={stat.label} className="hp-stat-card">
+              <div className="w-11 h-11 rounded-[var(--hp-radius)] flex items-center justify-center shrink-0 bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)]">
+                <Icon style={{ width: 20, height: 20, color: 'var(--hp-sub)' }} />
               </div>
               <div className="min-w-0">
-                <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-                <p className="text-xs text-muted-foreground font-medium mt-0.5 leading-tight break-words">{stat.label}</p>
+                <p className="text-2xl font-bold text-[var(--hp-ink)]">{stat.value}</p>
+                <p className="text-xs text-[var(--hp-sub)] font-medium mt-0.5 leading-tight break-words">{stat.label}</p>
               </div>
             </div>
           )
@@ -55,16 +55,13 @@ export default async function ContactsPage() {
       </div>
 
       {total === 0 ? (
-        <div className="bg-white rounded-[20px] border border-slate-100 p-16 text-center" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
-          <div className="w-16 h-16 rounded-[20px] flex items-center justify-center mx-auto mb-4"
-            style={{ background: 'linear-gradient(135deg, rgba(22,163,74,0.1), rgba(34,197,94,0.1))' }}>
-            <Users style={{ width: 28, height: 28, color: '#16A34A' }} />
+        <div className="hp-card hp-empty">
+          <div className="w-16 h-16 rounded-[var(--hp-radius)] flex items-center justify-center mx-auto mb-4 bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)]">
+            <Users style={{ width: 28, height: 28, color: 'var(--hp-sub)' }} />
           </div>
-          <p className="text-foreground font-bold text-lg">Контактов ещё нет</p>
-          <p className="text-muted-foreground text-sm mt-1">Добавьте первый контакт в базу</p>
-          <Link href="/contacts/new"
-            className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all"
-            style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+          <p className="text-[var(--hp-ink)] font-bold text-lg">Контактов ещё нет</p>
+          <p className="text-[var(--hp-sub)] text-sm mt-1">Добавьте первый контакт в базу</p>
+          <Link href="/contacts/new" className="hp-btn-primary mt-5">
             <Plus style={{ width: 16, height: 16 }} />
             Добавить контакт
           </Link>

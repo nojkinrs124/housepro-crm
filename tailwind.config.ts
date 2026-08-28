@@ -9,6 +9,10 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['"Source Sans 3"', 'system-ui', '-apple-system', 'sans-serif'],
+        serif: ['"Source Serif 4"', 'Georgia', 'serif'],
+      },
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",

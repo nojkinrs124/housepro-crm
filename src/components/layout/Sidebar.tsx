@@ -35,17 +35,14 @@ const roleLabels: Record<string, string> = {
   admin: 'Администратор', manager: 'Менеджер',
   agent: 'Риелтор', accountant: 'Бухгалтер',
 }
+/* Роли — монохромные бейджи с hairline-границей, без цветных заливок:
+   единственный цвет в системе — семантика статусов (good/warn/danger),
+   роль сотрудника статусом не является. */
 const roleColorsLight: Record<string, string> = {
-  admin:      'bg-red-100/80 text-red-700 border border-red-200/50',
-  manager:    'bg-emerald-100/80 text-emerald-700 border border-emerald-200/50',
-  agent:      'bg-green-100/80 text-green-700 border border-green-200/50',
-  accountant: 'bg-purple-100/80 text-purple-700 border border-purple-200/50',
-}
-const roleColorsDark: Record<string, string> = {
-  admin:      'bg-red-500/15 text-red-400 border border-red-500/20',
-  manager:    'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20',
-  agent:      'bg-green-500/15 text-green-400 border border-green-500/20',
-  accountant: 'bg-purple-500/15 text-purple-400 border border-purple-500/20',
+  admin:      'bg-[var(--hp-neutral-tint)] text-[var(--hp-ink)] border border-[var(--hp-border)]',
+  manager:    'bg-[var(--hp-neutral-tint)] text-[var(--hp-ink)] border border-[var(--hp-border)]',
+  agent:      'bg-[var(--hp-neutral-tint)] text-[var(--hp-ink)] border border-[var(--hp-border)]',
+  accountant: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-ink)] border border-[var(--hp-border)]',
 }
 
 const bottomNav = [
@@ -60,12 +57,10 @@ function SidebarContent({
   user,
   collapsed,
   onNavClick,
-  dark = false,
 }: {
   user: User | null
   collapsed: boolean
   onNavClick?: () => void
-  dark?: boolean
 }) {
   const pathname = usePathname()
   let lastSection: string | null = 'start'
@@ -85,10 +80,7 @@ function SidebarContent({
               <div key={item.href}>
                 {showSection && (
                   <div className="px-3 pt-4 pb-1.5">
-                    <span className={cn(
-                      'text-[10px] font-bold uppercase tracking-[0.08em]',
-                      dark ? 'text-slate-600' : 'text-slate-400'
-                    )}>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--hp-tertiary)]">
                       {item.section}
                     </span>
                   </div>
@@ -107,33 +99,26 @@ function SidebarContent({
                   }}
                   onMouseLeave={() => setHoveredItem(null)}
                   className={cn(
-                    'relative flex items-center gap-3 rounded-[12px] text-sm font-medium transition-colors duration-200 group',
+                    'relative flex items-center gap-3 rounded-[var(--hp-radius)] text-sm font-medium transition-colors duration-150 group',
                     collapsed ? 'px-2.5 py-2.5 justify-center' : 'px-3 py-2.5',
                     isActive
-                      ? (dark ? 'text-[#4ADE80]' : 'text-[#16A34A]')
-                      : (dark ? 'text-slate-400 hover:text-slate-200' : 'text-muted-foreground hover:text-foreground hover:bg-[#F1F5F9]')
+                      ? 'text-[var(--hp-ink)]'
+                      : 'text-[var(--hp-sub)] hover:text-[var(--hp-ink)] hover:bg-[var(--hp-neutral-tint)]'
                   )}
                 >
-                  {/* Анимированная активная «таблетка» — единый layoutId плавно перемещается между пунктами */}
+                  {/* Активный пункт — заливка hp-accent-tint, плавно едет между пунктами (layoutId) */}
                   {isActive && (
                     <motion.div
                       layoutId="sidebar-active-pill"
-                      className="absolute inset-0 rounded-[12px] -z-10"
-                      style={dark ? {
-                        background: 'rgba(34,197,94,0.18)',
-                        boxShadow: '0 0 0 1px rgba(74,222,128,0.25), 0 0 20px rgba(34,197,94,0.35)',
-                      } : {
-                        background: 'rgba(34,197,94,0.1)',
-                      }}
+                      className="absolute inset-0 rounded-[var(--hp-radius)] -z-10 border border-[var(--hp-border)]"
+                      style={{ background: 'var(--hp-accent-tint)' }}
                       transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                     />
                   )}
                   <Icon
                     className={cn(
-                      'shrink-0 relative transition-transform duration-200 group-hover:scale-110',
-                      isActive
-                        ? (dark ? 'text-[#4ADE80]' : 'text-[#16A34A]')
-                        : (dark ? 'text-slate-500 group-hover:text-slate-300' : 'text-slate-400 group-hover:text-muted-foreground')
+                      'shrink-0 relative transition-transform duration-150',
+                      isActive ? 'text-[var(--hp-ink)]' : 'text-[var(--hp-sub)] group-hover:text-[var(--hp-ink)]'
                     )}
                     style={{ width: 17, height: 17 }}
                   />
@@ -151,7 +136,7 @@ function SidebarContent({
           иначе он растягивает scrollWidth и браузер рисует горизонтальный скроллбар */}
       {collapsed && hoveredItem && (
         <span
-          className="absolute z-50 px-2 py-1 text-xs font-medium text-white bg-[#111827] rounded-lg pointer-events-none whitespace-nowrap shadow-lg"
+          className="absolute z-50 px-2 py-1 text-xs font-medium text-white bg-[var(--hp-accent)] rounded-[var(--hp-radius)] pointer-events-none whitespace-nowrap"
           style={{ left: 'calc(100% + 10px)', top: hoveredItem.top, transform: 'translateY(-50%)' }}
         >
           {hoveredItem.name}
@@ -159,43 +144,36 @@ function SidebarContent({
       )}
 
       {/* User section */}
-      <div
-        className="mx-3 mb-3 rounded-[16px] overflow-hidden"
-        style={{ background: dark ? 'rgba(255,255,255,0.04)' : 'rgba(248,250,252,0.8)' }}
-      >
+      <div className="mx-3 mb-3 rounded-[var(--hp-radius)] overflow-hidden border border-[var(--hp-border)]">
         {!collapsed ? (
           <div className="p-3 space-y-2">
             <Link
               href="/settings/profile"
               onClick={onNavClick}
-              className={cn(
-                'flex items-center gap-3 p-2.5 rounded-xl transition-all duration-200 group',
-                dark ? 'hover:bg-white/[0.06]' : 'hover:bg-white/80'
-              )}
+              className="flex items-center gap-3 p-2.5 rounded-[var(--hp-radius)] transition-colors duration-150 group hover:bg-[var(--hp-neutral-tint)]"
             >
               {user?.avatar_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={user.avatar_url}
                   alt={user.full_name || 'User'}
-                  className="w-9 h-9 rounded-full object-cover shrink-0"
-                  style={{ boxShadow: '0 0 0 2px rgba(34,197,94,0.3)' }}
+                  className="w-9 h-9 rounded-full object-cover shrink-0 border border-[var(--hp-border)]"
                 />
               ) : (
                 <div
                   className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-white text-sm font-bold"
-                  style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 2px 8px rgba(22,163,74,0.3)' }}
+                  style={{ background: 'var(--hp-accent)' }}
                 >
                   {user?.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <p className={cn('text-sm font-semibold truncate leading-tight', dark ? 'text-white' : 'text-foreground')}>
+                <p className="text-sm font-semibold truncate leading-tight text-[var(--hp-ink)]">
                   {user?.full_name ?? 'Сотрудник'}
                 </p>
                 <span className={cn(
-                  'inline-block text-[10px] px-2 py-0.5 rounded-full font-semibold mt-0.5',
-                  (dark ? roleColorsDark : roleColorsLight)[user?.role ?? 'agent']
+                  'inline-block text-[10px] px-2 py-0.5 rounded-[var(--hp-radius)] font-semibold mt-0.5',
+                  roleColorsLight[user?.role ?? 'agent']
                 )}>
                   {roleLabels[user?.role ?? 'agent']}
                 </span>
@@ -204,10 +182,7 @@ function SidebarContent({
             <form action={logout}>
               <button
                 type="submit"
-                className={cn(
-                  'w-full flex items-center gap-2.5 px-3 py-2 text-sm rounded-xl transition-all duration-200 font-medium',
-                  dark ? 'text-slate-500 hover:text-red-400 hover:bg-red-500/10' : 'text-muted-foreground hover:text-red-600 hover:bg-red-50'
-                )}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm rounded-[var(--hp-radius)] transition-colors duration-150 font-medium text-[var(--hp-sub)] hover:text-[var(--hp-danger)] hover:bg-[var(--hp-danger-tint)]"
               >
                 <LogOut style={{ width: 15, height: 15 }} />
                 <span>Выйти</span>
@@ -218,7 +193,7 @@ function SidebarContent({
           <div className="py-2 px-2">
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center mx-auto text-white text-xs font-bold mb-2"
-              style={{ background: 'var(--hp-gradient-primary)' }}
+              style={{ background: 'var(--hp-accent)' }}
             >
               {user?.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
             </div>
@@ -226,10 +201,7 @@ function SidebarContent({
               <button
                 type="submit"
                 title="Выйти"
-                className={cn(
-                  'w-full flex items-center justify-center p-2 rounded-xl transition-all duration-200',
-                  dark ? 'text-slate-500 hover:text-red-400 hover:bg-red-500/10' : 'text-slate-400 hover:text-red-600 hover:bg-red-50'
-                )}
+                className="w-full flex items-center justify-center p-2 rounded-[var(--hp-radius)] transition-colors duration-150 text-[var(--hp-sub)] hover:text-[var(--hp-danger)] hover:bg-[var(--hp-danger-tint)]"
               >
                 <LogOut style={{ width: 16, height: 16 }} />
               </button>
@@ -278,22 +250,27 @@ function MobileDrawer({
           boxShadow: '8px 0 48px rgba(0,0,0,0.15)',
         }}
       >
-        <div className="h-[72px] flex items-center justify-between px-5 border-b border-slate-100 shrink-0">
+        <div className="h-[72px] flex items-center justify-between px-5 border-b border-[var(--hp-border)] shrink-0">
           <div className="flex items-center gap-3">
             <div
-              className="w-9 h-9 rounded-[12px] flex items-center justify-center shrink-0"
-              style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 12px rgba(22,163,74,0.35)' }}
+              className="w-9 h-9 rounded-[var(--hp-radius)] flex items-center justify-center shrink-0"
+              style={{ background: 'var(--hp-accent)' }}
             >
               <Building2 style={{ width: 18, height: 18 }} className="text-white" />
             </div>
             <div>
-              <span className="font-bold text-foreground text-[16px] leading-tight block tracking-tight">HousePro</span>
-              <span className="text-[10px] text-muted-foreground font-semibold tracking-widest uppercase leading-tight">CRM</span>
+              <span
+                className="font-bold text-[var(--hp-ink)] text-[17px] leading-tight block tracking-tight"
+                style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}
+              >
+                HousePro
+              </span>
+              <span className="text-[10px] text-[var(--hp-tertiary)] font-semibold tracking-widest uppercase leading-tight">CRM</span>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-slate-100 transition-all"
+            className="w-8 h-8 flex items-center justify-center rounded-[var(--hp-radius)] text-[var(--hp-sub)] hover:text-[var(--hp-ink)] hover:bg-[var(--hp-neutral-tint)] transition-colors"
           >
             <X style={{ width: 17, height: 17 }} />
           </button>
@@ -314,14 +291,10 @@ export function MobileBottomNav({ user }: { user: User | null }) {
       <MobileDrawer user={user} open={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
       <nav
-        className="fixed bottom-0 left-0 right-0 z-30 md:hidden"
+        className="fixed bottom-0 left-0 right-0 z-30 md:hidden bg-white"
         style={{
-          background: 'rgba(255,255,255,0.96)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderTop: '1px solid rgba(214,219,235,0.6)',
+          borderTop: '1px solid var(--hp-border)',
           paddingBottom: 'env(safe-area-inset-bottom)',
-          boxShadow: '0 -8px 32px rgba(0,0,0,0.06)',
         }}
       >
         <div className="flex items-center justify-around px-2 h-[62px]">
@@ -343,10 +316,9 @@ export function MobileBottomNav({ user }: { user: User | null }) {
                   }
                 }}
                 className={cn(
-                  'flex flex-col items-center gap-1 px-3 py-1.5 rounded-[12px] transition-all duration-200 min-w-[52px]',
-                  isActive ? 'text-[#16A34A]' : 'text-slate-400'
+                  'flex flex-col items-center gap-1 px-3 py-1.5 rounded-[var(--hp-radius)] transition-colors duration-150 min-w-[52px]',
+                  isActive ? 'text-[var(--hp-ink)] bg-[var(--hp-neutral-tint)]' : 'text-[var(--hp-tertiary)]'
                 )}
-                style={isActive ? { background: 'rgba(34,197,94,0.1)' } : undefined}
               >
                 <Icon style={{ width: 20, height: 20 }} />
                 <span className="text-[10px] font-semibold leading-tight">{item.name}</span>
@@ -365,55 +337,42 @@ export function Sidebar({ user }: { user: User | null }) {
   return (
     <aside
       className={cn(
-        'relative hidden md:flex flex-col shrink-0 transition-all duration-300 ease-in-out',
+        'relative hidden md:flex flex-col shrink-0 transition-all duration-300 ease-in-out bg-white border-r border-[var(--hp-border)]',
         collapsed ? 'w-[72px]' : 'w-[260px]'
       )}
-      style={{
-        background: 'linear-gradient(180deg, #0F172A 0%, #111827 100%)',
-        boxShadow: '8px 0 40px rgba(0,0,0,0.18)',
-      }}
     >
       {/* Logo area */}
       <div className={cn(
-        'h-[72px] flex items-center border-b shrink-0 relative overflow-hidden',
+        'h-[72px] flex items-center border-b border-[var(--hp-border)] shrink-0',
         collapsed ? 'px-4 justify-center' : 'px-5',
-      )}
-        style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
-        {/* Дышащее свечение за лого */}
-        <div
-          className="sidebar-logo-glow absolute -top-10 -left-2 w-[140px] h-[140px] rounded-full pointer-events-none"
-          style={{ background: 'radial-gradient(circle, rgba(34,197,94,0.35), transparent 70%)', filter: 'blur(10px)' }}
-        />
-        <div className="flex items-center gap-3 min-w-0 relative">
+      )}>
+        <div className="flex items-center gap-3 min-w-0">
           <div
-            className="w-9 h-9 rounded-[12px] flex items-center justify-center shrink-0"
-            style={{
-              background: 'var(--hp-gradient-primary)',
-              boxShadow: '0 4px 12px rgba(22,163,74,0.35)',
-            }}
+            className="w-9 h-9 rounded-[var(--hp-radius)] flex items-center justify-center shrink-0"
+            style={{ background: 'var(--hp-accent)' }}
           >
             <Building2 className="text-white" style={{ width: 18, height: 18 }} />
           </div>
           {!collapsed && (
             <div className="min-w-0">
-              <span className="font-bold text-white text-[16px] leading-tight block tracking-tight">HousePro</span>
-              <span className="text-[10px] text-slate-500 font-semibold tracking-widest uppercase leading-tight">CRM</span>
+              <span
+                className="font-bold text-[var(--hp-ink)] text-[17px] leading-tight block tracking-tight"
+                style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}
+              >
+                HousePro
+              </span>
+              <span className="text-[10px] text-[var(--hp-tertiary)] font-semibold tracking-widest uppercase leading-tight">CRM</span>
             </div>
           )}
         </div>
       </div>
 
-      <SidebarContent user={user} collapsed={collapsed} dark />
+      <SidebarContent user={user} collapsed={collapsed} />
 
       {/* Collapse toggle */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-3.5 top-[88px] w-7 h-7 flex items-center justify-center rounded-full text-slate-400 hover:text-[#4ADE80] transition-all z-10"
-        style={{
-          background: '#1E293B',
-          border: '1px solid rgba(255,255,255,0.1)',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.25)',
-        }}
+        className="absolute -right-3.5 top-[88px] w-7 h-7 flex items-center justify-center rounded-full text-[var(--hp-sub)] hover:text-[var(--hp-ink)] transition-colors z-10 bg-white border border-[var(--hp-border)]"
       >
         {collapsed ? <ChevronRight style={{ width: 13, height: 13 }} /> : <ChevronLeft style={{ width: 13, height: 13 }} />}
       </button>
