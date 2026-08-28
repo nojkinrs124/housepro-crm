@@ -200,6 +200,7 @@ export interface Contract {
   owner_representative_id?: string
   client_representative_id?: string
   property_id?: string
+  deal_id?: string
   base_contract_id?: string
   company_profile_id?: string
   manager_id?: string

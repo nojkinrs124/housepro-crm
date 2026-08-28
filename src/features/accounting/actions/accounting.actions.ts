@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { requirePermission } from '@/lib/permissions'
+import { dispatchWebhook } from '@/lib/webhooks'
+import { advanceDealStage } from '@/lib/deal-automation'
 import type {
   AccountingTransactionStatus,
   AccountingTransactionType,
@@ -232,12 +234,22 @@ export async function createContractPaymentAction(
 
   const today = new Date().toISOString().slice(0, 10)
 
+  // Подтягиваем сделку, к которой привязан договор — так платёж автоматически виден
+  // и в разрезе сделки, а не только договора (используется в completeTransactionAction
+  // для автопродвижения сделки на «Завершено»).
+  const { data: contract } = await supabase
+    .from('contracts')
+    .select('deal_id')
+    .eq('id', contractId)
+    .maybeSingle()
+
   const { error } = await supabase.from('accounting_transactions').insert({
     type: 'income' as AccountingTransactionType,
     amount,
     date: dueDate || today,
     status: 'planned' as AccountingTransactionStatus,
     contract_id: contractId,
+    deal_id: contract?.deal_id ?? null,
     created_by: user.id,
     organization_id: orgId,
     ...(dueDate && { due_date: dueDate }),
@@ -345,11 +357,26 @@ export async function completeTransactionAction(id: string) {
     .update({ status: 'completed' as AccountingTransactionStatus })
     .eq('id', id)
     .neq('status', 'completed')
-    .select('id, contract_id')
+    .select('id, contract_id, deal_id, type, amount')
     .single()
 
   if (error) return { error: error.message }
   if (!updated) return { error: 'Транзакция уже отмечена как проведённая' }
+
+  // Автоматизация: доход по сделке отмечен оплаченным — сделка сама переходит на «Завершено».
+  if (updated.deal_id && updated.type === 'income') {
+    await advanceDealStage(supabase, updated.deal_id, 'completed')
+    revalidatePath('/deals')
+    revalidatePath(`/deals/${updated.deal_id}`)
+  }
+
+  const { requireOrgId } = await import('@/lib/org')
+  const orgId = await requireOrgId().catch(() => null)
+  if (orgId) {
+    dispatchWebhook(orgId, 'payment.received', {
+      id: updated.id, amount: updated.amount, contract_id: updated.contract_id, deal_id: updated.deal_id,
+    })
+  }
 
   revalidatePath('/accounting')
   if (updated.contract_id) revalidatePath(`/contracts/${updated.contract_id}`)

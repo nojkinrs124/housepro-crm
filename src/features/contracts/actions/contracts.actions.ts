@@ -16,6 +16,8 @@ import {
 import { requireOrgId } from '@/lib/org'
 import { writeAuditLog } from '@/lib/audit'
 import { requirePermission } from '@/lib/permissions'
+import { dispatchWebhook } from '@/lib/webhooks'
+import { advanceDealStage } from '@/lib/deal-automation'
 
 // Схема contract_type_data по каждому типу договора (см. config/contract-types.ts).
 const CONTRACT_TYPE_DATA_SCHEMAS: Record<string, z.ZodTypeAny> = {
@@ -82,6 +84,17 @@ export async function createContractAction(_prevState: any, formData: FormData) 
     .single()
 
   if (error) return { error: error.message }
+
+  // Автоматизация: договор создан из карточки сделки — двигаем сделку на стадию «Договор».
+  if (parsed.data.deal_id) {
+    await advanceDealStage(supabase, parsed.data.deal_id, 'contract')
+    revalidatePath('/deals')
+    revalidatePath(`/deals/${parsed.data.deal_id}`)
+  }
+
+  dispatchWebhook(orgId, 'contract.created', {
+    id: contract.id, contract_type: parsed.data.contract_type, amount: parsed.data.amount,
+  })
 
   revalidatePath('/contracts')
   revalidatePath('/analytics', 'page')

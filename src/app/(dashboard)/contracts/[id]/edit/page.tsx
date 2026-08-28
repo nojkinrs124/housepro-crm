@@ -11,16 +11,16 @@ export default async function EditContractPage({ params }: { params: Promise<{ i
   const { id } = await params
   const supabase = await createClient()
 
-  const [{ data: rawContract }, formData] = await Promise.all([
-    supabase.from('contracts').select('*').eq('id', id).single(),
-    getContractFormData(id),
-  ])
-
+  const { data: rawContract } = await supabase.from('contracts').select('*').eq('id', id).single()
   if (!rawContract) notFound()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const dealId = (rawContract as any).deal_id as string | undefined
+  const formData = await getContractFormData(id, dealId)
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const c = rawContract as any
-  const { owners, clients, properties, representativesByContact, baseContracts, companyProfiles } = formData
+  const { owners, clients, properties, representativesByContact, baseContracts, companyProfiles, deals } = formData
 
   const boundAction = updateContractAction.bind(null, id)
 
@@ -43,6 +43,7 @@ export default async function EditContractPage({ params }: { params: Promise<{ i
         properties={properties}
         baseContracts={baseContracts}
         companyProfiles={companyProfiles}
+        deals={deals}
         backHref={`/contracts/${id}`}
         submitLabel="Сохранить изменения"
         mode="edit"
@@ -53,6 +54,7 @@ export default async function EditContractPage({ params }: { params: Promise<{ i
           owner_representative_id:  c.owner_representative_id ?? undefined,
           client_representative_id: c.client_representative_id ?? undefined,
           property_id:       c.property_id ?? undefined,
+          deal_id:           c.deal_id ?? undefined,
           base_contract_id:  c.base_contract_id ?? undefined,
           company_profile_id: c.company_profile_id ?? undefined,
           amount:            c.amount,

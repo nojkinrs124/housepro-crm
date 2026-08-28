@@ -23,7 +23,7 @@ export default async function NewContractPage({
   searchParams: Promise<{ client_id?: string; owner_id?: string; contact_id?: string; property_id?: string; deal_id?: string }>
 }) {
   const params = await searchParams
-  const { owners, clients, properties, representativesByContact, baseContracts, companyProfiles, defaultCompanyProfileId } =
+  const { owners, clients, properties, representativesByContact, baseContracts, companyProfiles, defaultCompanyProfileId, deals } =
     await getContractFormData()
 
   // Авто-подстановка стороны по роли контакта, если договор создаётся с его карточки.
@@ -97,6 +97,7 @@ export default async function NewContractPage({
         properties={properties}
         baseContracts={baseContracts}
         companyProfiles={companyProfiles}
+        deals={deals}
         backHref="/contracts"
         submitLabel="Создать договор"
         mode="create"
@@ -107,6 +108,7 @@ export default async function NewContractPage({
           owner_representative_id: dealDefaults.owner_representative_id,
           client_representative_id: dealDefaults.client_representative_id,
           property_id: dealDefaults.property_id ?? params.property_id,
+          deal_id: params.deal_id,
           amount: dealDefaults.amount,
           company_profile_id: defaultCompanyProfileId,
         }}

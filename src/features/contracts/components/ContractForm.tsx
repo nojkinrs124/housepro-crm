@@ -26,6 +26,7 @@ const statusOptions = [
 interface CompanyProfileOption { id: string; name: string; legalForm: string; isDefault: boolean }
 interface Property { id: string; title: string; address?: string | null; property_type?: string | null }
 interface BaseContractOption { id: string; label: string }
+interface DealOption { id: string; label: string }
 
 interface ContractFormProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -36,6 +37,7 @@ interface ContractFormProps {
   properties: Property[]
   baseContracts: BaseContractOption[]
   companyProfiles: CompanyProfileOption[]
+  deals?: DealOption[]
   backHref: string
   submitLabel: string
   mode: 'create' | 'edit'
@@ -46,6 +48,7 @@ interface ContractFormProps {
     owner_representative_id?: string
     client_representative_id?: string
     property_id?: string
+    deal_id?: string
     base_contract_id?: string
     company_profile_id?: string
     amount?: number | null
@@ -65,7 +68,7 @@ function fieldsForRole(role: ContractPartyRole) {
 }
 
 export function ContractForm({
-  action, owners, clients, representativesByContact, properties, baseContracts, companyProfiles,
+  action, owners, clients, representativesByContact, properties, baseContracts, companyProfiles, deals = [],
   backHref, submitLabel, mode, defaults = {}
 }: ContractFormProps) {
   const [state, formAction, isPending] = useActionState(action, { error: undefined })
@@ -209,6 +212,23 @@ export function ContractForm({
           }
           placeholder={config.requiresLegalEntity ? 'Выберите юр. лицо' : `Выберите: ${config.party2Label.toLowerCase()}`}
         />
+
+        <div className="space-y-1.5">
+          <label className={lbl + ' flex items-center gap-2'}>
+            <Link2 className="w-4 h-4 text-emerald-600" />
+            Сделка (необязательно)
+          </label>
+          <select name="deal_id" defaultValue={defaults.deal_id ?? ''} className={sel}>
+            <option value="">Не связан со сделкой</option>
+            {deals.map(d => (
+              <option key={d.id} value={d.id}>{d.label}</option>
+            ))}
+          </select>
+          <p className="text-xs text-muted-foreground">
+            Если выбрать сделку — она будет сама двигаться по стадиям: создание договора → «Договор»,
+            формирование DOCX → «Оплата», отметка платежа оплаченным → «Завершено».
+          </p>
+        </div>
 
         {config.requiresBaseContract && (
           <div className="space-y-1.5">

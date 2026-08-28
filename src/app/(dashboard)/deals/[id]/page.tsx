@@ -6,10 +6,16 @@ import { DealStatusSelector } from '@/features/deals/components/DealStatusSelect
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
 
 const dealTypeLabels: Record<string, string> = {
   rent: 'Аренда', sale: 'Продажа',
   management: 'Управление', commercial: 'Коммерция', subrent: 'Субаренда',
+}
+
+const contractStatusLabels: Record<string, string> = {
+  draft: 'Черновик', generated: 'Создан', signed: 'Подписан',
+  completed: 'Завершён', cancelled: 'Отменён',
 }
 
 
@@ -18,7 +24,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [dealResult, commentsResult] = await Promise.all([
+  const [dealResult, commentsResult, contractsResult] = await Promise.all([
     supabase
       .from('deals')
       .select(`
@@ -37,6 +43,12 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
       .select('id, body, created_at, author:users!deal_comments_author_id_fkey(id, full_name, avatar_url)')
       .eq('deal_id', id)
       .order('created_at', { ascending: true }),
+
+    supabase
+      .from('contracts')
+      .select('id, contract_number, contract_type, status')
+      .eq('deal_id', id)
+      .order('created_at', { ascending: false }),
   ])
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -48,6 +60,8 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const comments = (commentsResult.data ?? []) as any[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const linkedContracts = (contractsResult.data ?? []) as any[]
 
   const ownerContact = deal.owner_contact as { id?: string; full_name?: string; phone?: string } | null
   const clientContact = deal.client_contact as { id?: string; full_name?: string; phone?: string } | null
@@ -171,6 +185,36 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">Объект не привязан</p>
+            )}
+          </div>
+
+          {/* Contracts */}
+          <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-foreground">Договоры</h2>
+              <Link
+                href={`/contracts/new?deal_id=${id}`}
+                className="flex items-center gap-1.5 text-xs px-3 py-1.5 bg-violet-50 text-violet-700 border border-violet-200 rounded-lg hover:bg-violet-100 transition font-medium"
+              >
+                Создать договор
+              </Link>
+            </div>
+            {linkedContracts.length > 0 ? (
+              <div className="space-y-2">
+                {linkedContracts.map((c) => (
+                  <Link key={c.id} href={`/contracts/${c.id}`}
+                    className="flex items-center justify-between gap-3 p-3 bg-muted/30 rounded-xl hover:bg-muted/60 transition">
+                    <span className="text-sm font-medium text-primary">
+                      {c.contract_number ?? `Договор #${c.id.slice(0, 8)}`}
+                    </span>
+                    <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-violet-100 text-violet-700 shrink-0 whitespace-nowrap">
+                      {contractStatusLabels[c.status] ?? c.status}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">Пока не создан. Стадия сделки продвинется сама, как только договор появится.</p>
             )}
           </div>
 

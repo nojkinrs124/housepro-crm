@@ -24,6 +24,14 @@ const statusLabels: Record<string, string> = {
   completed: 'Завершён', cancelled: 'Отменён',
 }
 
+const dealTypeLabels: Record<string, string> = {
+  rent: 'Аренда', sale: 'Продажа', management: 'Управление', commercial: 'Коммерция', subrent: 'Субаренда',
+}
+const dealStageLabels: Record<string, string> = {
+  new: 'Новая', showing: 'Показы', negotiation: 'Переговоры',
+  contract: 'Договор', payment: 'Оплата', completed: 'Завершена', cancelled: 'Отменена',
+}
+
 export default async function ContractPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
@@ -36,7 +44,8 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
       owner_contact:contacts!contracts_owner_contact_id_fkey(id, full_name, phone),
       client_contact:contacts!contracts_client_contact_id_fkey(id, full_name, phone),
       property:properties(id, title, address),
-      manager:users(full_name)
+      manager:users(full_name),
+      deal:deals(id, deal_type, status, amount)
     `)
     .eq('id', id)
     .single()
@@ -98,6 +107,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
   const owner    = ownerContact
   const property = contract.property as { id?: string; title?: string; address?: string } | null
   const manager  = contract.manager  as { full_name?: string } | null
+  const deal      = contract.deal as { id?: string; deal_type?: string; status?: string; amount?: number } | null
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -233,6 +243,29 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">Объект не привязан</p>
+            )}
+          </div>
+
+          {/* Deal */}
+          <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
+            <h2 className="font-semibold text-foreground mb-4">Сделка</h2>
+            {deal?.id ? (
+              <div className="flex items-center justify-between gap-3 p-3 bg-muted/30 rounded-xl">
+                <div>
+                  <Link href={`/deals/${deal.id}`} className="text-sm font-medium text-primary hover:underline">
+                    {dealTypeLabels[deal.deal_type ?? ''] ?? deal.deal_type}
+                    {deal.amount ? ` · ${Number(deal.amount).toLocaleString('ru-RU')} ₽` : ''}
+                  </Link>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Стадия сделки двигается автоматически: создание договора, формирование DOCX и оплата продвигают её сами.
+                  </p>
+                </div>
+                <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-emerald-100 text-emerald-700 shrink-0 whitespace-nowrap">
+                  {dealStageLabels[deal.status ?? ''] ?? deal.status}
+                </span>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">Не привязан к сделке — привяжите в «Редактировать», чтобы стадия сделки двигалась автоматически.</p>
             )}
           </div>
 

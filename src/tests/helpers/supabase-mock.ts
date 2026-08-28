@@ -48,6 +48,7 @@ export function createSupabaseMock(overrides: {
     limit: vi.fn().mockReturnThis(),
     ilike: vi.fn().mockReturnThis(),
     single: vi.fn().mockResolvedValue({ data: single ?? (Array.isArray(data) ? data[0] : data), error }),
+    maybeSingle: vi.fn().mockResolvedValue({ data: single ?? (Array.isArray(data) ? data[0] : data), error }),
     then: undefined as unknown,
   }
 

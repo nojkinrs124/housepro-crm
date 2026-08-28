@@ -57,8 +57,9 @@ export async function updateShowingStatusAction(id: string, status: string, form
     updated_at: new Date().toISOString(),
   }
 
+  let result: string | null = null
   if (formData) {
-    const result  = (formData.get('result')    as string) || null
+    result = (formData.get('result') as string) || null
     const feedback = (formData.get('feedback') as string)?.trim() || null
     const next_step = (formData.get('next_step') as string)?.trim() || null
     if (result)    updates.result    = result
@@ -66,11 +67,49 @@ export async function updateShowingStatusAction(id: string, status: string, form
     if (next_step) updates.next_step = next_step
   }
 
-  const { error } = await supabase.from('showings').update(updates).eq('id', id)
+  const { data: updated, error } = await supabase
+    .from('showings')
+    .update(updates)
+    .eq('id', id)
+    .select('lead_id, agent_id')
+    .single()
+
   if (error) return { error: error.message }
+
+  // Автоматизация: показ завершён с результатом — двигаем связанный лид без лишнего клика.
+  if (status === 'completed' && result && updated?.lead_id) {
+    if (result === 'interested') {
+      const orgId = await requireOrgId().catch(() => null)
+      if (orgId) {
+        const deadline = new Date()
+        deadline.setDate(deadline.getDate() + 2)
+        await supabase.from('tasks').insert({
+          title: 'Связаться повторно по показу',
+          description: 'Клиент заинтересовался объектом на показе — нужно созвониться и обсудить дальнейшие шаги.',
+          priority: 'medium',
+          status: 'todo',
+          deadline: deadline.toISOString(),
+          created_by: user.id,
+          assigned_to: updated.agent_id ?? user.id,
+          lead_id: updated.lead_id,
+          organization_id: orgId,
+        })
+      }
+    } else if (result === 'not_interested') {
+      // .neq('status','converted') — не закрываем лид, который уже стал клиентом
+      // (например, показ по нему провели повторно уже после конвертации).
+      await supabase.from('leads')
+        .update({ status: 'closed', updated_at: new Date().toISOString() })
+        .eq('id', updated.lead_id)
+        .neq('status', 'converted')
+      revalidatePath('/leads')
+      revalidatePath(`/leads/${updated.lead_id}`)
+    }
+  }
 
   revalidatePath('/showings')
   revalidatePath(`/showings/${id}`)
+  revalidatePath('/tasks')
   return { success: true }
 }
 

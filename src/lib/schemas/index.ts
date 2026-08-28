@@ -186,6 +186,7 @@ export const ContractSchema = z.object({
   client_representative_id: uuid,
   client_id: uuid,
   property_id: uuid,
+  deal_id: uuid,
   base_contract_id: uuid,
   company_profile_id: uuid,
   amount: optPositiveNum,

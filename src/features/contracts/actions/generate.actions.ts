@@ -11,6 +11,7 @@ import {
 import { CONTRACT_TYPE_MAP } from '../config/contract-types'
 import { requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
+import { advanceDealStage } from '@/lib/deal-automation'
 
 export async function generateContractDocx(contractId: string) {
   const supabase = await createClient()
@@ -27,7 +28,7 @@ export async function generateContractDocx(contractId: string) {
     // 1. Получаем данные договора
     const { data: contract } = await supabase
       .from('contracts')
-      .select('contract_type')
+      .select('contract_type, deal_id')
       .eq('id', contractId)
       .single()
 
@@ -97,6 +98,13 @@ export async function generateContractDocx(contractId: string) {
       })
       .eq('id', contractId)
 
+    // 6b. Автоматизация: файл сформирован — двигаем привязанную сделку на стадию «Оплата».
+    if (contract.deal_id) {
+      await advanceDealStage(supabase, contract.deal_id, 'payment')
+      revalidatePath('/deals')
+      revalidatePath(`/deals/${contract.deal_id}`)
+    }
+
     // 7. Логируем
     await supabase.from('logs').insert({
       user_id: user.id,
@@ -132,7 +140,7 @@ export async function generateContractDocxForOrg(orgId: string, contractId: stri
   try {
     const { data: contract } = await supabaseAdmin
       .from('contracts')
-      .select('contract_type')
+      .select('contract_type, deal_id')
       .eq('id', contractId)
       .eq('organization_id', orgId)
       .single()
@@ -193,6 +201,10 @@ export async function generateContractDocxForOrg(orgId: string, contractId: stri
       .from('contracts')
       .update({ status: 'generated', generated_docx_url: docxUrl })
       .eq('id', contractId)
+
+    if (contract.deal_id) {
+      await advanceDealStage(supabaseAdmin, contract.deal_id, 'payment')
+    }
 
     await supabaseAdmin.from('logs').insert({
       user_id: null,
