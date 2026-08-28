@@ -37,7 +37,7 @@ const placeholderImages: Record<string, string> = {
 export default async function PropertiesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string; deal_type?: string; view?: string; avito?: string }>
+  searchParams: Promise<{ search?: string; deal_type?: string; status?: string; view?: string; avito?: string }>
 }) {
   const params = await searchParams
   const view = params.view === 'list' ? 'list' : 'grid'
@@ -50,6 +50,7 @@ export default async function PropertiesPage({
 
   if (params.search)    query = query.ilike('address', `%${params.search}%`)
   if (params.deal_type) query = query.eq('deal_type', params.deal_type)
+  if (params.status)    query = query.eq('status', params.status)
   if (params.avito === 'published')   query = query.eq('avito_publish', true)
   if (params.avito === 'unpublished') query = query.eq('avito_publish', false)
 
@@ -60,7 +61,7 @@ export default async function PropertiesPage({
 
   // Build query string helper (preserves other params when switching view/filter)
   const buildHref = (overrides: Record<string, string | undefined>) => {
-    const p = { search: params.search, deal_type: params.deal_type, avito: params.avito, view: view === 'list' ? 'list' : undefined, ...overrides }
+    const p = { search: params.search, deal_type: params.deal_type, status: params.status, avito: params.avito, view: view === 'list' ? 'list' : undefined, ...overrides }
     const qs = Object.entries(p).filter(([, v]) => v).map(([k, v]) => `${k}=${encodeURIComponent(v!)}`).join('&')
     return `/properties${qs ? `?${qs}` : ''}`
   }
@@ -86,6 +87,8 @@ export default async function PropertiesPage({
         {/* Search */}
         <form method="get" className="flex-1 min-w-[200px]">
           {params.deal_type && <input type="hidden" name="deal_type" value={params.deal_type} />}
+          {params.status && <input type="hidden" name="status" value={params.status} />}
+          {params.avito && <input type="hidden" name="avito" value={params.avito} />}
           {view === 'list' && <input type="hidden" name="view" value="list" />}
           <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400"
@@ -115,6 +118,27 @@ export default async function PropertiesPage({
                 ? { background: 'var(--hp-gradient-primary)', color: '#fff' }
                 : { background: '#F8FAFC', color: '#64748B' }}>
               {label}
+            </Link>
+          ))}
+        </div>
+
+        {/* Status filter */}
+        <div className="flex gap-2 flex-wrap">
+          <Link href={buildHref({ status: undefined })}
+            className="px-3 py-2 rounded-[12px] text-xs font-bold transition-all flex items-center gap-1.5"
+            style={!params.status
+              ? { background: '#1E293B', color: '#fff' }
+              : { background: '#F8FAFC', color: '#64748B' }}>
+            Любой статус
+          </Link>
+          {Object.entries(statusConfig).map(([value, cfg]) => (
+            <Link key={value} href={buildHref({ status: value })}
+              className="px-3 py-2 rounded-[12px] text-xs font-bold transition-all flex items-center gap-1.5"
+              style={params.status === value
+                ? { background: '#1E293B', color: '#fff' }
+                : { background: '#F8FAFC', color: '#64748B' }}>
+              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: cfg.dot }} />
+              {cfg.label}
             </Link>
           ))}
         </div>
