@@ -2,6 +2,24 @@
 
 Короткий процессный чек-лист. Читать перед началом любой задачи — вместе с `CLAUDE.md` (там стек, паттерны кода и частые ошибки, здесь — *процесс*).
 
+## Сессия 28.08.2026 (ночь) — Leaked Password Protection, Dependabot, Upstash Redis, security advisors
+
+Сделано (выполнялось агентом самостоятельно через браузер, доступ дал Руслан — «давай ты сам всё это сделаешь а я дам доступ который нужно»):
+
+- **Dependabot: все 7 открытых PR слиты** (`#2`, `#3`, `#5`, `#6`, `#7`, `#8` — npm, и github-actions группа) через GitHub UI, с `@dependabot rebase` там, где были конфликты `package-lock.json` (стейл-ветки на коммитах старше `8ec4aa5`). CI (`npm run check`-эквивалент) зелёный по каждому перед мержем — ориентировались на живой статус чека на странице PR, а не на локальный прогон (после rebase версии в PR иногда уезжали дальше, чем локально проверялось до этого). Настройки репозитория «Dependabot security updates» / «Grouped security updates» уже были включены раньше — трогать не пришлось.
+- **Supabase advisor — закрыто**:
+  - `extension_in_public` (pg_trgm) — `alter extension pg_trgm set schema extensions` (миграция `20260828_relocate_pg_trgm_to_extensions_schema.sql`). Безопасно: `extensions` уже в default `search_path`, GIN-индексы `idx_*_trgm` не тронуты, поиск проверен вживую после переноса.
+  - `extension_in_public` (pg_net) — `pg_net` **не поддерживает** `ALTER EXTENSION ... SET SCHEMA` (`ERROR 0A000`). Решение (DROP/CREATE, разрушительное — теряются in-flight запросы) подтверждено Русланом явно перед выполнением. Миграция `20260828_relocate_pg_net_via_drop_recreate.sql`. Проверено: `cron.job` (`check-overdue-daily-telegram`) не пострадал (функции `pg_net` живут в фиксированной схеме `net` независимо от схемы регистрации расширения), живой `net.http_post(...)` отработал.
+  - `anon`/`authenticated` EXECUTE на внутренних SECURITY DEFINER функциях — отозван у `check_expiring_contracts`, `check_overdue_payments`, `handle_new_user`, `import_rental_contract` (миграция `20260828_revoke_public_execute_on_internal_functions.sql`). **`get_user_org_id()` НЕ тронут** — используется в RLS-политиках повсеместно. `import_rental_contract` проверен перед изменением грантов: вызывается только из `src/app/api/v1/import/rental-contract/route.ts` через `service_role`-клиент, с фронтенда напрямую не вызывается.
+  - Технический нюанс: `revoke ... from anon, authenticated` сам по себе не срабатывал — функции имели `EXECUTE` на псевдо-роли `PUBLIC`, а `anon`/`authenticated` наследуют её привилегии. Пришлось `revoke ... from public` явно.
+  - Итог по `get_advisors`: остались только 2 ожидаемых warning — `get_user_org_id` executable by anon/authenticated (осознанно, для RLS) и `auth_leaked_password_protection` (см. ниже).
+- **Upstash Redis (rate limiting) — подключён**: создана Upstash Redis база `housepro-crm-rate-limit` через нативную интеграцию Vercel (Storage → Create Database → Upstash for Redis), тариф **Free** (лимит 500k команд/мес, 1 база на аккаунт — бесплатного тира хватило, платить не пришлось). Интеграция сама создаёт `KV_REST_API_URL`/`KV_REST_API_TOKEN`/`KV_URL`/`REDIS_URL`/`KV_REST_API_READ_ONLY_TOKEN` — но код (`src/lib/rate-limit.ts`) читает `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN`, которых интеграция не создаёт. Добавлены вручную в Vercel Env Vars (Production + Preview) со значениями, скопированными из `KV_REST_API_URL`/`KV_REST_API_TOKEN` (та же база, два набора имён). Сделан redeploy Production, чтобы новый рантайм подхватил переменные — деплой зелёный.
+- **Leaked Password Protection — заблокировано, нужно решение Руслана**: тумблер в Supabase Dashboard → Authentication → требует Pro-план проекта (`"Configuring leaked password protection via HaveIBeenPwned.org is available on Pro Plans and up"`), проект сейчас на Free. Не апгрейдил самостоятельно — это платное решение, не в зоне полномочий агента. **Нужно от Руслана:** апгрейдить проект до Pro (или явно отложить).
+
+**Не сделано / открыто:**
+1. **Supabase Pro-план** — решение Руслана (см. выше, Leaked Password Protection).
+2. **GitHub Security tab** (вне scope этой сессии, но замечено): Code scanning — 8 алертов, Secret scanning — 1 алерт. Секретный алерт стоит проверить отдельно — может означать утёкший ключ, требующий ротации.
+
 ## Сессия 28.08.2026 (вечер) — закрытие техдолга + мёртвый код
 
 Сделано:
@@ -48,10 +66,10 @@
 
 ## Порядок закрытия техдолга (не менять без явного решения Руслана)
 
-1. **Rate limiting** — доделать реальную миграцию на Upstash Redis (в коде на момент аудита всё ещё in-memory `Map`, хотя память утверждала обратное — **всегда сверять факт в репо, не доверять только памяти**).
+1. ✅ **ЗАКРЫТО (сессия 28.08.2026 ночь)** — **Rate limiting**: Upstash Redis подключён (Free tier), `UPSTASH_REDIS_REST_URL`/`UPSTASH_REDIS_REST_TOKEN` добавлены в Vercel Production+Preview, redeploy сделан. Код в `src/lib/rate-limit.ts` был готов заранее, изменений не потребовал.
 2. **Миграции** — снять baseline-снапшот текущей боевой схемы Supabase, закоммитить как `supabase/migrations/`. Дальше — каждое изменение схемы только через `apply_migration` + обязательный коммит файла миграции в том же PR/пуше (не откладывать).
 3. **`any`-типы и декомпозиция больших файлов** — не отдельным спринтом, а *попутно*: трогаешь файл под фичу — заодно убираешь `any` и разбиваешь, если файл >300 строк.
-4. **Dependabot** — включить один раз и забыть.
+4. ✅ **ЗАКРЫТО (сессия 28.08.2026 ночь)** — **Dependabot**: все 7 открытых PR слиты, security updates/grouped updates уже были включены. 24 алерта (14 high, 10 moderate) закрыты мержем.
 
 ## Перед началом любой задачи
 
