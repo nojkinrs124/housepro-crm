@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { validateUploadedFile } from '@/lib/validate-file'
+import { requirePermission } from '@/lib/permissions'
 
 const LOGO_BUCKET = 'company-logos'
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml']
@@ -14,15 +15,8 @@ async function requireAdmin() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' as const }
 
-  const { data: profile } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (profile?.role !== 'admin') {
-    return { error: 'Только администратор может изменять данные компании' as const }
-  }
+  const permError = await requirePermission(user.id, 'settings', 'update')
+  if (permError) return { error: permError.error }
   return { supabase }
 }
 

@@ -4,14 +4,15 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireOrgId } from '@/lib/org'
 import { generateApiKey } from '@/lib/api-auth'
+import { requirePermission } from '@/lib/permissions'
 
 async function requireAdmin() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' as const }
 
-  const { data: profile } = await supabase.from('users').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin') return { error: 'Только администратор может управлять API ключами' as const }
+  const permError = await requirePermission(user.id, 'settings', 'update')
+  if (permError) return { error: permError.error }
 
   return { supabase, user }
 }

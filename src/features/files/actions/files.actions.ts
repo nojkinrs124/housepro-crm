@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import type { FileRecord } from '@/types/database'
 import { validateUploadedFile } from '@/lib/validate-file'
 import { requireOrgId } from '@/lib/org'
+import { requirePermission } from '@/lib/permissions'
 
 const BUCKET = 'documents'
 const MAX_FILE_SIZE = 20 * 1024 * 1024 // 20 МБ
@@ -33,6 +34,9 @@ export async function uploadFileAction(formData: FormData) {
   if (!entityId) {
     return { error: 'Необходимо указать связанный объект (клиент, объект или договор)' }
   }
+
+  const permError = await requirePermission(user.id, 'files', 'create')
+  if (permError) return permError
 
   const arrayBuffer = await file.arrayBuffer()
   const buffer = new Uint8Array(arrayBuffer)
@@ -90,17 +94,6 @@ export async function deleteFileAction(fileId: string) {
     return { error: 'Не авторизован' }
   }
 
-  // Проверяем права доступа
-  const { data: userRole } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (!userRole || !['admin', 'manager'].includes(userRole.role)) {
-    return { error: 'Недостаточно прав для удаления файла' }
-  }
-
   const { data: file } = await supabase
     .from('files')
     .select('*')
@@ -108,6 +101,9 @@ export async function deleteFileAction(fileId: string) {
     .single() as { data: FileRecord | null }
 
   if (!file) return { error: 'Файл не найден' }
+
+  const permError = await requirePermission(user.id, 'files', 'delete')
+  if (permError) return permError
 
   // Extract storage path from public URL
   // Pattern: .../storage/v1/object/public/[bucket]/[path]

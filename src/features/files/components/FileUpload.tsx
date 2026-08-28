@@ -76,9 +76,9 @@ export function FileUpload({ clientId, propertyId, contractId }: FileUploadProps
 
     startTransition(async () => {
       const result = await uploadFileAction(formData)
-      if (result.error) {
+      if ('error' in result) {
         setStatus('error')
-        setErrorMsg(result.error)
+        setErrorMsg(result.error ?? 'Ошибка загрузки')
       } else {
         setStatus('success')
         setSelectedFile(null)

@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireOrgId } from '@/lib/org'
 import { randomBytes } from 'crypto'
+import { requirePermission } from '@/lib/permissions'
 
 const AVAILABLE_EVENTS = ['lead.created', 'deal.created', 'contract.created', 'payment.received']
 
@@ -12,8 +13,8 @@ async function requireAdmin() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' as const }
 
-  const { data: profile } = await supabase.from('users').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin') return { error: 'Только администратор может управлять вебхуками' as const }
+  const permError = await requirePermission(user.id, 'settings', 'update')
+  if (permError) return { error: permError.error }
 
   return { supabase }
 }

@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { UserRole } from '@/types/database'
 import { requireOrgId } from '@/lib/org'
+import { requirePermission } from '@/lib/permissions'
 
 const VALID_ROLES: UserRole[] = ['admin', 'manager', 'agent', 'accountant']
 
@@ -19,15 +20,8 @@ export async function createEmployeeAction(formData: FormData) {
   if (!orgId) return { error: 'Организация не найдена' }
 
   // Check admin role
-  const { data: profile } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (profile?.role !== 'admin') {
-    return { error: 'Только администратор может создавать сотрудников' }
-  }
+  const permError = await requirePermission(user.id, 'employees', 'create')
+  if (permError) return permError
 
   const email = (formData.get('email') as string)?.trim()
   const full_name = (formData.get('full_name') as string)?.trim()
@@ -67,15 +61,8 @@ export async function updateEmployeeAction(employeeId: string, formData: FormDat
   }
 
   // Check admin role
-  const { data: profile } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (profile?.role !== 'admin') {
-    return { error: 'Только администратор может редактировать сотрудников' }
-  }
+  const permError = await requirePermission(user.id, 'employees', 'update')
+  if (permError) return permError
 
   const full_name = (formData.get('full_name') as string)?.trim()
   const role = formData.get('role') as string
@@ -115,15 +102,8 @@ export async function deactivateEmployeeAction(employeeId: string) {
   }
 
   // Check admin role
-  const { data: profile } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (profile?.role !== 'admin') {
-    return { error: 'Только администратор может деактивировать сотрудников' }
-  }
+  const permError = await requirePermission(user.id, 'employees', 'delete')
+  if (permError) return permError
 
   // Don't allow deactivating yourself
   if (employeeId === user.id) {
@@ -150,15 +130,8 @@ export async function activateEmployeeAction(employeeId: string) {
   }
 
   // Check admin role
-  const { data: profile } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (profile?.role !== 'admin') {
-    return { error: 'Только администратор может активировать сотрудников' }
-  }
+  const permError = await requirePermission(user.id, 'employees', 'update')
+  if (permError) return permError
 
   const { error } = await supabase
     .from('users')

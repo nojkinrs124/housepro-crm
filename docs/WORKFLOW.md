@@ -14,7 +14,13 @@
 - Подтверждено E2E-прогоном на реальных прод-данных: права работают, виджет платежей на карточке договора рендерится корректно
 
 **Не сделано / требует решения — не откладывать молча, спросить Руслана или явно решить:**
-1. **~18 файлов Server Actions вне payments/accounting всё ещё без `requirePermission`** — паттерн подключён только в двух модулях. Нужно решить: единый `withPermission()`-wrapper и раскатать на все мутирующие экшены, или явно признать риск приемлемым для single-user контура.
+1. ✅ **Основные CRM-модули раскатаны** (contacts, deals+comments, leads, properties, tasks, showings, collections, contracts+generate) — `requirePermission` подключён, добавлены ресурсы `tasks`/`showings`/`collections` в `permissions.ts` (их не было вообще). Подтверждено E2E на проде (5/5), regressions не найдено. **Осталось ~14 файлов** — не начинали, часть из них НЕ должна гейтиться по роли (см. ниже, не пропускать молча — решать по каждому отдельно):
+   - `auth.actions.ts`, `profile.actions.ts` — self-service (пользователь редактирует себя), role-based permission здесь не подходит по смыслу
+   - `search.actions.ts` — read-only, вероятно не нужно
+   - `files.actions.ts`, `api-keys.actions.ts`, `webhooks.actions.ts` — нет чёткого resource в модели прав, нужно решить, заводить ли новые ресурсы
+   - `settings/company.actions.ts`, `settings/general.actions.ts`, `settings/security.actions.ts` — resource `settings` уже есть в модели (`read`/`update`), но не подключён
+   - `users.actions.ts` — resource `employees` уже есть в модели, не подключён (важно: это управление сотрудниками, чувствительный модуль)
+   - `clients.actions.ts` — легаси, там остался только `deleteClientAction`, проверить нужен ли вообще
 2. **`updateCategoryAction`, `generateRecurringTransactionsAction`, `resetPassword`, `CohabitantSchema`, `InventoryItemSchema`** — не используются нигде, но похожи на заготовки под будущие фичи. Не удалены, ждут подтверждения Руслана: мусор или задел.
 3. **Dependabot: 24 уязвимости (14 high, 10 moderate)** на GitHub — не разбирали вообще в этой сессии.
 4. **Upstash Redis ENV** всё ещё не добавлен в Vercel вручную (тех.долг #1 из старого списка, частично закрыт кодом, не средой).
