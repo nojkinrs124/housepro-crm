@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { DeletePropertyButton } from '@/features/properties/components/DeletePropertyButton'
+import { AvitoPublishToggle } from '@/features/avito/components/AvitoPublishToggle'
 import {
   ArrowLeft, Home, MapPin, DollarSign, Ruler, Edit,
   Layers, Calendar, Wifi, Droplets, Flame, Car,
-  CheckCircle, XCircle, TrendingUp, FileText, Plus, Megaphone
+  CheckCircle, XCircle, TrendingUp, FileText, Plus
 } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -301,17 +302,15 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
             </div>
           </div>
 
-          {/* Avito/CIAN hint */}
-          <div className="bg-blue-50 border border-blue-200 rounded-[20px] p-4 flex gap-2.5">
-            <Megaphone className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-            <div>
-              <p className="text-blue-900 text-sm font-medium">Выгрузка на площадки</p>
-              <p className="text-blue-700 text-xs mt-1 leading-relaxed">
-                Объект содержит данные для Авито, ЦИАН и Домклик.
-                Заполните описание и цену для полной выгрузки.
-              </p>
-            </div>
-          </div>
+          {/* Авито — публикация по кнопке */}
+          <AvitoPublishToggle
+            propertyId={id}
+            isPublished={!!p.avito_publish}
+            status={p.avito_status}
+            error={p.avito_error}
+            syncedAt={p.avito_synced_at}
+            eligible={p.status === 'available'}
+          />
 
           {/* Quick actions */}
           <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-4 space-y-2">

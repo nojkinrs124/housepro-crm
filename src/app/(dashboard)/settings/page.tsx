@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { Settings, Building2, Bell, Shield, Database, ChevronRight, ScrollText, CreditCard, Key, Webhook } from 'lucide-react'
+import { Settings, Building2, Bell, Shield, Database, ChevronRight, ScrollText, CreditCard, Key, Webhook, Megaphone } from 'lucide-react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/layout/PageHeader'
 
@@ -115,6 +115,14 @@ export default async function SettingsPage() {
             iconBg: 'bg-cyan-50',
             iconColor: 'text-cyan-600',
             href: '/settings/webhooks',
+          },
+          {
+            icon: Megaphone,
+            title: 'Авито',
+            desc: 'Публикация объектов через автозагрузку',
+            iconBg: 'bg-blue-50',
+            iconColor: 'text-blue-600',
+            href: '/settings/avito',
           },
           {
             icon: Database,

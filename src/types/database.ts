@@ -163,6 +163,31 @@ export interface Property {
   updated_at?: string
   owner?: Owner
   manager?: User
+  // Авито
+  avito_publish?: boolean
+  avito_status?: AvitoPropertyStatus | null
+  avito_ad_id?: string | null
+  avito_error?: string | null
+  avito_synced_at?: string | null
+}
+
+export type AvitoPropertyStatus = 'pending' | 'active' | 'error' | 'removed'
+
+export interface AvitoSettings {
+  id: string
+  organization_id: string
+  client_id?: string | null
+  client_secret?: string | null
+  avito_user_id?: string | null
+  contact_phone?: string | null
+  feed_token: string
+  is_enabled: boolean
+  access_token?: string | null
+  token_expires_at?: string | null
+  last_synced_at?: string | null
+  last_sync_error?: string | null
+  created_at: string
+  updated_at: string
 }
 
 export interface Contract {
