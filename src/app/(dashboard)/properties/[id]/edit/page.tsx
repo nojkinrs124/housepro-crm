@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { updatePropertyAction } from '@/features/properties/actions/properties.actions'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { PropertyPhotosManager } from '@/features/properties/components/PropertyPhotosManager'
 
 export default async function EditPropertyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -31,6 +32,12 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
         backHref={`/properties/${id}`}
         backLabel="Вернуться к объекту"
       />
+
+      {/* Фотографии — управляются отдельно от формы, сохраняются сразу при загрузке */}
+      <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-6 space-y-4">
+        <h2 className="font-semibold text-foreground">Фотографии</h2>
+        <PropertyPhotosManager propertyId={id} initialPhotos={p.photo_urls ?? []} />
+      </div>
 
       <ServerActionForm action={boundAction} className="space-y-4">
 

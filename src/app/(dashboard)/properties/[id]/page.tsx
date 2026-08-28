@@ -11,6 +11,7 @@ import { notFound } from 'next/navigation'
 import { FilesSection } from '@/features/files/components/FilesSection'
 import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
 import { PageHeader } from '@/components/layout/PageHeader'
+import Image from 'next/image'
 
 const typeLabels: Record<string, string> = {
   apartment: 'Квартира', house: 'Дом', commercial: 'Коммерция',
@@ -134,6 +135,23 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
         <MapPin className="w-4 h-4 text-muted-foreground shrink-0" />
         <span className="text-sm text-foreground">{p.address}</span>
       </div>
+
+      {/* Фотографии */}
+      {(p.photo_urls?.length ?? 0) > 0 && (
+        <div className="bg-white border border-slate-100 rounded-[20px] shadow-sm p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-semibold text-foreground text-sm">Фотографии ({p.photo_urls.length})</h2>
+            <Link href={`/properties/${id}/edit`} className="text-xs text-primary hover:underline">Управлять</Link>
+          </div>
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+            {(p.photo_urls as string[]).map((url, i) => (
+              <div key={url} className="relative aspect-[4/3] rounded-lg overflow-hidden border border-slate-100 bg-slate-50">
+                <Image src={url} alt={`Фото ${i + 1}`} fill sizes="150px" className="object-cover" />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Price highlight */}
       {(p.price || p.deposit || p.management_fee) && (
