@@ -11,7 +11,7 @@ export function GenerateButton({ contractId }: { contractId: string }) {
   const handleGenerate = async () => {
     setState('loading')
     const res = await generateContractDocx(contractId)
-    if (res.error) {
+    if ('error' in res) {
       setState('error')
       setResult({ error: res.error })
     } else {

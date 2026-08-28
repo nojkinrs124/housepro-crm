@@ -8,6 +8,7 @@ import { rateLimitCreate } from '@/lib/rate-limit'
 import { requireOrgId } from '@/lib/org'
 import { writeAuditLog } from '@/lib/audit'
 import { dispatchWebhook } from '@/lib/webhooks'
+import { requirePermission } from '@/lib/permissions'
 
 const VALID_DEAL_STATUSES = ['new', 'showing', 'negotiation', 'contract', 'payment', 'completed', 'cancelled']
 
@@ -27,6 +28,9 @@ export async function createDealAction(formData: FormData) {
     const first = parsed.error.issues[0]
     return { error: first.message, fields: parsed.error.flatten().fieldErrors }
   }
+
+  const permError = await requirePermission(user.id, 'deals', 'create')
+  if (permError) return permError
 
   const { data: deal, error } = await supabase.from('deals').insert({
     ...parsed.data,
@@ -60,6 +64,9 @@ export async function updateDealStatusAction(id: string, status: string) {
     return { error: `Недопустимый статус сделки: ${status}` }
   }
 
+  const permError = await requirePermission(user.id, 'deals', 'update')
+  if (permError) return permError
+
   const { error } = await supabase
     .from('deals')
     .update({ status })
@@ -83,6 +90,9 @@ export async function updateDealAction(id: string, formData: FormData) {
     return { error: first.message, fields: parsed.error.flatten().fieldErrors }
   }
 
+  const permError = await requirePermission(user.id, 'deals', 'update')
+  if (permError) return permError
+
   const { error } = await supabase
     .from('deals')
     .update(parsed.data)
@@ -99,6 +109,9 @@ export async function deleteDealAction(id: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
+
+  const permError = await requirePermission(user.id, 'deals', 'delete')
+  if (permError) return permError
 
   await supabase.from('deals').delete().eq('id', id)
 

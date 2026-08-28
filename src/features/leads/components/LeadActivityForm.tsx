@@ -24,7 +24,7 @@ export function LeadActivityForm({ leadId }: { leadId: string }) {
     formData.append('lead_id', leadId)
     const res = await addLeadActivityAction(formData)
     setLoading(false)
-    if (res?.error) {
+    if (res && 'error' in res) {
       setError(res.error)
     } else {
       setOpen(false)

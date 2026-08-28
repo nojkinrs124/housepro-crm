@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { requireOrgId } from '@/lib/org'
+import { requirePermission } from '@/lib/permissions'
 
 const VALID_TASK_STATUSES = ['todo', 'in_progress', 'done', 'cancelled']
 const VALID_TASK_PRIORITIES = ['low', 'medium', 'high']
@@ -43,6 +44,9 @@ export async function createTaskAction(formData: FormData) {
     return { error: 'Название обязательно' }
   }
 
+  const permError = await requirePermission(user.id, 'tasks', 'create')
+  if (permError) return permError
+
   const { error } = await supabase.from('tasks').insert(values)
   if (error) return { error: error.message }
 
@@ -62,6 +66,9 @@ export async function updateTaskStatusAction(id: string, status: string) {
     return { error: `Недопустимый статус: ${status}` }
   }
 
+  const permError = await requirePermission(user.id, 'tasks', 'update')
+  if (permError) return permError
+
   const { error } = await supabase
     .from('tasks')
     .update({ status })
@@ -80,15 +87,8 @@ export async function deleteTaskAction(id: string) {
   if (!user) redirect('/login')
 
   // Проверяем права доступа
-  const { data: userRole } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (!userRole || !['admin', 'manager'].includes(userRole.role)) {
-    return { error: 'Недостаточно прав для удаления задачи' }
-  }
+  const permError = await requirePermission(user.id, 'tasks', 'delete')
+  if (permError) return permError
 
   const { error } = await supabase.from('tasks').delete().eq('id', id)
 

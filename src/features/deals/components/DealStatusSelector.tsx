@@ -28,7 +28,7 @@ export function DealStatusSelector({ dealId, currentStatus }: { dealId: string; 
     setStatus(value)
     startTransition(async () => {
       const res = await updateDealStatusAction(dealId, value)
-      if (res?.error) setStatus(prev)
+      if (res && 'error' in res) setStatus(prev)
     })
   }
 

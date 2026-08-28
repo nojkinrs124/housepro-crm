@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireOrgId } from '@/lib/org'
+import { requirePermission } from '@/lib/permissions'
 
 export async function addDealCommentAction(dealId: string, formData: FormData) {
   const supabase = await createClient()
@@ -15,6 +16,9 @@ export async function addDealCommentAction(dealId: string, formData: FormData) {
   const body = (formData.get('body') as string)?.trim()
   if (!body) return { error: 'Комментарий не может быть пустым' }
   if (body.length > 2000) return { error: 'Максимум 2000 символов' }
+
+  const permError = await requirePermission(user.id, 'deals', 'update')
+  if (permError) return permError
 
   const { error } = await supabase.from('deal_comments').insert({
     deal_id: dealId,

@@ -26,7 +26,7 @@ export function ContractStatusSelector({ contractId, currentStatus }: { contract
     setStatus(value)
     startTransition(async () => {
       const res = await updateContractStatusAction(contractId, value)
-      if (res?.error) setStatus(prev)
+      if (res && 'error' in res) setStatus(prev)
     })
   }
 

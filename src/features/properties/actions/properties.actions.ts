@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { requireOrgId } from '@/lib/org'
+import { requirePermission } from '@/lib/permissions'
 
 function extractPropertyFields(formData: FormData) {
   return {
@@ -60,6 +61,9 @@ export async function createPropertyAction(formData: FormData) {
     return { error: 'Название и адрес обязательны' }
   }
 
+  const permError = await requirePermission(user.id, 'properties', 'create')
+  if (permError) return permError
+
   const { data: property, error } = await supabase.from('properties').insert({
     ...fields,
     manager_id: user.id,
@@ -87,6 +91,9 @@ export async function createPropertyQuickAction(formData: FormData) {
     return { error: 'Название и адрес обязательны' }
   }
 
+  const permError = await requirePermission(user.id, 'properties', 'create')
+  if (permError) return permError
+
   const { data: property, error } = await supabase.from('properties').insert({
     ...fields,
     manager_id: user.id,
@@ -110,6 +117,9 @@ export async function updatePropertyAction(id: string, formData: FormData) {
     return { error: 'Название и адрес обязательны' }
   }
 
+  const permError = await requirePermission(user.id, 'properties', 'update')
+  if (permError) return permError
+
   const { error } = await supabase
     .from('properties')
     .update({ ...fields, updated_at: new Date().toISOString() })
@@ -127,15 +137,8 @@ export async function deletePropertyAction(id: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: userRole } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (!userRole || !['admin', 'manager'].includes(userRole.role)) {
-    return { error: 'Недостаточно прав для удаления объекта' }
-  }
+  const permError = await requirePermission(user.id, 'properties', 'delete')
+  if (permError) return permError
 
   const { error } = await supabase.from('properties').delete().eq('id', id)
   if (error) return { error: error.message }

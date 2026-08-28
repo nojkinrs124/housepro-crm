@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { requireOrgId } from '@/lib/org'
+import { requirePermission } from '@/lib/permissions'
 
 export async function createCollectionAction(formData: FormData) {
   const supabase = await createClient()
@@ -16,6 +17,9 @@ export async function createCollectionAction(formData: FormData) {
   const title   = (formData.get('title')   as string)?.trim()
   const lead_id = (formData.get('lead_id') as string) || null
   if (!title) return { error: 'Укажите название подборки' }
+
+  const permError = await requirePermission(user.id, 'collections', 'create')
+  if (permError) return permError
 
   const { data, error } = await supabase
     .from('property_collections')
@@ -34,6 +38,9 @@ export async function toggleCollectionPublicAction(collectionId: string, isPubli
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
 
+  const permError = await requirePermission(user.id, 'collections', 'update')
+  if (permError) return permError
+
   const { error } = await supabase
     .from('property_collections')
     .update({ is_public: isPublic })
@@ -48,6 +55,9 @@ export async function addPropertyToCollectionAction(collectionId: string, proper
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
+
+  const permError = await requirePermission(user.id, 'collections', 'update')
+  if (permError) return permError
 
   const { error } = await supabase
     .from('collection_items')
@@ -67,6 +77,9 @@ export async function removePropertyFromCollectionAction(collectionId: string, p
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
 
+  const permError = await requirePermission(user.id, 'collections', 'update')
+  if (permError) return permError
+
   const { error } = await supabase
     .from('collection_items')
     .delete()
@@ -82,6 +95,9 @@ export async function deleteCollectionAction(id: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
+
+  const permError = await requirePermission(user.id, 'collections', 'delete')
+  if (permError) return permError
 
   const { error } = await supabase.from('property_collections').delete().eq('id', id)
   if (error) return { error: error.message }

@@ -3,7 +3,7 @@ import type { UserRole } from '@/types/database'
 type Resource =
   | 'contacts' | 'deals' | 'leads' | 'properties'
   | 'contracts' | 'payments' | 'employees' | 'accounting'
-  | 'analytics' | 'settings'
+  | 'analytics' | 'settings' | 'tasks' | 'showings' | 'collections'
 
 type Action = 'read' | 'create' | 'update' | 'delete' | 'export'
 
@@ -19,6 +19,9 @@ const PERMISSIONS: Record<UserRole, Partial<Record<Resource, Action[]>>> = {
     leads:      ['read', 'create', 'update', 'delete'],
     properties: ['read', 'create', 'update', 'delete'],
     payments:   ['read', 'create', 'update', 'delete'],
+    tasks:      ['read', 'create', 'update', 'delete'],
+    showings:   ['read', 'create', 'update', 'delete'],
+    collections:['read', 'create', 'update', 'delete'],
   },
   manager: {
     contacts:   ['read', 'create', 'update'],
@@ -28,9 +31,12 @@ const PERMISSIONS: Record<UserRole, Partial<Record<Resource, Action[]>>> = {
     accounting: ['read'],
     analytics:  ['read'],
     leads:      ['read', 'create', 'update'],
-    properties: ['read', 'create', 'update'],
+    properties: ['read', 'create', 'update', 'delete'],
     payments:   ['read', 'create', 'update', 'delete'],
     settings:   ['read'],
+    tasks:      ['read', 'create', 'update', 'delete'],
+    showings:   ['read', 'create', 'update', 'delete'],
+    collections:['read', 'create', 'update', 'delete'],
   },
   agent: {
     contacts:   ['read', 'create', 'update'],
@@ -38,6 +44,9 @@ const PERMISSIONS: Record<UserRole, Partial<Record<Resource, Action[]>>> = {
     leads:      ['read', 'create', 'update'],
     properties: ['read'],
     contracts:  ['read'],
+    tasks:      ['read', 'create', 'update'],
+    showings:   ['read', 'create', 'update'],
+    collections:['read', 'create', 'update'],
   },
   accountant: {
     accounting: ['read', 'create', 'update', 'export'],

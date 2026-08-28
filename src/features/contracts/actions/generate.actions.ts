@@ -10,6 +10,7 @@ import {
 } from '../services/document.service'
 import { CONTRACT_TYPE_MAP } from '../config/contract-types'
 import { requireOrgId } from '@/lib/org'
+import { requirePermission } from '@/lib/permissions'
 
 export async function generateContractDocx(contractId: string) {
   const supabase = await createClient()
@@ -18,6 +19,9 @@ export async function generateContractDocx(contractId: string) {
 
   const orgId = await requireOrgId().catch(() => null)
   if (!orgId) return { error: 'Организация не найдена' }
+
+  const permError = await requirePermission(user.id, 'contracts', 'update')
+  if (permError) return permError
 
   try {
     // 1. Получаем данные договора

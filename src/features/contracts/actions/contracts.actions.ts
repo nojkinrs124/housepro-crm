@@ -15,6 +15,7 @@ import {
 } from '@/lib/schemas'
 import { requireOrgId } from '@/lib/org'
 import { writeAuditLog } from '@/lib/audit'
+import { requirePermission } from '@/lib/permissions'
 
 // Схема contract_type_data по каждому типу договора (см. config/contract-types.ts).
 const CONTRACT_TYPE_DATA_SCHEMAS: Record<string, z.ZodTypeAny> = {
@@ -65,6 +66,9 @@ export async function createContractAction(_prevState: any, formData: FormData) 
 
   const contractTypeData = parseContractTypeData(parsed.data.contract_type, formData)
 
+  const permError = await requirePermission(user.id, 'contracts', 'create')
+  if (permError) return permError
+
   const { data: contract, error } = await supabase
     .from('contracts')
     .insert({
@@ -98,6 +102,9 @@ export async function updateContractAction(id: string, _prevState: any, formData
     const first = parsed.error.issues[0]
     return { error: first.message, fields: parsed.error.flatten().fieldErrors }
   }
+
+  const permError = await requirePermission(user.id, 'contracts', 'update')
+  if (permError) return permError
 
   // Сохраняем текущую версию перед обновлением
   const { data: current } = await supabase
@@ -149,12 +156,8 @@ export async function deleteContractAction(id: string) {
 
   const orgId = await requireOrgId().catch(() => null)
 
-  const { data: userRole } = await supabase
-    .from('users').select('role').eq('id', user.id).single()
-
-  if (userRole?.role !== 'admin') {
-    return { error: 'Только администраторы могут удалять договоры' }
-  }
+  const permError = await requirePermission(user.id, 'contracts', 'delete')
+  if (permError) return permError
 
   const { error } = await supabase.from('contracts').delete().eq('id', id)
   if (error) return { error: error.message }
@@ -179,6 +182,9 @@ export async function updateContractStatusAction(id: string, status: string) {
 
   const valid = ['draft', 'generated', 'signed', 'completed', 'cancelled']
   if (!valid.includes(status)) return { error: 'Недопустимый статус' }
+
+  const permError = await requirePermission(user.id, 'contracts', 'update')
+  if (permError) return permError
 
   const { error } = await supabase.from('contracts').update({ status }).eq('id', id)
   if (error) return { error: error.message }
@@ -205,6 +211,9 @@ export async function restoreContractVersionAction(contractId: string, versionId
     .single()
 
   if (!version?.version_data) return { error: 'Версия не найдена или не содержит данных' }
+
+  const permError = await requirePermission(user.id, 'contracts', 'update')
+  if (permError) return permError
 
   // Сохранить текущую перед восстановлением
   const { data: current } = await supabase

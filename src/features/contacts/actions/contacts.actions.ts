@@ -7,6 +7,7 @@ import { ContactSchema, RepresentativeSchema } from '@/lib/schemas'
 import { rateLimitCreate } from '@/lib/rate-limit'
 import { requireOrgId } from '@/lib/org'
 import { writeAuditLog } from '@/lib/audit'
+import { requirePermission } from '@/lib/permissions'
 
 function parseContact(formData: FormData) {
   return ContactSchema.safeParse(Object.fromEntries(formData))
@@ -28,6 +29,9 @@ export async function createContactAction(_prevState: unknown, formData: FormDat
     const first = parsed.error.issues[0]
     return { error: first.message, fields: parsed.error.flatten().fieldErrors }
   }
+
+  const permError = await requirePermission(user.id, 'contacts', 'create')
+  if (permError) return permError
 
   const { data, error } = await supabase
     .from('contacts')
@@ -64,6 +68,9 @@ export async function updateContactAction(contactId: string, _prevState: unknown
     return { error: first.message, fields: parsed.error.flatten().fieldErrors }
   }
 
+  const permError = await requirePermission(user.id, 'contacts', 'update')
+  if (permError) return permError
+
   const { error } = await supabase
     .from('contacts')
     .update({ ...parsed.data, updated_at: new Date().toISOString() })
@@ -88,6 +95,9 @@ export async function deleteContactAction(contactId: string) {
   if (!user) return { error: 'Не авторизован' }
 
   const orgId = await requireOrgId().catch(() => null)
+
+  const permError = await requirePermission(user.id, 'contacts', 'delete')
+  if (permError) return permError
 
   const { error } = await supabase.from('contacts').delete().eq('id', contactId)
   if (error) return { error: error.message }
@@ -122,6 +132,9 @@ export async function createContactQuickAction(formData: FormData) {
     const first = parsed.error.issues[0]
     return { error: first.message, fields: parsed.error.flatten().fieldErrors }
   }
+
+  const permError = await requirePermission(user.id, 'contacts', 'create')
+  if (permError) return permError
 
   const { data, error } = await supabase
     .from('contacts')
@@ -158,6 +171,9 @@ export async function addRepresentativeAction(formData: FormData) {
     return { error: first.message, fields: parsed.error.flatten().fieldErrors }
   }
 
+  const permError = await requirePermission(user.id, 'contacts', 'update')
+  if (permError) return permError
+
   const { error } = await supabase.from('contact_representatives').insert(parsed.data)
   if (error) return { error: error.message }
 
@@ -169,6 +185,9 @@ export async function deleteRepresentativeAction(representativeId: string, conta
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
+
+  const permError = await requirePermission(user.id, 'contacts', 'update')
+  if (permError) return permError
 
   const { error } = await supabase.from('contact_representatives').delete().eq('id', representativeId)
   if (error) return { error: error.message }

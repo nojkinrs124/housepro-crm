@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { requireOrgId } from '@/lib/org'
 import { dispatchWebhook } from '@/lib/webhooks'
+import { requirePermission } from '@/lib/permissions'
 
 const VALID_STATUSES = ['new','contacted','showing','searching','converted','closed','interested','rejected']
 
@@ -40,6 +41,9 @@ export async function createLeadAction(formData: FormData) {
 
   const fields = extractLeadFields(formData, user.id)
 
+  const permError = await requirePermission(user.id, 'leads', 'create')
+  if (permError) return permError
+
   const { data: lead, error } = await supabase
     .from('leads')
     .insert({ ...fields, status: 'new', organization_id: orgId })
@@ -63,6 +67,9 @@ export async function updateLeadAction(id: string, formData: FormData) {
 
   const fields = extractLeadFields(formData)
 
+  const permError = await requirePermission(user.id, 'leads', 'update')
+  if (permError) return permError
+
   const { error } = await supabase
     .from('leads')
     .update({ ...fields, updated_at: new Date().toISOString() })
@@ -80,6 +87,9 @@ export async function updateLeadStatusAction(id: string, status: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
   if (!VALID_STATUSES.includes(status)) return { error: `Недопустимый статус: ${status}` }
+
+  const permError = await requirePermission(user.id, 'leads', 'update')
+  if (permError) return permError
 
   const { error } = await supabase
     .from('leads')
@@ -109,6 +119,9 @@ export async function addLeadActivityAction(formData: FormData) {
 
   if (!lead_id || !type) return { error: 'Некорректные данные' }
 
+  const permError = await requirePermission(user.id, 'leads', 'update')
+  if (permError) return permError
+
   const { error } = await supabase.from('lead_activities').insert({
     lead_id, user_id: user.id, type, content, result, scheduled_at,
     organization_id: orgId,
@@ -137,6 +150,9 @@ export async function convertLeadToClient(id: string) {
 
   const { data: lead } = await supabase.from('leads').select('*').eq('id', id).single()
   if (!lead) return { error: 'Лид не найден' }
+
+  const permError = await requirePermission(user.id, 'leads', 'update')
+  if (permError) return permError
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const l = lead as any
@@ -174,6 +190,9 @@ export async function deleteLeadAction(id: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
+
+  const permError = await requirePermission(user.id, 'leads', 'delete')
+  if (permError) return permError
 
   await supabase.from('leads').delete().eq('id', id)
 

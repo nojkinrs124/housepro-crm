@@ -65,7 +65,7 @@ export function DealComments({ dealId, comments: initialComments, currentUserId 
 
     startTransition(async () => {
       const res = await addDealCommentAction(dealId, formData)
-      if (res.error) {
+      if ('error' in res) {
         toast.error(res.error)
       } else {
         formRef.current?.reset()

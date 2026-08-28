@@ -37,9 +37,9 @@ export function QuickCreateContactForm({
 
     startTransition(async () => {
       const res = await createContactQuickAction(fd)
-      if (res?.error) {
-        setError(res.error)
-      } else if (res?.data) {
+      if (res && 'error' in res) {
+        setError(res.error ?? 'Ошибка')
+      } else if (res && 'data' in res) {
         onCreated(res.data as PartyContact)
       }
     })

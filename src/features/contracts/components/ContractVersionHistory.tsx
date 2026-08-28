@@ -31,7 +31,7 @@ export function ContractVersionHistory({ contractId, versions }: Props) {
     setRestoring(versionId)
     const result = await restoreContractVersionAction(contractId, versionId)
     setRestoring(null)
-    if (result?.error) alert(result.error)
+    if (result && 'error' in result) alert(result.error)
     else router.refresh()
   }
 

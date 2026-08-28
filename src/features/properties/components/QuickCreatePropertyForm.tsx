@@ -42,9 +42,9 @@ export function QuickCreatePropertyForm({
 
     startTransition(async () => {
       const res = await createPropertyQuickAction(fd)
-      if (res?.error) {
+      if (res && 'error' in res) {
         setError(res.error)
-      } else if (res?.data) {
+      } else if (res && 'data' in res) {
         onCreated(res.data as QuickProperty)
       }
     })

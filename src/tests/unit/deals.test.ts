@@ -21,7 +21,7 @@ describe('updateDealStatusAction', () => {
       vi.resetModules()
 
       const { updateDealStatusAction } = await import('@/features/deals/actions/deals.actions')
-      const result = await updateDealStatusAction('deal-1', status)
+      const result = await updateDealStatusAction('deal-1', status) as { error?: string; success?: boolean }
       expect(result?.error).toBeUndefined()
       expect(result?.success).toBe(true)
     }
@@ -32,7 +32,7 @@ describe('updateDealStatusAction', () => {
     mockCreateClient.mockResolvedValue(supabase)
 
     const { updateDealStatusAction } = await import('@/features/deals/actions/deals.actions')
-    const result = await updateDealStatusAction('deal-1', 'hacked_status')
+    const result = await updateDealStatusAction('deal-1', 'hacked_status') as { error?: string }
     expect(result?.error).toContain('Недопустимый статус')
     expect(supabase.from).not.toHaveBeenCalled()
   })
@@ -42,7 +42,7 @@ describe('updateDealStatusAction', () => {
     mockCreateClient.mockResolvedValue(supabase)
 
     const { updateDealStatusAction } = await import('@/features/deals/actions/deals.actions')
-    const result = await updateDealStatusAction('deal-1', 'new')
+    const result = await updateDealStatusAction('deal-1', 'new') as { error?: string }
     expect(result?.error).toBe('Не авторизован')
   })
 
@@ -54,7 +54,7 @@ describe('updateDealStatusAction', () => {
     mockCreateClient.mockResolvedValue(supabase)
 
     const { updateDealStatusAction } = await import('@/features/deals/actions/deals.actions')
-    const result = await updateDealStatusAction('deal-1', 'completed')
+    const result = await updateDealStatusAction('deal-1', 'completed') as { error?: string }
     expect(result?.error).toBe('Foreign key violation')
   })
 })

@@ -20,7 +20,7 @@ export function ShowingResultForm({ showingId }: { showingId: string }) {
     const fd = new FormData(e.currentTarget)
     const res = await updateShowingStatusAction(showingId, 'completed', fd)
     setLoading(false)
-    if (res?.error) alert(res.error)
+    if (res && 'error' in res) alert(res.error)
     else setDone(true)
   }
 

@@ -24,7 +24,7 @@ export function TaskStatusSelect({ taskId, currentStatus }: Props) {
     if (newStatus === currentStatus) return
     startTransition(async () => {
       const result = await updateTaskStatusAction(taskId, newStatus)
-      if (result?.error) {
+      if (result && 'error' in result) {
         toast.error(result.error)
       } else {
         toast.success('Статус обновлён')
