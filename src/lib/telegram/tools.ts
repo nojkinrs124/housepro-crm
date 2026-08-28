@@ -16,6 +16,8 @@ export const MUTATING_TOOLS = [
   'create_contact',
   'update_contact',
   'import_rental_contract',
+  'create_task',
+  'complete_task',
 ] as const
 
 function apiBase(): string {
@@ -397,10 +399,102 @@ export const TOOL_DEFINITIONS = [
       parameters: { type: 'object', properties: {} },
     },
   },
+  {
+    type: 'function',
+    function: {
+      name: 'list_tasks',
+      description:
+        'Получить список открытых задач (todo/in_progress). Используй для "что горит", ' +
+        '"какие задачи на сегодня/просрочены" — передай due_before = сегодняшняя дата.',
+      parameters: {
+        type: 'object',
+        properties: {
+          status: { type: 'string', enum: ['todo', 'in_progress', 'done', 'cancelled'] },
+          due_before: { type: 'string', description: 'YYYY-MM-DD — вернуть задачи со сроком до этой даты включительно' },
+        },
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'create_task',
+      description:
+        'Поставить новую задачу (себе или на команду — без конкретного исполнителя, поле есть на будущее). ' +
+        'МУТИРУЮЩЕЕ действие — требует подтверждения пользователя.',
+      parameters: {
+        type: 'object',
+        properties: {
+          title: { type: 'string' },
+          description: { type: 'string' },
+          priority: { type: 'string', enum: ['low', 'medium', 'high'] },
+          deadline: { type: 'string', description: 'YYYY-MM-DD' },
+          deal_id: { type: 'string', description: 'UUID сделки, если задача привязана к сделке' },
+          lead_id: { type: 'string', description: 'UUID лида, если задача привязана к лиду' },
+        },
+        required: ['title'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'complete_task',
+      description: 'Отметить задачу выполненной. МУТИРУЮЩЕЕ действие — требует подтверждения пользователя.',
+      parameters: {
+        type: 'object',
+        properties: { task_id: { type: 'string', description: 'UUID задачи' } },
+        required: ['task_id'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'list_overdue_payments',
+      description: 'Список неоплаченных/просроченных/частично оплаченных платежей. Read-only.',
+      parameters: {
+        type: 'object',
+        properties: { status: { type: 'string', enum: ['pending', 'overdue', 'partial', 'paid', 'cancelled'] } },
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_finance_chart',
+      description:
+        'Построить и отправить в чат настоящий график (не иллюстрацию) доходов/расходов/прибыли по месяцам ' +
+        'за последние несколько месяцев — реальные цифры из бухгалтерии, не выдумка модели. Read-only, ' +
+        'отправляет картинку напрямую в чат, тебе не нужно пересказывать цифры текстом после вызова.',
+      parameters: {
+        type: 'object',
+        properties: { months: { type: 'number', description: 'Сколько последних месяцев показать, по умолчанию 6' } },
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'market_research',
+      description:
+        'Делегировать составную исследовательскую задачу по рынку недвижимости или смежной теме — ' +
+        'с веб-поиском (например: "сравни наши цены на аренду 2к на Ленина с рынком в этом районе", ' +
+        '"какие новые правила ипотеки вступают в силу"). Read-only, ничего не меняет в CRM, только ищет ' +
+        'и суммирует информацию. Может занять до минуты.',
+      parameters: {
+        type: 'object',
+        properties: { topic: { type: 'string', description: 'Что именно исследовать' } },
+        required: ['topic'],
+      },
+    },
+  },
 ] as const
 
-/** Выполняет read-only инструмент. Мутирующие сюда не должны попадать — их перехватывает вебхук. */
-export async function dispatchReadOnlyTool(name: string, args: Record<string, unknown>) {
+/** Выполняет read-only инструмент. Мутирующие сюда не должны попадать — их перехватывает вебхук.
+ * ctx.chatId нужен только инструментам, которые сами шлют сообщение в чат (график, картинки) —
+ * их результат для модели это короткое подтверждение, а не данные для пересказа текстом. */
+export async function dispatchReadOnlyTool(name: string, args: Record<string, unknown>, ctx: { chatId: number }) {
   switch (name) {
     case 'get_deals': {
       const params = new URLSearchParams()
@@ -454,6 +548,68 @@ export async function dispatchReadOnlyTool(name: string, args: Record<string, un
       if (!settings) return { error: 'Настройки канала не заведены' }
       return { text: await getLiveStatsText(orgId, settings) }
     }
+    case 'list_tasks': {
+      const params = new URLSearchParams()
+      if (args.status) params.set('status', String(args.status))
+      if (args.due_before) params.set('due_before', String(args.due_before))
+      return callApi(`/api/v1/tasks?${params.toString()}`)
+    }
+    case 'list_overdue_payments': {
+      const params = new URLSearchParams()
+      if (args.status) params.set('status', String(args.status))
+      return callApi(`/api/v1/payments?${params.toString()}`)
+    }
+    case 'get_finance_chart': {
+      const { sendPhoto, sendChatAction } = await import('@/lib/telegram/api')
+      const { buildFinanceChartUrl } = await import('@/lib/telegram/charts')
+      const months = Math.min(Math.max(Number(args.months) || 6, 1), 12)
+
+      const from = new Date()
+      from.setMonth(from.getMonth() - (months - 1))
+      from.setDate(1)
+      const dateFrom = from.toISOString().slice(0, 10)
+
+      const result = await callApi(`/api/v1/accounting/transactions?date_from=${dateFrom}&limit=200`)
+      if (result?.error) return result
+      const transactions = (result?.data ?? []) as Array<{ type: string; amount: number; date: string }>
+
+      const buckets = new Map<string, { income: number; expense: number }>()
+      for (let i = 0; i < months; i++) {
+        const d = new Date(from)
+        d.setMonth(d.getMonth() + i)
+        buckets.set(d.toISOString().slice(0, 7), { income: 0, expense: 0 })
+      }
+      for (const t of transactions) {
+        const key = String(t.date).slice(0, 7)
+        const bucket = buckets.get(key)
+        if (!bucket) continue
+        if (t.type === 'income') bucket.income += Number(t.amount)
+        else bucket.expense += Number(t.amount)
+      }
+
+      const labels = [...buckets.keys()].map((k) => {
+        const [y, m] = k.split('-')
+        return new Date(Number(y), Number(m) - 1, 1).toLocaleDateString('ru-RU', { month: 'short', year: '2-digit' })
+      })
+      const income = [...buckets.values()].map((b) => Math.round(b.income))
+      const expense = [...buckets.values()].map((b) => Math.round(b.expense))
+
+      await sendChatAction(ctx.chatId, 'upload_photo')
+      const url = buildFinanceChartUrl(labels, income, expense)
+      await sendPhoto(ctx.chatId, url, `Финансы за последние ${months} мес.`)
+      return { status: 'График отправлен в чат картинкой, повторно текстом цифры не нужны' }
+    }
+    case 'market_research': {
+      const { runMarketResearch } = await import('@/lib/telegram/market-research')
+      const topic = String(args.topic ?? '').trim()
+      if (!topic) return { error: 'Не указана тема исследования' }
+      try {
+        const text = await runMarketResearch(topic)
+        return { result: text }
+      } catch (e) {
+        return { error: e instanceof Error ? e.message : 'Не удалось выполнить исследование' }
+      }
+    }
     default:
       return { error: `Неизвестный read-only инструмент: ${name}` }
   }
@@ -491,6 +647,13 @@ export async function executeConfirmedMutation(actionType: string, payload: Reco
     }
     case 'import_rental_contract':
       return callApi('/api/v1/import/rental-contract', { method: 'POST', body: JSON.stringify(payload) })
+    case 'create_task':
+      return callApi('/api/v1/tasks', { method: 'POST', body: JSON.stringify(payload) })
+    case 'complete_task':
+      return callApi(`/api/v1/tasks?id=${encodeURIComponent(String(payload.task_id))}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'done' }),
+      })
     default:
       return { error: `Неизвестное мутирующее действие: ${actionType}` }
   }
@@ -529,6 +692,10 @@ export function describeMutation(actionType: string, args: Record<string, unknow
         `→ создаст 2 контакта, объект и сделку, всё связав между собой`
       )
     }
+    case 'create_task':
+      return `✅ Новая задача: ${args.title}${args.deadline ? ` — срок ${args.deadline}` : ''}`
+    case 'complete_task':
+      return `☑️ Отметить задачу выполненной: ${args.task_id}`
     default:
       return `Действие: ${actionType}`
   }

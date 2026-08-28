@@ -25,9 +25,13 @@ function sanitizeTelegramHtml(text: string): string {
   return escaped.replace(/\u0000(\d+)\u0000/g, (_, i) => placeholders[Number(i)] ?? '')
 }
 
+// callback_data — обычная кнопка, обрабатывается handleCallbackQuery в webhook.
+// url — открывает ссылку прямо в Telegram (deep-линк на карточку в CRM и т.п.), не требует
+// обработчика на нашей стороне. Ровно одно из двух полей на кнопку (как в Telegram Bot API).
 export interface InlineKeyboardButton {
   text: string
-  callback_data: string
+  callback_data?: string
+  url?: string
 }
 
 export interface SendMessageResult {

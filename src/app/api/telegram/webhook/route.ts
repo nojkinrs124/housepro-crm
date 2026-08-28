@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { randomUUID } from 'crypto'
 import { createClient } from '@supabase/supabase-js'
 import { authenticateApiKey } from '@/lib/api-auth'
+import { rateLimitMutation } from '@/lib/rate-limit'
 import {
   sendMessage,
   sendChatAction,
@@ -59,15 +61,28 @@ import { generateRubricDraft } from '@/lib/telegram/channel-generate'
 // Node runtime (по умолчанию) — ОБЯЗАТЕЛЬНО, не ставить `export const runtime = 'edge'`.
 // pizzip/docxtemplater — Node-only, в Edge runtime не заработают.
 export const dynamic = 'force-dynamic'
+// По умолчанию Vercel режет serverless-функцию на 15с — этого уже впритык хватало на
+// генерацию изображений/DOCX, а market_research (веб-поиск через OpenRouter ":online",
+// см. market-research.ts) может занимать 20-40с. Поднимаем потолок явно, а не полагаемся
+// на дефолт, который на Hobby-плане конфигурируется максимум до 60с.
+export const maxDuration = 60
 
 const SYSTEM_PROMPT = `Ты — ассистент внутри Telegram-бота HousePro CRM (агентство недвижимости).
 Отвечай кратко, по-деловому, на русском. У тебя есть инструменты для чтения и изменения данных CRM.
 Суммы — в рублях. Если пользователь не указал дату — используй сегодняшнюю.
 
 Для ВСЕХ мутирующих действий (add_transaction, update_deal_status, generate_contract, create_lead,
-create_property, update_property_status, create_contact, update_contact, import_rental_contract)
+create_property, update_property_status, create_contact, update_contact, import_rental_contract,
+create_task, complete_task)
 НЕ считай, что действие уже выполнено — система сама покажет пользователю подтверждение и выполнит
 действие только после его согласия.
+
+Read-only инструменты list_tasks и list_overdue_payments — используй их для вопросов "что горит",
+"какие задачи на сегодня/просрочены", "какие оплаты ждут/просрочены", не только для явного "покажи список".
+get_finance_chart сам отправляет картинку в чат — после его вызова НЕ пересказывай цифры текстом ещё раз,
+просто коротко подтверди (график виден в сообщении выше). market_research — для составных вопросов
+с веб-поиском по рынку недвижимости (сравнить цены, узнать новости/правила) — не изобретай цифры сам,
+если вопрос требует актуальных внешних данных, вызови этот инструмент.
 
 Если не хватает данных для вызова инструмента (например, не найден deal_id или contact_id) —
 сначала используй read-only инструмент (get_deals, get_client, list_properties), чтобы его найти,
@@ -132,13 +147,16 @@ const HELP_TEXT = `<b>HousePro CRM — бот-ассистент</b>
 
 <b>Можно спросить</b> (ответит сразу):
 • Какие сделки в работе?
-• Сколько заработали в этом месяце?
+• Сколько заработали в этом месяце? (можно попросить графиком)
 • Какие объекты сдаются?
 • Найди клиента по телефону
+• Какие задачи горят / какие оплаты просрочены?
+• Сравни наши цены с рынком в этом районе (веб-поиск)
 
 <b>Можно попросить сделать</b> (спрошу подтверждение):
 • Добавь расход 5000 на бензин
 • Переведи сделку в статус завершена
+• Поставь задачу позвонить клиенту завтра
 • Создай трёх лидов: ... (несколько сразу — одним подтверждением)
 • Пришли договор аренды PDF/DOCX — сам заведу собственника, арендатора, объект и сделку, всё связав
 
@@ -277,6 +295,15 @@ async function handleUserTurn(
     return
   }
 
+  // Каждое обращение сюда — минимум один платный вызов OpenRouter (модель + tool loop до 4
+  // раундов) — без лимита allowed-пользователь (или скомпрометированный аккаунт) может залить
+  // счёт запросами. 20/мин с запасом на нормальный диалог, но режет спам/цикл ошибок.
+  const rl = await rateLimitMutation(telegramUserId, 'bot_turn')
+  if (!rl.success) {
+    await sendMessage(chatId, '⏳ Слишком много сообщений подряд, подожди минуту и попробуй ещё раз.')
+    return
+  }
+
   const chatIdStr = String(chatId)
   await sendChatAction(chatId, 'typing')
   const history = await loadConversation(chatIdStr)
@@ -371,7 +398,7 @@ async function handleUserTurn(
         } catch {
           // оставляем args пустым — dispatchReadOnlyTool сам вернёт осмысленную ошибку/пустой результат
         }
-        const result = await dispatchReadOnlyTool(call.function.name, args)
+        const result = await dispatchReadOnlyTool(call.function.name, args, { chatId })
         messages.push({ role: 'tool', tool_call_id: call.id, content: JSON.stringify(result) })
       }
     }
@@ -469,6 +496,30 @@ async function tryHandleAddUserInput(chatId: number, orgId: string, text: string
   }
   await showMenuScreen(chatId, orgId, 'settings_users', HELP_TEXT)
   return true
+}
+
+// Раздел "🤖 Мультиагент" — MVP делегированного исследования (см. src/lib/telegram/market-research.ts).
+async function handleMultiagentAction(action: string, chatId: number, orgId: string, telegramUserId: string) {
+  const settings = await getChannelSettings(orgId)
+  if (!isFromAdmin(settings, telegramUserId)) return
+
+  if (action === 'research') {
+    await setAwaitingIntent(orgId, 'market_research')
+    await sendMessage(chatId, '🔎 Опиши одним сообщением, что исследовать (можно с веб-поиском по рынку недвижимости).')
+  }
+}
+
+async function handleMarketResearchInput(chatId: number, orgId: string, topic: string) {
+  await sendChatAction(chatId, 'typing')
+  try {
+    const { runMarketResearch } = await import('@/lib/telegram/market-research')
+    const text = await runMarketResearch(topic)
+    await sendMessage(chatId, text)
+  } catch (e) {
+    await sendMessage(chatId, `⚠️ Не удалось выполнить исследование: ${e instanceof Error ? e.message : 'ошибка'}`)
+  } finally {
+    await setAwaitingIntent(orgId, null)
+  }
 }
 
 const DAY_ALIASES: Record<string, string> = {
@@ -644,6 +695,11 @@ async function tryHandleScheduleOrRubricInput(chatId: number, orgId: string, tex
       await sendMessage(chatId, value ? '✅ Стиль картинки для рубрики обновлён.' : '✅ Стиль картинки сброшен на общий.')
     }
     await showMenuScreen(chatId, orgId, 'channel_rubrics', HELP_TEXT)
+    return true
+  }
+
+  if (intent === 'market_research') {
+    await handleMarketResearchInput(chatId, orgId, text)
     return true
   }
 
@@ -836,6 +892,13 @@ async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_
     const orgId = await resolveBotOrgId()
     if (!orgId) return
     await handleRubricAction(action, batchId, chatId, orgId, messageId, String(chatId))
+    return
+  }
+
+  if (action === 'magent') {
+    const orgId = await resolveBotOrgId()
+    if (!orgId) return
+    await handleMultiagentAction(batchId, chatId, orgId, String(chatId))
     return
   }
 
@@ -1108,6 +1171,7 @@ export async function POST(request: Request) {
     }
   } catch (e) {
     console.error('[telegram webhook] error:', e)
+    Sentry.captureException(e)
     const chatId = update.message?.chat.id ?? update.callback_query?.message?.chat.id
     if (chatId) {
       await sendMessage(chatId, '⚠️ Произошла ошибка при обработке запроса. Попробуй ещё раз.').catch(() => {})

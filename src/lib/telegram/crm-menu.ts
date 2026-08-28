@@ -1,8 +1,13 @@
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import type { InlineKeyboardButton } from '@/lib/telegram/api'
 import type { ScreenContent } from '@/lib/telegram/menu'
+import { getSiteUrl } from '@/lib/telegram/site-url'
 
 const BACK_TO_CRM: InlineKeyboardButton = { text: '⬅ CRM', callback_data: 'nav:crm' }
+
+function openInCrmButton(path: string): InlineKeyboardButton {
+  return { text: '🔗 Открыть в CRM', url: `${getSiteUrl()}${path}` }
+}
 
 // --- Лиды ---
 
@@ -44,9 +49,10 @@ export async function buildLeadsScreen(orgId: string): Promise<ScreenContent> {
     const budget = lead.budget_min || lead.budget_max ? ` · бюджет ${lead.budget_min ?? '?'}–${lead.budget_max ?? '?'}` : ''
     lines.push(`• <b>${lead.full_name || 'Без имени'}</b> — ${LEAD_STATUS_LABELS[lead.status] ?? lead.status}${budget}`)
     const next = nextInPipeline(LEAD_PIPELINE, lead.status)
-    if (next) {
-      keyboard.push([{ text: `▶ ${lead.full_name}: ${LEAD_STATUS_LABELS[next]}`, callback_data: `leadnext:${lead.id}` }])
-    }
+    const row: InlineKeyboardButton[] = []
+    if (next) row.push({ text: `▶ ${LEAD_STATUS_LABELS[next]}`, callback_data: `leadnext:${lead.id}` })
+    row.push(openInCrmButton(`/leads/${lead.id}`))
+    keyboard.push(row)
   }
   keyboard.push([BACK_TO_CRM])
 
@@ -98,9 +104,10 @@ export async function buildDealsScreen(orgId: string): Promise<ScreenContent> {
     const amount = deal.amount ? ` · ${Number(deal.amount).toLocaleString('ru-RU')} ₽` : ''
     lines.push(`• <b>${label}</b> — ${DEAL_STATUS_LABELS[deal.status] ?? deal.status}${amount}`)
     const next = nextInPipeline(DEAL_PIPELINE, deal.status)
-    if (next) {
-      keyboard.push([{ text: `➡ ${label.slice(0, 20)}: ${DEAL_STATUS_LABELS[next]}`, callback_data: `dealnext:${deal.id}` }])
-    }
+    const row: InlineKeyboardButton[] = []
+    if (next) row.push({ text: `➡ ${DEAL_STATUS_LABELS[next]}`, callback_data: `dealnext:${deal.id}` })
+    row.push(openInCrmButton(`/deals/${deal.id}`))
+    keyboard.push(row)
   }
   keyboard.push([BACK_TO_CRM])
 
@@ -148,7 +155,10 @@ export async function buildPaymentsScreen(orgId: string): Promise<ScreenContent>
     const label = contract?.contract_number ? `Договор ${contract.contract_number}` : `Платёж №${String(p.id).slice(0, 8)}`
     const due = p.due_date ? ` · срок ${p.due_date}` : ''
     lines.push(`• <b>${label}</b> — ${Number(p.amount).toLocaleString('ru-RU')} ₽ · ${PAYMENT_STATUS_LABELS[p.payment_status] ?? p.payment_status}${due}`)
-    keyboard.push([{ text: `✅ Оплачено: ${label.slice(0, 24)}`, callback_data: `paypaid:${p.id}` }])
+    keyboard.push([
+      { text: '✅ Оплачено', callback_data: `paypaid:${p.id}` },
+      openInCrmButton(`/payments/${p.id}`),
+    ])
   }
   keyboard.push([BACK_TO_CRM])
 
@@ -189,7 +199,10 @@ export async function buildTasksScreen(orgId: string): Promise<ScreenContent> {
     const due = t.due_date || t.deadline
     const dueText = due ? ` · срок ${new Date(due).toLocaleDateString('ru-RU')}` : ''
     lines.push(`• <b>${t.title}</b> — приоритет ${TASK_PRIORITY_LABELS[t.priority] ?? t.priority}${dueText}`)
-    keyboard.push([{ text: `✅ Готово: ${t.title.slice(0, 24)}`, callback_data: `taskdone:${t.id}` }])
+    keyboard.push([
+      { text: '✅ Готово', callback_data: `taskdone:${t.id}` },
+      openInCrmButton(`/tasks/${t.id}`),
+    ])
   }
   keyboard.push([BACK_TO_CRM])
 
