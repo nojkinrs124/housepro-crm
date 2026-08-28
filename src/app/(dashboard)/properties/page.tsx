@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
-import { Home, Plus, Search, MapPin, Maximize2, DoorOpen, ArrowUpRight, LayoutGrid, List } from 'lucide-react'
+import { Home, Plus, Search, MapPin, Maximize2, DoorOpen, ArrowUpRight, LayoutGrid, List, Megaphone } from 'lucide-react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { buttonVariants } from '@/components/ui/button'
+import { PropertyAvitoQuickToggle } from '@/features/avito/components/PropertyAvitoQuickToggle'
 
 const typeLabels: Record<string, string> = {
   apartment: 'Квартира', house: 'Дом', commercial: 'Коммерция',
@@ -36,7 +37,7 @@ const placeholderImages: Record<string, string> = {
 export default async function PropertiesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string; deal_type?: string; view?: string }>
+  searchParams: Promise<{ search?: string; deal_type?: string; view?: string; avito?: string }>
 }) {
   const params = await searchParams
   const view = params.view === 'list' ? 'list' : 'grid'
@@ -44,18 +45,22 @@ export default async function PropertiesPage({
   const supabase = await createClient()
   let query = supabase
     .from('properties')
-    .select('id, title, property_type, deal_type, address, price, area, rooms, status, floor, total_floors, created_at')
+    .select('id, title, property_type, deal_type, address, price, area, rooms, status, floor, total_floors, created_at, avito_publish, avito_status')
     .order('created_at', { ascending: false })
 
   if (params.search)    query = query.ilike('address', `%${params.search}%`)
   if (params.deal_type) query = query.eq('deal_type', params.deal_type)
+  if (params.avito === 'published')   query = query.eq('avito_publish', true)
+  if (params.avito === 'unpublished') query = query.eq('avito_publish', false)
 
   const { data: properties, error } = await query.limit(100)
   if (error) console.error('Properties error:', error.message)
 
+  const publishedCount = properties?.filter(p => p.avito_publish).length ?? 0
+
   // Build query string helper (preserves other params when switching view/filter)
   const buildHref = (overrides: Record<string, string | undefined>) => {
-    const p = { search: params.search, deal_type: params.deal_type, view: view === 'list' ? 'list' : undefined, ...overrides }
+    const p = { search: params.search, deal_type: params.deal_type, avito: params.avito, view: view === 'list' ? 'list' : undefined, ...overrides }
     const qs = Object.entries(p).filter(([, v]) => v).map(([k, v]) => `${k}=${encodeURIComponent(v!)}`).join('&')
     return `/properties${qs ? `?${qs}` : ''}`
   }
@@ -65,7 +70,7 @@ export default async function PropertiesPage({
 
       <PageHeader
         title="Объекты недвижимости"
-        subtitle={`${properties?.length ?? 0} объектов в базе`}
+        subtitle={`${properties?.length ?? 0} объектов в базе · ${publishedCount} на Авито`}
         actions={
           <Link href="/properties/new" className={buttonVariants({ size: 'lg' })}>
             <Plus style={{ width: 16, height: 16 }} />
@@ -110,6 +115,24 @@ export default async function PropertiesPage({
                 ? { background: 'var(--hp-gradient-primary)', color: '#fff' }
                 : { background: '#F8FAFC', color: '#64748B' }}>
               {label}
+            </Link>
+          ))}
+        </div>
+
+        {/* Avito filter */}
+        <div className="flex gap-2 flex-wrap">
+          {[
+            { value: undefined,      label: 'Все' },
+            { value: 'published',    label: 'На Авито' },
+            { value: 'unpublished',  label: 'Не на Авито' },
+          ].map(opt => (
+            <Link key={opt.label} href={buildHref({ avito: opt.value })}
+              className="px-3 py-2 rounded-[12px] text-xs font-bold transition-all flex items-center gap-1.5"
+              style={params.avito === opt.value || (!params.avito && !opt.value)
+                ? { background: 'linear-gradient(135deg, #2563EB, #3B82F6)', color: '#fff' }
+                : { background: '#F8FAFC', color: '#64748B' }}>
+              <Megaphone style={{ width: 12, height: 12 }} />
+              {opt.label}
             </Link>
           ))}
         </div>
@@ -231,8 +254,14 @@ export default async function PropertiesPage({
                         <span className="text-slate-400">комн.</span>
                       </div>
                     )}
-                    <div className="ml-auto">
-                      <div className="w-8 h-8 rounded-[10px] flex items-center justify-center bg-green-50 text-green-600 group-hover:bg-green-600 group-hover:text-white transition-all">
+                    <div className="ml-auto flex items-center gap-2">
+                      <PropertyAvitoQuickToggle
+                        propertyId={property.id}
+                        isPublished={!!property.avito_publish}
+                        status={property.avito_status}
+                        eligible={property.status === 'available'}
+                      />
+                      <div className="w-8 h-8 rounded-[10px] flex items-center justify-center bg-green-50 text-green-600 group-hover:bg-green-600 group-hover:text-white transition-all shrink-0">
                         <ArrowUpRight style={{ width: 15, height: 15 }} />
                       </div>
                     </div>
@@ -317,6 +346,13 @@ export default async function PropertiesPage({
                           {property.floor}{property.total_floors ? `/${property.total_floors}` : ''} эт.
                         </span>
                       )}
+                      {/* Avito */}
+                      <PropertyAvitoQuickToggle
+                        propertyId={property.id}
+                        isPublished={!!property.avito_publish}
+                        status={property.avito_status}
+                        eligible={property.status === 'available'}
+                      />
                     </div>
                   </div>
 
