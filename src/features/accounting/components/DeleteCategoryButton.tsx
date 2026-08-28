@@ -12,7 +12,7 @@ export function DeleteCategoryButton({ id }: { id: string }) {
     if (!confirm('Удалить категорию? Транзакции без категории не потеряются.')) return
     startTransition(async () => {
       const res = await deleteCategoryAction(id)
-      if (res?.error) toast.error(res.error)
+      if (res && 'error' in res) toast.error(res.error)
       else toast.success('Категория удалена')
     })
   }

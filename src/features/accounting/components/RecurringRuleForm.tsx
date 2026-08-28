@@ -28,7 +28,7 @@ export function RecurringRuleForm({ rule, categories, employees }: Props) {
 
   return (
     <form action={formAction} className="space-y-6">
-      {state?.error && (
+      {state && 'error' in state && state.error && (
         <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700 font-medium">
           {state.error}
         </div>

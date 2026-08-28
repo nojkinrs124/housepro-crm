@@ -1,8 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { AddCategoryForm } from '@/features/accounting/components/AddCategoryForm'
-import { DeleteCategoryButton } from '@/features/accounting/components/DeleteCategoryButton'
-import { Lock } from 'lucide-react'
-import Link from 'next/link'
+import { CategoryRow } from '@/features/accounting/components/CategoryRow'
 import type { AccountingCategory } from '@/types/database'
 import { PageHeader } from '@/components/layout/PageHeader'
 
@@ -43,19 +41,7 @@ export default async function CategoriesPage() {
           </div>
           <div className="divide-y divide-slate-100">
             {income.map(c => (
-              <div key={c.id} className="flex items-center gap-3 px-5 py-3.5">
-                <span
-                  className="w-3 h-3 rounded-full shrink-0"
-                  style={{ background: c.color }}
-                />
-                <span className="flex-1 text-sm font-medium text-foreground min-w-0 truncate">
-                  {c.name}
-                </span>
-                {c.is_system
-                  ? <Lock style={{ width: 13, height: 13 }} className="text-slate-300 shrink-0" />
-                  : <DeleteCategoryButton id={c.id} />
-                }
-              </div>
+              <CategoryRow key={c.id} category={c} />
             ))}
           </div>
           <div className="px-5 py-4 border-t border-slate-100 bg-slate-50/40 rounded-b-[20px]">
@@ -77,19 +63,7 @@ export default async function CategoriesPage() {
           </div>
           <div className="divide-y divide-slate-100">
             {expense.map(c => (
-              <div key={c.id} className="flex items-center gap-3 px-5 py-3.5">
-                <span
-                  className="w-3 h-3 rounded-full shrink-0"
-                  style={{ background: c.color }}
-                />
-                <span className="flex-1 text-sm font-medium text-foreground min-w-0 truncate">
-                  {c.name}
-                </span>
-                {c.is_system
-                  ? <Lock style={{ width: 13, height: 13 }} className="text-slate-300 shrink-0" />
-                  : <DeleteCategoryButton id={c.id} />
-                }
-              </div>
+              <CategoryRow key={c.id} category={c} />
             ))}
           </div>
           <div className="px-5 py-4 border-t border-slate-100 bg-slate-50/40 rounded-b-[20px]">

@@ -4,11 +4,15 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { AccountingTransactionType } from '@/types/database'
 import { requireOrgId } from '@/lib/org'
+import { requirePermission } from '@/lib/permissions'
 
 export async function createCategoryAction(_prevState: unknown, formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
+
+  const permError = await requirePermission(user.id, 'accounting', 'create')
+  if (permError) return permError
 
   const orgId = await requireOrgId().catch(() => null)
   if (!orgId) return { error: 'Организация не найдена' }
@@ -35,6 +39,9 @@ export async function updateCategoryAction(id: string, formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
+
+  const permError = await requirePermission(user.id, 'accounting', 'update')
+  if (permError) return permError
 
   // Check not system
   const { data: cat } = await supabase
@@ -65,6 +72,9 @@ export async function deleteCategoryAction(id: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
+
+  const permError = await requirePermission(user.id, 'accounting', 'delete')
+  if (permError) return permError
 
   const { data: cat } = await supabase
     .from('accounting_categories')

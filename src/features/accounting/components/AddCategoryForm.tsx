@@ -47,7 +47,7 @@ export function AddCategoryForm({ defaultType }: { defaultType?: AccountingTrans
         <Plus className="w-3.5 h-3.5" />
         Добавить
       </button>
-      {state?.error && <p className="w-full text-xs text-red-500">{state.error}</p>}
+      {state && 'error' in state && state.error && <p className="w-full text-xs text-red-500">{state.error}</p>}
     </form>
   )
 }

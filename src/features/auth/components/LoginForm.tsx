@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition, Suspense } from 'react'
+import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -74,9 +75,14 @@ function LoginFormInner() {
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-foreground" htmlFor="password">
-          Пароль
-        </label>
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-medium text-foreground" htmlFor="password">
+            Пароль
+          </label>
+          <Link href="/forgot-password" className="text-xs font-medium text-primary hover:underline">
+            Забыли пароль?
+          </Link>
+        </div>
         <div className="relative">
           <input
             {...register('password')}

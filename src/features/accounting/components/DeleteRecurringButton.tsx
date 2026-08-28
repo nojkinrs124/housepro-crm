@@ -12,7 +12,7 @@ export function DeleteRecurringButton({ id }: { id: string }) {
     if (!confirm('Удалить правило повторения? Уже созданные транзакции останутся.')) return
     startTransition(async () => {
       const res = await deleteRecurringRuleAction(id)
-      if (res?.error) toast.error(res.error)
+      if (res && 'error' in res) toast.error(res.error)
       else toast.success('Правило удалено')
     })
   }

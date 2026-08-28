@@ -1,5 +1,6 @@
 {
   "crons": [
-    { "path": "/api/cron/channel-weekly-summary", "schedule": "0 12 * * 0" }
+    { "path": "/api/cron/channel-weekly-summary", "schedule": "0 12 * * 0" },
+    { "path": "/api/cron/generate-recurring-transactions", "schedule": "0 3 * * *" }
   ]
 }

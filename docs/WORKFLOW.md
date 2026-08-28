@@ -2,6 +2,24 @@
 
 Короткий процессный чек-лист. Читать перед началом любой задачи — вместе с `CLAUDE.md` (там стек, паттерны кода и частые ошибки, здесь — *процесс*).
 
+## Сессия 28.08.2026 (вечер) — закрытие техдолга + мёртвый код
+
+Сделано:
+- **npm audit**: Next.js 16.2.9 → 16.3.3 (5 CVE: proxy bypass, DoS, SSRF, cache confusion) + `npm audit fix` для транзитивных (brace-expansion, js-yaml, nanoid, postcss, undici). 0 уязвимостей.
+- **Supabase advisor**: закреплён `search_path` у 5 функций (`get_user_org_id`, `handle_new_user`, `generate_contract_number`, `check_expiring_contracts`, `check_overdue_payments`) — защита от search_path hijacking, поведение не менялось. Миграция `20260828_pin_search_path_on_security_definer_functions.sql`.
+- **Не тронуто, требует отдельного разбора** (риск сломать RLS/поиск, не хардить с ходу): `extension_in_public` (pg_trgm, pg_net в public-схеме — перенос может сломать GIN-индексы), `anon`/`authenticated` EXECUTE на SECURITY DEFINER функциях (`get_user_org_id` используется внутри RLS-политик — отзыв EXECUTE у `authenticated` сломает весь доступ к данным), `auth_leaked_password_protection` (тумблер в Supabase Dashboard → Authentication → Policies, не в SQL).
+- **Пункт 2 старого списка закрыт** (мусор vs задел, по решению Руслана «улучшай, если стоит, иначе удаляй»):
+  - `updateCategoryAction` был без UI → добавлена инлайн-редактура категорий (`CategoryRow.tsx`), было только create+delete.
+  - `generateRecurringTransactionsAction` был вообще ничем не вызывался — периодические операции (аренда офиса, зарплаты) **никогда не создавались повторно** после первого раза, несмотря на текст на странице «автоматически создаются». Вынес логику в `features/accounting/services/recurring.service.ts`, добавил ежедневный cron `/api/cron/generate-recurring-transactions` (см. `vercel.json`) + кнопку «Сгенерировать сейчас» на странице.
+  - `resetPassword` — вообще не было UI (`/forgot-password`, `/reset-password` не существовали), и `middleware.ts` держал в публичных путях несуществующий `/auth/reset-password`, пока сам экшен редиректил на другой, тоже несуществующий путь. Собран полный флоу: `/forgot-password` → email → `/auth/callback` (PKCE-обмен кода на сессию, тоже был заявлен в middleware, но не существовал) → `/reset-password` → `updatePassword`.
+  - `CohabitantSchema`/`InventoryItemSchema` — ложное срабатывание грепового аудита, реально используются внутри `RentApartmentDataSchema`/`CommercialRentDataSchema`, которые в проде и в тестах. Не трогал.
+  - Заодно нашёл и закрыл: `categories.actions.ts` и `recurring.actions.ts` были без `requirePermission`, хотя соседний `accounting.actions.ts` в том же модуле — с ним. Тот же паттерн пропуска, что уже был в аудите 27–28.08 (PaymentsSection).
+- Next.js 16.3.3 ужесточил тайпчек Server Actions в `next build` (не в чистом `tsc --noEmit`) — при правке `categories.actions.ts`/`recurring.actions.ts` вылезли ошибки доступа к `.error` на union-типе в зависимых клиентских компонентах (`res?.error` невалиден, когда `error` есть не у всех членов union). Заменено на `'error' in res`. Другие 15 файлов с похожим паттерном по всему репо build прошли чисто — не трогал их превентивно, но если при следующей правке рядом с ними всплывёт та же ошибка — паттерн известен.
+
+**Блокеры, не решаемые из сессии:**
+1. **Push в GitHub недоступен** — в этом окружении не настроен git-credential (нет PAT/gh auth). Все изменения только закоммичены локально, ждут push.
+2. **Supabase-миграции внутри сессии** — под permission-классификатором Claude Code, каждую операцию с прод-БД нужно одобрять явно (уже сделано разово для search_path-фикса).
+
 ## Открытые вопросы после сессии 27–28.08.2026 (аудит + E2E)
 
 Сделано в этой сессии (см. git log 27–28.08.2026 для деталей):
@@ -15,7 +33,7 @@
 
 **Не сделано / требует решения — не откладывать молча, спросить Руслана или явно решить:**
 1. ✅ **ЗАКРЫТО ПОЛНОСТЬЮ** — `requirePermission` подключён во всех Server Actions, где role-based модель применима (contacts, deals+comments, leads, properties, tasks, showings, collections, contracts+generate, employees, settings/company, webhooks, api-keys, files, легаси clients). Добавлены ресурсы `tasks`/`showings`/`collections`/`files` в `permissions.ts` — их не было вообще. Заменены все дублирующиеся inline role-check'и (`['admin','manager'].includes(...)`, локальные `requireAdmin()`-хелперы) на единый вызов. Осознанно НЕ гейтили self-service действия (auth, profile, свои настройки/пароль/сессии) и read-only (search) — роль там ни при чём по смыслу. Подтверждено E2E на проде (5/5, дважды подряд после разных партий изменений).
-2. **`updateCategoryAction`, `generateRecurringTransactionsAction`, `resetPassword`, `CohabitantSchema`, `InventoryItemSchema`** — не используются нигде, но похожи на заготовки под будущие фичи. Не удалены, ждут подтверждения Руслана: мусор или задел.
+2. ✅ **ЗАКРЫТО (сессия 28.08.2026 вечер)** — `updateCategoryAction`/`generateRecurringTransactionsAction`/`resetPassword` были не мусором, а недособранными фичами — доделаны (инлайн-редактор категорий, cron для периодических операций, полный флоу сброса пароля). `CohabitantSchema`/`InventoryItemSchema` — ложное срабатывание, используются. Детали — в разделе сессии выше.
 3. **Dependabot: 24 уязвимости (14 high, 10 moderate)** на GitHub — не разбирали вообще в этой сессии.
 4. **Upstash Redis ENV** всё ещё не добавлен в Vercel вручную (тех.долг #1 из старого списка, частично закрыт кодом, не средой).
 5. **E2E-покрытие** — сейчас только 5 сценариев вокруг payments/accounting под одним admin-аккаунтом. Остального приложения (leads, deals, properties, tasks, employees, showings, settings, telegram-бот) E2E не касался. Роли `manager`/`agent`/`accountant` не протестированы вообще — нет тестового пользователя с этими ролями.

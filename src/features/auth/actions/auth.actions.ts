@@ -37,15 +37,37 @@ export async function logout() {
 
 export async function resetPassword(formData: FormData) {
   const supabase = await createClient()
-  const email = formData.get('email') as string
+  const email = (formData.get('email') as string)?.trim()
+  if (!email) return { error: 'Введите email' }
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`,
+    redirectTo: `${siteUrl}/auth/callback?next=/reset-password`,
   })
 
+  // Не раскрываем, существует ли email в системе — иначе это утечка данных
+  // (можно перебором проверять, кто зарегистрирован). Supabase со своей стороны
+  // тоже не возвращает ошибку на несуществующий email по этой же причине.
   if (error) {
-    return { error: error.message }
+    console.error('resetPasswordForEmail error:', error.message)
   }
+
+  return { success: true }
+}
+
+export async function updatePassword(formData: FormData) {
+  const supabase = await createClient()
+  const password = formData.get('password') as string
+  if (!password || password.length < 6) {
+    return { error: 'Пароль должен быть не короче 6 символов' }
+  }
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Ссылка для сброса пароля недействительна или устарела' }
+
+  const { error } = await supabase.auth.updateUser({ password })
+  if (error) return { error: error.message }
 
   return { success: true }
 }

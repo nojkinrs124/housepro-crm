@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { AccountingTransactionType, AccountingFrequency } from '@/types/database'
 import { requireOrgId } from '@/lib/org'
+import { requirePermission } from '@/lib/permissions'
+import { generateDueRecurringTransactions } from '../services/recurring.service'
 
 function parseAmount(raw: unknown): number | null {
   const v = String(raw ?? '').replace(/\s/g, '').replace(',', '.')
@@ -15,6 +17,9 @@ export async function createRecurringRuleAction(_prevState: unknown, formData: F
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
+
+  const permError = await requirePermission(user.id, 'accounting', 'create')
+  if (permError) return permError
 
   const orgId = await requireOrgId().catch(() => null)
   if (!orgId) return { error: 'Организация не найдена' }
@@ -81,6 +86,9 @@ export async function updateRecurringRuleAction(id: string, _prevState: unknown,
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
 
+  const permError = await requirePermission(user.id, 'accounting', 'update')
+  if (permError) return permError
+
   const name       = (formData.get('name') as string)?.trim()
   const amount     = parseAmount(formData.get('amount'))
   const categoryId = formData.get('category_id') as string | null
@@ -117,6 +125,9 @@ export async function deleteRecurringRuleAction(id: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
 
+  const permError = await requirePermission(user.id, 'accounting', 'delete')
+  if (permError) return permError
+
   const { error } = await supabase
     .from('accounting_recurring_rules')
     .delete()
@@ -128,70 +139,23 @@ export async function deleteRecurringRuleAction(id: string) {
   return { success: true }
 }
 
-// Generate due transactions for all active rules
+// Ручной запуск генерации (кнопка на /accounting/recurring). Основной механизм —
+// ежедневный cron, см. /api/cron/generate-recurring-transactions. RLS клиента
+// ограничивает видимость правил организацией текущего пользователя.
 export async function generateRecurringTransactionsAction() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
 
+  const permError = await requirePermission(user.id, 'accounting', 'create')
+  if (permError) return permError
+
   const orgId = await requireOrgId().catch(() => null)
   if (!orgId) return { error: 'Организация не найдена' }
 
-  const today = new Date().toISOString().slice(0, 10)
-
-  const { data: rules } = await supabase
-    .from('accounting_recurring_rules')
-    .select('*')
-    .eq('is_active', true)
-    .or(`end_date.is.null,end_date.gte.${today}`)
-
-  if (!rules || rules.length === 0) return { generated: 0 }
-
-  let generated = 0
-
-  for (const rule of rules as Array<{
-    id: string; type: string; amount: number; category_id: string | null;
-    employee_id: string | null; name: string; frequency: string;
-    day_of_month: number | null; start_date: string; last_generated_date: string | null;
-  }>) {
-    const lastDate = rule.last_generated_date ?? rule.start_date
-    const next = getNextDate(lastDate, rule.frequency, rule.day_of_month)
-
-    if (next <= today) {
-      await supabase.from('accounting_transactions').insert({
-        type:               rule.type,
-        amount:             rule.amount,
-        date:               next,
-        category_id:        rule.category_id,
-        employee_id:        rule.employee_id,
-        recurring_rule_id:  rule.id,
-        description:        rule.name,
-        status:             'planned',
-        created_by:         user.id,
-        organization_id:    orgId,
-      })
-      await supabase
-        .from('accounting_recurring_rules')
-        .update({ last_generated_date: next })
-        .eq('id', rule.id)
-      generated++
-    }
-  }
+  const result = await generateDueRecurringTransactions(supabase)
 
   revalidatePath('/accounting')
-  return { generated }
-}
-
-function getNextDate(from: string, frequency: string, dayOfMonth: number | null): string {
-  const d = new Date(from)
-  switch (frequency) {
-    case 'daily':   d.setDate(d.getDate() + 1); break
-    case 'weekly':  d.setDate(d.getDate() + 7); break
-    case 'monthly':
-      d.setMonth(d.getMonth() + 1)
-      if (dayOfMonth) d.setDate(Math.min(dayOfMonth, new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()))
-      break
-    case 'yearly':  d.setFullYear(d.getFullYear() + 1); break
-  }
-  return d.toISOString().slice(0, 10)
+  revalidatePath('/accounting/recurring')
+  return result
 }

@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { DeleteRecurringButton } from '@/features/accounting/components/DeleteRecurringButton'
+import { GenerateRecurringButton } from '@/features/accounting/components/GenerateRecurringButton'
 import { Plus, RefreshCw, Pencil } from 'lucide-react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/layout/PageHeader'
@@ -41,10 +42,13 @@ export default async function RecurringPage() {
         backHref="/accounting"
         backLabel="Бухгалтерия"
         actions={
-          <Link href="/accounting/recurring/new" className={buttonVariants({ size: 'lg' })}>
-            <Plus className="w-4 h-4" />
-            Добавить
-          </Link>
+          <div className="flex items-center gap-2 flex-wrap">
+            <GenerateRecurringButton />
+            <Link href="/accounting/recurring/new" className={buttonVariants({ size: 'lg' })}>
+              <Plus className="w-4 h-4" />
+              Добавить
+            </Link>
+          </div>
         }
       />
 
