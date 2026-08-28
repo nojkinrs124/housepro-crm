@@ -4,103 +4,103 @@ import { markAllNotificationsReadAction, markNotificationReadAction } from './no
 import { PageHeader } from '@/components/layout/PageHeader'
 
 const typeColors: Record<string, string> = {
-  overdue_payment:  'bg-red-100 text-red-700',
-  overdue_task:     'bg-orange-100 text-orange-700',
-  new_lead:         'bg-blue-100 text-blue-700',
-  deal_status:      'bg-green-100 text-green-700',
-  contract_expiry:  'bg-yellow-100 text-yellow-700',
+ overdue_payment: 'bg-red-100 text-red-700',
+ overdue_task: 'bg-orange-100 text-orange-700',
+ new_lead: 'bg-blue-100 text-blue-700',
+ deal_status: 'bg-green-100 text-green-700',
+ contract_expiry: 'bg-yellow-100 text-yellow-700',
 }
 const typeLabels: Record<string, string> = {
-  overdue_payment: 'Платёж', overdue_task: 'Задача',
-  new_lead: 'Лид', deal_status: 'Сделка', contract_expiry: 'Договор',
+ overdue_payment: 'Платёж', overdue_task: 'Задача',
+ new_lead: 'Лид', deal_status: 'Сделка', contract_expiry: 'Договор',
 }
 const entityHref: Record<string, (id: string) => string> = {
-  payment:  id => `/payments/${id}/edit`,
-  contract: id => `/contracts/${id}`,
-  task:     id => `/tasks`,
-  deal:     id => `/deals/${id}`,
-  lead:     id => `/leads`,
+ payment: id => `/payments/${id}/edit`,
+ contract: id => `/contracts/${id}`,
+ task: id => `/tasks`,
+ deal: id => `/deals/${id}`,
+ lead: id => `/leads`,
 }
 
 export default async function NotificationsPage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+ const supabase = await createClient()
+ const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: notifications } = await supabase
-    .from('notifications')
-    .select('*')
-    .eq('user_id', user?.id ?? '')
-    .order('created_at', { ascending: false })
-    .limit(50)
+ const { data: notifications } = await supabase
+ .from('notifications')
+ .select('*')
+ .eq('user_id', user?.id ?? '')
+ .order('created_at', { ascending: false })
+ .limit(50)
 
-  const unreadCount = (notifications ?? []).filter(n => !n.is_read).length
+ const unreadCount = (notifications ?? []).filter(n => !n.is_read).length
 
-  return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <PageHeader
-        title="Уведомления"
-        subtitle={unreadCount > 0 ? `${unreadCount} непрочитанных` : undefined}
-        backHref="/settings"
-        backLabel="Вернуться к настройкам"
-        iconBg="bg-amber-50"
-        icon={<Bell className="text-amber-600" style={{ width: 20, height: 20 }} />}
-        actions={
-          unreadCount > 0 ? (
-            <form action={markAllNotificationsReadAction}>
-              <button type="submit"
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-[12px] text-sm font-semibold text-[#374151] hover:bg-slate-50 transition-all">
-                <CheckCheck style={{ width: 15, height: 15 }} />
-                Прочитать все
-              </button>
-            </form>
-          ) : undefined
-        }
-      />
+ return (
+ <div className="max-w-2xl mx-auto space-y-6">
+ <PageHeader
+ title="Уведомления"
+ subtitle={unreadCount > 0 ? `${unreadCount} непрочитанных` : undefined}
+ backHref="/settings"
+ backLabel="Вернуться к настройкам"
+ iconBg="bg-amber-50"
+ icon={<Bell className="text-amber-600" style={{ width: 20, height: 20 }} />}
+ actions={
+ unreadCount > 0 ? (
+ <form action={markAllNotificationsReadAction}>
+ <button type="submit"
+ className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-sm font-semibold text-[#374151] hover:bg-slate-50 transition-all">
+ <CheckCheck style={{ width: 15, height: 15 }} />
+ Прочитать все
+ </button>
+ </form>
+ ) : undefined
+ }
+ />
 
-      {!notifications?.length ? (
-        <div className="bg-white rounded-[20px] border border-slate-100 p-12 text-center" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
-          <div className="w-14 h-14 rounded-[20px] flex items-center justify-center mx-auto mb-4"
-            style={{ background: 'linear-gradient(135deg, rgba(22,163,74,0.1), rgba(34,197,94,0.1))' }}>
-            <Bell style={{ width: 24, height: 24, color: '#16A34A' }} />
-          </div>
-          <p className="font-bold text-foreground text-base">Уведомлений нет</p>
-          <p className="text-muted-foreground text-sm mt-1">Все актуально — продолжайте работу</p>
-        </div>
-      ) : (
-        <div className="bg-white rounded-[20px] border border-slate-100 overflow-hidden" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
-          <div className="divide-y divide-slate-100">
-            {notifications.map(n => {
-              const href = n.entity_type && n.entity_id ? entityHref[n.entity_type]?.(n.entity_id) : null
-              const Inner = (
-                <div className={`flex items-start gap-4 px-5 py-4 hover:bg-background transition-all duration-200 ${!n.is_read ? 'bg-green-50/30' : ''}`}>
-                  <div className="shrink-0 mt-0.5">
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${typeColors[n.type] ?? 'bg-gray-100 text-gray-600'}`}>
-                      {typeLabels[n.type] ?? n.type}
-                    </span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-sm text-foreground ${!n.is_read ? 'font-semibold' : 'font-medium'}`}>{n.title}</p>
-                    {n.body && <p className="text-xs text-muted-foreground mt-0.5">{n.body}</p>}
-                    <p className="text-xs text-slate-400 mt-1">
-                      {new Date(n.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
-                    </p>
-                  </div>
-                  {!n.is_read && (
-                    <div className="w-2 h-2 rounded-full bg-[#16A34A] shrink-0 mt-1.5" />
-                  )}
-                </div>
-              )
-              return href ? (
-                <a key={n.id} href={href}>
-                  {Inner}
-                </a>
-              ) : (
-                <div key={n.id}>{Inner}</div>
-              )
-            })}
-          </div>
-        </div>
-      )}
-    </div>
-  )
+ {!notifications?.length ? (
+ <div className="bg-white border border-slate-100 p-12 text-center" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+ <div className="w-14 h-14 flex items-center justify-center mx-auto mb-4"
+ style={{ background: 'linear-gradient(135deg, rgba(22,163,74,0.1), rgba(34,197,94,0.1))' }}>
+ <Bell style={{ width: 24, height: 24, color: '#16A34A' }} />
+ </div>
+ <p className="font-bold text-foreground text-base">Уведомлений нет</p>
+ <p className="text-muted-foreground text-sm mt-1">Все актуально — продолжайте работу</p>
+ </div>
+ ) : (
+ <div className="bg-white border border-slate-100 overflow-hidden" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+ <div className="divide-y divide-slate-100">
+ {notifications.map(n => {
+ const href = n.entity_type && n.entity_id ? entityHref[n.entity_type]?.(n.entity_id) : null
+ const Inner = (
+ <div className={`flex items-start gap-4 px-5 py-4 hover:bg-background transition-all duration-200 ${!n.is_read ? 'bg-green-50/30' : ''}`}>
+ <div className="shrink-0 mt-0.5">
+ <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${typeColors[n.type] ?? 'bg-gray-100 text-gray-600'}`}>
+ {typeLabels[n.type] ?? n.type}
+ </span>
+ </div>
+ <div className="flex-1 min-w-0">
+ <p className={`text-sm text-foreground ${!n.is_read ? 'font-semibold' : 'font-medium'}`}>{n.title}</p>
+ {n.body && <p className="text-xs text-muted-foreground mt-0.5">{n.body}</p>}
+ <p className="text-xs text-slate-400 mt-1">
+ {new Date(n.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
+ </p>
+ </div>
+ {!n.is_read && (
+ <div className="w-2 h-2 rounded-full bg-[#16A34A] shrink-0 mt-1.5" />
+ )}
+ </div>
+ )
+ return href ? (
+ <a key={n.id} href={href}>
+ {Inner}
+ </a>
+ ) : (
+ <div key={n.id}>{Inner}</div>
+ )
+ })}
+ </div>
+ </div>
+ )}
+ </div>
+ )
 }
