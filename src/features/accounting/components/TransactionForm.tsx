@@ -1,9 +1,11 @@
 'use client'
 
+import { useMemo, useState } from 'react'
+import Link from 'next/link'
 import { useActionState } from 'react'
 import { createTransactionAction, updateTransactionAction } from '../actions/accounting.actions'
-import type { AccountingTransaction, AccountingCategory, Contract, Deal, User } from '@/types/database'
-import { ArrowDownCircle, ArrowUpCircle } from 'lucide-react'
+import type { AccountingTransaction, AccountingCategory, Contract, Deal, User, Contact } from '@/types/database'
+import { ArrowDownCircle, ArrowUpCircle, Wallet, Tag, Link2, CircleAlert } from 'lucide-react'
 
 interface Props {
   transaction?: AccountingTransaction
@@ -11,51 +13,89 @@ interface Props {
   contracts: Pick<Contract, 'id' | 'contract_number' | 'contract_type'>[]
   deals: Pick<Deal, 'id' | 'deal_type'>[]
   employees: Pick<User, 'id' | 'full_name'>[]
+  contacts: Pick<Contact, 'id' | 'full_name' | 'company_name' | 'client_type'>[]
 }
 
 type State = { error?: string; fields?: Record<string, string[]> } | null
 
-export function TransactionForm({ transaction, categories, contracts, deals, employees }: Props) {
+const inputCls = 'w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all'
+const selectCls = `${inputCls} cursor-pointer`
+const cardCls = 'bg-white rounded-[20px] border border-slate-100 p-5'
+const cardShadow = { boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }
+
+function sectionTitle(icon: React.ReactNode, text: string) {
+  return (
+    <h2 className="flex items-center gap-2 font-bold text-foreground text-[15px] mb-4">
+      <span className="text-slate-400">{icon}</span>
+      {text}
+    </h2>
+  )
+}
+
+function contactLabel(c: Pick<Contact, 'full_name' | 'company_name' | 'client_type'>) {
+  return c.client_type === 'legal_entity' && c.company_name ? c.company_name : c.full_name
+}
+
+export function TransactionForm({ transaction, categories, contracts, deals, employees, contacts }: Props) {
+  const isEdit = Boolean(transaction)
   const action = transaction
     ? updateTransactionAction.bind(null, transaction.id)
     : createTransactionAction
 
-  const [state, formAction, isPending] = useActionState(action, null)
+  const [state, formAction, isPending] = useActionState<State, FormData>(action, null)
 
-  const incomeCategories  = categories.filter(c => c.type === 'income')
-  const expenseCategories = categories.filter(c => c.type === 'expense')
+  const [type, setType] = useState<'income' | 'expense'>(transaction?.type ?? 'income')
+  const [categoryId, setCategoryId] = useState(transaction?.category_id ?? '')
+  const [amountRaw, setAmountRaw] = useState(transaction ? String(transaction.amount) : '')
 
-  const defaultType = transaction?.type ?? 'income'
+  const visibleCategories = useMemo(
+    () => categories.filter(c => c.type === type),
+    [categories, type]
+  )
+
+  const amountPreview = useMemo(() => {
+    const n = parseFloat(amountRaw.replace(/\s/g, '').replace(',', '.'))
+    return isNaN(n) || n <= 0 ? null : n.toLocaleString('ru-RU') + ' ₽'
+  }, [amountRaw])
+
+  function handleTypeChange(next: 'income' | 'expense') {
+    setType(next)
+    // Категория предыдущего типа неприменима к новому — сбрасываем,
+    // чтобы не отправить category_id, не соответствующий выбранному типу.
+    setCategoryId(prev => {
+      const stillValid = categories.some(c => c.id === prev && c.type === next)
+      return stillValid ? prev : ''
+    })
+  }
 
   return (
     <form action={formAction} className="space-y-6">
       {state?.error && (
-        <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700 font-medium">
+        <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700 font-medium flex items-center gap-2">
+          <CircleAlert className="w-4 h-4 shrink-0" />
           {state.error}
         </div>
       )}
 
       {/* Type selector */}
-      <div
-        className="bg-white rounded-[20px] border border-slate-100 p-5"
-        style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
-      >
-        <h2 className="font-bold text-foreground text-[15px] mb-4">Тип операции</h2>
-        <div className="grid grid-cols-2 gap-3">
+      <div className={cardCls} style={cardShadow}>
+        {sectionTitle(<ArrowDownCircle className="w-4 h-4" />, 'Тип операции')}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {(['income', 'expense'] as const).map(t => (
             <label
               key={t}
-              className="flex items-center gap-3 p-4 rounded-[14px] border-2 cursor-pointer transition-all has-[:checked]:border-current"
+              className="flex items-center gap-3 p-4 rounded-[14px] border-2 cursor-pointer transition-all has-[:checked]:shadow-sm"
               style={{
-                borderColor: t === 'income' ? '#22C55E20' : '#EF444420',
-                background:  t === 'income' ? '#F0FDF4'   : '#FEF2F2',
+                borderColor: type === t ? (t === 'income' ? '#16A34A' : '#EF4444') : '#E2E8F0',
+                background:  type === t ? (t === 'income' ? '#F0FDF4' : '#FEF2F2') : '#FFFFFF',
               }}
             >
               <input
                 type="radio"
                 name="type"
                 value={t}
-                defaultChecked={defaultType === t}
+                checked={type === t}
+                onChange={() => handleTypeChange(t)}
                 className="sr-only"
               />
               {t === 'income'
@@ -76,12 +116,9 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
       </div>
 
       {/* Main fields */}
-      <div
-        className="bg-white rounded-[20px] border border-slate-100 p-5"
-        style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
-      >
-        <h2 className="font-bold text-foreground text-[15px] mb-4">Основное</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className={cardCls} style={cardShadow}>
+        {sectionTitle(<Wallet className="w-4 h-4" />, 'Основное')}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="space-y-1.5">
             <label className="block text-sm font-semibold text-foreground">Сумма (₽) *</label>
             <input
@@ -89,17 +126,21 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
               name="amount"
               inputMode="decimal"
               placeholder="0.00"
-              defaultValue={transaction?.amount}
-              className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+              value={amountRaw}
+              onChange={e => setAmountRaw(e.target.value)}
+              className={inputCls}
             />
+            {amountPreview && (
+              <p className="text-xs text-slate-400">{amountPreview}</p>
+            )}
           </div>
           <div className="space-y-1.5">
-            <label className="block text-sm font-semibold text-foreground">Дата *</label>
+            <label className="block text-sm font-semibold text-foreground">Дата операции *</label>
             <input
               type="date"
               name="date"
               defaultValue={transaction?.date ?? new Date().toISOString().slice(0, 10)}
-              className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+              className={`${inputCls} min-w-0`}
             />
           </div>
           <div className="space-y-1.5">
@@ -107,7 +148,7 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
             <select
               name="status"
               defaultValue={transaction?.status ?? 'completed'}
-              className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all"
+              className={selectCls}
             >
               <option value="completed">Выполнено</option>
               <option value="planned">Запланировано</option>
@@ -119,7 +160,7 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
             <select
               name="payment_method"
               defaultValue={transaction?.payment_method ?? ''}
-              className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all"
+              className={selectCls}
             >
               <option value="">— не указан —</option>
               <option value="bank">Банк (безнал)</option>
@@ -127,6 +168,16 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
               <option value="card">Карта</option>
               <option value="other">Другое</option>
             </select>
+          </div>
+          <div className="space-y-1.5">
+            <label className="block text-sm font-semibold text-foreground">Срок оплаты</label>
+            <input
+              type="date"
+              name="due_date"
+              defaultValue={transaction?.due_date ?? ''}
+              className={`${inputCls} min-w-0`}
+            />
+            <p className="text-xs text-slate-400">Актуально для запланированных операций</p>
           </div>
         </div>
 
@@ -137,64 +188,49 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
             rows={2}
             defaultValue={transaction?.description ?? ''}
             placeholder="Краткое описание операции"
-            className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all resize-none"
+            className="w-full px-4 py-2.5 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all resize-none"
           />
         </div>
       </div>
 
       {/* Category */}
-      <div
-        className="bg-white rounded-[20px] border border-slate-100 p-5"
-        style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
-      >
-        <h2 className="font-bold text-foreground text-[15px] mb-4">Категория</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-1.5">
-            <label className="block text-sm font-semibold text-foreground">Категория дохода</label>
-            <select
-              name="category_id"
-              defaultValue={transaction?.category_id ?? ''}
-              className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all"
-              id="cat-income"
-            >
-              <option value="">— выберите категорию —</option>
-              {incomeCategories.map(c => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-            <p className="text-xs text-slate-400">Для операций типа «Доход»</p>
-          </div>
-          <div className="space-y-1.5">
-            <label className="block text-sm font-semibold text-foreground">Категория расхода</label>
-            <select
-              name="category_id"
-              defaultValue={transaction?.category_id ?? ''}
-              className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all"
-              id="cat-expense"
-            >
-              <option value="">— выберите категорию —</option>
-              {expenseCategories.map(c => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-            <p className="text-xs text-slate-400">Для операций типа «Расход»</p>
-          </div>
+      <div className={cardCls} style={cardShadow}>
+        {sectionTitle(<Tag className="w-4 h-4" />, 'Категория')}
+        <div className="space-y-1.5">
+          <label className="block text-sm font-semibold text-foreground">
+            Категория {type === 'income' ? 'дохода' : 'расхода'}
+          </label>
+          <select
+            name="category_id"
+            value={categoryId}
+            onChange={e => setCategoryId(e.target.value)}
+            className={selectCls}
+          >
+            <option value="">— выберите категорию —</option>
+            {visibleCategories.map(c => (
+              <option key={c.id} value={c.id} style={{ color: c.color }}>{c.name}</option>
+            ))}
+          </select>
+          {visibleCategories.length === 0 && (
+            <p className="text-xs text-amber-600">
+              Нет категорий для «{type === 'income' ? 'Дохода' : 'Расхода'}». {' '}
+              <Link href="/accounting/categories" className="font-semibold underline">Добавить категорию</Link>
+            </p>
+          )}
         </div>
       </div>
 
       {/* Links */}
-      <div
-        className="bg-white rounded-[20px] border border-slate-100 p-5"
-        style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
-      >
-        <h2 className="font-bold text-foreground text-[15px] mb-4">Привязки</h2>
+      <div className={cardCls} style={cardShadow}>
+        {sectionTitle(<Link2 className="w-4 h-4" />, 'Привязки')}
+        <p className="text-xs text-muted-foreground -mt-2 mb-4">Необязательно — свяжите операцию с договором, сделкой, контактом или сотрудником</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <label className="block text-sm font-semibold text-foreground">Договор</label>
             <select
               name="contract_id"
               defaultValue={transaction?.contract_id ?? ''}
-              className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all"
+              className={selectCls}
             >
               <option value="">— не привязан —</option>
               {contracts.map(c => (
@@ -209,7 +245,7 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
             <select
               name="deal_id"
               defaultValue={transaction?.deal_id ?? ''}
-              className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all"
+              className={selectCls}
             >
               <option value="">— не привязана —</option>
               {deals.map(d => (
@@ -217,12 +253,25 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
               ))}
             </select>
           </div>
-          <div className="space-y-1.5 sm:col-span-2">
+          <div className="space-y-1.5">
+            <label className="block text-sm font-semibold text-foreground">Контакт (контрагент)</label>
+            <select
+              name="contact_id"
+              defaultValue={transaction?.contact_id ?? ''}
+              className={selectCls}
+            >
+              <option value="">— не привязан —</option>
+              {contacts.map(c => (
+                <option key={c.id} value={c.id}>{contactLabel(c)}</option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1.5">
             <label className="block text-sm font-semibold text-foreground">Сотрудник (для зарплат)</label>
             <select
               name="employee_id"
               defaultValue={transaction?.employee_id ?? ''}
-              className="w-full h-10 px-4 rounded-xl border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all"
+              className={selectCls}
             >
               <option value="">— не привязан —</option>
               {employees.map(e => (
@@ -234,23 +283,23 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-end gap-3">
-        <a
+      <div className="flex items-center justify-end gap-3 flex-wrap">
+        <Link
           href="/accounting"
-          className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-[14px] text-sm font-semibold text-[#374151] hover:bg-slate-50 hover:border-slate-300 transition-all"
+          className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-[14px] text-sm font-semibold text-[#374151] hover:bg-slate-50 hover:border-slate-300 transition-all whitespace-nowrap"
         >
           Отмена
-        </a>
+        </Link>
         <button
           type="submit"
           disabled={isPending}
-          className="flex items-center gap-2 px-5 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all disabled:opacity-60"
+          className="flex items-center gap-2 px-5 py-2.5 text-white rounded-[14px] text-sm font-bold hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:hover:translate-y-0 whitespace-nowrap"
           style={{
             background: 'var(--hp-gradient-primary)',
             boxShadow: '0 4px 16px rgba(22,163,74,0.35)',
           }}
         >
-          {isPending ? 'Сохранение...' : (transaction ? 'Сохранить' : 'Создать')}
+          {isPending ? 'Сохранение...' : (isEdit ? 'Сохранить' : 'Создать')}
         </button>
       </div>
     </form>
