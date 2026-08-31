@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { authenticateApiKey, hasScope } from '@/lib/api-auth'
 import { dispatchWebhook } from '@/lib/webhooks'
+import { normalizePhone } from '@/lib/utils'
 
 // КРИТИЧНО: этот роут отдаёт данные, специфичные для конкретной организации/пользователя
 // (RLS или ручная фильтрация по organization_id). Next.js по умолчанию может закэшировать
@@ -67,7 +68,7 @@ export async function POST(request: Request) {
     .from('leads')
     .insert({
       full_name:  body.full_name  ?? null,
-      phone:      body.phone      ?? null,
+      phone:      normalizePhone(body.phone),
       email:      body.email      ?? null,
       source:     body.source     ?? 'api',
       comment:    body.comment    ?? null,

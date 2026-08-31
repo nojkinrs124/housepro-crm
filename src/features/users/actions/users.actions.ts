@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import type { UserRole } from '@/types/database'
 import { requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
+import { normalizePhone } from '@/lib/utils'
 
 const VALID_ROLES: UserRole[] = ['admin', 'manager', 'agent', 'accountant']
 
@@ -26,7 +27,7 @@ export async function createEmployeeAction(formData: FormData) {
   const email = (formData.get('email') as string)?.trim()
   const full_name = (formData.get('full_name') as string)?.trim()
   const role = formData.get('role') as string
-  const phone = (formData.get('phone') as string)?.trim() || null
+  const phone = normalizePhone(formData.get('phone') as string)
 
   if (!email || !full_name || !role) {
     return { error: 'Заполните все обязательные поля' }
@@ -66,7 +67,7 @@ export async function updateEmployeeAction(employeeId: string, formData: FormDat
 
   const full_name = (formData.get('full_name') as string)?.trim()
   const role = formData.get('role') as string
-  const phone = (formData.get('phone') as string)?.trim() || null
+  const phone = normalizePhone(formData.get('phone') as string)
 
   if (!full_name || !role) {
     return { error: 'Заполните все обязательные поля' }

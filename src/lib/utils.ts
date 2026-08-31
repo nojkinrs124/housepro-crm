@@ -33,3 +33,28 @@ export function formatPhone(phone: string | null | undefined): string {
   }
   return phone
 }
+
+/**
+ * Приводит номер телефона к единому формату хранения `+7XXXXXXXXXX`.
+ *
+ * Правила: 11 цифр, начинающихся с 8 → заменяем на 7 (российская привычка
+ * набирать номер с 8). 10 цифр без кода страны → добавляем 7 спереди.
+ * Нероссийские/нестандартные номера сохраняются как есть с ведущим `+`.
+ * Пустая строка/undefined/null → null (нечего сохранять).
+ */
+export function normalizePhone(phone: string | null | undefined): string | null {
+  if (!phone) return null
+  const trimmed = phone.trim()
+  if (!trimmed) return null
+
+  let digits = trimmed.replace(/\D/g, '')
+  if (!digits) return null
+
+  if (digits.length === 11 && digits.startsWith('8')) {
+    digits = `7${digits.slice(1)}`
+  } else if (digits.length === 10) {
+    digits = `7${digits}`
+  }
+
+  return `+${digits}`
+}

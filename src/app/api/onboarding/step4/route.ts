@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { normalizePhone } from '@/lib/utils'
 
 // КРИТИЧНО: этот роут отдаёт данные, специфичные для конкретной организации/пользователя
 // (RLS или ручная фильтрация по organization_id). Next.js по умолчанию может закэшировать
@@ -17,7 +18,7 @@ export async function POST(request: Request) {
 
   const { error } = await supabase.from('leads').insert({
     full_name: full_name.trim(),
-    phone: phone?.trim() || null,
+    phone: normalizePhone(phone),
     status: 'new',
     assigned_to: userId,
     organization_id: orgId,

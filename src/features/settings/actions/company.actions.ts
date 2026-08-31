@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { validateUploadedFile } from '@/lib/validate-file'
 import { requirePermission } from '@/lib/permissions'
+import { normalizePhone } from '@/lib/utils'
 
 const LOGO_BUCKET = 'company-logos'
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml']
@@ -28,7 +29,7 @@ function readProfileValues(formData: FormData) {
     ogrn:         (formData.get('ogrn') as string)?.trim() || null,
     kpp:          (formData.get('kpp') as string)?.trim() || null,
     address:      (formData.get('address') as string)?.trim() || null,
-    phone:        (formData.get('phone') as string)?.trim() || null,
+    phone:        normalizePhone(formData.get('phone') as string),
     email:        (formData.get('email') as string)?.trim() || null,
     website:      (formData.get('website') as string)?.trim() || null,
     description:  (formData.get('description') as string)?.trim() || null,

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { normalizePhone } from '@/lib/utils'
 
 // КРИТИЧНО: этот роут отдаёт данные, специфичные для конкретной организации/пользователя
 // (RLS или ручная фильтрация по organization_id). Next.js по умолчанию может закэшировать
@@ -23,9 +24,10 @@ export async function POST(request: Request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   // Save phone to company_settings if provided
-  if (phone?.trim()) {
+  const normalizedPhone = normalizePhone(phone)
+  if (normalizedPhone) {
     await supabase.from('company_settings').upsert(
-      { name: name.trim(), phone: phone.trim(), organization_id: orgId, is_default: true },
+      { name: name.trim(), phone: normalizedPhone, organization_id: orgId, is_default: true },
       { onConflict: 'organization_id', ignoreDuplicates: false }
     )
   }

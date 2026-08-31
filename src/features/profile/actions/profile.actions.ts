@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { validateUploadedFile } from '@/lib/validate-file'
+import { normalizePhone } from '@/lib/utils'
 
 const AVATAR_BUCKET = 'avatars'
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
@@ -14,7 +15,7 @@ export async function updateProfileAction(formData: FormData) {
   if (!user) return { error: 'Не авторизован' }
 
   const full_name = (formData.get('full_name') as string)?.trim()
-  const phone = (formData.get('phone') as string)?.trim() || null
+  const phone = normalizePhone(formData.get('phone') as string)
 
   if (!full_name) return { error: 'Имя обязательно' }
   if (full_name.length > 255) return { error: 'Имя не должно быть длиннее 255 символов' }

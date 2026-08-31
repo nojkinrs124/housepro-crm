@@ -7,6 +7,7 @@ import { requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
 import { rateLimitMutation } from '@/lib/rate-limit'
 import { writeAuditLog } from '@/lib/audit'
+import { normalizePhone } from '@/lib/utils'
 import {
   fetchAvitoAccessToken,
   fetchAvitoAutoloadLastReport,
@@ -95,7 +96,7 @@ export async function saveAvitoSettingsAction(_prevState: unknown, formData: For
   const clientId     = (formData.get('client_id') as string)?.trim() || null
   const clientSecret = (formData.get('client_secret') as string)?.trim()
   const avitoUserId  = (formData.get('avito_user_id') as string)?.trim() || null
-  const contactPhone = (formData.get('contact_phone') as string)?.trim() || null
+  const contactPhone = normalizePhone(formData.get('contact_phone') as string)
   const isEnabled    = formData.get('is_enabled') === 'on'
 
   if (avitoUserId && !/^\d+$/.test(avitoUserId)) {

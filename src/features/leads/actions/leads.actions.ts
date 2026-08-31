@@ -6,13 +6,14 @@ import { createClient } from '@/lib/supabase/server'
 import { requireOrgId } from '@/lib/org'
 import { dispatchWebhook } from '@/lib/webhooks'
 import { requirePermission } from '@/lib/permissions'
+import { normalizePhone } from '@/lib/utils'
 
 const VALID_STATUSES = ['new','contacted','showing','searching','converted','closed','interested','rejected']
 
 function extractLeadFields(formData: FormData, userId?: string) {
   return {
     full_name:       (formData.get('full_name')  as string)?.trim() || null,
-    phone:           (formData.get('phone')       as string)?.trim() || null,
+    phone:           normalizePhone(formData.get('phone') as string),
     email:           (formData.get('email')       as string)?.trim() || null,
     telegram:        (formData.get('telegram')    as string)?.trim() || null,
     whatsapp:        (formData.get('whatsapp')    as string)?.trim() || null,

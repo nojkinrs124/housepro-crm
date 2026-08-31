@@ -1,8 +1,14 @@
 import { z } from 'zod'
+import { normalizePhone } from '@/lib/utils'
 
 // ─── Общие примитивы ─────────────────────────────────────────────────────────
 
 const optStr = z.string().trim().nullable().optional()
+const optPhone = z
+  .string()
+  .nullable()
+  .optional()
+  .transform((v) => normalizePhone(v))
 const optDate = z
   .string()
   .nullable()
@@ -29,7 +35,7 @@ const uuid = z
 export const ContactSchema = z
   .object({
     full_name: z.string().trim().min(1, 'Имя обязательно').max(200, 'Максимум 200 символов'),
-    phone: optStr,
+    phone: optPhone,
     email: z
       .string()
       .trim()
@@ -91,7 +97,7 @@ export const RepresentativeSchema = z.object({
   contact_id: z.string().uuid('Некорректный контакт'),
   full_name: z.string().trim().min(1, 'ФИО обязательно').max(200),
   position: optStr,
-  phone: optStr,
+  phone: optPhone,
   email: z
     .string()
     .trim()
