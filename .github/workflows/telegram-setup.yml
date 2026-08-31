@@ -1,0 +1,27 @@
+name: Telegram setup (webhook + команды)
+
+# Перерегистрирует вебхук бота и список команд на текущий прод-домен.
+# Нужен после каждой смены домена/переименования проекта на Vercel: URL вебхука
+# хранится на стороне Telegram и сам по себе не меняется.
+#
+# Секрет тот же, что у channel-heartbeat: /api/telegram/setup проверяет
+# process.env.CRON_SECRET, а CHANNEL_CRON_SECRET в репозитории — его значение.
+# Домен берётся из CHANNEL_SITE_URL.
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call telegram setup endpoint
+        run: |
+          response=$(curl -sf --max-time 60 \
+            -H "Authorization: Bearer ${{ secrets.CHANNEL_CRON_SECRET }}" \
+            "${{ secrets.CHANNEL_SITE_URL }}/api/telegram/setup")
+          echo "Ответ: $response"
+          echo "$response" | grep -q '"webhookSuccess":true' || {
+            echo "::error::Вебхук не переустановлен"
+            exit 1
+          }
