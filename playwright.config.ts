@@ -11,7 +11,7 @@ export default defineConfig({
   retries: 1,
   reporter: [['list'], ['html', { open: 'never' }], ['json', { outputFile: 'e2e-results.json' }]],
   use: {
-    baseURL: process.env.E2E_BASE_URL || 'https://housepro-crm.vercel.app',
+    baseURL: process.env.E2E_BASE_URL || 'https://housepro24.vercel.app',
     screenshot: 'on',
     trace: 'retain-on-failure',
   },
