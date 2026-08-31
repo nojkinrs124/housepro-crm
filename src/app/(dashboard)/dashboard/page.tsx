@@ -410,36 +410,6 @@ export default async function DashboardPage() {
  )}
  </div>
  </div>
-
- {/* Quick actions */}
- <div className="p-6 relative overflow-hidden"
- style={{ background: 'var(--hp-good-tint)', border: '1px solid var(--hp-border)' }}>
- {/* Background decoration */}
- <div className="absolute right-0 top-0 w-48 h-48 opacity-5"
- style={{ background: 'radial-gradient(circle, var(--hp-accent) 0%, transparent 70%)', transform: 'translate(25%, -25%)' }} />
- <div className="flex items-center justify-between flex-wrap gap-4 relative">
- <div>
- <h3 className="font-bold text-foreground text-[16px] tracking-tight">Быстрые действия</h3>
- <p className="text-sm text-muted-foreground mt-0.5">Создайте новую запись одним кликом</p>
- </div>
- <div className="flex flex-wrap gap-2">
- {[
- { label: '+ Лид', href: '/leads/new', bg: '#41546B' },
- { label: '+ Контакт', href: '/contacts/new', bg: '#5C6659' },
- { label: '+ Объект', href: '/properties/new', bg: '#4B6B46' },
- { label: '+ Договор', href: '/contracts/new', bg: '#7A6B3F' },
- { label: '+ Сделка', href: '/deals/new', bg: 'var(--hp-accent)' },
- ].map(a => (
- <Link key={a.href} href={a.href}
- className="px-4 py-2 text-white text-sm font-bold transition-all"
- style={{ background: a.bg }}>
- {a.label}
- </Link>
- ))}
- </div>
- </div>
- </div>
-
  </div>
  )
 }

@@ -42,7 +42,7 @@ export function Header({ unreadCount = 0 }: { user?: User | null; unreadCount?: 
 
   return (
     <header
-      className="h-[68px] flex items-center px-5 gap-4 shrink-0 sticky top-0 z-30 overflow-x-hidden w-full bg-white"
+      className="h-[68px] flex items-center px-5 gap-4 shrink-0 sticky top-0 z-30 w-full bg-white"
       style={{ borderBottom: '1px solid var(--hp-border)' }}
     >
       {/* Search bar */}
