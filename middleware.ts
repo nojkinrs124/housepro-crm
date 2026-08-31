@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const PUBLIC_PATHS = [
+const PUBLIC_PREFIXES = [
   '/login',
   '/forgot-password',
   '/reset-password',
@@ -12,12 +12,30 @@ const PUBLIC_PATHS = [
   '/api/stripe',
   '/c/',
   '/r/', // редирект-сервис для CTA-ссылок Telegram-канала — публичный, без авторизации
+  // ── Публичный маркетинговый сайт «ХаусПро» (src/app/(site)) ──
+  '/catalog',
+  '/uslugi',
+  '/o-kompanii',
+  '/kontakty',
 ]
+
+/**
+ * Пути, которые публичны ТОЛЬКО при точном совпадении.
+ *
+ * Главная страница сайта живёт на '/', и её нельзя добавлять в PUBLIC_PREFIXES:
+ * там проверка через startsWith(), а startsWith('/') истинно для АБСОЛЮТНО
+ * любого пути — это мгновенно сняло бы авторизацию со всей CRM.
+ */
+const PUBLIC_EXACT = new Set([
+  '/',
+  '/sitemap.xml',
+  '/robots.txt',
+])
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  if (PUBLIC_PATHS.some(p => pathname.startsWith(p))) {
+  if (PUBLIC_EXACT.has(pathname) || PUBLIC_PREFIXES.some(p => pathname.startsWith(p))) {
     return NextResponse.next()
   }
 

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { DeletePropertyButton } from '@/features/properties/components/DeletePropertyButton'
 import { AvitoPublishToggle } from '@/features/avito/components/AvitoPublishToggle'
+import { SitePublishToggle } from '@/features/properties/components/SitePublishToggle'
 import {
  ArrowLeft, Home, MapPin, DollarSign, Ruler, Edit,
  Layers, Calendar, Wifi, Droplets, Flame, Car,
@@ -328,6 +329,12 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
  error={p.avito_error}
  syncedAt={p.avito_synced_at}
  eligible={p.status === 'available'}
+ />
+
+ {/* Публичный сайт «ХаусПро» */}
+ <SitePublishToggle
+ propertyId={id}
+ isPublished={!!p.site_publish}
  />
 
  {/* Quick actions */}

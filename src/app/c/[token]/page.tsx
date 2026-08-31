@@ -10,7 +10,7 @@ export default async function PublicCollectionPage({ params }: { params: Promise
  .from('property_collections')
  .select(`id, title, created_at,
  items:collection_items(sort_order, agent_note,
- property:properties(id, title, address, deal_type, price, area_total, rooms, floor, floors_total, description))`)
+ property:properties(id, title, address, deal_type, price, area, rooms, floor, total_floors, description))`)
  .eq('share_token', token)
  .eq('is_public', true)
  .single()
@@ -69,8 +69,8 @@ export default async function PublicCollectionPage({ params }: { params: Promise
  agent_note?: string
  property: {
  id: string; title: string; address?: string; deal_type?: string
- price?: number; area_total?: number; rooms?: number
- floor?: number; floors_total?: number; description?: string
+ price?: number; area?: number; rooms?: number
+ floor?: number; total_floors?: number; description?: string
  }
  }) => {
  const p = item.property
@@ -99,8 +99,8 @@ export default async function PublicCollectionPage({ params }: { params: Promise
 
  <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
  {p.rooms && <span>{p.rooms} комн.</span>}
- {p.area_total && <span>{p.area_total} м²</span>}
- {p.floor && p.floors_total && <span>{p.floor}/{p.floors_total} эт.</span>}
+ {p.area && <span>{p.area} м²</span>}
+ {p.floor && p.total_floors && <span>{p.floor}/{p.total_floors} эт.</span>}
  </div>
 
  {p.price && (

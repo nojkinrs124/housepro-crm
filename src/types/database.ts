@@ -163,6 +163,8 @@ export interface Property {
   updated_at?: string
   owner?: Owner
   manager?: User
+  // Публичный сайт «ХаусПро» — объект виден анонимным посетителям /catalog
+  site_publish?: boolean
   // Авито
   avito_publish?: boolean
   avito_status?: AvitoPropertyStatus | null
