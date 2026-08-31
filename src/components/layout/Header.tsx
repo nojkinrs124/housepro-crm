@@ -6,7 +6,10 @@ import { useEffect, useRef, useState } from 'react'
 import type { User } from '@/types/database'
 import { NotificationBell } from '@/components/layout/NotificationBell'
 
-export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCount?: number }) {
+// Профиль и выход живут внизу сайдбара — в шапке «Кабинета» только поиск,
+// уведомления и «Создать», как в макете. Проп user оставлен в сигнатуре:
+// layout передаёт его, и шапке он ещё понадобится для персональных подсказок.
+export function Header({ unreadCount = 0 }: { user?: User | null; unreadCount?: number }) {
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
   const [query, setQuery] = useState('')
@@ -37,9 +40,6 @@ export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCou
     if (q) router.push(`/search?q=${encodeURIComponent(q)}`)
   }
 
-  const initials = user?.full_name?.charAt(0)?.toUpperCase() ?? 'U'
-  const firstName = user?.full_name?.split(' ')[0] ?? ''
-
   return (
     <header
       className="h-[68px] flex items-center px-5 gap-4 shrink-0 sticky top-0 z-30 overflow-x-hidden w-full bg-white"
@@ -58,7 +58,7 @@ export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCou
             onChange={e => setQuery(e.target.value)}
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
-            placeholder="Поиск по CRM..."
+            placeholder="Поиск: контакт, объект, № сделки"
             className="w-full h-[40px] pl-11 pr-16 text-sm text-foreground placeholder:text-[var(--hp-tertiary)] outline-none transition-colors duration-150"
             style={{
               background: 'var(--hp-surface)',
@@ -85,9 +85,11 @@ export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCou
         <Search style={{ width: 18, height: 18 }} />
       </button>
 
-      <div className="flex-1 sm:hidden" />
+      <div className="flex-1" />
 
       <div className="flex items-center gap-2">
+        <NotificationBell unreadCount={unreadCount} />
+
         {/* Quick create */}
         <div className="relative">
           <button
@@ -141,38 +143,6 @@ export function Header({ user, unreadCount = 0 }: { user: User | null; unreadCou
           )}
         </div>
 
-        {/* Notifications */}
-        <div className="relative w-10 h-10 flex items-center justify-center rounded-[var(--hp-radius)] transition-colors duration-150 hover:bg-[var(--hp-neutral-tint)]">
-          <NotificationBell unreadCount={unreadCount} />
-        </div>
-
-        {/* User avatar */}
-        <a
-          href="/settings/profile"
-          className="flex items-center gap-2.5 pl-1 transition-colors duration-150 group"
-          title={user?.full_name ?? 'Профиль'}
-        >
-          {user?.avatar_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={user.avatar_url}
-              alt="avatar"
-              className="w-[36px] h-[36px] rounded-full object-cover border border-[var(--hp-border)]"
-            />
-          ) : (
-            <div
-              className="w-[36px] h-[36px] rounded-full flex items-center justify-center text-white text-sm font-bold"
-              style={{ background: 'var(--hp-accent)' }}
-            >
-              {initials}
-            </div>
-          )}
-          {firstName && (
-            <span className="hidden lg:block text-sm font-semibold text-[var(--hp-ink)] transition-colors">
-              {firstName}
-            </span>
-          )}
-        </a>
       </div>
     </header>
   )
