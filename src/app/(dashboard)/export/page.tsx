@@ -18,7 +18,7 @@ export default async function ExportPage() {
  url: '/api/export/avito',
  iconBg: 'bg-[var(--hp-info-tint)]',
  iconColor: 'text-[var(--hp-info)]',
- btnBg: 'linear-gradient(135deg, #2563EB, #3B82F6)',
+ btnBg: '#41546B',
  btnShadow: '0 4px 16px rgba(37,99,235,0.3)',
  icon: '',
  docsUrl: 'https://www.avito.ru/help/help/xml_feed',
@@ -168,7 +168,7 @@ export default async function ExportPage() {
  ))}
  </div>
 
- <div className="p-4 flex gap-3" style={{ background: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)', border: '1px solid rgba(59,130,246,0.15)' }}>
+ <div className="p-4 flex gap-3" style={{ background: 'var(--hp-info-tint)', border: '1px solid var(--hp-border)' }}>
  <Lightbulb className="w-5 h-5 text-[var(--hp-info)] shrink-0 mt-0.5" />
  <div>
  <p className="text-[var(--hp-info)] font-semibold text-sm">Авто-обновление</p>

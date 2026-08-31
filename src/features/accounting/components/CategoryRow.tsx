@@ -6,11 +6,12 @@ import { DeleteCategoryButton } from './DeleteCategoryButton'
 import { Lock, Pencil, Check, X } from 'lucide-react'
 import { toast } from 'sonner'
 import type { AccountingCategory } from '@/types/database'
+import { CHART_SERIES } from '@/lib/design/chartColors'
 
-const COLORS = [
- 'var(--hp-accent)', 'var(--hp-accent)', '#4ADE80', '#EF4444', '#F97316',
- '#8B5CF6', '#06B6D4', '#F59E0B', '#DB2777', '#64748B',
-]
+// Палитра цвета статьи — общий ряд системы (см. src/lib/design/chartColors.ts).
+// Раньше здесь был свой набор из десяти ярких хексов, часть из которых
+// после сведения палитры схлопнулась в дубли.
+const COLORS = [...CHART_SERIES]
 
 export function CategoryRow({ category }: { category: AccountingCategory }) {
  const [isEditing, setIsEditing] = useState(false)

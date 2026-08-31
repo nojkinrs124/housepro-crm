@@ -70,10 +70,10 @@ export default async function DashboardPage() {
  .reduce((s, p) => s + Number(p.amount ?? 0), 0)
 
  const funnelStages = [
- { key: 'new', label: 'Новые', color: '#60A5FA', bg: 'rgba(96,165,250,0.12)' },
- { key: 'showing', label: 'Показы', color: '#FBBF24', bg: 'rgba(251,191,36,0.12)' },
- { key: 'negotiation', label: 'Переговоры', color: '#F97316', bg: 'rgba(249,115,22,0.12)' },
- { key: 'contract', label: 'Договор', color: '#A78BFA', bg: 'rgba(167,139,250,0.12)' },
+ { key: 'new', label: 'Новые', color: '#5A6B82', bg: 'rgba(96,165,250,0.12)' },
+ { key: 'showing', label: 'Показы', color: '#9C8B5A', bg: 'rgba(251,191,36,0.12)' },
+ { key: 'negotiation', label: 'Переговоры', color: '#8A6B3F', bg: 'rgba(249,115,22,0.12)' },
+ { key: 'contract', label: 'Договор', color: '#8A9382', bg: 'rgba(167,139,250,0.12)' },
  { key: 'payment', label: 'Оплата', color: '#22D3EE', bg: 'rgba(34,211,238,0.12)' },
  { key: 'completed', label: 'Завершено', color: 'var(--hp-accent)', bg: 'rgba(34,197,94,0.12)' },
  ]
@@ -114,12 +114,12 @@ export default async function DashboardPage() {
  const todayStr = today.toLocaleDateString('ru-RU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
 
  const kpiData = [
- { title: 'Новые лиды', value: newLeadsCount ?? 0, icon: 'Zap', color: '#3B82F6', iconBg: 'rgba(59,130,246,0.1)', href: '/leads', trend: '+12%', trendPos: true },
+ { title: 'Новые лиды', value: newLeadsCount ?? 0, icon: 'Zap', color: '#41546B', iconBg: 'rgba(59,130,246,0.1)', href: '/leads', trend: '+12%', trendPos: true },
  { title: 'Активных сделок', value: activeDealsCount ?? 0, icon: 'TrendingUp', color: 'var(--hp-accent)', iconBg: 'rgba(22,163,74,0.1)', href: '/deals', trend: '+8%', trendPos: true },
- { title: 'Контактов', value: contactsCount ?? 0, icon: 'Users', color: '#8B5CF6', iconBg: 'rgba(139,92,246,0.1)', href: '/contacts', trend: '+5%', trendPos: true },
- { title: 'Своб. объектов', value: propertiesCount ?? 0, icon: 'Home', color: '#10B981', iconBg: 'rgba(16,185,129,0.1)', href: '/properties', trend: '0%', trendPos: null },
- { title: 'Активных догов.', value: contractsCount ?? 0, icon: 'FileText', color: '#F59E0B', iconBg: 'rgba(245,158,11,0.1)', href: '/contracts', trend: '+3%', trendPos: true },
- { title: 'Задач в работе', value: activeTasksCount ?? 0, icon: 'CheckSquare', color: '#EF4444', iconBg: 'rgba(239,68,68,0.1)', href: '/tasks', trend: '-2%', trendPos: false },
+ { title: 'Контактов', value: contactsCount ?? 0, icon: 'Users', color: '#5C6659', iconBg: 'rgba(139,92,246,0.1)', href: '/contacts', trend: '+5%', trendPos: true },
+ { title: 'Своб. объектов', value: propertiesCount ?? 0, icon: 'Home', color: '#4B6B46', iconBg: 'rgba(16,185,129,0.1)', href: '/properties', trend: '0%', trendPos: null },
+ { title: 'Активных догов.', value: contractsCount ?? 0, icon: 'FileText', color: '#7A6B3F', iconBg: 'rgba(245,158,11,0.1)', href: '/contracts', trend: '+3%', trendPos: true },
+ { title: 'Задач в работе', value: activeTasksCount ?? 0, icon: 'CheckSquare', color: '#A24B30', iconBg: 'rgba(239,68,68,0.1)', href: '/tasks', trend: '-2%', trendPos: false },
  ]
 
  return (
@@ -168,7 +168,7 @@ export default async function DashboardPage() {
  <div className="grid grid-cols-2 gap-3 mb-5">
  {/* Paid */}
  <div className="p-4 relative overflow-hidden"
- style={{ background: 'linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%)', border: '1px solid rgba(34,197,94,0.15)' }}>
+ style={{ background: 'var(--hp-good-tint)', border: '1px solid var(--hp-border)' }}>
  <div className="flex items-center gap-2 mb-3">
  <div className="w-8 h-8 flex items-center justify-center bg-white/80">
  <Banknote style={{ width: 15, height: 15, color: 'var(--hp-accent)' }} />
@@ -181,10 +181,10 @@ export default async function DashboardPage() {
  </div>
  {/* Pending */}
  <div className="p-4 relative overflow-hidden"
- style={{ background: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)', border: '1px solid rgba(245,158,11,0.15)' }}>
+ style={{ background: 'var(--hp-warn-tint)', border: '1px solid var(--hp-border)' }}>
  <div className="flex items-center gap-2 mb-3">
  <div className="w-8 h-8 flex items-center justify-center bg-white/80">
- <Wallet style={{ width: 15, height: 15, color: '#F59E0B' }} />
+ <Wallet style={{ width: 15, height: 15, color: '#7A6B3F' }} />
  </div>
  <p className="text-xs font-semibold text-[var(--hp-warn)]">Ожидается</p>
  </div>
@@ -204,7 +204,7 @@ export default async function DashboardPage() {
  {overduePaymentsList!.map(p => (
  <Link key={p.id} href={`/payments/${p.id}/edit`}
  className="flex items-center justify-between px-4 py-3 border transition-all"
- style={{ background: '#FFF5F5', borderColor: 'rgba(239,68,68,0.15)' }}>
+ style={{ background: 'var(--hp-danger-tint)', borderColor: 'var(--hp-border)' }}>
  <div>
  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
  <p className="text-xs font-bold text-foreground">{(p.contract as any)?.contract_number ?? 'Без договора'}</p>
@@ -238,7 +238,7 @@ export default async function DashboardPage() {
  return (
  <div key={stage.key} className="flex items-center gap-3">
  <span className="text-xs font-semibold text-muted-foreground w-24 shrink-0">{stage.label}</span>
- <div className="flex-1 h-8 overflow-hidden" style={{ background: '#F8FAFC' }}>
+ <div className="flex-1 h-8 overflow-hidden" style={{ background: '#FBFBF8' }}>
  <div
  className="h-full flex items-center justify-end pr-3 transition-all duration-700"
  style={{
@@ -368,8 +368,8 @@ export default async function DashboardPage() {
  <div
  className="p-3 border transition-all cursor-pointer"
  style={isOverdue
- ? { background: '#FFF5F5', borderColor: 'rgba(239,68,68,0.2)' }
- : { background: '#F8FAFC', borderColor: 'rgba(214,219,235,0.5)' }}>
+ ? { background: 'var(--hp-danger-tint)', borderColor: 'var(--hp-border)' }
+ : { background: '#FBFBF8', borderColor: 'rgba(214,219,235,0.5)' }}>
  <div className="flex items-start justify-between gap-2">
  <p className="text-sm font-semibold text-foreground leading-snug">{task.title}</p>
  <span className={`text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold shrink-0 flex items-center gap-1 ${pr.bg} ${pr.text}`}>
@@ -413,7 +413,7 @@ export default async function DashboardPage() {
 
  {/* Quick actions */}
  <div className="p-6 relative overflow-hidden"
- style={{ background: 'linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%)', border: '1px solid rgba(34,197,94,0.15)' }}>
+ style={{ background: 'var(--hp-good-tint)', border: '1px solid var(--hp-border)' }}>
  {/* Background decoration */}
  <div className="absolute right-0 top-0 w-48 h-48 opacity-5"
  style={{ background: 'radial-gradient(circle, var(--hp-accent) 0%, transparent 70%)', transform: 'translate(25%, -25%)' }} />
@@ -424,10 +424,10 @@ export default async function DashboardPage() {
  </div>
  <div className="flex flex-wrap gap-2">
  {[
- { label: '+ Лид', href: '/leads/new', bg: '#3B82F6' },
- { label: '+ Контакт', href: '/contacts/new', bg: '#8B5CF6' },
- { label: '+ Объект', href: '/properties/new', bg: '#10B981' },
- { label: '+ Договор', href: '/contracts/new', bg: '#F59E0B' },
+ { label: '+ Лид', href: '/leads/new', bg: '#41546B' },
+ { label: '+ Контакт', href: '/contacts/new', bg: '#5C6659' },
+ { label: '+ Объект', href: '/properties/new', bg: '#4B6B46' },
+ { label: '+ Договор', href: '/contracts/new', bg: '#7A6B3F' },
  { label: '+ Сделка', href: '/deals/new', bg: 'var(--hp-accent)' },
  ].map(a => (
  <Link key={a.href} href={a.href}

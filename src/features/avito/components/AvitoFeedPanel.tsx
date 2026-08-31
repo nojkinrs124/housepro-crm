@@ -92,7 +92,7 @@ export function AvitoFeedPanel({ feedUrl, lastSyncedAt, lastSyncError }: Props) 
  onClick={handleSync}
  disabled={syncLoading}
  className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold text-white transition-all disabled:opacity-60 disabled:hover:translate-y-0 whitespace-nowrap shrink-0"
- style={{ background: 'linear-gradient(135deg, #2563EB, #3B82F6)', }}
+ style={{ background: '#41546B', }}
  >
  {syncLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
  Обновить статус

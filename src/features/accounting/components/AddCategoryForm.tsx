@@ -4,13 +4,14 @@ import { useActionState } from 'react'
 import { createCategoryAction } from '../actions/categories.actions'
 import type { AccountingTransactionType } from '@/types/database'
 import { Plus } from 'lucide-react'
+import { CHART_SERIES } from '@/lib/design/chartColors'
 
 type State = { error?: string; success?: boolean } | null
 
-const COLORS = [
- 'var(--hp-accent)', 'var(--hp-accent)', '#4ADE80', '#EF4444', '#F97316',
- '#8B5CF6', '#06B6D4', '#F59E0B', '#DB2777', '#64748B',
-]
+// Палитра цвета статьи — общий ряд системы (см. src/lib/design/chartColors.ts).
+// Раньше здесь был свой набор из десяти ярких хексов, часть из которых
+// после сведения палитры схлопнулась в дубли.
+const COLORS = [...CHART_SERIES]
 
 export function AddCategoryForm({ defaultType }: { defaultType?: AccountingTransactionType }) {
  const [state, formAction, isPending] = useActionState(createCategoryAction, null)

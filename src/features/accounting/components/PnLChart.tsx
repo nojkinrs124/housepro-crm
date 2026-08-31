@@ -34,16 +34,16 @@ export function PnLChart({ data }: Props) {
   return (
     <ResponsiveContainer width="100%" height={260}>
       <ComposedChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
+        <CartesianGrid strokeDasharray="3 3" stroke="#EAEEE2" vertical={false} />
         <XAxis
           dataKey="month"
-          tick={{ fontSize: 11, fill: '#94A3B8' }}
+          tick={{ fontSize: 11, fill: '#8A9382' }}
           axisLine={false}
           tickLine={false}
         />
         <YAxis
           tickFormatter={fmt}
-          tick={{ fontSize: 11, fill: '#94A3B8' }}
+          tick={{ fontSize: 11, fill: '#8A9382' }}
           axisLine={false}
           tickLine={false}
           width={44}
@@ -55,10 +55,10 @@ export function PnLChart({ data }: Props) {
           ]}
           contentStyle={{
             borderRadius: 12,
-            border: '1px solid #E2E8F0',
+            border: '1px solid #DFE4D6',
             fontSize: 12,
           }}
-          labelStyle={{ fontWeight: 600, color: '#111827', marginBottom: 4 }}
+          labelStyle={{ fontWeight: 600, color: '#232A24', marginBottom: 4 }}
         />
         <Legend
           formatter={(v) => v === 'income' ? 'Доход' : v === 'expense' ? 'Расход' : 'Прибыль'}
@@ -67,13 +67,13 @@ export function PnLChart({ data }: Props) {
           wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
         />
         <Bar dataKey="income"  fill="var(--hp-accent)" radius={[4,4,0,0]} barSize={18} />
-        <Bar dataKey="expense" fill="#F87171" radius={[4,4,0,0]} barSize={18} />
+        <Bar dataKey="expense" fill="#C2705A" radius={[4,4,0,0]} barSize={18} />
         <Line
           type="monotone"
           dataKey="profit"
-          stroke="#7C3AED"
+          stroke="#5C6659"
           strokeWidth={2}
-          dot={{ r: 3, fill: '#7C3AED' }}
+          dot={{ r: 3, fill: '#5C6659' }}
           activeDot={{ r: 5 }}
         />
       </ComposedChart>

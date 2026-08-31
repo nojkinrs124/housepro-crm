@@ -47,7 +47,7 @@ export function CategoryPieChart({ data, title }: Props) {
               </Pie>
               <Tooltip
                 formatter={(v) => [(Number(v) ?? 0).toLocaleString('ru-RU') + ' ₽', '']}
-                contentStyle={{ borderRadius: 10, border: '1px solid #E2E8F0', fontSize: 11 }}
+                contentStyle={{ borderRadius: 10, border: '1px solid #DFE4D6', fontSize: 11 }}
               />
             </PieChart>
           </ResponsiveContainer>

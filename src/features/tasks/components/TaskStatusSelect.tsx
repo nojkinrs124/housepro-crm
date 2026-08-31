@@ -43,14 +43,14 @@ export function TaskStatusSelect({ taskId, currentStatus }: Props) {
  flex items-center gap-2 px-4 py-2 text-sm font-medium border transition-all disabled:opacity-50
  ${currentStatus === s.value
  ? `${s.bg} ${s.border} ${s.color} ring-2 ring-offset-1 ring-current`
- : 'bg-white border-border text-muted-foreground hover:border-[#CBD5E1] hover:bg-background'
+ : 'bg-white border-border text-muted-foreground hover:border-[#DFE4D6] hover:bg-background'
  }
  `}
  >
  {isPending && currentStatus !== s.value ? (
  <Loader2 className="w-3 h-3 animate-spin" />
  ) : (
- <span className={`w-2 h-2 rounded-full ${currentStatus === s.value ? s.dot : 'bg-[#CBD5E1]'}`} />
+ <span className={`w-2 h-2 rounded-full ${currentStatus === s.value ? s.dot : 'bg-[#DFE4D6]'}`} />
  )}
  {s.label}
  </button>

@@ -5,7 +5,7 @@ import { Breadcrumbs, type Crumb } from '@/components/layout/Breadcrumbs'
 
 /**
  * Единый заголовок страницы. Раньше строка
- *   <h1 className="text-[28px] font-bold text-[#111827] tracking-tight leading-tight">
+ *   <h1 className="text-[28px] font-bold text-[#232A24] tracking-tight leading-tight">
  * была вручную скопирована в 15+ файлах (deals, leads, contacts, tasks, dashboard…).
  * Теперь размер/цвет/трекинг заголовка меняется в одном месте.
  *

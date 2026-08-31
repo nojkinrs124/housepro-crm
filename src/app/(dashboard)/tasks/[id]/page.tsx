@@ -82,7 +82,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
  <div className="flex items-start justify-between gap-4">
  <div className="flex items-start gap-4 flex-1 min-w-0">
  <div className="w-12 h-12 flex items-center justify-center shrink-0"
- style={{ background: task.status === 'done' ? 'var(--hp-accent)' : 'linear-gradient(135deg,#2563EB,#3B82F6)', }}>
+ style={{ background: task.status === 'done' ? 'var(--hp-accent)' : '#41546B', }}>
  <CheckSquare style={{ width: 22, height: 22, color: '#fff' }} />
  </div>
  <div className="flex-1 min-w-0">
@@ -136,7 +136,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
  <Link href={`/deals/${(task.deal as { id: string }).id}`}
  className="flex items-center gap-3 p-3 border border-border hover:border-[var(--hp-border)] hover:bg-[var(--hp-info-tint)]/40 transition-all group">
  <div className="w-8 h-8 bg-[var(--hp-info-tint)] flex items-center justify-center">
- <Banknote style={{ width: 16, height: 16, color: '#2563EB' }} />
+ <Banknote style={{ width: 16, height: 16, color: '#41546B' }} />
  </div>
  <div>
  <p className="text-xs text-muted-foreground">Сделка</p>
@@ -152,7 +152,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
  <Link href={`/properties/${(task.property as { id: string }).id}`}
  className="flex items-center gap-3 p-3 border border-border hover:border-[var(--hp-border)] hover:bg-[var(--hp-neutral-tint)]/40 transition-all group">
  <div className="w-8 h-8 bg-[var(--hp-neutral-tint)] flex items-center justify-center">
- <Building2 style={{ width: 16, height: 16, color: '#7C3AED' }} />
+ <Building2 style={{ width: 16, height: 16, color: '#5C6659' }} />
  </div>
  <div className="min-w-0">
  <p className="text-xs text-muted-foreground">Объект</p>
@@ -185,7 +185,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
  <Link href={`/leads/${(task.lead as { id: string }).id}`}
  className="flex items-center gap-3 p-3 border border-border hover:border-[var(--hp-border)] hover:bg-[var(--hp-warn-tint)]/40 transition-all group">
  <div className="w-8 h-8 bg-[var(--hp-warn-tint)] flex items-center justify-center">
- <User style={{ width: 16, height: 16, color: '#EA580C' }} />
+ <User style={{ width: 16, height: 16, color: 'var(--hp-warn)' }} />
  </div>
  <div>
  <p className="text-xs text-muted-foreground">Лид</p>
@@ -229,7 +229,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
  <div className="space-y-2">
  {deadline && (
  <div className={`flex items-center gap-2.5 p-3 border ${isOverdue ? 'bg-[var(--hp-danger-tint)] border-[var(--hp-border)]' : 'bg-background border-border'}`}>
- <Clock style={{ width: 15, height: 15, color: isOverdue ? '#DC2626' : '#64748B', flexShrink: 0 }} />
+ <Clock style={{ width: 15, height: 15, color: isOverdue ? '#A24B30' : '#5C6659', flexShrink: 0 }} />
  <div>
  <p className="text-xs text-muted-foreground">Дедлайн</p>
  <p className={`text-sm font-semibold ${isOverdue ? 'text-[var(--hp-danger)]' : 'text-foreground'}`}>
@@ -239,7 +239,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
  </div>
  )}
  <div className="flex items-center gap-2.5 p-3 bg-background border border-border">
- <Calendar style={{ width: 15, height: 15, color: '#64748B', flexShrink: 0 }} />
+ <Calendar style={{ width: 15, height: 15, color: '#5C6659', flexShrink: 0 }} />
  <div>
  <p className="text-xs text-muted-foreground">Создана</p>
  <p className="text-sm font-medium text-foreground">{formatDateShort(task.created_at)}</p>
@@ -259,7 +259,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
  {/* Actions */}
  <div className="bg-white border border-border p-5 space-y-2">
  <Link href={`/tasks/new?deal_id=${task.deal_id ?? ''}&contract_id=${task.contract_id ?? ''}`}
- className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-[#2563EB] bg-[var(--hp-info-tint)] border border-[var(--hp-border)] hover:bg-[var(--hp-info-tint)] transition-all">
+ className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-[#41546B] bg-[var(--hp-info-tint)] border border-[var(--hp-border)] hover:bg-[var(--hp-info-tint)] transition-all">
  <CheckSquare style={{ width: 15, height: 15 }} />
  Создать похожую
  </Link>

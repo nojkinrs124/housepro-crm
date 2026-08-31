@@ -60,7 +60,7 @@ export default async function NotificationsPage() {
  {!notifications?.length ? (
  <div className="hp-card p-12 text-center" style={{ }}>
  <div className="w-14 h-14 flex items-center justify-center mx-auto mb-4"
- style={{ background: 'linear-gradient(135deg, rgba(22,163,74,0.1), rgba(34,197,94,0.1))' }}>
+ style={{ background: 'var(--hp-accent-tint)' }}>
  <Bell style={{ width: 24, height: 24, color: 'var(--hp-accent)' }} />
  </div>
  <p className="font-bold text-foreground text-base">Уведомлений нет</p>

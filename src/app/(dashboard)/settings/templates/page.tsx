@@ -75,7 +75,7 @@ export default async function TemplatesPage() {
  )}
  </div>
 
- <div className="p-4 flex gap-3" style={{ background: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)', border: '1px solid rgba(59,130,246,0.15)' }}>
+ <div className="p-4 flex gap-3" style={{ background: 'var(--hp-info-tint)', border: '1px solid var(--hp-border)' }}>
  <Lightbulb className="w-5 h-5 text-[var(--hp-info)] shrink-0 mt-0.5" />
  <div>
  <p className="text-[var(--hp-info)] text-sm font-semibold">Как использовать шаблоны</p>

@@ -75,7 +75,7 @@ export function AvitoSettingsForm({ clientId, maskedSecret, avitoUserId, contact
  type="submit"
  disabled={isPending}
  className="flex items-center gap-2 px-5 py-2.5 text-white text-sm font-bold transition-all disabled:opacity-60 disabled:hover:translate-y-0"
- style={{ background: 'linear-gradient(135deg, var(--hp-accent), var(--hp-accent))', }}
+ style={{ background: 'var(--hp-accent)', }}
  >
  {isPending ? 'Сохранение…' : 'Сохранить'}
  </button>

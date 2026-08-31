@@ -88,7 +88,7 @@ export default async function AnalyticsPage({
  ['new', 'showing', 'negotiation', 'contract', 'payment', 'completed'] as const
  ).map((status, i) => ({
  stage: ['Новые', 'Показы', 'Переговоры', 'Договор', 'Оплата', 'Завершено'][i],
- color: ['#60A5FA', '#FBBF24', '#F97316', '#A78BFA', '#22D3EE', 'var(--hp-accent)'][i],
+ color: ['#5A6B82', '#9C8B5A', '#8A6B3F', '#8A9382', '#22D3EE', 'var(--hp-accent)'][i],
  count: deals.filter(d => d.status === status).length,
  }))
 
@@ -110,9 +110,9 @@ export default async function AnalyticsPage({
 
  const dealTypeMap: Record<string, { name: string; color: string }> = {
  rent: { name: 'Аренда', color: 'var(--hp-accent)' },
- sale: { name: 'Продажа', color: '#2563EB' },
- management: { name: 'Управление', color: '#7C3AED' },
- commercial: { name: 'Коммерция', color: '#EA580C' },
+ sale: { name: 'Продажа', color: '#41546B' },
+ management: { name: 'Управление', color: '#5C6659' },
+ commercial: { name: 'Коммерция', color: 'var(--hp-warn)' },
  subrent: { name: 'Субаренда', color: '#0891B2' },
  }
  const dealTypeCounts: Record<string, number> = {}
@@ -124,7 +124,7 @@ export default async function AnalyticsPage({
  .map(([k, v]) => ({
  name: dealTypeMap[k]?.name ?? k,
  value: v,
- color: dealTypeMap[k]?.color ?? '#94A3B8',
+ color: dealTypeMap[k]?.color ?? '#8A9382',
  }))
  .sort((a, b) => b.value - a.value)
 
@@ -254,7 +254,7 @@ export default async function AnalyticsPage({
  <div className="bg-white border border-border p-5">
  <div className="flex items-center gap-2 mb-4">
  <div className="w-7 h-7 bg-[var(--hp-danger-tint)] flex items-center justify-center">
- <AlertTriangle style={{ width: 14, height: 14, color: '#DC2626' }} />
+ <AlertTriangle style={{ width: 14, height: 14, color: '#A24B30' }} />
  </div>
  <h2 className="text-sm font-semibold text-foreground">Просроченные платежи</h2>
  {overduePayments.length > 0 && (
@@ -298,7 +298,7 @@ export default async function AnalyticsPage({
  <div className="bg-white border border-border p-5">
  <div className="flex items-center gap-2 mb-4">
  <div className="w-7 h-7 bg-[var(--hp-warn-tint)] flex items-center justify-center">
- <Clock style={{ width: 14, height: 14, color: '#EA580C' }} />
+ <Clock style={{ width: 14, height: 14, color: 'var(--hp-warn)' }} />
  </div>
  <h2 className="text-sm font-semibold text-foreground">Просроченные задачи</h2>
  {overdueTasks.length > 0 && (

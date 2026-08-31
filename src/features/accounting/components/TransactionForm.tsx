@@ -86,8 +86,8 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
  key={t}
  className="flex items-center gap-3 p-4 border-2 cursor-pointer transition-all has-[:checked]:shadow-sm"
  style={{
- borderColor: type === t ? (t === 'income' ? 'var(--hp-accent)' : '#EF4444') : '#E2E8F0',
- background: type === t ? (t === 'income' ? '#F0FDF4' : '#FEF2F2') : '#FFFFFF',
+ borderColor: type === t ? (t === 'income' ? 'var(--hp-accent)' : '#A24B30') : '#DFE4D6',
+ background: type === t ? (t === 'income' ? 'var(--hp-good-tint)' : 'var(--hp-danger-tint)') : 'var(--hp-surface)',
  }}
  >
  <input

@@ -133,7 +133,7 @@ export async function getCategoryBreakdown(type: AccountingTransactionType, peri
   for (const r of rows) {
     const key  = r.category?.id ?? 'other'
     const name = r.category?.name ?? 'Без категории'
-    const color= r.category?.color ?? '#94A3B8'
+    const color= r.category?.color ?? '#8A9382'
     const entry = map.get(key) ?? { name, color, value: 0 }
     entry.value += Number(r.amount)
     map.set(key, entry)

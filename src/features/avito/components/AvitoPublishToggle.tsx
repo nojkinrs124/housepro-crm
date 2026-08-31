@@ -84,8 +84,8 @@ export function AvitoPublishToggle({ propertyId, isPublished, status, error, syn
  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold transition-all disabled:opacity-60 disabled:hover:translate-y-0"
  style={
  isPublished
- ? { background: '#FFFFFF', border: '1px solid #E2E8F0', color: '#374151', }
- : { background: 'linear-gradient(135deg, #2563EB, #3B82F6)', color: '#fff', }
+ ? { background: '#FFFFFF', border: '1px solid #DFE4D6', color: '#232A24', }
+ : { background: '#41546B', color: '#fff', }
  }
  >
  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Megaphone className="w-4 h-4" />}

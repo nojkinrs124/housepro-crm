@@ -79,7 +79,7 @@ export default async function EmployeesPage() {
  {!employees?.length ? (
  <div className="text-center py-16">
  <div className="w-14 h-14 flex items-center justify-center mx-auto mb-4"
- style={{ background: 'linear-gradient(135deg, rgba(22,163,74,0.1), rgba(34,197,94,0.1))' }}>
+ style={{ background: 'var(--hp-accent-tint)' }}>
  <Users style={{ width: 24, height: 24, color: 'var(--hp-accent)' }} />
  </div>
  <p className="text-foreground font-bold text-base">Сотрудников ещё нет</p>

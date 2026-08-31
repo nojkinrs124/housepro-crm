@@ -19,7 +19,7 @@ export async function createCategoryAction(_prevState: unknown, formData: FormDa
 
   const name  = (formData.get('name') as string)?.trim()
   const type  = formData.get('type') as AccountingTransactionType
-  const color = (formData.get('color') as string) || '#64748B'
+  const color = (formData.get('color') as string) || '#5C6659'
   const icon  = (formData.get('icon') as string) || 'tag'
 
   if (!name) return { error: 'Название обязательно' }
@@ -52,7 +52,7 @@ export async function updateCategoryAction(id: string, formData: FormData) {
   if (cat?.is_system) return { error: 'Системные категории нельзя изменять' }
 
   const name  = (formData.get('name') as string)?.trim()
-  const color = (formData.get('color') as string) || '#64748B'
+  const color = (formData.get('color') as string) || '#5C6659'
   const icon  = (formData.get('icon') as string) || 'tag'
 
   if (!name) return { error: 'Название обязательно' }

@@ -65,19 +65,19 @@ export function DealsAreaChart({ data }: { data: MonthlyDealsData[] }) {
             <stop offset="95%" stopColor="var(--hp-accent)" stopOpacity={0} />
           </linearGradient>
           <linearGradient id="commissionGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#2563EB" stopOpacity={0.2} />
-            <stop offset="95%" stopColor="#2563EB" stopOpacity={0} />
+            <stop offset="5%" stopColor="#41546B" stopOpacity={0.2} />
+            <stop offset="95%" stopColor="#41546B" stopOpacity={0} />
           </linearGradient>
         </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-        <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
-        <YAxis tickFormatter={formatMoneyCompact} tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} width={60} />
+        <CartesianGrid strokeDasharray="3 3" stroke="#EAEEE2" />
+        <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#8A9382' }} axisLine={false} tickLine={false} />
+        <YAxis tickFormatter={formatMoneyCompact} tick={{ fontSize: 11, fill: '#8A9382' }} axisLine={false} tickLine={false} width={60} />
         <Tooltip
-          contentStyle={{ borderRadius: 12, border: '1px solid #E2E8F0', fontSize: 12 }}
+          contentStyle={{ borderRadius: 12, border: '1px solid #DFE4D6', fontSize: 12 }}
           formatter={(v, name) => [moneyTooltip(v as number), name === 'amount' ? 'Сумма сделок' : 'Комиссия']}
         />
         <Area type="monotone" dataKey="amount" stroke="var(--hp-accent)" strokeWidth={2} fill="url(#dealsGrad)" name="amount" />
-        <Area type="monotone" dataKey="commission" stroke="#2563EB" strokeWidth={2} fill="url(#commissionGrad)" name="commission" />
+        <Area type="monotone" dataKey="commission" stroke="#41546B" strokeWidth={2} fill="url(#commissionGrad)" name="commission" />
       </AreaChart>
     </ResponsiveContainer>
   )
@@ -89,11 +89,11 @@ export function DealFunnelChart({ data }: { data: FunnelData[] }) {
   return (
     <ResponsiveContainer width="100%" height={220}>
       <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
-        <XAxis dataKey="stage" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
-        <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
+        <CartesianGrid strokeDasharray="3 3" stroke="#EAEEE2" vertical={false} />
+        <XAxis dataKey="stage" tick={{ fontSize: 11, fill: '#8A9382' }} axisLine={false} tickLine={false} />
+        <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#8A9382' }} axisLine={false} tickLine={false} />
         <Tooltip
-          contentStyle={{ borderRadius: 12, border: '1px solid #E2E8F0', fontSize: 12 }}
+          contentStyle={{ borderRadius: 12, border: '1px solid #DFE4D6', fontSize: 12 }}
           formatter={(v) => [v, 'Сделок']}
         />
         <Bar dataKey="count" radius={[6, 6, 0, 0]}>
@@ -112,12 +112,12 @@ export function LeadsConversionChart({ data }: { data: LeadsConversionData[] }) 
   return (
     <ResponsiveContainer width="100%" height={220}>
       <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
-        <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
-        <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
-        <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #E2E8F0', fontSize: 12 }} />
+        <CartesianGrid strokeDasharray="3 3" stroke="#EAEEE2" vertical={false} />
+        <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#8A9382' }} axisLine={false} tickLine={false} />
+        <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#8A9382' }} axisLine={false} tickLine={false} />
+        <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #DFE4D6', fontSize: 12 }} />
         <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
-        <Bar dataKey="leads" name="Лиды" fill="#93C5FD" radius={[4, 4, 0, 0]} />
+        <Bar dataKey="leads" name="Лиды" fill="#7D8CA0" radius={[4, 4, 0, 0]} />
         <Bar dataKey="converted" name="Конвертировано" fill="var(--hp-accent)" radius={[4, 4, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
@@ -132,18 +132,18 @@ export function PaymentsMonthlyChart({ data }: { data: PaymentMonthlyData[] }) {
   return (
     <ResponsiveContainer width="100%" height={220}>
       <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
-        <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
-        <YAxis tickFormatter={formatMoneyCompact} tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} width={60} />
+        <CartesianGrid strokeDasharray="3 3" stroke="#EAEEE2" vertical={false} />
+        <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#8A9382' }} axisLine={false} tickLine={false} />
+        <YAxis tickFormatter={formatMoneyCompact} tick={{ fontSize: 11, fill: '#8A9382' }} axisLine={false} tickLine={false} width={60} />
         <Tooltip
-          contentStyle={{ borderRadius: 12, border: '1px solid #E2E8F0', fontSize: 12 }}
+          contentStyle={{ borderRadius: 12, border: '1px solid #DFE4D6', fontSize: 12 }}
           formatter={(v, name) => [moneyTooltip(v as number), PAYMENT_LABELS[name as string] ?? name]}
         />
         <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
           formatter={(v) => PAYMENT_LABELS[v] ?? v} />
         <Bar dataKey="paid" fill="var(--hp-accent)" radius={[4, 4, 0, 0]} stackId="a" />
-        <Bar dataKey="pending" fill="#93C5FD" radius={[0, 0, 0, 0]} stackId="a" />
-        <Bar dataKey="overdue" fill="#FCA5A5" radius={[4, 4, 0, 0]} stackId="a" />
+        <Bar dataKey="pending" fill="#7D8CA0" radius={[0, 0, 0, 0]} stackId="a" />
+        <Bar dataKey="overdue" fill="#D19680" radius={[4, 4, 0, 0]} stackId="a" />
       </BarChart>
     </ResponsiveContainer>
   )
@@ -192,7 +192,7 @@ export function DealTypePieChart({ data }: { data: DealTypeData[] }) {
           ))}
         </Pie>
         <Tooltip
-          contentStyle={{ borderRadius: 12, border: '1px solid #E2E8F0', fontSize: 12 }}
+          contentStyle={{ borderRadius: 12, border: '1px solid #DFE4D6', fontSize: 12 }}
           formatter={(v, _name, props) => [v, (props.payload as DealTypeData).name]}
         />
         <Legend wrapperStyle={{ fontSize: 12 }} />

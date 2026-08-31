@@ -253,7 +253,7 @@ export default async function AccountingPage({
  <div className="hidden md:block w-full overflow-x-auto">
  <table className="w-full">
  <thead>
- <tr className="border-b border-[var(--hp-border-soft)]" style={{ background: '#F8FAFC' }}>
+ <tr className="border-b border-[var(--hp-border-soft)]" style={{ background: '#FBFBF8' }}>
  {['Тип', 'Дата', 'Сумма', 'Категория', 'Договор / Сотрудник', 'Статус', ''].map(h => (
  <th key={h} className="text-left px-5 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
  {h}

@@ -15,10 +15,10 @@ const dealLabels: Record<string, string> = {
 }
 const statusConfig: Record<string, { label: string; dot: string; badge: string }> = {
  available: { label: 'Свободен', dot: 'var(--hp-accent)', badge: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]' },
- reserved: { label: 'Забронирован', dot: '#F59E0B', badge: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]' },
- rented: { label: 'Сдан', dot: '#3B82F6', badge: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]' },
- sold: { label: 'Продан', dot: '#94A3B8', badge: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]' },
- inactive: { label: 'Неактивен', dot: '#EF4444', badge: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]' },
+ reserved: { label: 'Забронирован', dot: '#7A6B3F', badge: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]' },
+ rented: { label: 'Сдан', dot: '#41546B', badge: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]' },
+ sold: { label: 'Продан', dot: '#8A9382', badge: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]' },
+ inactive: { label: 'Неактивен', dot: '#A24B30', badge: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]' },
 }
 const dealBadge: Record<string, string> = {
  rent: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]',
@@ -113,7 +113,7 @@ export default async function PropertiesPage({
  className="px-4 py-2 text-sm font-bold transition-all"
  style={!params.deal_type
  ? { background: 'var(--hp-accent)', color: '#fff' }
- : { background: '#F8FAFC', color: '#64748B' }}>
+ : { background: '#FBFBF8', color: '#5C6659' }}>
  Все
  </Link>
  {Object.entries(dealLabels).map(([value, label]) => (
@@ -121,7 +121,7 @@ export default async function PropertiesPage({
  className="px-4 py-2 text-sm font-bold transition-all"
  style={params.deal_type === value
  ? { background: 'var(--hp-accent)', color: '#fff' }
- : { background: '#F8FAFC', color: '#64748B' }}>
+ : { background: '#FBFBF8', color: '#5C6659' }}>
  {label}
  </Link>
  ))}
@@ -133,7 +133,7 @@ export default async function PropertiesPage({
  className="px-3 py-2 text-xs font-bold transition-all flex items-center gap-1.5"
  style={!params.status
  ? { background: '#1E293B', color: '#fff' }
- : { background: '#F8FAFC', color: '#64748B' }}>
+ : { background: '#FBFBF8', color: '#5C6659' }}>
  Любой статус
  </Link>
  {Object.entries(statusConfig).map(([value, cfg]) => (
@@ -141,7 +141,7 @@ export default async function PropertiesPage({
  className="px-3 py-2 text-xs font-bold transition-all flex items-center gap-1.5"
  style={params.status === value
  ? { background: '#1E293B', color: '#fff' }
- : { background: '#F8FAFC', color: '#64748B' }}>
+ : { background: '#FBFBF8', color: '#5C6659' }}>
  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: cfg.dot }} />
  {cfg.label}
  </Link>
@@ -158,8 +158,8 @@ export default async function PropertiesPage({
  <Link key={opt.label} href={buildHref({ avito: opt.value })}
  className="px-3 py-2 text-xs font-bold transition-all flex items-center gap-1.5"
  style={params.avito === opt.value || (!params.avito && !opt.value)
- ? { background: 'linear-gradient(135deg, #2563EB, #3B82F6)', color: '#fff' }
- : { background: '#F8FAFC', color: '#64748B' }}>
+ ? { background: '#41546B', color: '#fff' }
+ : { background: '#FBFBF8', color: '#5C6659' }}>
  <Megaphone style={{ width: 12, height: 12 }} />
  {opt.label}
  </Link>
@@ -204,7 +204,7 @@ export default async function PropertiesPage({
  <div className="hp-card text-center py-24"
  style={{ }}>
  <div className="w-16 h-16 flex items-center justify-center mx-auto mb-4"
- style={{ background: 'linear-gradient(135deg, rgba(22,163,74,0.1), rgba(34,197,94,0.1))' }}>
+ style={{ background: 'var(--hp-accent-tint)' }}>
  <Home style={{ width: 28, height: 28, color: 'var(--hp-accent)' }} />
  </div>
  <p className="text-foreground font-bold text-lg">Нет объектов</p>
@@ -248,7 +248,7 @@ export default async function PropertiesPage({
  {/* Deal type */}
  <div className="absolute top-3 right-3">
  <span className="px-3 py-1.5 rounded-[var(--hp-radius-badge)] text-[11px] font-bold backdrop-blur-md"
- style={{ background: 'rgba(255,255,255,0.92)', color: '#374151' }}>
+ style={{ background: 'rgba(255,255,255,0.92)', color: '#232A24' }}>
  {dealLabels[property.deal_type] ?? property.deal_type}
  </span>
  </div>
@@ -278,7 +278,7 @@ export default async function PropertiesPage({
  </h3>
  {property.address && (
  <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-3">
- <MapPin style={{ width: 12, height: 12, flexShrink: 0, color: '#94A3B8' }} />
+ <MapPin style={{ width: 12, height: 12, flexShrink: 0, color: '#8A9382' }} />
  <span className="truncate font-medium">{property.address}</span>
  </div>
  )}
@@ -286,7 +286,7 @@ export default async function PropertiesPage({
  {property.area && (
  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
  <div className="w-6 h-6 bg-[var(--hp-neutral-tint)] flex items-center justify-center">
- <Maximize2 style={{ width: 11, height: 11, color: '#94A3B8' }} />
+ <Maximize2 style={{ width: 11, height: 11, color: '#8A9382' }} />
  </div>
  <span className="font-semibold text-[var(--hp-ink)]">{property.area}</span>
  <span className="text-[var(--hp-tertiary)]">м²</span>
@@ -295,7 +295,7 @@ export default async function PropertiesPage({
  {property.rooms && (
  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
  <div className="w-6 h-6 bg-[var(--hp-neutral-tint)] flex items-center justify-center">
- <DoorOpen style={{ width: 11, height: 11, color: '#94A3B8' }} />
+ <DoorOpen style={{ width: 11, height: 11, color: '#8A9382' }} />
  </div>
  <span className="font-semibold text-[var(--hp-ink)]">{property.rooms}</span>
  <span className="text-[var(--hp-tertiary)]">комн.</span>
@@ -359,7 +359,7 @@ export default async function PropertiesPage({
 
  {property.address && (
  <div className="flex items-center gap-1 mt-1">
- <MapPin style={{ width: 11, height: 11, color: '#94A3B8', flexShrink: 0 }} />
+ <MapPin style={{ width: 11, height: 11, color: '#8A9382', flexShrink: 0 }} />
  <p className="text-xs text-muted-foreground truncate">{property.address}</p>
  </div>
  )}
