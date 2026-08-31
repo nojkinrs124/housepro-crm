@@ -1,11 +1,16 @@
 import type { Metadata } from 'next'
-import { Check, KeyRound, Building2, ShieldCheck } from 'lucide-react'
+import { Check, KeyRound, Building2, ShieldCheck, Search, Handshake, Scale } from 'lucide-react'
 import { LeadForm } from '@/features/site/components/LeadForm'
 
 export const metadata: Metadata = {
   title: 'Тарифы для собственников — ХаусПро, Красноярск',
   description:
     'Три тарифа сдачи квартиры в аренду: разовый подбор нанимателя, ежемесячное управление и управление с полной защитой. Что входит в каждый тариф и сколько это стоит.',
+}
+
+interface FeatureGroup {
+  label?: string
+  items: string[]
 }
 
 interface Tariff {
@@ -17,10 +22,23 @@ interface Tariff {
   priceValue: string
   priceNote: string
   badge?: string
-  includesFrom?: string
-  features: string[]
+  groups: FeatureGroup[]
   highlighted?: boolean
 }
+
+// Тариф 2 хранится отдельно, чтобы его полный список можно было буквально
+// подставить в тариф 3 (по просьбе: «Премиум» показывает весь набор
+// «Управления», а не только ссылку на него).
+const UPRAVLENIE_FEATURES = [
+  'Смена арендаторов: заселение и выселение',
+  'Плановая проверка состояния квартиры',
+  'Поиск нового арендатора при смене нанимателя',
+  'Генеральная уборка между нанимателями',
+  'Мелкий ремонт за наш счёт — до 5 000 ₽ (смесители, электрика и подобное)',
+  'Полная отчётность по сдаче',
+  'Стабильные переводы арендной платы собственнику',
+  'Решение любых вопросов по квартире и с арендаторами',
+]
 
 const TARIFFS: Tariff[] = [
   {
@@ -32,13 +50,17 @@ const TARIFFS: Tariff[] = [
     priceValue: '25%',
     priceNote: 'от суммы сделки, разово при заселении',
     badge: 'Первая сделка — бесплатно',
-    features: [
-      'Размещение рекламы объекта на площадках',
-      'Поиск потенциальных арендаторов',
-      'Проверка арендатора по всем доступным базам',
-      'Гарантия надёжности арендатора',
-      'Подготовка документов: договор, акт и сопутствующие бумаги',
-      'Заселение арендатора, передача ключей',
+    groups: [
+      {
+        items: [
+          'Размещение рекламы объекта на площадках',
+          'Поиск потенциальных арендаторов',
+          'Проверка арендатора по всем доступным базам',
+          'Гарантия надёжности арендатора',
+          'Подготовка документов: договор, акт и сопутствующие бумаги',
+          'Заселение арендатора, передача ключей',
+        ],
+      },
     ],
   },
   {
@@ -49,17 +71,9 @@ const TARIFFS: Tariff[] = [
     lead: 'Вы получаете деньги за аренду, мы занимаемся квартирой и арендаторами.',
     priceValue: '10%',
     priceNote: 'от ежемесячного платежа',
-    includesFrom: 'Всё из тарифа «Агент», плюс:',
     highlighted: true,
-    features: [
-      'Смена арендаторов: заселение и выселение',
-      'Плановая проверка состояния квартиры',
-      'Поиск нового арендатора при смене нанимателя',
-      'Генеральная уборка между нанимателями',
-      'Мелкий ремонт за наш счёт — до 5 000 ₽ (смесители, электрика и подобное)',
-      'Полная отчётность по сдаче',
-      'Стабильные переводы арендной платы собственнику',
-      'Решение любых вопросов по квартире и с арендаторами',
+    groups: [
+      { label: 'Всё из тарифа «Агент», плюс:', items: UPRAVLENIE_FEATURES },
     ],
   },
   {
@@ -70,14 +84,51 @@ const TARIFFS: Tariff[] = [
     lead: 'Максимальная защита объекта — вы не думаете о квартире вообще.',
     priceValue: '15%',
     priceNote: 'от ежемесячного платежа',
-    includesFrom: 'Всё из тарифа «Управление», плюс:',
-    features: [
-      'Полная страховка квартиры — затопление, порча имущества и другие риски',
-      'Все вопросы с управляющей компанией берём на себя',
-      'Выезд на объект для решения проблем в любое время, включая ночь и выходные',
-      'Персональный менеджер на связи 24/7',
-      'Ежегодный пересмотр ставки аренды по рынку, чтобы доход не отставал от рынка',
+    groups: [
+      { label: 'Из тарифа «Управление»:', items: UPRAVLENIE_FEATURES },
+      {
+        label: 'Дополнительно в «Управление Премиум»:',
+        items: [
+          'Полная страховка квартиры — затопление, порча имущества и другие риски',
+          'Все вопросы с управляющей компанией берём на себя',
+          'Выезд на объект для решения проблем в любое время, включая ночь и выходные',
+          'Персональный менеджер на связи 24/7',
+          'Ежегодный пересмотр ставки аренды по рынку, чтобы доход не отставал от рынка',
+        ],
+      },
     ],
+  },
+]
+
+interface OtherService {
+  Icon: typeof Search
+  slug: string
+  title: string
+  lead: string
+  price: string
+}
+
+const OTHER_SERVICES: OtherService[] = [
+  {
+    Icon: Search,
+    slug: 'snyat',
+    title: 'Снять квартиру',
+    lead: 'Подбор жилья под ваш бюджет и район, включая варианты, которых нет в открытом доступе.',
+    price: 'Комиссия обсуждается до начала подбора и фиксируется в договоре.',
+  },
+  {
+    Icon: Handshake,
+    slug: 'prodazha',
+    title: 'Продажа и покупка',
+    lead: 'Сопровождение сделки купли-продажи: от оценки и подготовки до регистрации перехода права.',
+    price: 'Стоимость зависит от объекта, называется до подписания договора.',
+  },
+  {
+    Icon: Scale,
+    slug: 'soprovozhdenie',
+    title: 'Юридическое сопровождение сделки',
+    lead: 'Объект вы нашли сами, но не хотите подписывать документы вслепую — берём на себя правовую часть.',
+    price: 'Фиксированная стоимость за сделку, известна заранее.',
   },
 ]
 
@@ -99,7 +150,7 @@ export default function ServicesPage() {
       </header>
 
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
-        {TARIFFS.map(({ Icon, slug, eyebrow, title, lead, priceValue, priceNote, badge, includesFrom, features, highlighted }) => (
+        {TARIFFS.map(({ Icon, slug, eyebrow, title, lead, priceValue, priceNote, badge, groups, highlighted }) => (
           <section
             key={slug}
             id={slug}
@@ -154,20 +205,24 @@ export default function ServicesPage() {
               </div>
             </div>
 
-            <div className="mt-5 flex-1">
-              {includesFrom && (
-                <p className="text-[12.5px] font-semibold mb-3" style={{ color: 'var(--hp-accent)' }}>
-                  {includesFrom}
-                </p>
-              )}
-              <ul className="space-y-2.5">
-                {features.map(item => (
-                  <li key={item} className="flex items-start gap-2.5 text-[13.5px] leading-relaxed" style={{ color: 'var(--hp-ink)' }}>
-                    <Check style={{ width: 15, height: 15, marginTop: 2, color: 'var(--hp-accent)', flexShrink: 0 }} />
-                    <span className="break-words">{item}</span>
-                  </li>
-                ))}
-              </ul>
+            <div className="mt-5 flex-1 space-y-4">
+              {groups.map((group, i) => (
+                <div key={group.label ?? i}>
+                  {group.label && (
+                    <p className="text-[12.5px] font-semibold mb-2.5" style={{ color: 'var(--hp-accent)' }}>
+                      {group.label}
+                    </p>
+                  )}
+                  <ul className="space-y-2.5">
+                    {group.items.map(item => (
+                      <li key={item} className="flex items-start gap-2.5 text-[13.5px] leading-relaxed" style={{ color: 'var(--hp-ink)' }}>
+                        <Check style={{ width: 15, height: 15, marginTop: 2, color: 'var(--hp-accent)', flexShrink: 0 }} />
+                        <span className="break-words">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
             </div>
 
             <a
@@ -178,6 +233,58 @@ export default function ServicesPage() {
             </a>
           </section>
         ))}
+      </div>
+
+      <div className="mt-12">
+        <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
+          Другие услуги
+        </h2>
+        <p className="mt-2 text-[14px] leading-relaxed max-w-[640px]" style={{ color: 'var(--hp-sub)' }}>
+          Если вы не сдаёте, а ищете квартиру, продаёте, покупаете или просто хотите проверить
+          сделку — этим тоже занимаемся.
+        </p>
+
+        <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-4 items-stretch">
+          {OTHER_SERVICES.map(({ Icon, slug, title, lead, price }) => (
+            <section
+              key={slug}
+              id={slug}
+              className="p-4 sm:p-5 flex flex-col h-full scroll-mt-20 border"
+              style={{
+                background: 'var(--hp-surface)',
+                borderColor: 'var(--hp-border)',
+                borderRadius: 'var(--hp-radius)',
+              }}
+            >
+              <div
+                className="w-9 h-9 flex items-center justify-center shrink-0 border"
+                style={{
+                  background: 'var(--hp-neutral-tint)',
+                  borderColor: 'var(--hp-border)',
+                  borderRadius: 'var(--hp-radius)',
+                }}
+              >
+                <Icon style={{ width: 16, height: 16, color: 'var(--hp-ink)' }} />
+              </div>
+
+              <h3 className="mt-3 text-[16px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
+                {title}
+              </h3>
+              <p className="mt-1.5 text-[13.5px] leading-relaxed flex-1" style={{ color: 'var(--hp-sub)' }}>
+                {lead}
+              </p>
+              <p className="mt-3 pt-3 text-[12.5px] leading-relaxed border-t" style={{ borderColor: 'var(--hp-border-soft)', color: 'var(--hp-tertiary)' }}>
+                {price}
+              </p>
+              <a
+                href="#zayavka"
+                className="hp-btn-secondary justify-center mt-4"
+              >
+                Оставить заявку
+              </a>
+            </section>
+          ))}
+        </div>
       </div>
 
       <section
