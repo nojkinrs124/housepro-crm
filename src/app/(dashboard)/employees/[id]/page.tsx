@@ -72,15 +72,15 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
  subtitle={
  <>
  <span className="flex items-center gap-2 flex-wrap">
- <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${roleColors[emp.role] ?? 'bg-gray-100'}`}>
+ <span className={`text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium shrink-0 ${roleColors[emp.role] ?? 'bg-gray-100'}`}>
  {roleLabels[emp.role] ?? emp.role}
  </span>
  {emp.is_active ? (
- <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium bg-green-100 text-green-700 shrink-0">
+ <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium bg-green-100 text-green-700 shrink-0">
  <CheckCircle className="w-3 h-3" /> Активен
  </span>
  ) : (
- <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium bg-red-100 text-red-600 shrink-0">
+ <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium bg-red-100 text-red-600 shrink-0">
  <XCircle className="w-3 h-3" /> Неактивен
  </span>
  )}

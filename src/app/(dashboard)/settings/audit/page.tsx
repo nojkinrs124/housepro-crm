@@ -103,7 +103,7 @@ export default async function AuditLogPage() {
  </div>
  </td>
  <td className="px-4 py-3">
- <span className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full ${actionMeta.color}`}>
+ <span className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-[var(--hp-radius-badge)] ${actionMeta.color}`}>
  {actionMeta.label}
  </span>
  </td>

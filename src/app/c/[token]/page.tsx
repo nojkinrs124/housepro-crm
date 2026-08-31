@@ -84,7 +84,7 @@ export default async function PublicCollectionPage({ params }: { params: Promise
 
  <div className="p-5 space-y-3">
  {p.deal_type && (
- <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+ <span className="text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] bg-primary/10 text-primary font-medium">
  {DEAL_LABELS[p.deal_type] ?? p.deal_type}
  </span>
  )}

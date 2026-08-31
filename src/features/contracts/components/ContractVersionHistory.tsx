@@ -44,7 +44,7 @@ export function ContractVersionHistory({ contractId, versions }: Props) {
  <div className="flex items-center gap-2 text-sm font-medium text-foreground">
  <History className="w-4 h-4 text-muted-foreground" />
  История версий
- <span className="ml-1 px-1.5 py-0.5 text-xs font-semibold bg-slate-200 text-[var(--hp-sub)] rounded-full">
+ <span className="ml-1 px-1.5 py-0.5 text-xs font-semibold bg-slate-200 text-[var(--hp-sub)] rounded-[var(--hp-radius-badge)]">
  {versions.length}
  </span>
  </div>

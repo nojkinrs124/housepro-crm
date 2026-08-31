@@ -43,7 +43,7 @@ export async function PaymentsSection({ contractId }: { contractId: string }) {
  <CreditCard className="w-4 h-4 text-muted-foreground" />
  <h2 className="font-semibold text-foreground">Платежи</h2>
  {rows.length > 0 && (
- <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+ <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-[var(--hp-radius-badge)]">
  {rows.length}
  </span>
  )}
@@ -79,7 +79,7 @@ export async function PaymentsSection({ contractId }: { contractId: string }) {
  <div className="flex-1 min-w-0">
  <div className="flex items-center gap-2">
  <p className="text-sm font-semibold text-foreground">{fmt(Number(t.amount))}</p>
- <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${sc.className}`}>
+ <span className={`text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-medium ${sc.className}`}>
  {sc.label}
  </span>
  </div>

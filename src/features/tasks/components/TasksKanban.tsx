@@ -96,7 +96,7 @@ export function TasksKanbanBoard({ tasks: initialTasks }: { tasks: any[] }) {
  <CheckSquare className="w-4 h-4 text-muted-foreground" />
  <span className="font-semibold text-foreground text-sm">{col.label}</span>
  </div>
- <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${col.badge}`}>
+ <span className={`text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-medium ${col.badge}`}>
  {colTasks.length}
  </span>
  </div>
@@ -126,7 +126,7 @@ export function TasksKanbanBoard({ tasks: initialTasks }: { tasks: any[] }) {
  {task.title}
  </Link>
  {task.priority && (
- <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${priorityColors[task.priority]}`}>
+ <span className={`text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-medium shrink-0 ${priorityColors[task.priority]}`}>
  {priorityLabels[task.priority]}
  </span>
  )}

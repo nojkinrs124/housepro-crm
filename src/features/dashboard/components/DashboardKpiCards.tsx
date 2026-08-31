@@ -58,7 +58,7 @@ export function DashboardKpiCards({ cards }: { cards: KpiCard[] }) {
  >
  {Icon && <Icon style={{ width: 20, height: 20, color: card.color }} />}
  </motion.div>
- <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${trendClass}`}>
+ <span className={`text-[10px] font-bold px-2 py-0.5 rounded-[var(--hp-radius-badge)] ${trendClass}`}>
  {card.trend}
  </span>
  </div>

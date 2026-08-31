@@ -260,7 +260,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
  Стадия сделки двигается автоматически: создание договора, формирование DOCX и оплата продвигают её сами.
  </p>
  </div>
- <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-emerald-100 text-emerald-700 shrink-0 whitespace-nowrap">
+ <span className="text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium bg-emerald-100 text-emerald-700 shrink-0 whitespace-nowrap">
  {dealStageLabels[deal.status ?? ''] ?? deal.status}
  </span>
  </div>
@@ -345,7 +345,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
  <div className="space-y-3 text-sm">
  <div className="flex justify-between">
  <span className="text-muted-foreground">Статус</span>
- <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[contract.status]}`}>
+ <span className={`text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-medium ${statusColors[contract.status]}`}>
  {statusLabels[contract.status]}
  </span>
  </div>

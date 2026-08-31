@@ -239,7 +239,7 @@ export default async function PropertiesPage({
  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
  {/* Status */}
  <div className="absolute top-3 left-3">
- <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold backdrop-blur-md"
+ <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--hp-radius-badge)] text-[11px] font-bold backdrop-blur-md"
  style={{ background: 'rgba(255,255,255,0.92)', color: status.dot === 'var(--hp-accent)' ? 'var(--hp-accent)' : status.dot }}>
  <span className="w-2 h-2 rounded-full" style={{ background: status.dot }} />
  {status.label}
@@ -247,7 +247,7 @@ export default async function PropertiesPage({
  </div>
  {/* Deal type */}
  <div className="absolute top-3 right-3">
- <span className="px-3 py-1.5 rounded-full text-[11px] font-bold backdrop-blur-md"
+ <span className="px-3 py-1.5 rounded-[var(--hp-radius-badge)] text-[11px] font-bold backdrop-blur-md"
  style={{ background: 'rgba(255,255,255,0.92)', color: '#374151' }}>
  {dealLabels[property.deal_type] ?? property.deal_type}
  </span>
@@ -265,7 +265,7 @@ export default async function PropertiesPage({
  )}
  {/* Type chip */}
  <div className="absolute bottom-3 right-3">
- <span className="px-2.5 py-1 rounded-full text-[10px] font-bold text-white/90 backdrop-blur-sm"
+ <span className="px-2.5 py-1 rounded-[var(--hp-radius-badge)] text-[10px] font-bold text-white/90 backdrop-blur-sm"
  style={{ background: 'rgba(0,0,0,0.35)' }}>
  {typeLabels[property.property_type] ?? property.property_type}
  </span>
@@ -367,16 +367,16 @@ export default async function PropertiesPage({
  {/* Tags row */}
  <div className="flex items-center gap-2 mt-2 flex-wrap">
  {/* Status */}
- <span className={`inline-flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-full font-bold ${status.badge}`}>
+ <span className={`inline-flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold ${status.badge}`}>
  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: status.dot }} />
  {status.label}
  </span>
  {/* Deal type */}
- <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${dealBadge[property.deal_type] ?? 'bg-slate-100 text-[var(--hp-sub)]'}`}>
+ <span className={`text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold ${dealBadge[property.deal_type] ?? 'bg-slate-100 text-[var(--hp-sub)]'}`}>
  {dealLabels[property.deal_type] ?? property.deal_type}
  </span>
  {/* Property type */}
- <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-100 text-[var(--hp-sub)]">
+ <span className="text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold bg-slate-100 text-[var(--hp-sub)]">
  {typeLabels[property.property_type] ?? property.property_type}
  </span>
  {/* Area */}

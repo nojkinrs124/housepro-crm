@@ -236,7 +236,7 @@ export default async function AccountingPage({
  >
  {transactions.length === 0 ? (
  <div className="py-16 text-center">
- <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+ <div className="w-12 h-12 rounded-[var(--hp-radius)] bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)] flex items-center justify-center mx-auto mb-3">
  <DollarSign style={{ width: 20, height: 20 }} className="text-[var(--hp-tertiary)]" />
  </div>
  <p className="text-[var(--hp-ink)] font-semibold">Транзакций нет</p>
@@ -316,7 +316,7 @@ export default async function AccountingPage({
  {!t.contract && !t.employee && <span className="text-xs text-[var(--hp-tertiary)]">—</span>}
  </td>
  <td className="px-5 py-3.5">
- <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${sc.cls}`}>
+ <span className={`text-xs font-semibold px-2.5 py-1 rounded-[var(--hp-radius-badge)] ${sc.cls}`}>
  {sc.label}
  </span>
  </td>
@@ -364,7 +364,7 @@ export default async function AccountingPage({
  </p>
  </div>
  <div className="flex items-center gap-2 flex-wrap ml-6">
- <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${sc.cls}`}>{sc.label}</span>
+ <span className={`text-xs font-semibold px-2 py-0.5 rounded-[var(--hp-radius-badge)] ${sc.cls}`}>{sc.label}</span>
  {t.category && (
  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
  <span className="w-1.5 h-1.5 rounded-full" style={{ background: t.category.color }} />

@@ -11,7 +11,7 @@ export function ShowingStatusBadge({ status }: { status: string }) {
   const cfg = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG]
     ?? { label: status, color: 'bg-gray-100 text-gray-600' }
   return (
-    <span className={`inline-flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full ${cfg.color}`}>
+    <span className={`inline-flex items-center text-xs font-medium px-2.5 py-0.5 rounded-[var(--hp-radius-badge)] ${cfg.color}`}>
       {cfg.label}
     </span>
   )

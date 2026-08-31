@@ -22,7 +22,7 @@ export function NotificationBell({ unreadCount }: { unreadCount: number }) {
 
       {unreadCount > 0 && (
         <span
-          className="flex items-center justify-center text-white text-[11px] font-bold leading-none rounded-full min-w-[18px] h-[18px] px-1.5 max-md:absolute max-md:-top-1.5 max-md:-right-1.5"
+          className="flex items-center justify-center text-white text-[11px] font-bold leading-none rounded-[var(--hp-radius-badge)] min-w-[18px] h-[18px] px-1.5 max-md:absolute max-md:-top-1.5 max-md:-right-1.5"
           style={{ background: 'var(--hp-danger)' }}
         >
           {unreadCount > 99 ? '99+' : unreadCount}

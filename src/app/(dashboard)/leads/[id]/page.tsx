@@ -92,14 +92,14 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
  }
  subtitle={
  <span className="flex items-center gap-2 flex-wrap">
- <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${statusColors[lead.status] ?? 'bg-gray-100'}`}>
+ <span className={`text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium ${statusColors[lead.status] ?? 'bg-gray-100'}`}>
  {statusLabels[lead.status] ?? lead.status}
  </span>
  {lead.source && (
  <span className="text-xs text-muted-foreground">{sourceLabels[lead.source] ?? lead.source}</span>
  )}
  {isOverdue && (
- <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium bg-red-100 text-red-700 animate-pulse">
+ <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium bg-red-100 text-red-700 animate-pulse">
  <AlertTriangle className="w-3 h-3" />
  Просрочен контакт
  </span>

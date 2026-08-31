@@ -118,11 +118,11 @@ export default async function EmployeesPage() {
  <p className="font-semibold text-foreground group-hover:text-[var(--hp-accent)] transition-colors text-sm truncate max-w-[200px] sm:max-w-none">
  {emp.full_name}
  </p>
- <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ${roleColors[emp.role] ?? 'bg-gray-100'}`}>
+ <span className={`text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold shrink-0 ${roleColors[emp.role] ?? 'bg-gray-100'}`}>
  {roleLabels[emp.role] ?? emp.role}
  </span>
  {!emp.is_active && (
- <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-red-100 text-red-600 shrink-0">
+ <span className="text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold bg-red-100 text-red-600 shrink-0">
  Неактивен
  </span>
  )}

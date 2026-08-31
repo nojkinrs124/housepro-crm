@@ -271,7 +271,7 @@ export default async function DashboardPage() {
  </div>
  {!recentContacts?.length ? (
  <div className="text-center py-8">
- <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-3">
+ <div className="w-12 h-12 rounded-[var(--hp-radius)] bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)] flex items-center justify-center mx-auto mb-3">
  <Users style={{ width: 20, height: 20 }} className="text-slate-300" />
  </div>
  <p className="text-sm text-muted-foreground">Нет контактов</p>
@@ -292,7 +292,7 @@ export default async function DashboardPage() {
  <p className="text-xs text-muted-foreground">{roleLabels[c.role] ?? c.role}</p>
  </div>
  </div>
- <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ${contactStatusColors[c.status] ?? 'bg-slate-50 text-[var(--hp-sub)]'}`}>
+ <span className={`text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold shrink-0 ${contactStatusColors[c.status] ?? 'bg-slate-50 text-[var(--hp-sub)]'}`}>
  {contactStatusLabels[c.status] ?? c.status}
  </span>
  </Link>
@@ -311,7 +311,7 @@ export default async function DashboardPage() {
  </div>
  {!recentDeals?.length ? (
  <div className="text-center py-8">
- <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-3">
+ <div className="w-12 h-12 rounded-[var(--hp-radius)] bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)] flex items-center justify-center mx-auto mb-3">
  <TrendingUp style={{ width: 20, height: 20 }} className="text-slate-300" />
  </div>
  <p className="text-sm text-muted-foreground">Нет сделок</p>
@@ -330,7 +330,7 @@ export default async function DashboardPage() {
  <p className="text-xs text-muted-foreground truncate">{clientName ?? new Date(d.created_at).toLocaleDateString('ru-RU')}</p>
  </div>
  <div className="shrink-0 text-right">
- <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold block ${dealStatusColors[d.status] ?? 'bg-gray-50'}`}>
+ <span className={`text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold block ${dealStatusColors[d.status] ?? 'bg-gray-50'}`}>
  {dealStatusLabels[d.status] ?? d.status}
  </span>
  {d.amount && <p className="text-xs text-muted-foreground mt-0.5 font-medium">{Number(d.amount).toLocaleString('ru-RU')} ₽</p>}
@@ -352,7 +352,7 @@ export default async function DashboardPage() {
  </div>
  {!myTasks?.length ? (
  <div className="text-center py-8">
- <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-3">
+ <div className="w-12 h-12 rounded-[var(--hp-radius)] bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)] flex items-center justify-center mx-auto mb-3">
  <CheckSquare style={{ width: 20, height: 20 }} className="text-slate-300" />
  </div>
  <p className="text-sm text-muted-foreground">Нет активных задач</p>
@@ -372,7 +372,7 @@ export default async function DashboardPage() {
  : { background: '#F8FAFC', borderColor: 'rgba(214,219,235,0.5)' }}>
  <div className="flex items-start justify-between gap-2">
  <p className="text-sm font-semibold text-foreground leading-snug">{task.title}</p>
- <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 flex items-center gap-1 ${pr.bg} ${pr.text}`}>
+ <span className={`text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold shrink-0 flex items-center gap-1 ${pr.bg} ${pr.text}`}>
  <span className={`w-1.5 h-1.5 rounded-full ${pr.dot}`} />
  {priorityLabels[task.priority] ?? task.priority}
  </span>

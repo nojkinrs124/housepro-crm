@@ -86,7 +86,7 @@ export default async function BillingPage({
  <div>
  <div className="flex items-center gap-2">
  <span className="text-xl font-bold">{PLAN_LABELS[currentPlan]}</span>
- <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+ <span className={`text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-medium ${
  org?.subscription_status === 'active' ? 'bg-emerald-50 text-emerald-600' :
  org?.subscription_status === 'past_due' ? 'bg-red-50 text-red-600' :
  'bg-slate-100 text-[var(--hp-sub)]'
@@ -123,7 +123,7 @@ export default async function BillingPage({
  }`}
  >
  {'popular' in plan && plan.popular && (
- <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-primary text-white text-xs font-bold rounded-full">
+ <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-primary text-white text-xs font-bold rounded-[var(--hp-radius-badge)]">
  Популярный
  </div>
  )}

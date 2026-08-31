@@ -99,7 +99,7 @@ export function LeadsKanban({ leads: initialLeads }: { leads: any[] }) {
  {/* Column header */}
  <div className="p-4 border-b border-border flex items-center justify-between">
  <span className="font-semibold text-foreground text-sm">{col.label}</span>
- <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${col.badge}`}>
+ <span className={`text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-medium ${col.badge}`}>
  {colLeads.length}
  </span>
  </div>

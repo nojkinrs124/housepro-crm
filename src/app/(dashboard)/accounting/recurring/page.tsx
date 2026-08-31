@@ -57,7 +57,7 @@ export default async function RecurringPage() {
  className="hp-card py-16 text-center"
  style={{ }}
  >
- <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+ <div className="w-12 h-12 rounded-[var(--hp-radius)] bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)] flex items-center justify-center mx-auto mb-3">
  <RefreshCw style={{ width: 20, height: 20 }} className="text-[var(--hp-tertiary)]" />
  </div>
  <p className="text-[var(--hp-ink)] font-semibold">Нет периодических операций</p>

@@ -56,7 +56,7 @@ export async function FilesSection({
  <div className="flex items-center justify-between">
  <h2 className="font-semibold text-foreground">{title}</h2>
  {files && files.length > 0 && (
- <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+ <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-[var(--hp-radius-badge)]">
  {files.length}
  </span>
  )}

@@ -129,7 +129,7 @@ export function ProfileForm({ user }: { user: UserType }) {
  <div>
  <h2 className="text-lg font-semibold text-foreground">{user.full_name}</h2>
  <p className="text-sm text-muted-foreground">{user.email}</p>
- <span className={`inline-block mt-2 text-xs px-2.5 py-1 rounded-full font-medium ${roleColors[user.role] ?? 'bg-gray-100 text-gray-600'}`}>
+ <span className={`inline-block mt-2 text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium ${roleColors[user.role] ?? 'bg-gray-100 text-gray-600'}`}>
  {roleLabels[user.role] ?? user.role}
  </span>
  </div>

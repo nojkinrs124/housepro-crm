@@ -101,7 +101,7 @@ export function LeadsListView({ leads }: { leads: any[] }) {
  </td>
  <td className="px-5 py-3.5">
  {lead.deal_type ? (
- <span className={`inline-block text-xs px-2.5 py-1 rounded-full font-medium ${dealTypeColors[lead.deal_type] ?? 'bg-gray-100 text-gray-600'}`}>
+ <span className={`inline-block text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium ${dealTypeColors[lead.deal_type] ?? 'bg-gray-100 text-gray-600'}`}>
  {dealTypeLabels[lead.deal_type] ?? lead.deal_type}
  </span>
  ) : (
@@ -114,7 +114,7 @@ export function LeadsListView({ leads }: { leads: any[] }) {
  </span>
  </td>
  <td className="px-5 py-3.5">
- <span className={`inline-block text-xs px-2.5 py-1 rounded-full font-medium border ${statusColors[lead.status] ?? 'bg-gray-50 text-gray-500 border-gray-200'}`}>
+ <span className={`inline-block text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium border ${statusColors[lead.status] ?? 'bg-gray-50 text-gray-500 border-gray-200'}`}>
  {statusLabels[lead.status] ?? lead.status}
  </span>
  </td>
@@ -149,7 +149,7 @@ export function LeadsListView({ leads }: { leads: any[] }) {
  <Link key={lead.id} href={`/leads/${lead.id}`} className="block p-4 hover:bg-[var(--hp-neutral-tint)] transition-colors">
  <div className="flex items-center justify-between gap-2 mb-2">
  <span className="text-sm font-semibold text-foreground truncate min-w-0 flex-1">{lead.full_name || '—'}</span>
- <span className={`text-xs px-2 py-0.5 rounded-full font-medium border whitespace-nowrap shrink-0 ${statusColors[lead.status] ?? 'bg-gray-50 text-gray-500 border-gray-200'}`}>
+ <span className={`text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-medium border whitespace-nowrap shrink-0 ${statusColors[lead.status] ?? 'bg-gray-50 text-gray-500 border-gray-200'}`}>
  {statusLabels[lead.status] ?? lead.status}
  </span>
  </div>
@@ -161,7 +161,7 @@ export function LeadsListView({ leads }: { leads: any[] }) {
  )}
  <div className="flex items-center gap-2 mt-2 flex-wrap">
  {lead.deal_type && (
- <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${dealTypeColors[lead.deal_type] ?? 'bg-gray-100 text-gray-600'}`}>
+ <span className={`text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-medium ${dealTypeColors[lead.deal_type] ?? 'bg-gray-100 text-gray-600'}`}>
  {dealTypeLabels[lead.deal_type] ?? lead.deal_type}
  </span>
  )}

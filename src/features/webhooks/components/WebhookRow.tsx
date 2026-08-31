@@ -48,7 +48,7 @@ export function WebhookRow({ id, url, events, isActive }: Props) {
  <div className="font-mono text-sm text-foreground truncate">{url}</div>
  <div className="flex flex-wrap gap-1.5 mt-1.5">
  {events.map(e => (
- <span key={e} className="text-xs px-1.5 py-0.5 bg-slate-100 text-[var(--hp-sub)] rounded-full">
+ <span key={e} className="text-xs px-1.5 py-0.5 bg-slate-100 text-[var(--hp-sub)] rounded-[var(--hp-radius-badge)]">
  {EVENT_LABELS[e] ?? e}
  </span>
  ))}

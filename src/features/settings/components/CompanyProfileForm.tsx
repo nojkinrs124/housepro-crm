@@ -375,7 +375,7 @@ export function CompanyProfileForm({ mode, profile, action, isFirstProfile }: Co
  {isPending ? 'Сохранение...' : mode === 'create' ? 'Создать профиль' : 'Сохранить'}
  </button>
  {profile?.is_default && (
- <span className="flex items-center gap-1.5 text-xs font-medium text-amber-600 bg-amber-50 px-3 py-1.5 rounded-full">
+ <span className="flex items-center gap-1.5 text-xs font-medium text-amber-600 bg-amber-50 px-3 py-1.5 rounded-[var(--hp-radius-badge)]">
  <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
  Профиль по умолчанию
  </span>

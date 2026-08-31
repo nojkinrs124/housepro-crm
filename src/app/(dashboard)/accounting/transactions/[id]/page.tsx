@@ -110,7 +110,7 @@ export default async function TransactionDetailPage({
  style={{ }}
  >
  <h2 className="font-bold text-foreground text-[15px] mb-3">Статус</h2>
- <span className={`text-sm font-semibold px-3 py-1.5 rounded-full ${sc.cls}`}>{sc.label}</span>
+ <span className={`text-sm font-semibold px-3 py-1.5 rounded-[var(--hp-radius-badge)] ${sc.cls}`}>{sc.label}</span>
  </div>
 
  {t.category && (

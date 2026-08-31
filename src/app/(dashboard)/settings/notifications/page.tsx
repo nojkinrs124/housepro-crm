@@ -74,7 +74,7 @@ export default async function NotificationsPage() {
  const Inner = (
  <div className={`flex items-start gap-4 px-5 py-4 hover:bg-background transition-all duration-200 ${!n.is_read ? 'bg-green-50/30' : ''}`}>
  <div className="shrink-0 mt-0.5">
- <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${typeColors[n.type] ?? 'bg-gray-100 text-gray-600'}`}>
+ <span className={`text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold ${typeColors[n.type] ?? 'bg-gray-100 text-gray-600'}`}>
  {typeLabels[n.type] ?? n.type}
  </span>
  </div>

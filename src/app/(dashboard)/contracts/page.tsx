@@ -108,7 +108,7 @@ export default async function ContractsPage({
  <div className="hp-card overflow-hidden">
  {!contracts || contracts.length === 0 ? (
  <div className="text-center py-16">
- <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+ <div className="w-12 h-12 rounded-[var(--hp-radius)] bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)] flex items-center justify-center mx-auto mb-3">
  <FileText style={{ width: 20, height: 20 }} className="text-[var(--hp-tertiary)]" />
  </div>
  <p className="text-[var(--hp-ink)] font-semibold">
@@ -165,7 +165,7 @@ export default async function ContractsPage({
  {contract.amount ? `${Number(contract.amount).toLocaleString('ru-RU')} ₽` : '—'}
  </td>
  <td className="px-4 py-4">
- <span className={`flex items-center gap-1.5 w-fit text-[11px] font-semibold px-2.5 py-1 rounded-full ${sc.cls}`}>
+ <span className={`flex items-center gap-1.5 w-fit text-[11px] font-semibold px-2.5 py-1 rounded-[var(--hp-radius-badge)] ${sc.cls}`}>
  <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />
  {sc.label}
  </span>
@@ -215,7 +215,7 @@ export default async function ContractsPage({
  <p className="text-xs text-muted-foreground">{contractTypeLabels[contract.contract_type] ?? contract.contract_type}</p>
  </div>
  </div>
- <span className={`shrink-0 flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${sc.cls}`}>
+ <span className={`shrink-0 flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-[var(--hp-radius-badge)] ${sc.cls}`}>
  <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />
  {sc.label}
  </span>

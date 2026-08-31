@@ -104,13 +104,13 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
  icon={<Home className="w-7 h-7 text-emerald-600" />}
  subtitle={
  <span className="flex items-center gap-2 flex-wrap">
- <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground font-medium">
+ <span className="text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] bg-muted text-muted-foreground font-medium">
  {typeLabels[p.property_type] ?? p.property_type}
  </span>
- <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">
+ <span className="text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] bg-blue-100 text-blue-700 font-medium">
  {dealLabels[p.deal_type] ?? p.deal_type}
  </span>
- <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[p.status] ?? 'bg-gray-100 text-gray-600'}`}>
+ <span className={`text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-medium ${statusColors[p.status] ?? 'bg-gray-100 text-gray-600'}`}>
  {statusLabels[p.status] ?? p.status}
  </span>
  </span>

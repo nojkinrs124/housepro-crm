@@ -262,7 +262,7 @@ export default async function AnalyticsPage({
  </div>
  <h2 className="text-sm font-semibold text-foreground">Просроченные платежи</h2>
  {overduePayments.length > 0 && (
- <span className="ml-auto text-xs font-semibold bg-red-100 text-red-700 px-2 py-0.5 rounded-full">
+ <span className="ml-auto text-xs font-semibold bg-red-100 text-red-700 px-2 py-0.5 rounded-[var(--hp-radius-badge)]">
  {overduePayments.length}
  </span>
  )}
@@ -306,7 +306,7 @@ export default async function AnalyticsPage({
  </div>
  <h2 className="text-sm font-semibold text-foreground">Просроченные задачи</h2>
  {overdueTasks.length > 0 && (
- <span className="ml-auto text-xs font-semibold bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
+ <span className="ml-auto text-xs font-semibold bg-orange-100 text-orange-700 px-2 py-0.5 rounded-[var(--hp-radius-badge)]">
  {overdueTasks.length}
  </span>
  )}
@@ -335,7 +335,7 @@ export default async function AnalyticsPage({
  Просрочена на {daysOverdue} дн.
  </p>
  </div>
- <span className={`shrink-0 ml-2 text-xs font-medium px-2 py-0.5 rounded-full ${priorityBadge[t.priority ?? 'medium']}`}>
+ <span className={`shrink-0 ml-2 text-xs font-medium px-2 py-0.5 rounded-[var(--hp-radius-badge)] ${priorityBadge[t.priority ?? 'medium']}`}>
  {priorityLabel[t.priority ?? 'medium']}
  </span>
  </a>

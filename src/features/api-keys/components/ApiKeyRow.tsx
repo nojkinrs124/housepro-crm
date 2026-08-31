@@ -44,7 +44,7 @@ export function ApiKeyRow({ id, name, keyPrefix, scopes, isActive, lastUsedAt, c
  <div className="flex items-center gap-2">
  <span className="font-medium text-foreground">{name}</span>
  {!isActive && (
- <span className="text-xs px-1.5 py-0.5 bg-slate-100 text-[var(--hp-sub)] rounded-full">Отозван</span>
+ <span className="text-xs px-1.5 py-0.5 bg-slate-100 text-[var(--hp-sub)] rounded-[var(--hp-radius-badge)]">Отозван</span>
  )}
  </div>
  <div className="text-xs text-muted-foreground font-mono mt-0.5">{keyPrefix}…</div>

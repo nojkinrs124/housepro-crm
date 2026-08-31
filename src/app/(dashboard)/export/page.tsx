@@ -160,7 +160,7 @@ export default async function ExportPage() {
  <div className="space-y-3">
  {steps.map((step, i) => (
  <div key={step} className="flex items-start gap-3">
- <span className="w-5 h-5 rounded-full bg-slate-100 text-muted-foreground text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+ <span className="w-5 h-5 rounded-[var(--hp-radius)] bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)] text-muted-foreground text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
  {i + 1}
  </span>
  <p className="text-sm text-[var(--hp-ink)] leading-relaxed">{step}</p>

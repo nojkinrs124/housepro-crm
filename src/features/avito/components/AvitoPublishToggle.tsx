@@ -55,7 +55,7 @@ export function AvitoPublishToggle({ propertyId, isPublished, status, error, syn
  </div>
 
  {isPublished && ui && Icon && (
- <span className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium ${ui.className}`}>
+ <span className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium ${ui.className}`}>
  <Icon className="w-3 h-3" />
  {ui.label}
  </span>
