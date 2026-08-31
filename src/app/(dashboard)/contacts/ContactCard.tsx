@@ -34,7 +34,7 @@ export function ContactCard({ contact }: ContactCardProps) {
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <div
-              className="w-11 h-11 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0"
+              className="w-11 h-11 rounded-[var(--hp-radius)] flex items-center justify-center text-white font-bold text-sm shrink-0"
               style={{ background: 'var(--hp-accent)' }}
             >
               {initials}

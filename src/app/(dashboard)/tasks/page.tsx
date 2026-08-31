@@ -57,7 +57,7 @@ export default async function TasksPage() {
 
  {total === 0 ? (
  <div className="p-16 text-center bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100">
- <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mx-auto mb-4">
+ <div className="w-16 h-16 rounded-[var(--hp-radius)] bg-white flex items-center justify-center mx-auto mb-4">
  <CheckSquare style={{ width: 24, height: 24 }} className="text-green-600" />
  </div>
  <h3 className="font-bold text-foreground text-lg">Нет задач</h3>

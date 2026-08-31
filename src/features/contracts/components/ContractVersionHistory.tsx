@@ -62,7 +62,7 @@ export function ContractVersionHistory({ contractId, versions }: Props) {
  className="flex items-start justify-between gap-4 px-5 py-3.5 text-sm hover:bg-[var(--hp-neutral-tint)]/40 transition-colors"
  >
  <div className="flex items-start gap-3">
- <div className="mt-0.5 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+ <div className="mt-0.5 w-6 h-6 rounded-[var(--hp-radius)] bg-primary/10 flex items-center justify-center flex-shrink-0">
  <span className="text-xs font-bold text-primary">{v.version}</span>
  </div>
  <div>

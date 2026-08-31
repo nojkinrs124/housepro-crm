@@ -82,7 +82,7 @@ export default async function GenerateContractPage({
  ? 'bg-yellow-50 border border-yellow-100'
  : 'bg-red-50 border border-red-100'
  }`}>
- <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
+ <div className={`w-4 h-4 rounded-[var(--hp-radius)] flex items-center justify-center shrink-0 mt-0.5 ${
  field.ok ? 'bg-green-500' : field.warn ? 'bg-yellow-400' : 'bg-red-400'
  }`}>
  <CheckCircle2 className="w-3 h-3 text-white" />

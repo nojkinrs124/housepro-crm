@@ -83,7 +83,7 @@ export function LeadsListView({ leads }: { leads: any[] }) {
  >
  <td className="px-5 py-3.5">
  <div className="flex items-center gap-2">
- <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center shrink-0">
+ <div className="w-7 h-7 rounded-[var(--hp-radius)] bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center shrink-0">
  <User className="w-3.5 h-3.5 text-white" />
  </div>
  <span className="text-sm font-semibold text-foreground truncate max-w-[180px]">{lead.full_name || '—'}</span>

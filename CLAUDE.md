@@ -318,7 +318,8 @@ const data: Contact = {}
 >
 > **01.09.2026 — сквозной проход по всему проекту.** Итоговая форма — палитра и
 > шрифты 1c «Кабинет» + прямые углы и прямоугольные бейджи 1b «Инженерный реестр»:
-> радиус в системе один и равен 0, круглыми остаются только аватары и точки-статусы.
+> радиус в системе один и равен 0, аватары тоже квадратные — круглыми остались
+> только цветные точки-статусы, полоски прогресса и спиннеры.
 > Кодмодом по 109 файлам сняты тени (`shadow-*`, инлайновые `boxShadow`),
 > `hover:-translate-y`, хардкод `#16A34A`/`#22C55E` и slate-палитра; алиас
 > `--hp-gradient-primary` удалён за ненадобностью. Модули `deals` и `contacts`
@@ -396,7 +397,7 @@ arbitrary-классы (`text-[var(--hp-ink)]`), а не повторно хар
 
 **Правила карточек:**
 - Радиус: 0 на всём. Токены `--hp-radius` / `--hp-radius-sm` / `--hp-radius-badge` оставлены как точки настройки — не хардкодить `rounded-*`
-- Круглыми (`rounded-full`) остаются только аватары и точки-статусы: это намеренная форма, а не контейнер
+- Круглым остаётся только то, что кругом является по смыслу: цветная точка-статус, полоска прогресса, спиннер. Аватары — квадратные, как в макете
 - Padding: `p-5` (стандарт) — одинаково на всех страницах
 - Border: `border border-[var(--hp-border)]` — **это и есть форма карточки**, тень не добавлять
 - Hover (если карточка кликабельна): `hover:border-[var(--hp-sub)]` — граница темнеет, ничего не поднимается и не светится
@@ -831,8 +832,8 @@ export default async function ModuleDetailPage() {
   <Icon style={{ width: 20, height: 20, color: 'var(--hp-ink)' }} />
 </div>
 
-// Аватар-инициал — плоский акцент, без градиента
-<div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-white text-sm font-bold"
+// Аватар-инициал — квадратная плашка, плоский акцент, без градиента
+<div className="w-10 h-10 rounded-[var(--hp-radius)] flex items-center justify-center shrink-0 text-white text-sm font-bold"
   style={{ background: 'var(--hp-accent)' }}>
   {name?.charAt(0)?.toUpperCase() ?? '?'}
 </div>
@@ -934,7 +935,7 @@ className="hover:-translate-y-0.5 hover:shadow-lg"
 - [ ] Поля форм — `h-10 px-4 rounded-[var(--hp-radius)] border border-[var(--hp-border)] focus:border-[var(--hp-ink)]` (не `ring`)
 - [ ] Секции «лейбл/значение» на детальных страницах — `.hp-block` + `.hp-block-row`, не мини-карточки на поле
 - [ ] Бейджи — `.hp-badge hp-badge-{good|warn|info|danger|neutral}`, `hp-danger` — только для тревожного (не для «неактивный»)
-- [ ] Радиус везде один — `0`; `rounded-full` только на аватарах и точках-статусах
+- [ ] Радиус везде один — `0`, аватары тоже квадратные; `rounded-full` только на точках-статусах, полосках прогресса и спиннерах
 - [ ] Нет `font-mono`/IBM Plex Mono в новом коде — числа набираются обычным интерфейсным шрифтом
 - [ ] Сетки — `grid-cols-1 sm:grid-cols-N` (НЕ `grid-cols-N` без breakpoint)
 - [ ] Шапка detail — `flex flex-col sm:flex-row sm:justify-between gap-4`

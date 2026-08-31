@@ -33,7 +33,7 @@ export default async function SettingsPage() {
  style={{ }}
  >
  <div
- className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center shrink-0 text-white text-base font-bold"
+ className="w-12 h-12 rounded-[var(--hp-radius)] overflow-hidden flex items-center justify-center shrink-0 text-white text-base font-bold"
  style={{ background: 'var(--hp-accent)', }}
  >
  {avatarUrl ? (

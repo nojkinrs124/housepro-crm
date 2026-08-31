@@ -126,7 +126,7 @@ export function OnboardingWizard({ orgId, orgName: initialName, userId, employee
  const active = step === s.id
  return (
  <div key={s.id} className="flex items-center flex-1">
- <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${
+ <div className={`w-8 h-8 rounded-[var(--hp-radius)] flex items-center justify-center flex-shrink-0 transition-all ${
  done ? 'bg-primary text-white' :
  active ? 'bg-primary/10 border-2 border-primary text-primary' :
  'bg-slate-100 text-[var(--hp-tertiary)]'

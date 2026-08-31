@@ -143,7 +143,7 @@ export function TasksKanbanBoard({ tasks: initialTasks }: { tasks: any[] }) {
  )}
  {task.assignee?.full_name && (
  <div className="flex items-center gap-1 text-xs text-muted-foreground ml-auto">
- <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+ <div className="w-4 h-4 rounded-[var(--hp-radius)] bg-primary/20 flex items-center justify-center shrink-0">
  <span className="text-primary text-[9px] font-bold">
  {task.assignee.full_name.charAt(0).toUpperCase()}
  </span>

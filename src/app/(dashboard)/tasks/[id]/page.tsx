@@ -210,7 +210,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
  <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Исполнитель</h2>
  {(task.assignee as { full_name?: string; email?: string; role?: string } | null) ? (
  <div className="flex items-center gap-3">
- <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-sm font-bold">
+ <div className="w-10 h-10 rounded-[var(--hp-radius)] bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-sm font-bold">
  {(task.assignee as { full_name: string }).full_name.charAt(0).toUpperCase()}
  </div>
  <div>

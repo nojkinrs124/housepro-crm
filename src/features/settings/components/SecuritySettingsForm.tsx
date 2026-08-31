@@ -35,7 +35,7 @@ function PasswordStrength({ password }: { password: string }) {
  <div className="flex items-center gap-2">
  <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
  <div
- className={`h-full rounded-full transition-all duration-300 ${barColor}`}
+ className={`h-full rounded-[var(--hp-radius)] transition-all duration-300 ${barColor}`}
  style={{ width: barWidth }}
  />
  </div>

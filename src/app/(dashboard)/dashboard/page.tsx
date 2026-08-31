@@ -283,7 +283,7 @@ export default async function DashboardPage() {
  <Link key={c.id} href={`/contacts/${c.id}`}
  className="flex items-center justify-between p-2.5 hover:bg-background transition-colors group">
  <div className="flex items-center gap-2.5 min-w-0">
- <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-white text-xs font-bold"
+ <div className="w-8 h-8 rounded-[var(--hp-radius)] flex items-center justify-center shrink-0 text-white text-xs font-bold"
  style={{ background: 'var(--hp-accent)' }}>
  {c.full_name?.charAt(0)?.toUpperCase()}
  </div>

@@ -30,7 +30,7 @@ export default function DealsLoading() {
  <div className="flex items-center justify-between px-1">
  <div className="flex items-center gap-2">
  <div className="h-4 w-24 bg-gray-200" />
- <div className="h-5 w-6 bg-gray-100 rounded-full" />
+ <div className="h-5 w-6 bg-gray-100 rounded-[var(--hp-radius)]" />
  </div>
  <div className="h-4 w-16 bg-gray-100" />
  </div>
@@ -44,14 +44,14 @@ export default function DealsLoading() {
  >
  <div className="flex items-start justify-between gap-2">
  <div className="h-5 w-6 bg-gray-200" />
- <div className="h-5 w-16 bg-gray-100 rounded-full" />
+ <div className="h-5 w-16 bg-gray-100 rounded-[var(--hp-radius)]" />
  </div>
  <div className="space-y-1.5">
  <div className="h-4 w-full bg-gray-200" />
  <div className="h-3 w-3/4 bg-gray-100" />
  </div>
  <div className="flex items-center gap-2 pt-1">
- <div className="h-6 w-6 bg-gray-200 rounded-full" />
+ <div className="h-6 w-6 bg-gray-200 rounded-[var(--hp-radius)]" />
  <div className="h-3 w-20 bg-gray-100" />
  </div>
  </div>

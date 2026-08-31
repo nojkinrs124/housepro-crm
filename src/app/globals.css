@@ -6,8 +6,9 @@
    «КАБИНЕТ» — визуальная система HousePro (v3.1, 01.09.2026)
    Тёплая шалфейно-моховая палитра направления 1c + прямые углы и
    прямоугольные бейджи направления 1b («Инженерный реестр»), ноль теней.
-   Радиус в системе один — 0. Круглыми остаются только аватары и
-   точки-статусы: это намеренная форма, а не контейнер.
+   Радиус в системе один — 0, включая аватары: инициалы живут в квадратной
+   плашке, как в макете. Круглыми остаются только цветные точки-статусы,
+   полоски прогресса и спиннеры — это форма по смыслу, а не контейнер.
    Source Serif 4 (заголовки) + Source Sans 3 (интерфейс) — пара из
    суперсемьи Adobe «Source», обе поддерживают кириллицу.
    Структура «блоков» (секция с капс-заголовком + линованные строки
@@ -515,7 +516,7 @@ button.hp-stage:hover:not(.current) { background: var(--hp-accent-tint); color: 
 .hp-chip:hover { border-color: var(--hp-sub); color: var(--hp-ink); }
 .hp-chip.active { background: var(--hp-accent-tint); border-color: var(--hp-accent-tint); color: var(--hp-ink); }
 
-/* ── Аватар-инициал — плоский акцент ── */
+/* ── Аватар-инициал — квадратная плашка с плоским акцентом ── */
 .hp-avatar {
   display: flex;
   align-items: center;
@@ -523,7 +524,7 @@ button.hp-stage:hover:not(.current) { background: var(--hp-accent-tint); color: 
   flex-shrink: 0;
   width: 34px;
   height: 34px;
-  border-radius: 999px;
+  border-radius: var(--hp-radius);
   background: var(--hp-accent-tint);
   color: var(--hp-accent);
   font-size: 12px;

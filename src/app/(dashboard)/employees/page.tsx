@@ -106,7 +106,7 @@ export default async function EmployeesPage() {
  >
  {/* Avatar */}
  <div
- className="w-11 h-11 rounded-full flex items-center justify-center shrink-0 text-white text-sm font-bold"
+ className="w-11 h-11 rounded-[var(--hp-radius)] flex items-center justify-center shrink-0 text-white text-sm font-bold"
  style={{ background: 'var(--hp-accent)', }}
  >
  {emp.full_name?.charAt(0)?.toUpperCase() ?? '?'}

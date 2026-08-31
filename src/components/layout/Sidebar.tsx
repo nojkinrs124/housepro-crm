@@ -38,13 +38,6 @@ const roleLabels: Record<string, string> = {
 /* Роли — монохромные бейджи с hairline-границей, без цветных заливок:
    единственный цвет в системе — семантика статусов (good/warn/danger),
    роль сотрудника статусом не является. */
-const roleColorsLight: Record<string, string> = {
-  admin:      'bg-[var(--hp-neutral-tint)] text-[var(--hp-ink)] border border-[var(--hp-border)]',
-  manager:    'bg-[var(--hp-neutral-tint)] text-[var(--hp-ink)] border border-[var(--hp-border)]',
-  agent:      'bg-[var(--hp-neutral-tint)] text-[var(--hp-ink)] border border-[var(--hp-border)]',
-  accountant: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-ink)] border border-[var(--hp-border)]',
-}
-
 const bottomNav = [
   { name: 'Дашборд',  href: '/dashboard',  icon: LayoutDashboard },
   { name: 'Лиды',     href: '/leads',      icon: Zap },
@@ -157,11 +150,11 @@ function SidebarContent({
                 <img
                   src={user.avatar_url}
                   alt={user.full_name || 'User'}
-                  className="w-9 h-9 rounded-full object-cover shrink-0 border border-[var(--hp-border)]"
+                  className="w-9 h-9 rounded-[var(--hp-radius)] object-cover shrink-0 border border-[var(--hp-border)]"
                 />
               ) : (
                 <div
-                  className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-white text-sm font-bold"
+                  className="w-9 h-9 rounded-[var(--hp-radius)] flex items-center justify-center shrink-0 text-white text-sm font-bold"
                   style={{ background: 'var(--hp-accent)' }}
                 >
                   {user?.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
@@ -171,12 +164,9 @@ function SidebarContent({
                 <p className="text-sm font-semibold truncate leading-tight text-[var(--hp-ink)]">
                   {user?.full_name ?? 'Сотрудник'}
                 </p>
-                <span className={cn(
-                  'inline-block text-[10px] px-2 py-0.5 rounded-[var(--hp-radius)] font-semibold mt-0.5',
-                  roleColorsLight[user?.role ?? 'agent']
-                )}>
+                <p className="text-[11.5px] text-[var(--hp-sub)] truncate mt-0.5">
                   {roleLabels[user?.role ?? 'agent']}
-                </span>
+                </p>
               </div>
             </Link>
             <form action={logout}>
@@ -192,7 +182,7 @@ function SidebarContent({
         ) : (
           <div className="py-2 px-2">
             <div
-              className="w-8 h-8 rounded-full flex items-center justify-center mx-auto text-white text-xs font-bold mb-2"
+              className="w-8 h-8 rounded-[var(--hp-radius)] flex items-center justify-center mx-auto text-white text-xs font-bold mb-2"
               style={{ background: 'var(--hp-accent)' }}
             >
               {user?.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
@@ -371,7 +361,7 @@ export function Sidebar({ user }: { user: User | null }) {
       {/* Collapse toggle */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-3.5 top-[88px] w-7 h-7 flex items-center justify-center rounded-full text-[var(--hp-sub)] hover:text-[var(--hp-ink)] transition-colors z-10 bg-white border border-[var(--hp-border)]"
+        className="absolute -right-3.5 top-[88px] w-7 h-7 flex items-center justify-center rounded-[var(--hp-radius)] text-[var(--hp-sub)] hover:text-[var(--hp-ink)] transition-colors z-10 bg-white border border-[var(--hp-border)]"
       >
         {collapsed ? <ChevronRight style={{ width: 13, height: 13 }} /> : <ChevronLeft style={{ width: 13, height: 13 }} />}
       </button>

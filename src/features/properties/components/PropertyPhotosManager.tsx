@@ -103,7 +103,7 @@ export function PropertyPhotosManager({ propertyId, initialPhotos }: Props) {
  onClick={() => handleMakeCover(url)}
  disabled={busyUrl === url}
  title="Сделать обложкой"
- className="w-7 h-7 rounded-full bg-white/90 flex items-center justify-center hover:bg-white transition disabled:opacity-50"
+ className="w-7 h-7 rounded-[var(--hp-radius)] bg-white/90 flex items-center justify-center hover:bg-white transition disabled:opacity-50"
  >
  {busyUrl === url ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Star className="w-3.5 h-3.5 text-amber-600" />}
  </button>
@@ -113,7 +113,7 @@ export function PropertyPhotosManager({ propertyId, initialPhotos }: Props) {
  onClick={() => handleDelete(url)}
  disabled={busyUrl === url}
  title="Удалить"
- className="w-7 h-7 rounded-full bg-white/90 flex items-center justify-center hover:bg-white transition disabled:opacity-50"
+ className="w-7 h-7 rounded-[var(--hp-radius)] bg-white/90 flex items-center justify-center hover:bg-white transition disabled:opacity-50"
  >
  {busyUrl === url ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <X className="w-3.5 h-3.5 text-red-600" />}
  </button>
