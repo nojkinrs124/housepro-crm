@@ -28,7 +28,7 @@ export function TemplateUploadForm() {
  }
 
  return (
- <div className="bg-white border border-slate-100 shadow-sm p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className="font-semibold text-foreground flex items-center gap-2">
  <Upload className="w-4 h-4" />
  Загрузить шаблон
@@ -39,12 +39,12 @@ export function TemplateUploadForm() {
  <div className="space-y-1.5">
  <label className="text-sm font-medium text-foreground">Название шаблона</label>
  <input name="name" required placeholder="Договор аренды 2024"
- className="w-full h-10 px-4 border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all" />
+ className="w-full h-10 px-4 border border-input bg-background text-foreground text-sm outline-none focus:border-[var(--hp-ink)] transition-all" />
  </div>
  <div className="space-y-1.5">
  <label className="text-sm font-medium text-foreground">Тип договора</label>
  <select name="template_type" required defaultValue=""
- className="w-full h-10 px-4 border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer">
+ className="w-full h-10 px-4 border border-input bg-background text-foreground text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer">
  <option value="" disabled>Выберите тип</option>
  {typeOptions.map(o => (
  <option key={o.value} value={o.value}>{o.label}</option>
@@ -73,8 +73,8 @@ export function TemplateUploadForm() {
  )}
 
  <button type="submit" disabled={loading}
- className="flex items-center gap-2 px-6 py-2.5 text-white text-sm font-bold hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0 transition-all"
- style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+ className="flex items-center gap-2 px-6 py-2.5 text-white text-sm font-bold disabled:opacity-60 disabled:hover:translate-y-0 transition-all"
+ style={{ background: 'var(--hp-accent)', }}>
  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
  {loading ? 'Загрузка...' : 'Загрузить шаблон'}
  </button>

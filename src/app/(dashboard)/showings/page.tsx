@@ -96,7 +96,7 @@ function ShowingRow({ showing }: { showing: any }) {
  return (
  <Link
  href={`/showings/${showing.id}`}
- className="flex items-center justify-between gap-4 px-5 py-3.5 bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all group"
+ className="flex items-center justify-between gap-4 px-5 py-3.5 hp-card transition-all group"
  >
  <div className="flex items-start gap-3 min-w-0">
  <div className="w-8 h-8 bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">

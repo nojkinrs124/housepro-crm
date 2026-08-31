@@ -8,7 +8,7 @@ import { PageHeader } from '@/components/layout/PageHeader'
 const STATUS_CFG: Record<string, { label: string; cls: string }> = {
  completed: { label: 'Выполнено', cls: 'bg-green-50 text-green-700 border border-green-200' },
  planned: { label: 'Запланировано', cls: 'bg-amber-50 text-amber-700 border border-amber-200' },
- cancelled: { label: 'Отменено', cls: 'bg-slate-50 text-slate-500 border border-slate-200' },
+ cancelled: { label: 'Отменено', cls: 'bg-slate-50 text-[var(--hp-sub)] border border-[var(--hp-border)]' },
 }
 const METHOD_LABEL: Record<string, string> = {
  cash: 'Наличные', bank: 'Безналичный', card: 'Карта', other: 'Другое',
@@ -69,7 +69,7 @@ export default async function TransactionDetailPage({
  <>
  <Link
  href={`/accounting/transactions/${id}/edit`}
- className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-sm font-semibold text-[#374151] hover:bg-slate-50 transition-all"
+ className="flex items-center gap-2 px-4 py-2.5 hp-card text-sm font-semibold text-[var(--hp-ink)] hover:bg-[var(--hp-neutral-tint)] transition-all"
  >
  <Pencil className="w-4 h-4" />
  Редактировать
@@ -82,8 +82,8 @@ export default async function TransactionDetailPage({
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
  {/* Main info */}
  <div
- className="lg:col-span-2 bg-white border border-slate-100 p-5"
- style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
+ className="lg:col-span-2 hp-card p-5"
+ style={{ }}
  >
  <h2 className="font-bold text-foreground text-[15px] mb-4">Информация</h2>
  <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
@@ -106,8 +106,8 @@ export default async function TransactionDetailPage({
  {/* Side info */}
  <div className="space-y-4">
  <div
- className="bg-white border border-slate-100 p-5"
- style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
+ className="hp-card p-5"
+ style={{ }}
  >
  <h2 className="font-bold text-foreground text-[15px] mb-3">Статус</h2>
  <span className={`text-sm font-semibold px-3 py-1.5 rounded-full ${sc.cls}`}>{sc.label}</span>
@@ -115,8 +115,8 @@ export default async function TransactionDetailPage({
 
  {t.category && (
  <div
- className="bg-white border border-slate-100 p-5"
- style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
+ className="hp-card p-5"
+ style={{ }}
  >
  <h2 className="font-bold text-foreground text-[15px] mb-3">Категория</h2>
  <div className="flex items-center gap-2">
@@ -128,8 +128,8 @@ export default async function TransactionDetailPage({
 
  {(t.contract || t.deal || t.employee || t.contact) && (
  <div
- className="bg-white border border-slate-100 p-5"
- style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
+ className="hp-card p-5"
+ style={{ }}
  >
  <h2 className="font-bold text-foreground text-[15px] mb-3">Привязки</h2>
  <div className="space-y-2">

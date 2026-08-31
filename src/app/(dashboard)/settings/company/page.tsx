@@ -72,7 +72,7 @@ export default async function CompanyPage() {
  <div className="space-y-3">
  {profiles.map((p) => (
  <Link key={p.id} href={`/settings/company/${p.id}/edit`}
- className="block bg-card border border-border p-5 hover:border-primary/40 transition-colors">
+ className="block hp-card p-5 hover:border-primary/40 transition-colors">
  <div className="flex items-start justify-between gap-3">
  <div className="flex items-center gap-3 min-w-0">
  <div className="w-11 h-11 border border-border bg-muted/30 flex items-center justify-center overflow-hidden shrink-0">

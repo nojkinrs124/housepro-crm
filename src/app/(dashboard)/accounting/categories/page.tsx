@@ -29,44 +29,44 @@ export default async function CategoriesPage() {
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
  {/* Income */}
  <div
- className="bg-white border border-slate-100"
- style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
+ className="hp-card"
+ style={{ }}
  >
- <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-slate-100">
+ <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[var(--hp-border-soft)]">
  <div className="flex items-center gap-2">
  <span className="w-2.5 h-2.5 rounded-full bg-green-500" />
  <h2 className="font-bold text-foreground text-[15px]">Доходы</h2>
  <span className="ml-1 text-xs text-muted-foreground font-medium">{income.length}</span>
  </div>
  </div>
- <div className="divide-y divide-slate-100">
+ <div className="divide-y divide-[var(--hp-border-soft)]">
  {income.map(c => (
  <CategoryRow key={c.id} category={c} />
  ))}
  </div>
- <div className="px-5 py-4 border-t border-slate-100 bg-slate-50/40">
+ <div className="px-5 py-4 border-t border-[var(--hp-border-soft)] bg-slate-50/40">
  <AddCategoryForm defaultType="income" />
  </div>
  </div>
 
  {/* Expense */}
  <div
- className="bg-white border border-slate-100"
- style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
+ className="hp-card"
+ style={{ }}
  >
- <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-slate-100">
+ <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[var(--hp-border-soft)]">
  <div className="flex items-center gap-2">
  <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
  <h2 className="font-bold text-foreground text-[15px]">Расходы</h2>
  <span className="ml-1 text-xs text-muted-foreground font-medium">{expense.length}</span>
  </div>
  </div>
- <div className="divide-y divide-slate-100">
+ <div className="divide-y divide-[var(--hp-border-soft)]">
  {expense.map(c => (
  <CategoryRow key={c.id} category={c} />
  ))}
  </div>
- <div className="px-5 py-4 border-t border-slate-100 bg-slate-50/40">
+ <div className="px-5 py-4 border-t border-[var(--hp-border-soft)] bg-slate-50/40">
  <AddCategoryForm defaultType="expense" />
  </div>
  </div>

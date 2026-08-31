@@ -40,7 +40,7 @@ export type CompanyProfile = {
 type Feedback = { type: 'success' | 'error'; message: string } | null
 
 const inputCls =
- 'w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all'
+ 'w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all'
 const labelCls = 'text-xs font-medium text-muted-foreground uppercase tracking-wide'
 
 function SectionHeader({ icon: Icon, title }: { icon: React.ElementType; title: string }) {
@@ -124,7 +124,7 @@ export function CompanyProfileForm({ mode, profile, action, isFirstProfile }: Co
  )}
 
  {/* Форма собственности */}
- <div className="bg-card border border-border p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <SectionHeader icon={UserSquare2} title="От чьего имени готовятся документы" />
  <div className="grid grid-cols-3 gap-2.5">
  {LEGAL_FORM_OPTIONS.map(o => (
@@ -148,7 +148,7 @@ export function CompanyProfileForm({ mode, profile, action, isFirstProfile }: Co
  </div>
 
  {/* Основная информация */}
- <div className="bg-card border border-border p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <SectionHeader icon={Building2} title="Основная информация" />
 
  <div className="space-y-1.5">
@@ -163,7 +163,7 @@ export function CompanyProfileForm({ mode, profile, action, isFirstProfile }: Co
  <textarea name="description" defaultValue={profile?.description ?? ''}
  placeholder="Агентство недвижимости — продажа и аренда жилой и коммерческой недвижимости"
  rows={2}
- className="w-full px-4 py-2.5 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none" />
+ className="w-full px-4 py-2.5 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all resize-none" />
  </div>
  )}
 
@@ -195,7 +195,7 @@ export function CompanyProfileForm({ mode, profile, action, isFirstProfile }: Co
  </div>
 
  {/* Юридические реквизиты */}
- <div className="bg-card border border-border p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <SectionHeader icon={FileText} title={legalForm === 'individual' ? 'Документы физ. лица' : 'Юридические реквизиты'} />
 
  {legalForm === 'individual' ? (
@@ -280,7 +280,7 @@ export function CompanyProfileForm({ mode, profile, action, isFirstProfile }: Co
  </div>
 
  {/* Банковские реквизиты */}
- <div className="bg-card border border-border p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <SectionHeader icon={Landmark} title="Банковские реквизиты" />
  <div className="space-y-1.5">
  <label className={labelCls}>Банк</label>
@@ -306,7 +306,7 @@ export function CompanyProfileForm({ mode, profile, action, isFirstProfile }: Co
 
  {/* Логотип — доступен только после первого сохранения */}
  {mode === 'edit' && profile?.id && (
- <div className="bg-card border border-border p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <SectionHeader icon={Camera} title="Логотип" />
  <div className="flex items-center gap-5">
  <div className="relative shrink-0">

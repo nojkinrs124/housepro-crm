@@ -35,7 +35,7 @@ export function QuickCreateModal({ title, onClose, children }: QuickCreateModalP
  aria-modal="true"
  >
  <div
- className="w-full max-w-md bg-white shadow-xl border border-slate-100 max-h-[90vh] overflow-y-auto"
+ className="w-full max-w-md bg-white border border-[var(--hp-border-soft)] max-h-[90vh] overflow-y-auto"
  onClick={(e) => e.stopPropagation()}
  >
  <div className="flex items-center justify-between px-5 py-4 border-b border-border">

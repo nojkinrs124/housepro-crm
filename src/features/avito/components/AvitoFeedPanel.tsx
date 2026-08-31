@@ -47,8 +47,8 @@ export function AvitoFeedPanel({ feedUrl, lastSyncedAt, lastSyncError }: Props) 
  }
 
  return (
- <div className="bg-white border border-slate-100 p-5 space-y-4" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
- <h2 className="font-bold text-[#111827] text-[15px]">Ссылка на фид для автозагрузки</h2>
+ <div className="hp-card p-5 space-y-4" style={{ }}>
+ <h2 className="font-bold text-[var(--hp-ink)] text-[15px]">Ссылка на фид для автозагрузки</h2>
  <p className="text-sm text-muted-foreground leading-relaxed">
  Вставьте эту ссылку в личном кабинете Авито: <b>Профиль → Автозагрузка → Настройки</b>.
  В фид попадают только объекты, у которых включена публикация на Авито и статус «Свободен».
@@ -61,7 +61,7 @@ export function AvitoFeedPanel({ feedUrl, lastSyncedAt, lastSyncError }: Props) 
  />
  <button
  onClick={copyUrl}
- className="flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 text-sm font-semibold text-[#374151] hover:bg-slate-50 transition-all whitespace-nowrap shrink-0"
+ className="flex items-center justify-center gap-2 px-4 py-2 border border-[var(--hp-border)] text-sm font-semibold text-[var(--hp-ink)] hover:bg-[var(--hp-neutral-tint)] transition-all whitespace-nowrap shrink-0"
  >
  <Copy className="w-4 h-4" />
  Скопировать
@@ -69,16 +69,16 @@ export function AvitoFeedPanel({ feedUrl, lastSyncedAt, lastSyncError }: Props) 
  <button
  onClick={handleRegenerate}
  disabled={regenLoading}
- className="flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 text-sm font-semibold text-[#374151] hover:bg-slate-50 transition-all whitespace-nowrap shrink-0 disabled:opacity-60"
+ className="flex items-center justify-center gap-2 px-4 py-2 border border-[var(--hp-border)] text-sm font-semibold text-[var(--hp-ink)] hover:bg-[var(--hp-neutral-tint)] transition-all whitespace-nowrap shrink-0 disabled:opacity-60"
  >
  {regenLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
  Новая ссылка
  </button>
  </div>
 
- <div className="border-t border-slate-100 pt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+ <div className="border-t border-[var(--hp-border-soft)] pt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
  <div className="min-w-0">
- <p className="text-sm font-semibold text-[#111827]">Статус синхронизации</p>
+ <p className="text-sm font-semibold text-[var(--hp-ink)]">Статус синхронизации</p>
  <p className="text-xs text-muted-foreground mt-0.5">
  {lastSyncedAt ? `Обновлено: ${new Date(lastSyncedAt).toLocaleString('ru-RU')}` : 'Синхронизация ещё не запускалась'}
  </p>
@@ -91,8 +91,8 @@ export function AvitoFeedPanel({ feedUrl, lastSyncedAt, lastSyncError }: Props) 
  <button
  onClick={handleSync}
  disabled={syncLoading}
- className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold text-white transition-all hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0 whitespace-nowrap shrink-0"
- style={{ background: 'linear-gradient(135deg, #2563EB, #3B82F6)', boxShadow: '0 4px 16px rgba(37,99,235,0.3)' }}
+ className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold text-white transition-all disabled:opacity-60 disabled:hover:translate-y-0 whitespace-nowrap shrink-0"
+ style={{ background: 'linear-gradient(135deg, #2563EB, #3B82F6)', }}
  >
  {syncLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
  Обновить статус

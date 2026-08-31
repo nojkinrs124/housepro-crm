@@ -14,10 +14,10 @@ const dealLabels: Record<string, string> = {
  rent: 'Аренда', sale: 'Продажа', management: 'Управление', subrent: 'Субаренда',
 }
 const statusConfig: Record<string, { label: string; dot: string; badge: string }> = {
- available: { label: 'Свободен', dot: '#22C55E', badge: 'bg-green-50 text-green-700' },
+ available: { label: 'Свободен', dot: 'var(--hp-accent)', badge: 'bg-green-50 text-green-700' },
  reserved: { label: 'Забронирован', dot: '#F59E0B', badge: 'bg-amber-50 text-amber-700' },
  rented: { label: 'Сдан', dot: '#3B82F6', badge: 'bg-blue-50 text-blue-700' },
- sold: { label: 'Продан', dot: '#94A3B8', badge: 'bg-slate-100 text-slate-500' },
+ sold: { label: 'Продан', dot: '#94A3B8', badge: 'bg-slate-100 text-[var(--hp-sub)]' },
  inactive: { label: 'Неактивен', dot: '#EF4444', badge: 'bg-red-50 text-red-600' },
 }
 const dealBadge: Record<string, string> = {
@@ -85,8 +85,8 @@ export default async function PropertiesPage({
  />
 
  {/* Filters + view switcher */}
- <div className="bg-white border border-slate-100 p-4 flex flex-wrap gap-3 items-center"
- style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+ <div className="hp-card p-4 flex flex-wrap gap-3 items-center"
+ style={{ }}>
 
  {/* Search */}
  <form method="get" className="flex-1 min-w-[200px]">
@@ -96,13 +96,13 @@ export default async function PropertiesPage({
  {params.site && <input type="hidden" name="site" value={params.site} />}
  {view === 'list' && <input type="hidden" name="view" value="list" />}
  <div className="relative">
- <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400"
+ <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--hp-tertiary)]"
  style={{ width: 14, height: 14 }} />
  <input
  name="search"
  defaultValue={params.search}
  placeholder="Поиск по адресу..."
- className="w-full h-[42px] pl-10 pr-4 text-sm text-foreground placeholder:text-slate-400 outline-none bg-background border border-slate-200 focus:border-[#22C55E] focus:ring-2 focus:ring-green-100 transition-all font-medium"
+ className="w-full h-[42px] pl-10 pr-4 text-sm text-foreground placeholder:text-[var(--hp-tertiary)] outline-none bg-background border border-[var(--hp-border)] focus:border-[var(--hp-accent)] focus:ring-2 focus:ring-green-100 transition-all font-medium"
  />
  </div>
  </form>
@@ -112,7 +112,7 @@ export default async function PropertiesPage({
  <Link href={buildHref({ deal_type: undefined })}
  className="px-4 py-2 text-sm font-bold transition-all"
  style={!params.deal_type
- ? { background: 'var(--hp-gradient-primary)', color: '#fff' }
+ ? { background: 'var(--hp-accent)', color: '#fff' }
  : { background: '#F8FAFC', color: '#64748B' }}>
  Все
  </Link>
@@ -120,7 +120,7 @@ export default async function PropertiesPage({
  <Link key={value} href={buildHref({ deal_type: value })}
  className="px-4 py-2 text-sm font-bold transition-all"
  style={params.deal_type === value
- ? { background: 'var(--hp-gradient-primary)', color: '#fff' }
+ ? { background: 'var(--hp-accent)', color: '#fff' }
  : { background: '#F8FAFC', color: '#64748B' }}>
  {label}
  </Link>
@@ -187,12 +187,12 @@ export default async function PropertiesPage({
  {/* View switcher */}
  <div className="flex items-center gap-1 p-1 bg-slate-100 shrink-0 ml-auto">
  <Link href={buildHref({ view: undefined })}
- className={`w-9 h-9 flex items-center justify-center transition-all ${view === 'grid' ? 'bg-white shadow-sm text-foreground' : 'text-slate-400 hover:text-muted-foreground'}`}
+ className={`w-9 h-9 flex items-center justify-center transition-all ${view === 'grid' ? 'bg-white text-foreground' : 'text-[var(--hp-tertiary)] hover:text-muted-foreground'}`}
  title="Карточки">
  <LayoutGrid style={{ width: 16, height: 16 }} />
  </Link>
  <Link href={buildHref({ view: 'list' })}
- className={`w-9 h-9 flex items-center justify-center transition-all ${view === 'list' ? 'bg-white shadow-sm text-foreground' : 'text-slate-400 hover:text-muted-foreground'}`}
+ className={`w-9 h-9 flex items-center justify-center transition-all ${view === 'list' ? 'bg-white text-foreground' : 'text-[var(--hp-tertiary)] hover:text-muted-foreground'}`}
  title="Список">
  <List style={{ width: 16, height: 16 }} />
  </Link>
@@ -201,19 +201,19 @@ export default async function PropertiesPage({
 
  {/* Empty state */}
  {!properties || properties.length === 0 ? (
- <div className="bg-white border border-slate-100 text-center py-24"
- style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+ <div className="hp-card text-center py-24"
+ style={{ }}>
  <div className="w-16 h-16 flex items-center justify-center mx-auto mb-4"
  style={{ background: 'linear-gradient(135deg, rgba(22,163,74,0.1), rgba(34,197,94,0.1))' }}>
- <Home style={{ width: 28, height: 28, color: '#16A34A' }} />
+ <Home style={{ width: 28, height: 28, color: 'var(--hp-accent)' }} />
  </div>
  <p className="text-foreground font-bold text-lg">Нет объектов</p>
  <p className="text-muted-foreground text-sm mt-1">
  {error ? `Ошибка: ${error.message}` : 'Добавьте первый объект недвижимости'}
  </p>
  <Link href="/properties/new"
- className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 text-white text-sm font-bold hover:-translate-y-0.5 transition-all"
- style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+ className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 text-white text-sm font-bold transition-all"
+ style={{ background: 'var(--hp-accent)', }}>
  <Plus style={{ width: 16, height: 16 }} />
  Добавить объект
  </Link>
@@ -229,8 +229,8 @@ export default async function PropertiesPage({
 
  return (
  <Link key={property.id} href={`/properties/${property.id}`}
- className="group block bg-white border border-slate-100 overflow-hidden transition-all duration-300 hover:-translate-y-1"
- style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+ className="group block hp-card overflow-hidden transition-all duration-300"
+ style={{ }}>
  {/* Photo */}
  <div className="relative h-52 overflow-hidden bg-slate-100">
  {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -240,7 +240,7 @@ export default async function PropertiesPage({
  {/* Status */}
  <div className="absolute top-3 left-3">
  <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold backdrop-blur-md"
- style={{ background: 'rgba(255,255,255,0.92)', color: status.dot === '#22C55E' ? '#16A34A' : status.dot }}>
+ style={{ background: 'rgba(255,255,255,0.92)', color: status.dot === 'var(--hp-accent)' ? 'var(--hp-accent)' : status.dot }}>
  <span className="w-2 h-2 rounded-full" style={{ background: status.dot }} />
  {status.label}
  </span>
@@ -273,7 +273,7 @@ export default async function PropertiesPage({
  </div>
  {/* Body */}
  <div className="p-4">
- <h3 className="font-bold text-foreground text-[15px] leading-snug group-hover:text-[#16A34A] transition-colors mb-2">
+ <h3 className="font-bold text-foreground text-[15px] leading-snug group-hover:text-[var(--hp-accent)] transition-colors mb-2">
  {property.title}
  </h3>
  {property.address && (
@@ -282,14 +282,14 @@ export default async function PropertiesPage({
  <span className="truncate font-medium">{property.address}</span>
  </div>
  )}
- <div className="flex items-center gap-4 pt-3 border-t border-slate-100">
+ <div className="flex items-center gap-4 pt-3 border-t border-[var(--hp-border-soft)]">
  {property.area && (
  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
  <div className="w-6 h-6 bg-slate-50 flex items-center justify-center">
  <Maximize2 style={{ width: 11, height: 11, color: '#94A3B8' }} />
  </div>
- <span className="font-semibold text-[#374151]">{property.area}</span>
- <span className="text-slate-400">м²</span>
+ <span className="font-semibold text-[var(--hp-ink)]">{property.area}</span>
+ <span className="text-[var(--hp-tertiary)]">м²</span>
  </div>
  )}
  {property.rooms && (
@@ -297,8 +297,8 @@ export default async function PropertiesPage({
  <div className="w-6 h-6 bg-slate-50 flex items-center justify-center">
  <DoorOpen style={{ width: 11, height: 11, color: '#94A3B8' }} />
  </div>
- <span className="font-semibold text-[#374151]">{property.rooms}</span>
- <span className="text-slate-400">комн.</span>
+ <span className="font-semibold text-[var(--hp-ink)]">{property.rooms}</span>
+ <span className="text-[var(--hp-tertiary)]">комн.</span>
  </div>
  )}
  <div className="ml-auto flex items-center gap-2">
@@ -325,9 +325,9 @@ export default async function PropertiesPage({
 
  ) : (
  /* ── LIST VIEW ─────────────────────────────────────────────────── */
- <div className="bg-white border border-slate-100 overflow-hidden"
- style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
- <div className="divide-y divide-slate-100">
+ <div className="hp-card overflow-hidden"
+ style={{ }}>
+ <div className="divide-y divide-[var(--hp-border-soft)]">
  {properties.map(property => {
  const status = statusConfig[property.status] ?? statusConfig.inactive
  const imgSrc = placeholderImages[property.property_type] ?? placeholderImages.apartment
@@ -346,13 +346,13 @@ export default async function PropertiesPage({
  {/* Main info */}
  <div className="flex-1 min-w-0">
  <div className="flex items-start justify-between gap-2 flex-wrap">
- <p className="font-semibold text-foreground text-sm group-hover:text-[#16A34A] transition-colors truncate">
+ <p className="font-semibold text-foreground text-sm group-hover:text-[var(--hp-accent)] transition-colors truncate">
  {property.title}
  </p>
  {property.price && (
  <p className="font-bold text-foreground text-sm shrink-0 whitespace-nowrap">
  {Number(property.price).toLocaleString('ru-RU')} ₽
- {property.deal_type === 'rent' && <span className="text-slate-400 font-normal text-xs ml-1">/мес</span>}
+ {property.deal_type === 'rent' && <span className="text-[var(--hp-tertiary)] font-normal text-xs ml-1">/мес</span>}
  </p>
  )}
  </div>
@@ -372,28 +372,28 @@ export default async function PropertiesPage({
  {status.label}
  </span>
  {/* Deal type */}
- <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${dealBadge[property.deal_type] ?? 'bg-slate-100 text-slate-500'}`}>
+ <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${dealBadge[property.deal_type] ?? 'bg-slate-100 text-[var(--hp-sub)]'}`}>
  {dealLabels[property.deal_type] ?? property.deal_type}
  </span>
  {/* Property type */}
- <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-100 text-slate-500">
+ <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-100 text-[var(--hp-sub)]">
  {typeLabels[property.property_type] ?? property.property_type}
  </span>
  {/* Area */}
  {property.area && (
- <span className="text-[10px] text-slate-400 font-medium">
+ <span className="text-[10px] text-[var(--hp-tertiary)] font-medium">
  {property.area} м²
  </span>
  )}
  {/* Rooms */}
  {property.rooms && (
- <span className="text-[10px] text-slate-400 font-medium">
+ <span className="text-[10px] text-[var(--hp-tertiary)] font-medium">
  {property.rooms} комн.
  </span>
  )}
  {/* Floor */}
  {property.floor && (
- <span className="text-[10px] text-slate-400 font-medium">
+ <span className="text-[10px] text-[var(--hp-tertiary)] font-medium">
  {property.floor}{property.total_floors ? `/${property.total_floors}` : ''} эт.
  </span>
  )}
@@ -413,7 +413,7 @@ export default async function PropertiesPage({
 
  {/* Arrow */}
  <div className="shrink-0 hidden sm:block">
- <div className="w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 group-hover:bg-green-600 group-hover:text-white transition-all">
+ <div className="w-8 h-8 flex items-center justify-center bg-slate-50 text-[var(--hp-tertiary)] group-hover:bg-green-600 group-hover:text-white transition-all">
  <ArrowUpRight style={{ width: 15, height: 15 }} />
  </div>
  </div>

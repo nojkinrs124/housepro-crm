@@ -61,8 +61,8 @@ export function DealsAreaChart({ data }: { data: MonthlyDealsData[] }) {
       <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id="dealsGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#16A34A" stopOpacity={0.25} />
-            <stop offset="95%" stopColor="#16A34A" stopOpacity={0} />
+            <stop offset="5%" stopColor="var(--hp-accent)" stopOpacity={0.25} />
+            <stop offset="95%" stopColor="var(--hp-accent)" stopOpacity={0} />
           </linearGradient>
           <linearGradient id="commissionGrad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%" stopColor="#2563EB" stopOpacity={0.2} />
@@ -76,7 +76,7 @@ export function DealsAreaChart({ data }: { data: MonthlyDealsData[] }) {
           contentStyle={{ borderRadius: 12, border: '1px solid #E2E8F0', fontSize: 12 }}
           formatter={(v, name) => [moneyTooltip(v as number), name === 'amount' ? 'Сумма сделок' : 'Комиссия']}
         />
-        <Area type="monotone" dataKey="amount" stroke="#16A34A" strokeWidth={2} fill="url(#dealsGrad)" name="amount" />
+        <Area type="monotone" dataKey="amount" stroke="var(--hp-accent)" strokeWidth={2} fill="url(#dealsGrad)" name="amount" />
         <Area type="monotone" dataKey="commission" stroke="#2563EB" strokeWidth={2} fill="url(#commissionGrad)" name="commission" />
       </AreaChart>
     </ResponsiveContainer>
@@ -118,7 +118,7 @@ export function LeadsConversionChart({ data }: { data: LeadsConversionData[] }) 
         <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #E2E8F0', fontSize: 12 }} />
         <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
         <Bar dataKey="leads" name="Лиды" fill="#93C5FD" radius={[4, 4, 0, 0]} />
-        <Bar dataKey="converted" name="Конвертировано" fill="#16A34A" radius={[4, 4, 0, 0]} />
+        <Bar dataKey="converted" name="Конвертировано" fill="var(--hp-accent)" radius={[4, 4, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   )
@@ -141,7 +141,7 @@ export function PaymentsMonthlyChart({ data }: { data: PaymentMonthlyData[] }) {
         />
         <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
           formatter={(v) => PAYMENT_LABELS[v] ?? v} />
-        <Bar dataKey="paid" fill="#16A34A" radius={[4, 4, 0, 0]} stackId="a" />
+        <Bar dataKey="paid" fill="var(--hp-accent)" radius={[4, 4, 0, 0]} stackId="a" />
         <Bar dataKey="pending" fill="#93C5FD" radius={[0, 0, 0, 0]} stackId="a" />
         <Bar dataKey="overdue" fill="#FCA5A5" radius={[4, 4, 0, 0]} stackId="a" />
       </BarChart>

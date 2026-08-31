@@ -20,8 +20,8 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
  const p = rawProperty as any
  const boundAction = updatePropertyAction.bind(null, id)
 
- const inp = 'w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all'
- const sel = 'w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer'
+ const inp = 'w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all'
+ const sel = 'w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer'
  const lbl = 'block text-sm font-medium text-foreground mb-1.5'
 
  return (
@@ -34,7 +34,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
  />
 
  {/* Фотографии — управляются отдельно от формы, сохраняются сразу при загрузке */}
- <div className="bg-white border border-slate-100 shadow-sm p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className="font-semibold text-foreground">Фотографии</h2>
  <PropertyPhotosManager propertyId={id} initialPhotos={p.photo_urls ?? []} />
  </div>
@@ -42,7 +42,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
  <ServerActionForm action={boundAction} className="space-y-4">
 
  {/* Основное */}
- <div className="bg-white border border-slate-100 shadow-sm p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className="font-semibold text-foreground">Основные данные</h2>
 
  <div>
@@ -90,7 +90,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
  </div>
 
  {/* Параметры */}
- <div className="bg-white border border-slate-100 shadow-sm p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className="font-semibold text-foreground">Параметры</h2>
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
  {[
@@ -111,7 +111,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
  </div>
 
  {/* Дом */}
- <div className="bg-white border border-slate-100 shadow-sm p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className="font-semibold text-foreground">Характеристики дома</h2>
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
  <div>
@@ -154,7 +154,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
  </div>
 
  {/* Коммуникации */}
- <div className="bg-white border border-slate-100 shadow-sm p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className="font-semibold text-foreground">Коммуникации</h2>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div>
@@ -190,17 +190,31 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
  </div>
 
  {/* Право собственности */}
- <div className="bg-white border border-slate-100 shadow-sm p-6 space-y-4">
- <h2 className="font-semibold text-foreground">Право собственности</h2>
+ <div className="hp-card p-6 space-y-4">
+ <h2 className="font-semibold text-foreground">Право собственности и юр. статус</h2>
  <div className="space-y-1.5">
  <label className={lbl}>Документ-основание</label>
  <input name="ownership_basis" defaultValue={p.ownership_basis ?? ''} placeholder="Выписка из ЕГРН № ... от ..." className={inp} />
  <p className="text-xs text-muted-foreground">Подставляется в договоры найма/аренды по этому объекту.</p>
  </div>
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+ <div className="space-y-1.5">
+ <label className={lbl}>Кадастровый номер</label>
+ <input name="cadastral_number" defaultValue={p.cadastral_number ?? ''} placeholder="50:21:0040214:1187" className={inp} />
+ </div>
+ <div className="space-y-1.5">
+ <label className={lbl}>Участок, соток</label>
+ <input name="land_area" type="number" step="0.01" min="0" defaultValue={p.land_area ?? ''} placeholder="12" className={inp} />
+ </div>
+ <div className="space-y-1.5">
+ <label className={lbl}>Обременения</label>
+ <input name="encumbrances" defaultValue={p.encumbrances ?? ''} placeholder="нет" className={inp} />
+ </div>
+ </div>
  </div>
 
  {/* Финансы */}
- <div className="bg-white border border-slate-100 shadow-sm p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className="font-semibold text-foreground">Финансы</h2>
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
  <div>
@@ -223,16 +237,16 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
  </div>
 
  {/* Описание */}
- <div className="bg-white border border-slate-100 shadow-sm p-6 space-y-3">
+ <div className="hp-card p-6 space-y-3">
  <h2 className="font-semibold text-foreground">Описание</h2>
  <textarea name="description" rows={4} defaultValue={p.description ?? ''}
  placeholder="Описание для публикации на Авито, ЦИАН, Домклик..."
- className="w-full px-4 py-3 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none" />
+ className="w-full px-4 py-3 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] resize-none" />
  </div>
 
  <div className="flex gap-3">
  <button type="submit"
- className="flex-1 h-10 text-white text-sm font-bold hover:-translate-y-0.5 transition" style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+ className="flex-1 h-10 text-white text-sm font-bold transition" style={{ background: 'var(--hp-accent)', }}>
  Сохранить изменения
  </button>
  <Link href={`/properties/${id}`}

@@ -91,8 +91,8 @@ export function ContractForm({
  ? properties.filter(p => config.propertyTypes!.includes(p.property_type ?? '') || p.id === defaults.property_id)
  : properties
 
- const inp = 'w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all'
- const sel = 'w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer'
+ const inp = 'w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all'
+ const sel = 'w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer'
  const lbl = 'block text-sm font-medium text-foreground mb-1.5'
 
  return (
@@ -104,7 +104,7 @@ export function ContractForm({
  )}
 
  {/* Тип договора */}
- <div className="bg-card border border-border p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className="font-semibold text-foreground">Тип договора</h2>
 
  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Между собственником и клиентом</p>
@@ -138,7 +138,7 @@ export function ContractForm({
 
  {/* Статус (только для edit) */}
  {mode === 'edit' && (
- <div className="bg-card border border-border p-6 space-y-3">
+ <div className="hp-card p-6 space-y-3">
  <h2 className="font-semibold text-foreground">Статус</h2>
  <select name="status" defaultValue={defaults.status ?? 'draft'} className={sel}>
  {statusOptions.map(o => (
@@ -149,7 +149,7 @@ export function ContractForm({
  )}
 
  {/* Стороны */}
- <div className="bg-card border border-border p-6 space-y-5">
+ <div className="hp-card p-6 space-y-5">
  <h2 className="font-semibold text-foreground">Стороны договора</h2>
 
  {config.party1Role === 'agency' ? (
@@ -270,7 +270,7 @@ export function ContractForm({
  </div>
 
  {/* Финансы и сроки */}
- <div className="bg-card border border-border p-6 space-y-5">
+ <div className="hp-card p-6 space-y-5">
  <h2 className="font-semibold text-foreground">Финансы и сроки</h2>
  <div className="grid grid-cols-2 gap-4">
  <div className={`space-y-1.5 ${config.showDeposit ? '' : 'col-span-2'}`}>
@@ -329,11 +329,11 @@ export function ContractForm({
  )}
 
  {/* Примечания */}
- <div className="bg-card border border-border p-6 space-y-3">
+ <div className="hp-card p-6 space-y-3">
  <h2 className="font-semibold text-foreground">Примечания</h2>
  <textarea name="notes" rows={3} placeholder="Дополнительные условия..."
  defaultValue={defaults.notes ?? ''}
- className="w-full px-4 py-3 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none" />
+ className="w-full px-4 py-3 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] resize-none" />
  </div>
 
  <div className="flex items-center gap-3">

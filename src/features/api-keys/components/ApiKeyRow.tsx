@@ -35,16 +35,16 @@ export function ApiKeyRow({ id, name, keyPrefix, scopes, isActive, lastUsedAt, c
  }
 
  return (
- <div className="flex items-center justify-between gap-4 px-5 py-3.5 bg-white border border-slate-100">
+ <div className="flex items-center justify-between gap-4 px-5 py-3.5 hp-card">
  <div className="flex items-start gap-3 min-w-0">
  <div className={`w-8 h-8 flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-primary/10' : 'bg-slate-100'}`}>
- <Key className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-slate-400'}`} />
+ <Key className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-[var(--hp-tertiary)]'}`} />
  </div>
  <div className="min-w-0">
  <div className="flex items-center gap-2">
  <span className="font-medium text-foreground">{name}</span>
  {!isActive && (
- <span className="text-xs px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded-full">Отозван</span>
+ <span className="text-xs px-1.5 py-0.5 bg-slate-100 text-[var(--hp-sub)] rounded-full">Отозван</span>
  )}
  </div>
  <div className="text-xs text-muted-foreground font-mono mt-0.5">{keyPrefix}…</div>

@@ -40,7 +40,7 @@ export default async function LeadsPage() {
  ].map(stat => {
  const Icon = stat.Icon
  return (
- <div key={stat.label} className="bg-white border border-slate-200/60 shadow-sm p-5 flex items-center gap-3 sm:gap-4">
+ <div key={stat.label} className="hp-card p-5 flex items-center gap-3 sm:gap-4">
  <div className={`w-11 h-11 flex items-center justify-center shrink-0 ${stat.iconCls}`}>
  <Icon className={stat.iconColor} style={{ width: 20, height: 20 }} />
  </div>

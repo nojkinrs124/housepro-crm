@@ -37,7 +37,7 @@ export async function PaymentsSection({ contractId }: { contractId: string }) {
  const totalOwed = rows.filter((t: any) => t.status === 'planned').reduce((s: number, t: any) => s + Number(t.amount), 0)
 
  return (
- <div className="bg-card border border-border p-5 space-y-4">
+ <div className="hp-card p-5 space-y-4">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
  <CreditCard className="w-4 h-4 text-muted-foreground" />

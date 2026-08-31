@@ -30,8 +30,8 @@ export default async function TemplatesPage() {
  <TemplateUploadForm />
 
  {/* Template list */}
- <div className="bg-white border border-slate-100 overflow-hidden" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
- <div className="px-5 py-4 border-b border-slate-100">
+ <div className="hp-card overflow-hidden" style={{ }}>
+ <div className="px-5 py-4 border-b border-[var(--hp-border-soft)]">
  <h2 className="font-bold text-foreground text-[15px]">Загруженные шаблоны</h2>
  </div>
  {!templates || templates.length === 0 ? (
@@ -43,7 +43,7 @@ export default async function TemplatesPage() {
  <p className="text-muted-foreground text-xs mt-1">Загрузите первый DOCX-шаблон выше</p>
  </div>
  ) : (
- <div className="divide-y divide-slate-100">
+ <div className="divide-y divide-[var(--hp-border-soft)]">
  {templates.map(t => (
  <div key={t.id} className="flex items-center gap-4 px-5 py-4 hover:bg-background transition-all duration-200">
  <div className="w-10 h-10 bg-orange-50 flex items-center justify-center shrink-0">
@@ -58,13 +58,13 @@ export default async function TemplatesPage() {
  <div className="flex items-center gap-2 shrink-0">
  {t.file_url && (
  <a href={t.file_url} target="_blank" rel="noopener noreferrer"
- className="text-xs font-semibold text-[#16A34A] hover:underline px-3 py-1.5 border border-green-200 transition-colors hover:bg-green-50">
+ className="text-xs font-semibold text-[var(--hp-accent)] hover:underline px-3 py-1.5 border border-green-200 transition-colors hover:bg-green-50">
  Скачать
  </a>
  )}
  <ServerActionForm action={deleteTemplateAction.bind(null, t.id)}>
  <button type="submit"
- className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all duration-200">
+ className="p-2 text-[var(--hp-tertiary)] hover:text-red-600 hover:bg-red-50 transition-all duration-200">
  <Trash2 style={{ width: 16, height: 16 }} />
  </button>
  </ServerActionForm>

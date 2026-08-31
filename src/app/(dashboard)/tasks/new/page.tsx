@@ -37,26 +37,26 @@ export default async function NewTaskPage({
  />
 
  <ServerActionForm action={createTaskAction} className="space-y-4">
- <div className="bg-white border border-slate-100 shadow-sm p-6 space-y-5">
+ <div className="hp-card p-6 space-y-5">
  <div className="space-y-1.5">
  <label className="text-sm font-medium text-foreground">
  Название <span className="text-destructive">*</span>
  </label>
  <input name="title" required placeholder="Позвонить клиенту по договору"
- className="w-full h-10 px-4 border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all" />
+ className="w-full h-10 px-4 border border-input bg-background text-foreground text-sm outline-none focus:border-[var(--hp-ink)] transition-all" />
  </div>
 
  <div className="space-y-1.5">
  <label className="text-sm font-medium text-foreground">Описание</label>
  <textarea name="description" rows={3} placeholder="Подробности задачи..."
- className="w-full px-4 py-3 border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all resize-none" />
+ className="w-full px-4 py-3 border border-input bg-background text-foreground text-sm outline-none focus:border-[var(--hp-ink)] transition-all resize-none" />
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div className="space-y-1.5">
  <label className="text-sm font-medium text-foreground">Приоритет</label>
  <select name="priority" defaultValue="medium"
- className="w-full h-10 px-4 border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer">
+ className="w-full h-10 px-4 border border-input bg-background text-foreground text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer">
  <option value="low">Низкий</option>
  <option value="medium">Средний</option>
  <option value="high">Высокий</option>
@@ -65,14 +65,14 @@ export default async function NewTaskPage({
  <div className="space-y-1.5">
  <label className="text-sm font-medium text-foreground">Дедлайн</label>
  <input name="deadline" type="datetime-local"
- className="w-full h-10 px-4 border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all" />
+ className="w-full h-10 px-4 border border-input bg-background text-foreground text-sm outline-none focus:border-[var(--hp-ink)] transition-all" />
  </div>
  </div>
 
  <div className="space-y-1.5">
  <label className="text-sm font-medium text-foreground">Назначить</label>
  <select name="assigned_to"
- className="w-full h-10 px-4 border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer">
+ className="w-full h-10 px-4 border border-input bg-background text-foreground text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer">
  <option value="">Назначить себе</option>
  {(users ?? []).map(u => (
  <option key={u.id} value={u.id}>{u.full_name}</option>
@@ -82,13 +82,13 @@ export default async function NewTaskPage({
  </div>
 
  {/* Связи */}
- <div className="bg-white border border-slate-100 shadow-sm p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className="font-semibold text-foreground">Привязать к</h2>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div className="space-y-1.5">
  <label className="text-sm text-muted-foreground">Контакт</label>
  <select name="client_id" defaultValue={params.client_id ?? ''}
- className="w-full h-9 px-3 border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer">
+ className="w-full h-9 px-3 border border-input bg-background text-foreground text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer">
  <option value="">— не выбрано —</option>
  {(clients ?? []).map(c => (
  <option key={c.id} value={c.id}>{c.full_name}</option>
@@ -98,7 +98,7 @@ export default async function NewTaskPage({
  <div className="space-y-1.5">
  <label className="text-sm text-muted-foreground">Сделка</label>
  <select name="deal_id" defaultValue={params.deal_id ?? ''}
- className="w-full h-9 px-3 border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer">
+ className="w-full h-9 px-3 border border-input bg-background text-foreground text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer">
  <option value="">— не выбрано —</option>
  {(deals ?? []).map(d => (
  <option key={d.id} value={d.id}>Сделка {new Date(d.created_at).toLocaleDateString('ru-RU')}</option>
@@ -108,7 +108,7 @@ export default async function NewTaskPage({
  <div className="space-y-1.5">
  <label className="text-sm text-muted-foreground">Объект</label>
  <select name="property_id" defaultValue={params.property_id ?? ''}
- className="w-full h-9 px-3 border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer">
+ className="w-full h-9 px-3 border border-input bg-background text-foreground text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer">
  <option value="">— не выбрано —</option>
  {(properties ?? []).map(p => (
  <option key={p.id} value={p.id}>{p.title}</option>
@@ -118,7 +118,7 @@ export default async function NewTaskPage({
  <div className="space-y-1.5">
  <label className="text-sm text-muted-foreground">Договор</label>
  <select name="contract_id" defaultValue={params.contract_id ?? ''}
- className="w-full h-9 px-3 border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer">
+ className="w-full h-9 px-3 border border-input bg-background text-foreground text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer">
  <option value="">— не выбрано —</option>
  {(contracts ?? []).map(c => (
  <option key={c.id} value={c.id}>{c.contract_number ?? `#${c.id.slice(0,8)}`}</option>
@@ -130,7 +130,7 @@ export default async function NewTaskPage({
 
  <div className="flex items-center gap-3">
  <button type="submit"
- className="flex items-center gap-2 px-6 py-2.5 text-white text-sm font-bold hover:-translate-y-0.5 transition-all" style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+ className="flex items-center gap-2 px-6 py-2.5 text-white text-sm font-bold transition-all" style={{ background: 'var(--hp-accent)', }}>
  <CheckSquare className="w-4 h-4" />
  Создать задачу
  </button>

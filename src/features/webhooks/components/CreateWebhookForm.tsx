@@ -61,7 +61,7 @@ export function CreateWebhookForm() {
 
  return (
  <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4" onClick={close}>
- <div className="bg-white shadow-xl p-6 max-w-md w-full" onClick={e => e.stopPropagation()}>
+ <div className="bg-white p-6 max-w-md w-full" onClick={e => e.stopPropagation()}>
  {newSecret ? (
  <div className="space-y-4">
  <div className="flex items-center gap-2 text-amber-600">
@@ -71,12 +71,12 @@ export function CreateWebhookForm() {
  <p className="text-sm text-muted-foreground">
  Используйте этот secret для проверки подписи HMAC-SHA256 в заголовке <code className="text-xs">X-HousePro-Signature</code>.
  </p>
- <div className="flex items-center gap-2 p-3 bg-slate-50 border border-slate-200 font-mono text-xs break-all">
+ <div className="flex items-center gap-2 p-3 bg-slate-50 border border-[var(--hp-border)] font-mono text-xs break-all">
  {newSecret}
  </div>
  <button
  onClick={copySecret}
- className="w-full flex items-center justify-center gap-2 py-2 border border-slate-200 text-sm font-medium hover:bg-slate-50 transition-colors"
+ className="w-full flex items-center justify-center gap-2 py-2 border border-[var(--hp-border)] text-sm font-medium hover:bg-[var(--hp-neutral-tint)] transition-colors"
  >
  {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
  {copied ? 'Скопировано' : 'Скопировать secret'}
@@ -107,7 +107,7 @@ export function CreateWebhookForm() {
  type="url"
  required
  placeholder="https://your-app.com/webhooks/housepro"
- className="w-full px-3 py-2 text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/30"
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] outline-none focus:border-[var(--hp-ink)]"
  />
  </div>
 

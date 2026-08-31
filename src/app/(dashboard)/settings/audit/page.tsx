@@ -61,7 +61,7 @@ export default async function AuditLogPage() {
  </div>
 
  {/* Table */}
- <div className="bg-white border border-slate-100 shadow-sm overflow-hidden">
+ <div className="hp-card overflow-hidden">
  {!logs || logs.length === 0 ? (
  <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
  <Shield className="w-10 h-10 mb-3 opacity-30" />
@@ -71,7 +71,7 @@ export default async function AuditLogPage() {
  <div className="overflow-x-auto">
  <table className="w-full text-sm">
  <thead>
- <tr className="border-b bg-slate-50/60 text-xs text-muted-foreground uppercase tracking-wide">
+ <tr className="border-b bg-[var(--hp-neutral-tint)] text-xs text-muted-foreground uppercase tracking-wide">
  <th className="text-left px-4 py-3 font-medium">Время</th>
  <th className="text-left px-4 py-3 font-medium">Действие</th>
  <th className="text-left px-4 py-3 font-medium">Объект</th>
@@ -79,7 +79,7 @@ export default async function AuditLogPage() {
  <th className="text-left px-4 py-3 font-medium">Пользователь</th>
  </tr>
  </thead>
- <tbody className="divide-y divide-slate-100">
+ <tbody className="divide-y divide-[var(--hp-border-soft)]">
  {(logs as unknown as Array<{
  id: string
  action: string
@@ -92,7 +92,7 @@ export default async function AuditLogPage() {
  }>).map((log) => {
  const actionMeta = ACTION_LABEL[log.action] ?? { label: log.action, color: 'text-gray-600 bg-gray-50' }
  return (
- <tr key={log.id} className="hover:bg-slate-50/50 transition-colors">
+ <tr key={log.id} className="hover:bg-[var(--hp-neutral-tint)]/50 transition-colors">
  <td className="px-4 py-3 whitespace-nowrap">
  <div className="flex items-center gap-1.5 text-muted-foreground">
  <Clock className="w-3.5 h-3.5" />

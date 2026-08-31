@@ -12,7 +12,7 @@ export default function NewEmployeePage() {
  backLabel="Вернуться к сотрудникам"
  />
 
- <ServerActionForm action={createEmployeeAction} className="bg-white border border-slate-100 shadow-sm p-6 space-y-5">
+ <ServerActionForm action={createEmployeeAction} className="hp-card p-6 space-y-5">
  <div>
  <label className="block text-sm font-medium text-foreground mb-2">
  Email
@@ -21,7 +21,7 @@ export default function NewEmployeePage() {
  type="email"
  name="email"
  required
- className="w-full h-10 px-4 border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+ className="w-full h-10 px-4 border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm outline-none focus:border-[var(--hp-ink)] transition-all"
  placeholder="user@example.com"
  />
  </div>
@@ -34,7 +34,7 @@ export default function NewEmployeePage() {
  type="text"
  name="full_name"
  required
- className="w-full h-10 px-4 border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+ className="w-full h-10 px-4 border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm outline-none focus:border-[var(--hp-ink)] transition-all"
  placeholder="Иван Иванов"
  />
  </div>
@@ -47,7 +47,7 @@ export default function NewEmployeePage() {
  name="role"
  required
  defaultValue="agent"
- className="w-full h-10 px-4 border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all"
+ className="w-full h-10 px-4 border border-input bg-background text-foreground text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer transition-all"
  >
  <option value="admin">Администратор</option>
  <option value="manager">Менеджер</option>
@@ -63,14 +63,14 @@ export default function NewEmployeePage() {
  <input
  type="tel"
  name="phone"
- className="w-full h-10 px-4 border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+ className="w-full h-10 px-4 border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm outline-none focus:border-[var(--hp-ink)] transition-all"
  placeholder="+7 (999) 123-45-67"
  />
  </div>
 
  <button
  type="submit"
- className="w-full px-4 py-2 text-white font-medium hover:-translate-y-0.5 transition" style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}
+ className="w-full px-4 py-2 text-white font-medium transition" style={{ background: 'var(--hp-accent)', }}
  >
  Добавить сотрудника
  </button>

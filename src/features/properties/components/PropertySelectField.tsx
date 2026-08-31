@@ -36,7 +36,7 @@ export function PropertySelectField({
  name="property_id"
  value={propertyId}
  onChange={(e) => setPropertyId(e.target.value)}
- className="w-full sm:flex-1 sm:min-w-0 h-10 px-4 border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer"
+ className="w-full sm:flex-1 sm:min-w-0 h-10 px-4 border border-input bg-background text-foreground text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer"
  >
  <option value="">Выберите объект</option>
  {properties.map(p => (

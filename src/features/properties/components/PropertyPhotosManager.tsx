@@ -88,7 +88,7 @@ export function PropertyPhotosManager({ propertyId, initialPhotos }: Props) {
  {photos.length > 0 && (
  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
  {photos.map((url, i) => (
- <div key={url} className="relative group aspect-[4/3] overflow-hidden border border-slate-100 bg-slate-50">
+ <div key={url} className="relative group aspect-[4/3] overflow-hidden border border-[var(--hp-border-soft)] bg-slate-50">
  <Image src={url} alt={`Фото ${i + 1}`} fill sizes="200px" className="object-cover" />
  {i === 0 && (
  <span className="absolute top-1.5 left-1.5 flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-white/90 text-amber-600">

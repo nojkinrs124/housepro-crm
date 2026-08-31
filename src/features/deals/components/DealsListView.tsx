@@ -1,171 +1,155 @@
 'use client'
 
-import React from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Building2, User, Home, ExternalLink } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import {
+  DEAL_STATUS_LABELS, DEAL_TYPE_LABELS, dealStageBadgeClass,
+} from '@/features/deals/config/deal-stages'
+import { formatAmount, formatDateCompact } from '@/lib/utils'
 
+const PAGE_SIZE = 20
+
+/**
+ * Реестр сделок — та же плотная таблица, что и в контактах: номер, тип,
+ * стороны, объект, этап, сумма, дата закрытия. На узком экране колонки
+ * второго плана скрываются, строка остаётся кликабельной целиком.
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function DealsListView({ deals }: { deals: any[] }) {
- const dealTypeLabels: Record<string, string> = {
- rent: 'Аренда', sale: 'Продажа',
- management: 'Управление', commercial: 'Коммерция', subrent: 'Субаренда',
- }
- const dealTypeColors: Record<string, string> = {
- rent: 'bg-blue-100 text-blue-700',
- sale: 'bg-green-100 text-green-700',
- management: 'bg-purple-100 text-purple-700',
- commercial: 'bg-orange-100 text-orange-700',
- subrent: 'bg-pink-100 text-pink-700',
- }
- const statusLabels: Record<string, string> = {
- new: 'Новая', showing: 'Показ', negotiation: 'Переговоры',
- contract: 'Договор', payment: 'Оплата', completed: 'Завершено', cancelled: 'Отменено',
- }
- const statusColors: Record<string, string> = {
- new: 'bg-blue-50 text-blue-600 border-blue-200',
- showing: 'bg-yellow-50 text-yellow-700 border-yellow-200',
- negotiation: 'bg-orange-50 text-orange-600 border-orange-200',
- contract: 'bg-purple-50 text-purple-600 border-purple-200',
- payment: 'bg-cyan-50 text-cyan-600 border-cyan-200',
- completed: 'bg-green-50 text-green-700 border-green-200',
- cancelled: 'bg-red-50 text-red-500 border-red-200',
- }
+  const router = useRouter()
+  const [page, setPage] = useState(1)
 
- if (deals.length === 0) {
- return (
- <div className="bg-white border border-slate-200/60 shadow-sm p-16 text-center">
- <p className="text-muted-foreground text-sm">Нет сделок по выбранным фильтрам</p>
- </div>
- )
- }
+  useEffect(() => { setPage(1) }, [deals])
 
- return (
- <div className="bg-white border border-slate-200/60 shadow-sm overflow-hidden">
- {/* Desktop table */}
- <div className="hidden md:block overflow-x-auto">
- <table className="w-full">
- <thead>
- <tr className="border-b border-slate-100 bg-slate-50/60">
- <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[180px]">Тип</th>
- <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Клиент</th>
- <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Собственник</th>
- <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Объект</th>
- <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[120px]">Статус</th>
- <th className="text-right px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[140px]">Сумма</th>
- <th className="px-5 py-3 w-10"></th>
- </tr>
- </thead>
- <tbody className="divide-y divide-slate-100">
- {deals.map((deal) => {
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const ownerContact = deal.owner_contact as { full_name?: string } | null
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const clientContact = deal.client_contact as { full_name?: string } | null
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const legacyClient = deal.client as { full_name?: string } | null
- const property = deal.property as { title?: string; address?: string } | null
+  if (deals.length === 0) {
+    return (
+      <div className="hp-card hp-empty">
+        <p className="text-[var(--hp-sub)] text-sm">Нет сделок по выбранным фильтрам</p>
+      </div>
+    )
+  }
 
- const ownerName = ownerContact?.full_name
- const clientName = clientContact?.full_name || legacyClient?.full_name
- const propLabel = property?.title ?? property?.address
+  const totalPages = Math.max(1, Math.ceil(deals.length / PAGE_SIZE))
+  const current = Math.min(page, totalPages)
+  const from = (current - 1) * PAGE_SIZE
+  const rows = deals.slice(from, from + PAGE_SIZE)
 
- return (
- <tr
- key={deal.id}
- className="hover:bg-slate-50/60 transition-colors group cursor-pointer"
- onClick={() => { window.location.href = `/deals/${deal.id}` }}
- >
- <td className="px-5 py-3.5">
- <span className={`inline-block text-xs px-2.5 py-1 rounded-full font-medium ${dealTypeColors[deal.deal_type] ?? 'bg-gray-100 text-gray-600'}`}>
- {dealTypeLabels[deal.deal_type] ?? deal.deal_type}
- </span>
- </td>
- <td className="px-5 py-3.5">
- {clientName ? (
- <div className="flex items-center gap-2">
- <User className="w-3.5 h-3.5 text-blue-400 shrink-0" />
- <span className="text-sm font-medium text-foreground truncate max-w-[160px]">{clientName}</span>
- </div>
- ) : (
- <span className="text-xs text-slate-400">—</span>
- )}
- </td>
- <td className="px-5 py-3.5">
- {ownerName ? (
- <div className="flex items-center gap-2">
- <Building2 className="w-3.5 h-3.5 text-orange-400 shrink-0" />
- <span className="text-sm text-[#374151] truncate max-w-[160px]">{ownerName}</span>
- </div>
- ) : (
- <span className="text-xs text-slate-400">—</span>
- )}
- </td>
- <td className="px-5 py-3.5">
- {propLabel ? (
- <div className="flex items-center gap-2">
- <Home className="w-3.5 h-3.5 text-slate-400 shrink-0" />
- <span className="text-sm text-[#374151] truncate max-w-[200px]">{propLabel}</span>
- </div>
- ) : (
- <span className="text-xs text-slate-400">—</span>
- )}
- </td>
- <td className="px-5 py-3.5">
- <span className={`inline-block text-xs px-2.5 py-1 rounded-full font-medium border ${statusColors[deal.status] ?? 'bg-gray-50 text-gray-500 border-gray-200'}`}>
- {statusLabels[deal.status] ?? deal.status}
- </span>
- </td>
- <td className="px-5 py-3.5 text-right">
- {deal.amount ? (
- <span className="text-sm font-semibold text-foreground">
- {Number(deal.amount).toLocaleString('ru-RU')} ₽
- </span>
- ) : (
- <span className="text-xs text-slate-400">—</span>
- )}
- </td>
- <td className="px-5 py-3.5">
- <ExternalLink className="w-4 h-4 text-slate-300 group-hover:text-slate-500 transition-colors" />
- </td>
- </tr>
- )
- })}
- </tbody>
- </table>
- </div>
+  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1)
+    .filter(n => n === 1 || n === totalPages || Math.abs(n - current) <= 1)
 
- {/* Mobile cards */}
- <div className="md:hidden divide-y divide-slate-100">
- {deals.map((deal) => {
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const clientContact = deal.client_contact as { full_name?: string } | null
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const legacyClient = deal.client as { full_name?: string } | null
- const property = deal.property as { title?: string; address?: string } | null
- const clientName = clientContact?.full_name || legacyClient?.full_name
- const propLabel = property?.title ?? property?.address
+  return (
+    <div className="hp-card overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="hp-registry">
+          <thead>
+            <tr>
+              <th>№</th>
+              <th>Тип</th>
+              <th>Клиент</th>
+              <th className="hidden lg:table-cell">Собственник</th>
+              <th className="hidden md:table-cell">Объект</th>
+              <th>Этап</th>
+              <th className="text-right">Сумма</th>
+              <th className="hidden lg:table-cell">Закрытие</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(deal => {
+              const ownerContact  = deal.owner_contact  as { full_name?: string; company_name?: string } | null
+              const clientContact = deal.client_contact as { full_name?: string; company_name?: string } | null
+              const legacyClient  = deal.client as { full_name?: string } | null
+              const property = deal.property as { title?: string; address?: string } | null
 
- return (
- <Link key={deal.id} href={`/deals/${deal.id}`} className="block p-4 hover:bg-slate-50/60 transition-colors">
- <div className="flex items-center justify-between mb-2">
- <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${dealTypeColors[deal.deal_type] ?? 'bg-gray-100 text-gray-600'}`}>
- {dealTypeLabels[deal.deal_type] ?? deal.deal_type}
- </span>
- <span className={`text-xs px-2 py-0.5 rounded-full font-medium border ${statusColors[deal.status] ?? 'bg-gray-50 text-gray-500 border-gray-200'}`}>
- {statusLabels[deal.status] ?? deal.status}
- </span>
- </div>
- {clientName && <p className="text-sm font-medium text-foreground truncate">{clientName}</p>}
- {propLabel && <p className="text-xs text-muted-foreground truncate mt-0.5">{propLabel}</p>}
- {deal.amount && (
- <p className="text-sm font-semibold text-[#16A34A] mt-1.5">
- {Number(deal.amount).toLocaleString('ru-RU')} ₽
- </p>
- )}
- </Link>
- )
- })}
- </div>
- </div>
- )
+              const ownerName  = ownerContact?.company_name || ownerContact?.full_name
+              const clientName = clientContact?.company_name || clientContact?.full_name || legacyClient?.full_name
+              const propLabel  = property?.address ?? property?.title
+
+              return (
+                <tr
+                  key={deal.id}
+                  onClick={() => router.push(`/deals/${deal.id}`)}
+                  className="cursor-pointer"
+                >
+                  <td className="sub whitespace-nowrap">
+                    <Link
+                      href={`/deals/${deal.id}`}
+                      onClick={e => e.stopPropagation()}
+                      className="font-semibold text-[var(--hp-ink)] hover:text-[var(--hp-accent)] transition-colors"
+                    >
+                      {deal.deal_number ? `СД-${deal.deal_number}` : '—'}
+                    </Link>
+                  </td>
+                  <td className="sub whitespace-nowrap">
+                    {DEAL_TYPE_LABELS[deal.deal_type] ?? deal.deal_type}
+                  </td>
+                  <td className="max-w-[180px]">
+                    <span className="block truncate font-medium">
+                      {clientName ?? <span className="text-[var(--hp-tertiary)] font-normal">—</span>}
+                    </span>
+                  </td>
+                  <td className="sub hidden lg:table-cell max-w-[180px]">
+                    <span className="block truncate">
+                      {ownerName ?? <span className="text-[var(--hp-tertiary)]">—</span>}
+                    </span>
+                  </td>
+                  <td className="sub hidden md:table-cell max-w-[220px]">
+                    <span className="block truncate">
+                      {propLabel ?? <span className="text-[var(--hp-tertiary)]">не подобран</span>}
+                    </span>
+                  </td>
+                  <td>
+                    <span className={`hp-badge ${dealStageBadgeClass(deal.status)}`}>
+                      {DEAL_STATUS_LABELS[deal.status] ?? deal.status}
+                    </span>
+                  </td>
+                  <td className="num font-semibold whitespace-nowrap">
+                    {deal.amount
+                      ? <>{formatAmount(deal.amount)} <span className="text-[var(--hp-tertiary)] font-normal">₽</span></>
+                      : <span className="text-[var(--hp-tertiary)] font-normal">—</span>}
+                  </td>
+                  <td className="sub hidden lg:table-cell whitespace-nowrap">
+                    {deal.expected_close_date
+                      ? formatDateCompact(deal.expected_close_date)
+                      : <span className="text-[var(--hp-tertiary)]">—</span>}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="hp-registry-foot">
+        <span>Показано {from + 1}–{Math.min(from + PAGE_SIZE, deals.length)} из {deals.length}</span>
+        {totalPages > 1 && (
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              className={`hp-page-btn${current === 1 ? ' disabled' : ''}`}
+              aria-label="Предыдущая страница"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+            </button>
+            {pageNumbers.map((n, i) => (
+              <span key={n} className="flex items-center gap-1.5">
+                {i > 0 && n - pageNumbers[i - 1] > 1 && <span className="text-[var(--hp-tertiary)]">…</span>}
+                <button onClick={() => setPage(n)} className={`hp-page-btn${n === current ? ' current' : ''}`}>
+                  {n}
+                </button>
+              </span>
+            ))}
+            <button
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              className={`hp-page-btn${current === totalPages ? ' disabled' : ''}`}
+              aria-label="Следующая страница"
+            >
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
 }

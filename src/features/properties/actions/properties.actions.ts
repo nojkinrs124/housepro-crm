@@ -44,6 +44,10 @@ function extractPropertyFields(formData: FormData) {
     // Документ-основание права собственности (напр. "Выписка из ЕГРН №... от ...")
     // — подставляется в договоры найма/аренды по этому объекту.
     ownership_basis:   (formData.get('ownership_basis') as string)?.trim() || null,
+    // Юридические характеристики — выводятся в блоке «Объект и условия» на карточке сделки
+    land_area:         formData.get('land_area') ? Number(formData.get('land_area')) : null,
+    cadastral_number:  (formData.get('cadastral_number') as string)?.trim() || null,
+    encumbrances:      (formData.get('encumbrances') as string)?.trim() || null,
   }
 }
 

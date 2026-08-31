@@ -8,7 +8,7 @@ import { Plus } from 'lucide-react'
 type State = { error?: string; success?: boolean } | null
 
 const COLORS = [
- '#16A34A', '#22C55E', '#4ADE80', '#EF4444', '#F97316',
+ 'var(--hp-accent)', 'var(--hp-accent)', '#4ADE80', '#EF4444', '#F97316',
  '#8B5CF6', '#06B6D4', '#F59E0B', '#DB2777', '#64748B',
 ]
 
@@ -24,14 +24,14 @@ export function AddCategoryForm({ defaultType }: { defaultType?: AccountingTrans
  type="text"
  name="name"
  placeholder="Новая категория"
- className="w-full h-9 px-3 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+ className="w-full h-9 px-3 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all"
  />
  </div>
  <div className="space-y-1">
  <label className="block text-xs font-semibold text-muted-foreground">Цвет</label>
  <select
  name="color"
- className="h-9 px-3 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer"
+ className="h-9 px-3 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer"
  >
  {COLORS.map(c => (
  <option key={c} value={c} style={{ background: c, color: '#fff' }}>{c}</option>
@@ -42,7 +42,7 @@ export function AddCategoryForm({ defaultType }: { defaultType?: AccountingTrans
  type="submit"
  disabled={isPending}
  className="h-9 flex items-center gap-1.5 px-3 text-white text-xs font-bold disabled:opacity-60"
- style={{ background: 'var(--hp-gradient-primary)' }}
+ style={{ background: 'var(--hp-accent)' }}
  >
  <Plus className="w-3.5 h-3.5" />
  Добавить

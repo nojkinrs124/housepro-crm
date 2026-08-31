@@ -40,11 +40,11 @@ export default async function ApiSettingsPage() {
  </div>
 
  {/* Docs hint */}
- <div className="flex items-start gap-3 p-4 bg-slate-50 border border-slate-100 text-sm">
+ <div className="flex items-start gap-3 p-4 bg-slate-50 border border-[var(--hp-border-soft)] text-sm">
  <Code className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
  <div className="text-muted-foreground">
  <p className="font-medium text-foreground mb-1">Использование</p>
- <code className="block bg-white border border-slate-200 p-2 text-xs mt-2">
+ <code className="block hp-card p-2 text-xs mt-2">
  curl -H &quot;Authorization: Bearer hp_...&quot; {process.env.NEXT_PUBLIC_SITE_URL ?? ''}/api/v1/contacts
  </code>
  <p className="mt-2">Доступные эндпоинты: /api/v1/contacts, /api/v1/leads, /api/v1/properties, /api/v1/deals</p>
@@ -54,7 +54,7 @@ export default async function ApiSettingsPage() {
  {/* Keys list */}
  <div className="space-y-2">
  {(!keys || keys.length === 0) ? (
- <div className="py-12 text-center text-muted-foreground bg-white border border-dashed border-slate-200">
+ <div className="py-12 text-center text-muted-foreground bg-white border border-dashed border-[var(--hp-border)]">
  <Key className="w-8 h-8 mx-auto mb-2 opacity-30" />
  <p className="text-sm">Ключей пока нет</p>
  </div>

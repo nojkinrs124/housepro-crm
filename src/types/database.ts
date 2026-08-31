@@ -77,6 +77,8 @@ export interface Contact {
   bank_account?: string
   corr_account?: string
   bik?: string
+  // Ответственный риелтор — колонка «Риелтор» в реестре контактов
+  manager_id?: string
   created_at: string
   updated_at: string
 }
@@ -151,6 +153,9 @@ export interface Property {
   utilities_included?: string
   // Ownership
   ownership_basis?: string
+  land_area?: number
+  cadastral_number?: string
+  encumbrances?: string
   // Content
   description?: string
   photo_urls?: string[]
@@ -230,6 +235,7 @@ export interface FileRecord {
   contract_id?: string
   client_id?: string
   property_id?: string
+  deal_id?: string
   uploaded_by?: string
   created_at: string
 }
@@ -278,6 +284,7 @@ export interface DocumentTemplate {
 
 export interface Deal {
   id: string
+  deal_number?: number
   deal_type: DealType
   status: string
   client_id?: string
@@ -290,7 +297,17 @@ export interface Deal {
   commission?: number
   notes?: string
   manager_id?: string
+  // Условия сделки — блок «Объект и условия» на карточке
+  advance_amount?: number
+  down_payment?: number
+  bargain_amount?: number
+  expected_close_date?: string
+  bank_approval_date?: string
+  payment_method?: string
+  bank_name?: string
+  source?: string
   created_at: string
+  updated_at?: string
 }
 
 export interface CompanySettings {

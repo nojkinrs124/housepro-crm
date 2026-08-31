@@ -54,7 +54,7 @@ export function CreateApiKeyForm() {
 
  return (
  <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4" onClick={close}>
- <div className="bg-white shadow-xl p-6 max-w-md w-full" onClick={e => e.stopPropagation()}>
+ <div className="bg-white p-6 max-w-md w-full" onClick={e => e.stopPropagation()}>
  {newKey ? (
  <div className="space-y-4">
  <div className="flex items-center gap-2 text-amber-600">
@@ -64,12 +64,12 @@ export function CreateApiKeyForm() {
  <p className="text-sm text-muted-foreground">
  Этот ключ показывается только один раз. После закрытия окна его нельзя будет посмотреть снова.
  </p>
- <div className="flex items-center gap-2 p-3 bg-slate-50 border border-slate-200 font-mono text-xs break-all">
+ <div className="flex items-center gap-2 p-3 bg-slate-50 border border-[var(--hp-border)] font-mono text-xs break-all">
  {newKey}
  </div>
  <button
  onClick={copyKey}
- className="w-full flex items-center justify-center gap-2 py-2 border border-slate-200 text-sm font-medium hover:bg-slate-50 transition-colors"
+ className="w-full flex items-center justify-center gap-2 py-2 border border-[var(--hp-border)] text-sm font-medium hover:bg-[var(--hp-neutral-tint)] transition-colors"
  >
  {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
  {copied ? 'Скопировано' : 'Скопировать ключ'}
@@ -99,7 +99,7 @@ export function CreateApiKeyForm() {
  name="name"
  required
  placeholder="Интеграция с сайтом"
- className="w-full px-3 py-2 text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/30"
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] outline-none focus:border-[var(--hp-ink)]"
  />
  </div>
 
@@ -107,7 +107,7 @@ export function CreateApiKeyForm() {
  <label className="block text-sm font-medium mb-1.5">Доступ</label>
  <select
  name="scope"
- className="w-full px-3 py-2 text-sm border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30"
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] bg-white outline-none focus:border-[var(--hp-ink)]"
  >
  <option value="read">Только чтение</option>
  <option value="write">Чтение и запись</option>

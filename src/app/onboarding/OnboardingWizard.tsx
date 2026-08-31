@@ -129,7 +129,7 @@ export function OnboardingWizard({ orgId, orgName: initialName, userId, employee
  <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${
  done ? 'bg-primary text-white' :
  active ? 'bg-primary/10 border-2 border-primary text-primary' :
- 'bg-slate-100 text-slate-400'
+ 'bg-slate-100 text-[var(--hp-tertiary)]'
  }`}>
  {done ? <Check className="w-4 h-4" /> : <Icon className="w-3.5 h-3.5" />}
  </div>
@@ -142,7 +142,7 @@ export function OnboardingWizard({ orgId, orgName: initialName, userId, employee
  </div>
 
  {/* Card */}
- <div className="bg-white border border-slate-100 shadow-sm p-6">
+ <div className="hp-card p-6">
  <div className="mb-6">
  <h2 className="text-lg font-semibold">{STEPS[step - 1].label}</h2>
  <p className="text-sm text-muted-foreground">{STEPS[step - 1].desc}</p>
@@ -155,13 +155,13 @@ export function OnboardingWizard({ orgId, orgName: initialName, userId, employee
  <label className="block text-sm font-medium mb-1.5">Название агентства *</label>
  <input value={orgName} onChange={e => setOrgName(e.target.value)}
  placeholder="Агентство недвижимости «Ваш дом»"
- className="w-full px-3 py-2 text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/30" />
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] outline-none focus:border-[var(--hp-ink)]" />
  </div>
  <div>
  <label className="block text-sm font-medium mb-1.5">Телефон</label>
  <input value={orgPhone} onChange={e => setOrgPhone(e.target.value)}
  placeholder="+7 (999) 000-00-00"
- className="w-full px-3 py-2 text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/30" />
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] outline-none focus:border-[var(--hp-ink)]" />
  </div>
  </div>
  )}
@@ -172,7 +172,7 @@ export function OnboardingWizard({ orgId, orgName: initialName, userId, employee
  <div>
  <label className="block text-sm font-medium mb-1.5">Форма собственности</label>
  <select value={companyType} onChange={e => setCompanyType(e.target.value)}
- className="w-full px-3 py-2 text-sm border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30">
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] bg-white outline-none focus:border-[var(--hp-ink)]">
  <option value="ip">ИП</option>
  <option value="ooo">ООО</option>
  <option value="ao">АО</option>
@@ -183,7 +183,7 @@ export function OnboardingWizard({ orgId, orgName: initialName, userId, employee
  <label className="block text-sm font-medium mb-1.5">ИНН</label>
  <input value={companyInn} onChange={e => setCompanyInn(e.target.value)}
  placeholder="1234567890"
- className="w-full px-3 py-2 text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/30" />
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] outline-none focus:border-[var(--hp-ink)]" />
  </div>
  </div>
  )}
@@ -196,18 +196,18 @@ export function OnboardingWizard({ orgId, orgName: initialName, userId, employee
  <label className="block text-sm font-medium mb-1.5">Название объекта</label>
  <input value={propTitle} onChange={e => setPropTitle(e.target.value)}
  placeholder="2-комнатная квартира на Пушкина"
- className="w-full px-3 py-2 text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/30" />
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] outline-none focus:border-[var(--hp-ink)]" />
  </div>
  <div>
  <label className="block text-sm font-medium mb-1.5">Адрес</label>
  <input value={propAddress} onChange={e => setPropAddress(e.target.value)}
  placeholder="ул. Пушкина, д. 1, кв. 10"
- className="w-full px-3 py-2 text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/30" />
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] outline-none focus:border-[var(--hp-ink)]" />
  </div>
  <div>
  <label className="block text-sm font-medium mb-1.5">Тип</label>
  <select value={propType} onChange={e => setPropType(e.target.value)}
- className="w-full px-3 py-2 text-sm border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30">
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] bg-white outline-none focus:border-[var(--hp-ink)]">
  <option value="apartment">Квартира</option>
  <option value="house">Дом</option>
  <option value="commercial">Коммерция</option>
@@ -225,13 +225,13 @@ export function OnboardingWizard({ orgId, orgName: initialName, userId, employee
  <label className="block text-sm font-medium mb-1.5">Имя клиента</label>
  <input value={leadName} onChange={e => setLeadName(e.target.value)}
  placeholder="Иван Иванов"
- className="w-full px-3 py-2 text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/30" />
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] outline-none focus:border-[var(--hp-ink)]" />
  </div>
  <div>
  <label className="block text-sm font-medium mb-1.5">Телефон</label>
  <input value={leadPhone} onChange={e => setLeadPhone(e.target.value)}
  placeholder="+7 (999) 000-00-00"
- className="w-full px-3 py-2 text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/30" />
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] outline-none focus:border-[var(--hp-ink)]" />
  </div>
  </div>
  )}
@@ -268,7 +268,7 @@ export function OnboardingWizard({ orgId, orgName: initialName, userId, employee
  <button
  onClick={() => setStep(s => Math.max(1, s - 1))}
  disabled={step === 1 || loading}
- className="px-4 py-2 text-sm text-muted-foreground border border-slate-200 hover:bg-slate-50 transition-colors disabled:opacity-30"
+ className="px-4 py-2 text-sm text-muted-foreground border border-[var(--hp-border)] hover:bg-[var(--hp-neutral-tint)] transition-colors disabled:opacity-30"
  >
  Назад
  </button>

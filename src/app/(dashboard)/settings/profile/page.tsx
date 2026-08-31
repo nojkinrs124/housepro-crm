@@ -24,7 +24,7 @@ export default async function ProfilePage() {
         subtitle="Личные данные и безопасность"
         backHref="/settings"
         backLabel="Настройки"
-        icon={<UserCircle className="text-[#16A34A]" style={{ width: 20, height: 20 }} />}
+        icon={<UserCircle className="text-[var(--hp-accent)]" style={{ width: 20, height: 20 }} />}
       />
 
       <ProfileForm user={profile} />

@@ -44,7 +44,7 @@ export default async function AvitoSettingsPage() {
  icon={<Megaphone className="text-blue-600" style={{ width: 20, height: 20 }} />}
  />
 
- <div className="flex items-center gap-4 bg-white border border-slate-100 p-5" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}>
+ <div className="flex items-center gap-4 hp-card p-5" style={{ }}>
  <div className="w-11 h-11 flex items-center justify-center shrink-0 bg-blue-50">
  <Megaphone className="text-blue-600" style={{ width: 20, height: 20 }} />
  </div>

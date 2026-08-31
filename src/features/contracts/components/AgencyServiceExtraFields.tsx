@@ -21,7 +21,7 @@ interface Props {
  defaultValue?: unknown
 }
 
-const inp = 'w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all'
+const inp = 'w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all'
 const sel = inp + ' cursor-pointer'
 const lbl = 'block text-sm font-medium text-foreground mb-1.5'
 const sectionTitle = 'font-semibold text-foreground flex items-center gap-2'
@@ -53,7 +53,7 @@ export function AgencyServiceExtraFields({ defaultValue }: Props) {
  <input ref={hiddenRef} type="hidden" name="contract_type_data_json" defaultValue={JSON.stringify(data)} />
 
  {/* Услуги */}
- <div className="bg-card border border-border p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className={sectionTitle}><ListChecks className="w-4 h-4 text-blue-500" /> Оказываемые услуги</h2>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -77,7 +77,7 @@ export function AgencyServiceExtraFields({ defaultValue }: Props) {
  </div>
 
  {/* Вознаграждение */}
- <div className="bg-card border border-border p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className={sectionTitle}><Wallet className="w-4 h-4 text-emerald-500" /> Модель вознаграждения</h2>
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">

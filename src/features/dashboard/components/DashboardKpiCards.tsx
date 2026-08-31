@@ -31,7 +31,7 @@ export function DashboardKpiCards({ cards }: { cards: KpiCard[] }) {
  ? 'text-green-600 bg-green-50 border border-green-100'
  : card.trendPos === false
  ? 'text-red-600 bg-red-50 border border-red-100'
- : 'text-slate-500 bg-slate-50 border border-slate-100'
+ : 'text-[var(--hp-sub)] bg-slate-50 border border-[var(--hp-border-soft)]'
 
  return (
  <motion.div
@@ -42,11 +42,10 @@ export function DashboardKpiCards({ cards }: { cards: KpiCard[] }) {
  >
  <Link href={card.href}>
  <motion.div
- className="group bg-white p-5 border border-slate-100 cursor-pointer"
- style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
+ className="group bg-white p-5 border border-[var(--hp-border-soft)] cursor-pointer"
+ style={{ }}
  whileHover={{
  y: -4,
- boxShadow: '0 8px 24px rgba(0,0,0,0.1), 0 20px 48px rgba(0,0,0,0.1)',
  }}
  transition={{ duration: 0.2 }}
  >

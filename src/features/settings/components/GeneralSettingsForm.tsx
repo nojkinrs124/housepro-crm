@@ -50,7 +50,7 @@ const THEMES = [
 
 type Feedback = { type: 'success' | 'error'; message: string } | null
 
-const inputCls = 'w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all'
+const inputCls = 'w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all'
 const labelCls = 'text-xs font-medium text-muted-foreground uppercase tracking-wide'
 
 export function GeneralSettingsForm({ settings }: { settings: GeneralSettings }) {
@@ -91,7 +91,7 @@ export function GeneralSettingsForm({ settings }: { settings: GeneralSettings })
  <form onSubmit={handleSubmit} className="space-y-5">
 
  {/* Language + Currency */}
- <div className="bg-card border border-border p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className="font-semibold text-foreground flex items-center gap-2 text-sm">
  <Globe className="w-4 h-4 text-muted-foreground" />
  Язык и регион
@@ -119,7 +119,7 @@ export function GeneralSettingsForm({ settings }: { settings: GeneralSettings })
  </div>
 
  {/* Timezone + Date format */}
- <div className="bg-card border border-border p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className="font-semibold text-foreground flex items-center gap-2 text-sm">
  <Clock className="w-4 h-4 text-muted-foreground" />
  Дата и время
@@ -147,7 +147,7 @@ export function GeneralSettingsForm({ settings }: { settings: GeneralSettings })
  </div>
 
  {/* Theme */}
- <div className="bg-card border border-border p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className="font-semibold text-foreground flex items-center gap-2 text-sm">
  <Moon className="w-4 h-4 text-muted-foreground" />
  Тема оформления

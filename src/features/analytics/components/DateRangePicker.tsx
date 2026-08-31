@@ -40,7 +40,7 @@ export function DateRangePicker({ from, to }: Props) {
  <button
  key={p.days}
  onClick={() => applyPreset(p.days)}
- className="px-3 py-1.5 text-xs font-medium border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:border-primary/40 transition-colors"
+ className="px-3 py-1.5 text-xs font-medium border border-[var(--hp-border)] bg-white text-[var(--hp-sub)] hover:bg-[var(--hp-neutral-tint)] hover:border-primary/40 transition-colors"
  >
  {p.label}
  </button>
@@ -52,14 +52,14 @@ export function DateRangePicker({ from, to }: Props) {
  type="date"
  defaultValue={from}
  onChange={e => push(e.target.value, to ?? new Date().toISOString().slice(0, 10))}
- className="text-xs px-2 py-1.5 border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30"
+ className="text-xs px-2 py-1.5 border border-[var(--hp-border)] bg-white outline-none focus:border-[var(--hp-ink)]"
  />
  <span className="text-muted-foreground text-xs">—</span>
  <input
  type="date"
  defaultValue={to}
  onChange={e => push(from ?? '', e.target.value)}
- className="text-xs px-2 py-1.5 border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30"
+ className="text-xs px-2 py-1.5 border border-[var(--hp-border)] bg-white outline-none focus:border-[var(--hp-ink)]"
  />
  </div>
  </div>

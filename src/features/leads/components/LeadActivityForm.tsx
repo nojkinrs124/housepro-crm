@@ -59,20 +59,20 @@ export function LeadActivityForm({ leadId }: { leadId: string }) {
  {/* Описание */}
  <textarea name="content" rows={2}
  placeholder="Описание — что обсудили, о чём договорились..."
- className="w-full px-4 py-2.5 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all resize-none"
+ className="w-full px-4 py-2.5 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all resize-none"
  />
 
  {/* Результат */}
  <input name="result" type="text"
  placeholder="Результат (необязательно)"
- className="w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+ className="w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all"
  />
 
  {/* Следующий контакт */}
  <div className="flex items-center gap-2">
  <label className="text-xs text-muted-foreground shrink-0">След. контакт:</label>
  <input name="scheduled_at" type="datetime-local"
- className="flex-1 min-w-0 h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+ className="flex-1 min-w-0 h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all"
  />
  </div>
 
@@ -80,8 +80,8 @@ export function LeadActivityForm({ leadId }: { leadId: string }) {
 
  <div className="flex gap-2">
  <button type="submit" disabled={loading}
- className="flex items-center gap-1.5 px-4 h-10 text-white text-sm font-bold hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0 transition-all"
- style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+ className="flex items-center gap-1.5 px-4 h-10 text-white text-sm font-bold disabled:opacity-60 disabled:hover:translate-y-0 transition-all"
+ style={{ background: 'var(--hp-accent)', }}>
  {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
  Сохранить
  </button>

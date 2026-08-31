@@ -19,7 +19,7 @@ interface Props {
  defaultValue?: unknown
 }
 
-const inp = 'w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all'
+const inp = 'w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all'
 const sel = inp + ' cursor-pointer'
 const lbl = 'block text-sm font-medium text-foreground mb-1.5'
 const sectionTitle = 'font-semibold text-foreground flex items-center gap-2'
@@ -50,7 +50,7 @@ export function PropertyManagementExtraFields({ defaultValue }: Props) {
  <div className="space-y-4">
  <input ref={hiddenRef} type="hidden" name="contract_type_data_json" defaultValue={JSON.stringify(data)} />
 
- <div className="bg-card border border-border p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className={sectionTitle}><ListChecks className="w-4 h-4 text-blue-500" /> Услуги по управлению</h2>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -72,7 +72,7 @@ export function PropertyManagementExtraFields({ defaultValue }: Props) {
  </div>
  </div>
 
- <div className="bg-card border border-border p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className={sectionTitle}><CalendarClock className="w-4 h-4 text-violet-500" /> Отчётность и вознаграждение</h2>
  <div>
  <label className={lbl}>Периодичность отчёта перед собственником</label>
@@ -85,7 +85,7 @@ export function PropertyManagementExtraFields({ defaultValue }: Props) {
  </div>
  <div>
  <label className={lbl}>Что входит в вознаграждение / особые условия (необязательно)</label>
- <textarea className="w-full px-4 py-2.5 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all resize-none"
+ <textarea className="w-full px-4 py-2.5 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all resize-none"
  rows={2} value={data.reward_details}
  onChange={e => set('reward_details', e.target.value)} />
  </div>

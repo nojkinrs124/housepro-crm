@@ -53,7 +53,7 @@ export function ExportCsvButton({ transactions }: Props) {
  return (
  <button
  onClick={handleExport}
- className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-sm font-semibold text-[#374151] hover:bg-slate-50 transition-all"
+ className="flex items-center gap-2 px-4 py-2.5 hp-card text-sm font-semibold text-[var(--hp-ink)] hover:bg-[var(--hp-neutral-tint)] transition-all"
  >
  <Download className="w-4 h-4" />
  CSV

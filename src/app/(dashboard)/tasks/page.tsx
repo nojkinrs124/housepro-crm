@@ -42,7 +42,7 @@ export default async function TasksPage() {
  ].map(stat => {
  const Icon = stat.Icon
  return (
- <div key={stat.label} className="bg-white border border-slate-200/60 shadow-sm p-5 flex items-center gap-3 sm:gap-4">
+ <div key={stat.label} className="hp-card p-5 flex items-center gap-3 sm:gap-4">
  <div className={`w-11 h-11 flex items-center justify-center shrink-0 ${stat.iconCls}`}>
  <Icon className={stat.iconColor} style={{ width: 20, height: 20 }} />
  </div>
@@ -57,14 +57,14 @@ export default async function TasksPage() {
 
  {total === 0 ? (
  <div className="p-16 text-center bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100">
- <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mx-auto mb-4 shadow-md">
+ <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center mx-auto mb-4">
  <CheckSquare style={{ width: 24, height: 24 }} className="text-green-600" />
  </div>
  <h3 className="font-bold text-foreground text-lg">Нет задач</h3>
  <p className="text-muted-foreground text-sm mt-1">Создайте первую задачу для команды</p>
  <Link href="/tasks/new"
  className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 text-white text-sm font-semibold"
- style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+ style={{ background: 'var(--hp-accent)', }}>
  <Plus style={{ width: 16, height: 16 }} />
  Создать задачу
  </Link>

@@ -129,7 +129,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
  </Link>
  <DeleteContractButton contractId={id} />
  <Link href={`/contracts/${id}/generate`}
- className="flex items-center gap-2 px-4 py-2 text-white text-sm font-bold hover:-translate-y-0.5 transition whitespace-nowrap" style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+ className="flex items-center gap-2 px-4 py-2 text-white text-sm font-bold transition whitespace-nowrap" style={{ background: 'var(--hp-accent)', }}>
  <FileText className="w-4 h-4" />
  Сформировать DOCX
  </Link>
@@ -141,7 +141,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
  <div className="lg:col-span-2 space-y-4">
 
  {/* Parties */}
- <div className="bg-white border border-slate-100 shadow-sm p-5">
+ <div className="hp-card p-5">
  <h2 className="font-semibold text-foreground mb-4">Стороны договора</h2>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  {/* Сторона 1 */}
@@ -207,7 +207,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
 
  {/* Договор-основание (субаренда) */}
  {typeConfig?.requiresBaseContract && (
- <div className="bg-white border border-slate-100 shadow-sm p-5">
+ <div className="hp-card p-5">
  <h2 className="font-semibold text-foreground mb-3">Договор-основание</h2>
  {baseContract?.id ? (
  <Link href={`/contracts/${baseContract.id}`} className="text-sm font-medium text-primary hover:underline">
@@ -220,7 +220,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
  )}
 
  {/* Property */}
- <div className="bg-white border border-slate-100 shadow-sm p-5">
+ <div className="hp-card p-5">
  <div className="flex items-center justify-between mb-4">
  <h2 className="font-semibold text-foreground">Объект</h2>
  {!property && (
@@ -247,7 +247,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
  </div>
 
  {/* Deal */}
- <div className="bg-white border border-slate-100 shadow-sm p-5">
+ <div className="hp-card p-5">
  <h2 className="font-semibold text-foreground mb-4">Сделка</h2>
  {deal?.id ? (
  <div className="flex items-center justify-between gap-3 p-3 bg-muted/30">
@@ -270,7 +270,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
  </div>
 
  {/* Finance */}
- <div className="bg-white border border-slate-100 shadow-sm p-5">
+ <div className="hp-card p-5">
  <h2 className="font-semibold text-foreground mb-4">Финансы</h2>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div className="flex items-center gap-3 p-4 bg-muted/30">
@@ -295,7 +295,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
  </div>
 
  {/* Dates */}
- <div className="bg-white border border-slate-100 shadow-sm p-5">
+ <div className="hp-card p-5">
  <h2 className="font-semibold text-foreground mb-4">Сроки</h2>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div className="flex items-center gap-3">
@@ -320,7 +320,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
  </div>
 
  {contract.notes && (
- <div className="bg-white border border-slate-100 shadow-sm p-5">
+ <div className="hp-card p-5">
  <h2 className="font-semibold text-foreground mb-3">Примечания</h2>
  <p className="text-sm text-foreground leading-relaxed">{contract.notes}</p>
  </div>
@@ -340,7 +340,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
 
  {/* Right sidebar */}
  <div className="space-y-4">
- <div className="bg-white border border-slate-100 shadow-sm p-5">
+ <div className="hp-card p-5">
  <h2 className="font-semibold text-foreground mb-4">Информация</h2>
  <div className="space-y-3 text-sm">
  <div className="flex justify-between">
@@ -363,7 +363,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
  </div>
 
  {/* Change status */}
- <div className="bg-white border border-slate-100 shadow-sm p-5">
+ <div className="hp-card p-5">
  <h2 className="font-semibold text-foreground mb-3">Действия</h2>
  <div className="space-y-2">
  <Link href={`/contracts/new?duplicate=${id}`}

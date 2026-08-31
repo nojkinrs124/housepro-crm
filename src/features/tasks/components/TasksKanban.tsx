@@ -113,7 +113,7 @@ export function TasksKanbanBoard({ tasks: initialTasks }: { tasks: any[] }) {
  draggable
  onDragStart={(e) => handleDragStart(e, task)}
  onDragEnd={handleDragEnd}
- className={`bg-background border border-border p-3 hover:shadow-sm transition-all cursor-move select-none ${
+ className={`bg-background border border-border p-3 transition-all cursor-move select-none ${
  draggedTask?.id === task.id ? 'opacity-40 scale-95' : ''
  }`}
  >

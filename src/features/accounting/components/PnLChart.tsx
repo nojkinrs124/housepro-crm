@@ -25,7 +25,7 @@ function fmt(v: number) {
 export function PnLChart({ data }: Props) {
   if (data.length === 0) {
     return (
-      <div className="h-[260px] flex items-center justify-center text-slate-400 text-sm">
+      <div className="h-[260px] flex items-center justify-center text-[var(--hp-tertiary)] text-sm">
         Нет данных за период
       </div>
     )
@@ -57,7 +57,6 @@ export function PnLChart({ data }: Props) {
             borderRadius: 12,
             border: '1px solid #E2E8F0',
             fontSize: 12,
-            boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
           }}
           labelStyle={{ fontWeight: 600, color: '#111827', marginBottom: 4 }}
         />
@@ -67,7 +66,7 @@ export function PnLChart({ data }: Props) {
           iconSize={8}
           wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
         />
-        <Bar dataKey="income"  fill="#22C55E" radius={[4,4,0,0]} barSize={18} />
+        <Bar dataKey="income"  fill="var(--hp-accent)" radius={[4,4,0,0]} barSize={18} />
         <Bar dataKey="expense" fill="#F87171" radius={[4,4,0,0]} barSize={18} />
         <Line
           type="monotone"

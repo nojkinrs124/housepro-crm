@@ -36,15 +36,15 @@ export function ContractVersionHistory({ contractId, versions }: Props) {
  }
 
  return (
- <div className="border border-slate-100 overflow-hidden bg-white shadow-sm">
+ <div className="border border-[var(--hp-border-soft)] overflow-hidden bg-white">
  <button
  onClick={() => setOpen(v => !v)}
- className="w-full flex items-center justify-between px-5 py-3.5 bg-slate-50/60 hover:bg-slate-50 transition-colors"
+ className="w-full flex items-center justify-between px-5 py-3.5 bg-[var(--hp-neutral-tint)] hover:bg-[var(--hp-neutral-tint)] transition-colors"
  >
  <div className="flex items-center gap-2 text-sm font-medium text-foreground">
  <History className="w-4 h-4 text-muted-foreground" />
  История версий
- <span className="ml-1 px-1.5 py-0.5 text-xs font-semibold bg-slate-200 text-slate-600 rounded-full">
+ <span className="ml-1 px-1.5 py-0.5 text-xs font-semibold bg-slate-200 text-[var(--hp-sub)] rounded-full">
  {versions.length}
  </span>
  </div>
@@ -55,11 +55,11 @@ export function ContractVersionHistory({ contractId, versions }: Props) {
  </button>
 
  {open && (
- <div className="divide-y divide-slate-100">
+ <div className="divide-y divide-[var(--hp-border-soft)]">
  {versions.map((v) => (
  <div
  key={v.id}
- className="flex items-start justify-between gap-4 px-5 py-3.5 text-sm hover:bg-slate-50/40 transition-colors"
+ className="flex items-start justify-between gap-4 px-5 py-3.5 text-sm hover:bg-[var(--hp-neutral-tint)]/40 transition-colors"
  >
  <div className="flex items-start gap-3">
  <div className="mt-0.5 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -87,7 +87,7 @@ export function ContractVersionHistory({ contractId, versions }: Props) {
  href={v.docx_url}
  target="_blank"
  rel="noopener noreferrer"
- className="flex items-center gap-1 px-2.5 py-1 text-xs border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors"
+ className="flex items-center gap-1 px-2.5 py-1 text-xs border border-[var(--hp-border)] text-[var(--hp-sub)] hover:bg-slate-100 transition-colors"
  >
  <FileText className="w-3 h-3" />
  DOCX
@@ -101,7 +101,7 @@ export function ContractVersionHistory({ contractId, versions }: Props) {
  handleRestore(v.id)
  }
  }}
- className="flex items-center gap-1 px-2.5 py-1 text-xs border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors disabled:opacity-50"
+ className="flex items-center gap-1 px-2.5 py-1 text-xs border border-[var(--hp-border)] text-[var(--hp-sub)] hover:bg-slate-100 transition-colors disabled:opacity-50"
  >
  <RotateCcw className={`w-3 h-3 ${restoring === v.id ? 'animate-spin' : ''}`} />
  {restoring === v.id ? 'Восстанавливаю…' : 'Восстановить'}

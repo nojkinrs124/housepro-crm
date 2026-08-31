@@ -25,14 +25,15 @@ export async function uploadFileAction(formData: FormData) {
   const clientId = (formData.get('client_id') as string) || null
   const propertyId = (formData.get('property_id') as string) || null
   const contractId = (formData.get('contract_id') as string) || null
+  const dealId = (formData.get('deal_id') as string) || null
 
   if (!file || file.size === 0) {
     return { error: 'Файл не выбран' }
   }
 
-  const entityId = clientId || propertyId || contractId
+  const entityId = clientId || propertyId || contractId || dealId
   if (!entityId) {
-    return { error: 'Необходимо указать связанный объект (клиент, объект или договор)' }
+    return { error: 'Необходимо указать связанный объект (клиент, объект, договор или сделка)' }
   }
 
   const permError = await requirePermission(user.id, 'files', 'create')
@@ -70,6 +71,7 @@ export async function uploadFileAction(formData: FormData) {
     ...(clientId && { client_id: clientId }),
     ...(propertyId && { property_id: propertyId }),
     ...(contractId && { contract_id: contractId }),
+    ...(dealId && { deal_id: dealId }),
   }
 
   const { error: dbError } = await supabase.from('files').insert(payload)
@@ -82,6 +84,7 @@ export async function uploadFileAction(formData: FormData) {
   if (clientId) revalidatePath(`/clients/${clientId}`)
   if (propertyId) revalidatePath(`/properties/${propertyId}`)
   if (contractId) revalidatePath(`/contracts/${contractId}`)
+  if (dealId) revalidatePath(`/deals/${dealId}`)
 
   return { success: true }
 }
@@ -121,6 +124,7 @@ export async function deleteFileAction(fileId: string) {
   if (file.client_id) revalidatePath(`/clients/${file.client_id}`)
   if (file.property_id) revalidatePath(`/properties/${file.property_id}`)
   if (file.contract_id) revalidatePath(`/contracts/${file.contract_id}`)
+  if (file.deal_id) revalidatePath(`/deals/${file.deal_id}`)
 
   return { success: true }
 }

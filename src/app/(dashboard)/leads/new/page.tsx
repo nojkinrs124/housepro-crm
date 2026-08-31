@@ -41,7 +41,7 @@ export default async function NewLeadPage() {
  .eq('is_active', true)
  .order('full_name')
 
- const inp = 'w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all'
+ const inp = 'w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all'
  const lbl = 'block text-sm font-medium text-foreground mb-1.5'
 
  return (
@@ -58,7 +58,7 @@ export default async function NewLeadPage() {
  <ServerActionForm action={createLeadAction} className="space-y-4">
 
  {/* Контакт */}
- <div className="bg-white border border-slate-100 shadow-sm p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className="font-semibold text-foreground">Контакт</h2>
  <div>
  <label className={lbl}>Имя</label>
@@ -85,13 +85,13 @@ export default async function NewLeadPage() {
  </div>
 
  {/* Источник и менеджер */}
- <div className="bg-white border border-slate-100 shadow-sm p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className="font-semibold text-foreground">Источник</h2>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div>
  <label className={lbl}>Откуда пришёл <span className="text-destructive">*</span></label>
  <select name="source" required
- className="w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer">
+ className="w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer">
  <option value="">Выберите источник</option>
  {sourceOptions.map(o => (
  <option key={o.value} value={o.value}>{o.label}</option>
@@ -101,7 +101,7 @@ export default async function NewLeadPage() {
  <div>
  <label className={lbl}>Ответственный</label>
  <select name="assigned_to"
- className="w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer">
+ className="w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer">
  <option value="">Назначить себе</option>
  {(users ?? []).map(u => (
  <option key={u.id} value={u.id}>{u.full_name}</option>
@@ -116,7 +116,7 @@ export default async function NewLeadPage() {
  </div>
 
  {/* Критерии подбора */}
- <div className="bg-white border border-slate-100 shadow-sm p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className="font-semibold text-foreground">Что ищет клиент</h2>
 
  <div>
@@ -157,7 +157,7 @@ export default async function NewLeadPage() {
  <div>
  <label className={lbl}>Комнат</label>
  <select name="rooms"
- className="w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer">
+ className="w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer">
  <option value="">Любое</option>
  <option value="1">1</option>
  <option value="2">2</option>
@@ -181,16 +181,16 @@ export default async function NewLeadPage() {
  </div>
 
  {/* Комментарий */}
- <div className="bg-white border border-slate-100 shadow-sm p-6 space-y-3">
+ <div className="hp-card p-6 space-y-3">
  <h2 className="font-semibold text-foreground">Комментарий</h2>
  <textarea name="comment" rows={3}
  placeholder="Что ищет клиент, особые пожелания, срочность..."
- className="w-full px-4 py-3 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none" />
+ className="w-full px-4 py-3 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] resize-none" />
  </div>
 
  <div className="flex items-center gap-3">
  <button type="submit"
- className="flex items-center gap-2 px-6 py-2.5 text-white text-sm font-bold hover:-translate-y-0.5 transition-all" style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+ className="flex items-center gap-2 px-6 py-2.5 text-white text-sm font-bold transition-all" style={{ background: 'var(--hp-accent)', }}>
  <Zap className="w-4 h-4" />
  Добавить лид
  </button>

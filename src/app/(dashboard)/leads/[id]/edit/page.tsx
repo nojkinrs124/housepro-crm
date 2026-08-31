@@ -37,7 +37,7 @@ export default async function EditLeadPage({ params }: { params: Promise<{ id: s
  const l = rawLead as any
  const boundAction = updateLeadAction.bind(null, id)
 
- const inp = 'w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all'
+ const inp = 'w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all'
  const lbl = 'block text-sm font-medium text-foreground mb-1.5'
 
  return (
@@ -47,7 +47,7 @@ export default async function EditLeadPage({ params }: { params: Promise<{ id: s
  <ServerActionForm action={boundAction} className="space-y-4">
 
  {/* Контакт */}
- <div className="bg-white border border-slate-100 shadow-sm p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className="font-semibold text-foreground">Контакт</h2>
  <div>
  <label className={lbl}>Имя</label>
@@ -69,13 +69,13 @@ export default async function EditLeadPage({ params }: { params: Promise<{ id: s
  </div>
 
  {/* Источник */}
- <div className="bg-white border border-slate-100 shadow-sm p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className="font-semibold text-foreground">Источник и ответственный</h2>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div>
  <label className={lbl}>Источник</label>
  <select name="source" defaultValue={l.source ?? ''}
- className="w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer">
+ className="w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer">
  <option value="">— не выбрано —</option>
  {sourceOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
  </select>
@@ -83,7 +83,7 @@ export default async function EditLeadPage({ params }: { params: Promise<{ id: s
  <div>
  <label className={lbl}>Ответственный</label>
  <select name="assigned_to" defaultValue={l.assigned_to ?? ''}
- className="w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer">
+ className="w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer">
  <option value="">— не назначен —</option>
  {(users ?? []).map(u => <option key={u.id} value={u.id}>{u.full_name}</option>)}
  </select>
@@ -98,7 +98,7 @@ export default async function EditLeadPage({ params }: { params: Promise<{ id: s
  </div>
 
  {/* Критерии */}
- <div className="bg-white border border-slate-100 shadow-sm p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className="font-semibold text-foreground">Критерии подбора</h2>
  <div>
  <label className={lbl}>Тип сделки</label>
@@ -136,7 +136,7 @@ export default async function EditLeadPage({ params }: { params: Promise<{ id: s
  <div>
  <label className={lbl}>Комнат</label>
  <select name="rooms" defaultValue={l.rooms ?? ''}
- className="w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer">
+ className="w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer">
  <option value="">Любое</option>
  {['1','2','3','4'].map(r => <option key={r} value={r}>{r}{r === '4' ? '+' : ''}</option>)}
  </select>
@@ -157,15 +157,15 @@ export default async function EditLeadPage({ params }: { params: Promise<{ id: s
  </div>
 
  {/* Комментарий */}
- <div className="bg-white border border-slate-100 shadow-sm p-6 space-y-3">
+ <div className="hp-card p-6 space-y-3">
  <h2 className="font-semibold text-foreground">Комментарий</h2>
  <textarea name="comment" rows={3} defaultValue={l.comment ?? ''}
- className="w-full px-4 py-3 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none" />
+ className="w-full px-4 py-3 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] resize-none" />
  </div>
 
  <div className="flex gap-3">
  <button type="submit"
- className="flex-1 h-10 text-white text-sm font-bold hover:-translate-y-0.5 transition" style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+ className="flex-1 h-10 text-white text-sm font-bold transition" style={{ background: 'var(--hp-accent)', }}>
  Сохранить изменения
  </button>
  <Link href={`/leads/${id}`}

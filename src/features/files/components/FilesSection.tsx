@@ -52,7 +52,7 @@ export async function FilesSection({
  const { data: files } = await query
 
  return (
- <div className="bg-card border border-border p-5 space-y-4">
+ <div className="hp-card p-5 space-y-4">
  <div className="flex items-center justify-between">
  <h2 className="font-semibold text-foreground">{title}</h2>
  {files && files.length > 0 && (

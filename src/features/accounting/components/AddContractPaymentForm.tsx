@@ -46,14 +46,14 @@ export function AddContractPaymentForm({ contractId }: { contractId: string }) {
  <label className="text-xs text-muted-foreground">Сумма, ₽ *</label>
  <input
  name="amount" type="number" min="1" step="0.01" required placeholder="50 000"
- className="w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+ className="w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all"
  />
  </div>
  <div className="space-y-1">
  <label className="text-xs text-muted-foreground">Срок оплаты</label>
  <input
  name="due_date" type="date"
- className="w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+ className="w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all"
  />
  </div>
  </div>
@@ -62,7 +62,7 @@ export function AddContractPaymentForm({ contractId }: { contractId: string }) {
  <label className="text-xs text-muted-foreground">Примечание</label>
  <input
  name="description" type="text" placeholder="Аренда за март..."
- className="w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+ className="w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all"
  />
  </div>
 
@@ -75,8 +75,8 @@ export function AddContractPaymentForm({ contractId }: { contractId: string }) {
  )}
  <button
  type="submit" disabled={isPending}
- className="ml-auto flex items-center gap-2 px-4 py-2 text-white text-sm font-bold hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0 transition-all"
- style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}
+ className="ml-auto flex items-center gap-2 px-4 py-2 text-white text-sm font-bold disabled:opacity-60 disabled:hover:translate-y-0 transition-all"
+ style={{ background: 'var(--hp-accent)', }}
  >
  {isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
  Добавить

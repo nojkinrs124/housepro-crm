@@ -54,13 +54,13 @@ export default async function RecurringPage() {
 
  {rules.length === 0 ? (
  <div
- className="bg-white border border-slate-100 py-16 text-center"
- style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
+ className="hp-card py-16 text-center"
+ style={{ }}
  >
  <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
- <RefreshCw style={{ width: 20, height: 20 }} className="text-slate-400" />
+ <RefreshCw style={{ width: 20, height: 20 }} className="text-[var(--hp-tertiary)]" />
  </div>
- <p className="text-[#374151] font-semibold">Нет периодических операций</p>
+ <p className="text-[var(--hp-ink)] font-semibold">Нет периодических операций</p>
  <Link
  href="/accounting/recurring/new"
  className="mt-2 inline-block text-sm text-green-600 hover:underline font-medium"
@@ -73,15 +73,15 @@ export default async function RecurringPage() {
  {/* Active */}
  {active.length > 0 && (
  <div
- className="bg-white border border-slate-100"
- style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
+ className="hp-card"
+ style={{ }}
  >
- <div className="px-5 pt-5 pb-4 border-b border-slate-100 flex items-center gap-2">
+ <div className="px-5 pt-5 pb-4 border-b border-[var(--hp-border-soft)] flex items-center gap-2">
  <span className="w-2 h-2 rounded-full bg-green-500" />
  <h2 className="font-bold text-foreground text-[15px]">Активные</h2>
  <span className="text-xs text-muted-foreground font-medium ml-1">{active.length}</span>
  </div>
- <div className="divide-y divide-slate-100">
+ <div className="divide-y divide-[var(--hp-border-soft)]">
  {active.map(r => (
  <RuleRow key={r.id} rule={r} />
  ))}
@@ -92,15 +92,15 @@ export default async function RecurringPage() {
  {/* Inactive */}
  {inactive.length > 0 && (
  <div
- className="bg-white border border-slate-100"
- style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
+ className="hp-card"
+ style={{ }}
  >
- <div className="px-5 pt-5 pb-4 border-b border-slate-100 flex items-center gap-2">
+ <div className="px-5 pt-5 pb-4 border-b border-[var(--hp-border-soft)] flex items-center gap-2">
  <span className="w-2 h-2 rounded-full bg-slate-300" />
  <h2 className="font-bold text-foreground text-[15px]">Приостановлены</h2>
  <span className="text-xs text-muted-foreground font-medium ml-1">{inactive.length}</span>
  </div>
- <div className="divide-y divide-slate-100">
+ <div className="divide-y divide-[var(--hp-border-soft)]">
  {inactive.map(r => (
  <RuleRow key={r.id} rule={r} />
  ))}
@@ -132,7 +132,7 @@ function RuleRow({ rule: r }: { rule: any }) {
  )}
  </div>
  <div className="flex items-center gap-3 mt-1 flex-wrap">
- <span className="text-xs text-slate-400">
+ <span className="text-xs text-[var(--hp-tertiary)]">
  {FREQ_LABEL[r.frequency] ?? r.frequency}
  {r.day_of_month ? ` (${r.day_of_month}-го)` : ''}
  </span>
@@ -142,7 +142,7 @@ function RuleRow({ rule: r }: { rule: any }) {
  {r.category.name}
  </span>
  )}
- <span className="text-xs text-slate-400">
+ <span className="text-xs text-[var(--hp-tertiary)]">
  c {fmtDate(r.start_date)}{r.end_date ? ` по ${fmtDate(r.end_date)}` : ''}
  </span>
  </div>
@@ -152,7 +152,7 @@ function RuleRow({ rule: r }: { rule: any }) {
  {isIncome ? '+' : '−'}{fmt(Number(r.amount))}
  </p>
  {r.last_generated_date && (
- <p className="text-xs text-slate-400 mt-0.5">
+ <p className="text-xs text-[var(--hp-tertiary)] mt-0.5">
  Последний: {fmtDate(r.last_generated_date)}
  </p>
  )}
@@ -160,7 +160,7 @@ function RuleRow({ rule: r }: { rule: any }) {
  <div className="flex items-center gap-1 shrink-0">
  <Link
  href={`/accounting/recurring/${r.id}/edit`}
- className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 transition-colors"
+ className="p-1.5 text-[var(--hp-tertiary)] hover:text-green-600 hover:bg-green-50 transition-colors"
  title="Редактировать"
  >
  <Pencil style={{ width: 14, height: 14 }} />

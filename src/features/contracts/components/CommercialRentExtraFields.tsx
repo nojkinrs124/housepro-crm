@@ -18,7 +18,7 @@ interface Props {
  defaultValue?: unknown
 }
 
-const inp = 'w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all'
+const inp = 'w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all'
 const sel = inp + ' cursor-pointer'
 const lbl = 'block text-sm font-medium text-foreground mb-1.5'
 const sectionTitle = 'font-semibold text-foreground flex items-center gap-2'
@@ -49,7 +49,7 @@ export function CommercialRentExtraFields({ defaultValue }: Props) {
  <div className="space-y-4">
  <input ref={hiddenRef} type="hidden" name="contract_type_data_json" defaultValue={JSON.stringify(data)} />
 
- <div className="bg-card border border-border p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className={sectionTitle}><Building2 className="w-4 h-4 text-blue-500" /> Условия использования</h2>
 
  <div>
@@ -82,7 +82,7 @@ export function CommercialRentExtraFields({ defaultValue }: Props) {
  </label>
  </div>
 
- <div className="bg-card border border-border p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className={sectionTitle}><Wallet className="w-4 h-4 text-rose-500" /> Неустойка</h2>
  <div className="max-w-xs">
  <label className={lbl}>Неустойка за просрочку возврата (₽/день)</label>
@@ -91,7 +91,7 @@ export function CommercialRentExtraFields({ defaultValue }: Props) {
  </div>
  </div>
 
- <div className="bg-card border border-border p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className={sectionTitle}><ClipboardList className="w-4 h-4 text-orange-500" /> Опись оборудования / имущества</h2>
  <div className="space-y-2">
  {data.inventory_items.map((it, i) => (

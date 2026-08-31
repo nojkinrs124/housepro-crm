@@ -20,7 +20,7 @@ export default async function GeneralSettingsPage() {
         backHref="/settings"
         backLabel="Настройки"
         iconBg="bg-slate-100"
-        icon={<Settings className="text-slate-600" style={{ width: 20, height: 20 }} />}
+        icon={<Settings className="text-[var(--hp-sub)]" style={{ width: 20, height: 20 }} />}
       />
 
       <GeneralSettingsForm settings={settings} />

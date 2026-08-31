@@ -9,8 +9,8 @@ export default async function NewPropertyPage() {
  const supabase = await createClient()
  const { data: owners } = await supabase.from('contacts').select('id, full_name').in('role', ['owner', 'both']).order('full_name')
 
- const inputCls ="w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
- const selectCls ="w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer"
+ const inputCls ="w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all"
+ const selectCls ="w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer"
  const labelCls ="text-sm font-medium text-foreground"
 
  return (
@@ -27,7 +27,7 @@ export default async function NewPropertyPage() {
  <ServerActionForm action={createPropertyAction} className="space-y-4">
 
  {/* Основное */}
- <div className="bg-white border border-slate-100 shadow-sm p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className="font-semibold text-foreground">Основные данные</h2>
 
  <div className="space-y-1.5">
@@ -74,7 +74,7 @@ export default async function NewPropertyPage() {
  </div>
 
  {/* Параметры */}
- <div className="bg-white border border-slate-100 shadow-sm p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className="font-semibold text-foreground">Параметры</h2>
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
  <div className="space-y-1.5">
@@ -109,7 +109,7 @@ export default async function NewPropertyPage() {
  </div>
 
  {/* Дом */}
- <div className="bg-white border border-slate-100 shadow-sm p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className="font-semibold text-foreground">Характеристики дома</h2>
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
  <div className="space-y-1.5">
@@ -152,7 +152,7 @@ export default async function NewPropertyPage() {
  </div>
 
  {/* Коммуникации */}
- <div className="bg-white border border-slate-100 shadow-sm p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className="font-semibold text-foreground">Коммуникации</h2>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div className="space-y-1.5">
@@ -188,17 +188,31 @@ export default async function NewPropertyPage() {
  </div>
 
  {/* Право собственности */}
- <div className="bg-white border border-slate-100 shadow-sm p-6 space-y-4">
- <h2 className="font-semibold text-foreground">Право собственности</h2>
+ <div className="hp-card p-6 space-y-4">
+ <h2 className="font-semibold text-foreground">Право собственности и юр. статус</h2>
  <div className="space-y-1.5">
  <label className={labelCls}>Документ-основание</label>
  <input name="ownership_basis" placeholder="Выписка из ЕГРН № ... от ..." className={inputCls} />
  <p className="text-xs text-muted-foreground">Подставляется в договоры найма/аренды по этому объекту.</p>
  </div>
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+ <div className="space-y-1.5">
+ <label className={labelCls}>Кадастровый номер</label>
+ <input name="cadastral_number" placeholder="50:21:0040214:1187" className={inputCls} />
+ </div>
+ <div className="space-y-1.5">
+ <label className={labelCls}>Участок, соток</label>
+ <input name="land_area" type="number" step="0.01" min="0" placeholder="12" className={inputCls} />
+ </div>
+ <div className="space-y-1.5">
+ <label className={labelCls}>Обременения</label>
+ <input name="encumbrances" placeholder="нет" className={inputCls} />
+ </div>
+ </div>
  </div>
 
  {/* Финансы */}
- <div className="bg-white border border-slate-100 shadow-sm p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className="font-semibold text-foreground">Финансы</h2>
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
  <div className="space-y-1.5">
@@ -217,15 +231,15 @@ export default async function NewPropertyPage() {
  </div>
 
  {/* Описание */}
- <div className="bg-white border border-slate-100 shadow-sm p-6 space-y-3">
+ <div className="hp-card p-6 space-y-3">
  <h2 className="font-semibold text-foreground">Описание</h2>
  <textarea name="description" rows={4} placeholder="Описание объекта..."
- className="w-full px-4 py-3 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all resize-none" />
+ className="w-full px-4 py-3 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all resize-none" />
  </div>
 
  <div className="flex items-center gap-3">
  <button type="submit"
- className="flex items-center gap-2 px-6 py-2.5 text-white text-sm font-bold hover:-translate-y-0.5 transition-all" style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+ className="flex items-center gap-2 px-6 py-2.5 text-white text-sm font-bold transition-all" style={{ background: 'var(--hp-accent)', }}>
  <Home className="w-4 h-4" />
  Добавить объект
  </button>

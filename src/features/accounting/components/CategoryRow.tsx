@@ -8,7 +8,7 @@ import { toast } from 'sonner'
 import type { AccountingCategory } from '@/types/database'
 
 const COLORS = [
- '#16A34A', '#22C55E', '#4ADE80', '#EF4444', '#F97316',
+ 'var(--hp-accent)', 'var(--hp-accent)', '#4ADE80', '#EF4444', '#F97316',
  '#8B5CF6', '#06B6D4', '#F59E0B', '#DB2777', '#64748B',
 ]
 
@@ -47,7 +47,7 @@ export function CategoryRow({ category }: { category: AccountingCategory }) {
  value={color}
  onChange={e => setColor(e.target.value)}
  disabled={isPending}
- className="h-8 px-2 border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer shrink-0"
+ className="h-8 px-2 border border-input bg-background text-xs outline-none focus:border-[var(--hp-ink)] cursor-pointer shrink-0"
  >
  {COLORS.map(c => (
  <option key={c} value={c} style={{ background: c, color: '#fff' }}>{c}</option>
@@ -58,7 +58,7 @@ export function CategoryRow({ category }: { category: AccountingCategory }) {
  value={name}
  onChange={e => setName(e.target.value)}
  disabled={isPending}
- className="flex-1 min-w-0 h-8 px-3 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+ className="flex-1 min-w-0 h-8 px-3 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all"
  />
  <button
  onClick={handleSave}
@@ -71,7 +71,7 @@ export function CategoryRow({ category }: { category: AccountingCategory }) {
  <button
  onClick={handleCancel}
  disabled={isPending}
- className="p-1.5 text-slate-400 hover:bg-slate-100 transition-colors disabled:opacity-40 shrink-0"
+ className="p-1.5 text-[var(--hp-tertiary)] hover:bg-slate-100 transition-colors disabled:opacity-40 shrink-0"
  title="Отмена"
  >
  <X style={{ width: 14, height: 14 }} />

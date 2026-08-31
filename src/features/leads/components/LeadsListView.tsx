@@ -44,19 +44,19 @@ const dealTypeColors: Record<string, string> = {
 export function LeadsListView({ leads }: { leads: any[] }) {
  if (leads.length === 0) {
  return (
- <div className="bg-white border border-slate-200/60 shadow-sm p-16 text-center">
+ <div className="hp-card p-16 text-center">
  <p className="text-muted-foreground text-sm">Нет лидов по выбранным фильтрам</p>
  </div>
  )
  }
 
  return (
- <div className="bg-white border border-slate-200/60 shadow-sm overflow-hidden">
+ <div className="hp-card overflow-hidden">
  {/* Desktop table */}
  <div className="hidden md:block overflow-x-auto">
  <table className="w-full">
  <thead>
- <tr className="border-b border-slate-100 bg-slate-50/60">
+ <tr className="border-b border-[var(--hp-border-soft)] bg-[var(--hp-neutral-tint)]">
  <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Имя</th>
  <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[140px]">Телефон</th>
  <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-[130px]">Тип</th>
@@ -66,7 +66,7 @@ export function LeadsListView({ leads }: { leads: any[] }) {
  <th className="px-5 py-3 w-10"></th>
  </tr>
  </thead>
- <tbody className="divide-y divide-slate-100">
+ <tbody className="divide-y divide-[var(--hp-border-soft)]">
  {leads.map((lead) => {
  const budgetStr = lead.budget_min || lead.budget_max
  ? [lead.budget_min, lead.budget_max]
@@ -78,7 +78,7 @@ export function LeadsListView({ leads }: { leads: any[] }) {
  return (
  <tr
  key={lead.id}
- className="hover:bg-slate-50/60 transition-colors group cursor-pointer"
+ className="hover:bg-[var(--hp-neutral-tint)] transition-colors group cursor-pointer"
  onClick={() => { window.location.href = `/leads/${lead.id}` }}
  >
  <td className="px-5 py-3.5">
@@ -92,11 +92,11 @@ export function LeadsListView({ leads }: { leads: any[] }) {
  <td className="px-5 py-3.5">
  {lead.phone ? (
  <div className="flex items-center gap-1.5">
- <Phone className="w-3 h-3 text-slate-400 shrink-0" />
- <span className="text-sm text-[#374151]">{lead.phone}</span>
+ <Phone className="w-3 h-3 text-[var(--hp-tertiary)] shrink-0" />
+ <span className="text-sm text-[var(--hp-ink)]">{lead.phone}</span>
  </div>
  ) : (
- <span className="text-xs text-slate-400">—</span>
+ <span className="text-xs text-[var(--hp-tertiary)]">—</span>
  )}
  </td>
  <td className="px-5 py-3.5">
@@ -105,7 +105,7 @@ export function LeadsListView({ leads }: { leads: any[] }) {
  {dealTypeLabels[lead.deal_type] ?? lead.deal_type}
  </span>
  ) : (
- <span className="text-xs text-slate-400">—</span>
+ <span className="text-xs text-[var(--hp-tertiary)]">—</span>
  )}
  </td>
  <td className="px-5 py-3.5">
@@ -122,11 +122,11 @@ export function LeadsListView({ leads }: { leads: any[] }) {
  {budgetStr ? (
  <span className="text-sm font-semibold text-foreground">{budgetStr}</span>
  ) : (
- <span className="text-xs text-slate-400">—</span>
+ <span className="text-xs text-[var(--hp-tertiary)]">—</span>
  )}
  </td>
  <td className="px-5 py-3.5">
- <ExternalLink className="w-4 h-4 text-slate-300 group-hover:text-slate-500 transition-colors" />
+ <ExternalLink className="w-4 h-4 text-slate-300 group-hover:text-[var(--hp-sub)] transition-colors" />
  </td>
  </tr>
  )
@@ -136,7 +136,7 @@ export function LeadsListView({ leads }: { leads: any[] }) {
  </div>
 
  {/* Mobile cards */}
- <div className="md:hidden divide-y divide-slate-100">
+ <div className="md:hidden divide-y divide-[var(--hp-border-soft)]">
  {leads.map((lead) => {
  const budgetStr = lead.budget_min || lead.budget_max
  ? [lead.budget_min, lead.budget_max]
@@ -146,7 +146,7 @@ export function LeadsListView({ leads }: { leads: any[] }) {
  : null
 
  return (
- <Link key={lead.id} href={`/leads/${lead.id}`} className="block p-4 hover:bg-slate-50/60 transition-colors">
+ <Link key={lead.id} href={`/leads/${lead.id}`} className="block p-4 hover:bg-[var(--hp-neutral-tint)] transition-colors">
  <div className="flex items-center justify-between gap-2 mb-2">
  <span className="text-sm font-semibold text-foreground truncate min-w-0 flex-1">{lead.full_name || '—'}</span>
  <span className={`text-xs px-2 py-0.5 rounded-full font-medium border whitespace-nowrap shrink-0 ${statusColors[lead.status] ?? 'bg-gray-50 text-gray-500 border-gray-200'}`}>
@@ -166,11 +166,11 @@ export function LeadsListView({ leads }: { leads: any[] }) {
  </span>
  )}
  {lead.source && (
- <span className="text-xs text-slate-400">{sourceLabels[lead.source] ?? lead.source}</span>
+ <span className="text-xs text-[var(--hp-tertiary)]">{sourceLabels[lead.source] ?? lead.source}</span>
  )}
  </div>
  {budgetStr && (
- <p className="text-sm font-semibold text-[#16A34A] mt-1.5">{budgetStr}</p>
+ <p className="text-sm font-semibold text-[var(--hp-accent)] mt-1.5">{budgetStr}</p>
  )}
  {lead.phone && (
  <div className="flex gap-2 mt-3">

@@ -34,7 +34,7 @@ interface PartyContactSelectProps {
  quickCreateRole?: 'owner' | 'client' | 'both'
 }
 
-const sel = 'w-full h-10 px-4 border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer transition-all'
+const sel = 'w-full h-10 px-4 border border-input bg-background text-foreground text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer transition-all'
 
 export function PartyContactSelect({
  label, icon, contactFieldName, representativeFieldName,

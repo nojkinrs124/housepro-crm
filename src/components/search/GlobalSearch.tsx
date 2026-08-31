@@ -132,7 +132,7 @@ export function GlobalSearch() {
  <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={close} />
 
  {/* Modal */}
- <div className="relative w-full max-w-xl bg-card border border-border shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+ <div className="relative w-full max-w-xl hp-card shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
 
  {/* Search input */}
  <div className="flex items-center gap-3 px-4 py-3.5 border-b border-border">

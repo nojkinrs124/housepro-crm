@@ -7,7 +7,7 @@ import { buttonVariants } from '@/components/ui/button'
 
 const contractTypeLabels = CONTRACT_TYPE_LABELS
 const statusConfig: Record<string, { label: string; cls: string; dot: string }> = {
- draft: { label: 'Черновик', cls: 'bg-slate-50 text-slate-600', dot: 'bg-slate-400' },
+ draft: { label: 'Черновик', cls: 'bg-slate-50 text-[var(--hp-sub)]', dot: 'bg-slate-400' },
  generated: { label: 'Создан', cls: 'bg-blue-50 text-blue-700', dot: 'bg-blue-400' },
  signed: { label: 'Подписан', cls: 'bg-green-50 text-green-700', dot: 'bg-green-400' },
  completed: { label: 'Завершён', cls: 'bg-emerald-50 text-emerald-700', dot: 'bg-emerald-400' },
@@ -78,26 +78,26 @@ export default async function ContractsPage({
  />
 
  {/* Filters */}
- <div className="bg-white border border-slate-200/60 shadow-sm p-4 flex flex-wrap gap-3">
+ <div className="hp-card p-4 flex flex-wrap gap-3">
  <form method="get" className="flex-1 min-w-64">
  <div className="relative">
- <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400"
+ <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--hp-tertiary)]"
  style={{ width: 15, height: 15 }} />
  <input name="search" defaultValue={params.search}
  placeholder="Поиск по номеру договора..."
- className="w-full h-10 pl-10 pr-4 text-sm text-foreground placeholder:text-slate-400 outline-none bg-slate-50 border border-slate-200 focus:border-green-400 focus:ring-2 focus:ring-green-100 transition-all" />
+ className="w-full h-10 pl-10 pr-4 text-sm text-foreground placeholder:text-[var(--hp-tertiary)] outline-none bg-slate-50 border border-[var(--hp-border)] focus:border-green-400 focus:ring-2 focus:ring-green-100 transition-all" />
  </div>
  </form>
  <div className="flex gap-2 flex-wrap">
  <Link href="/contracts"
- className={`px-4 py-2 text-sm font-semibold transition-colors ${!params.status ? 'text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
- style={!params.status ? { background: 'var(--hp-gradient-primary)' } : {}}>
+ className={`px-4 py-2 text-sm font-semibold transition-colors ${!params.status ? 'text-white' : 'bg-slate-100 text-[var(--hp-sub)] hover:bg-slate-200'}`}
+ style={!params.status ? { background: 'var(--hp-accent)' } : {}}>
  Все
  </Link>
  {statusKeys.map(value => (
  <Link key={value} href={`/contracts?status=${value}`}
- className={`px-4 py-2 text-sm font-semibold transition-colors ${params.status === value ? 'text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
- style={params.status === value ? { background: 'var(--hp-gradient-primary)' } : {}}>
+ className={`px-4 py-2 text-sm font-semibold transition-colors ${params.status === value ? 'text-white' : 'bg-slate-100 text-[var(--hp-sub)] hover:bg-slate-200'}`}
+ style={params.status === value ? { background: 'var(--hp-accent)' } : {}}>
  {statusConfig[value].label}
  </Link>
  ))}
@@ -105,18 +105,18 @@ export default async function ContractsPage({
  </div>
 
  {/* Table */}
- <div className="bg-white border border-slate-200/60 shadow-sm overflow-hidden">
+ <div className="hp-card overflow-hidden">
  {!contracts || contracts.length === 0 ? (
  <div className="text-center py-16">
  <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
- <FileText style={{ width: 20, height: 20 }} className="text-slate-400" />
+ <FileText style={{ width: 20, height: 20 }} className="text-[var(--hp-tertiary)]" />
  </div>
- <p className="text-[#374151] font-semibold">
+ <p className="text-[var(--hp-ink)] font-semibold">
  {error ? `Ошибка: ${error.message}` : 'Нет договоров'}
  </p>
  <Link href="/contracts/new"
  className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 text-white text-sm font-semibold"
- style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+ style={{ background: 'var(--hp-accent)', }}>
  <Plus style={{ width: 14, height: 14 }} />
  Создать договор
  </Link>
@@ -127,13 +127,13 @@ export default async function ContractsPage({
  <div className="hidden md:block overflow-x-auto">
  <table className="w-full">
  <thead>
- <tr className="bg-slate-50 border-b border-slate-100">
+ <tr className="bg-slate-50 border-b border-[var(--hp-border-soft)]">
  {['Номер', 'Тип', 'Клиент', 'Объект', 'Сумма', 'Статус', 'Дата', ''].map(h => (
  <th key={h} className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide px-4 py-3.5 first:px-6">{h}</th>
  ))}
  </tr>
  </thead>
- <tbody className="divide-y divide-slate-100">
+ <tbody className="divide-y divide-[var(--hp-border-soft)]">
  {contracts.map(contract => {
  const clientId = contract.client_contact_id || contract.client_id
  const client = clientId ? clientMap[clientId] : null
@@ -141,7 +141,7 @@ export default async function ContractsPage({
  const sc = statusConfig[contract.status] ?? statusConfig.draft
 
  return (
- <tr key={contract.id} className="hover:bg-slate-50 transition-colors">
+ <tr key={contract.id} className="hover:bg-[var(--hp-neutral-tint)] transition-colors">
  <td className="px-6 py-4">
  <div className="flex items-center gap-3">
  <div className="w-8 h-8 flex items-center justify-center bg-violet-50 shrink-0">
@@ -155,7 +155,7 @@ export default async function ContractsPage({
  <td className="px-4 py-4 text-sm text-muted-foreground">
  {contractTypeLabels[contract.contract_type] ?? contract.contract_type}
  </td>
- <td className="px-4 py-4 text-sm font-medium text-[#374151]">
+ <td className="px-4 py-4 text-sm font-medium text-[var(--hp-ink)]">
  {client?.full_name ?? '—'}
  </td>
  <td className="px-4 py-4 text-sm text-muted-foreground max-w-[200px] truncate">
@@ -194,7 +194,7 @@ export default async function ContractsPage({
  </div>
 
  {/* Mobile cards */}
- <div className="md:hidden divide-y divide-slate-100">
+ <div className="md:hidden divide-y divide-[var(--hp-border-soft)]">
  {contracts.map(contract => {
  const clientId = contract.client_contact_id || contract.client_id
  const client = clientId ? clientMap[clientId] : null
@@ -202,7 +202,7 @@ export default async function ContractsPage({
  const sc = statusConfig[contract.status] ?? statusConfig.draft
 
  return (
- <Link key={contract.id} href={`/contracts/${contract.id}`} className="block p-4 hover:bg-slate-50 transition-colors">
+ <Link key={contract.id} href={`/contracts/${contract.id}`} className="block p-4 hover:bg-[var(--hp-neutral-tint)] transition-colors">
  <div className="flex items-start justify-between gap-3 mb-2">
  <div className="flex items-center gap-2.5 min-w-0">
  <div className="w-8 h-8 flex items-center justify-center bg-violet-50 shrink-0">

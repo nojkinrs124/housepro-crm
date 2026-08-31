@@ -3,9 +3,10 @@
 @config "../../tailwind.config.ts";
 
 /* ══════════════════════════════════════════════════════════════════
-   «КАБИНЕТ» — визуальная система HousePro (v2.1, 29.08.2026)
-   Тёплая шалфейно-моховая палитра, плоские квадратные панели (radius 0 —
-   правка от 29.08.2026, изначально был мягкий radius 12px), ноль теней.
+   «КАБИНЕТ» — визуальная система HousePro (v3.0, 01.09.2026)
+   Тёплая шалфейно-моховая палитра, плоские панели с мягким радиусом 10px
+   (возврат к направлению 1c — промежуточная правка на radius 0 отменена),
+   ноль теней.
    Source Serif 4 (заголовки) + Source Sans 3 (интерфейс) — пара из
    суперсемьи Adobe «Source», обе поддерживают кириллицу.
    Структура «блоков» (секция с капс-заголовком + линованные строки
@@ -48,7 +49,7 @@
     --border:             81 21% 87%;      /* #DFE4D6 */
     --input:              81 21% 87%;
     --ring:               112 21% 35%;
-    --radius:             0rem;            /* 0 — квадратные углы на весь проект */
+    --radius:             0.625rem;        /* 10px — мягкий радиус «Кабинета» (1c) */
 
     /* ── HousePro design tokens (прямое использование) ── */
     --hp-ink:             #232A24;   /* основной текст */
@@ -70,15 +71,14 @@
     --hp-danger:          #A24B30; --hp-danger-tint:#F3E5E0; /* просрочено / удаление — только тревожное */
     --hp-info:            #41546B; --hp-info-tint:  #E6EAF0; /* новое / информационное */
 
-    --hp-radius:          0px;   /* карточки, кнопки, инпуты, иконки-боксы — квадратные углы */
-    --hp-radius-badge:    0px;   /* бейджи — квадратная метка, без pill */
-    --hp-shadow:          none;  /* теней в системе нет — только плоский тон и граница */
+    --hp-radius:          10px; /* карточки, кнопки, инпуты, иконки-боксы — мягкий угол 1c */
+    --hp-radius-sm:       6px;  /* вложенные элементы: строки списка, чипы, плитки внутри карточки */
+    --hp-radius-badge:    999px;/* бейджи — pill */
+    --hp-shadow:          none; /* теней в системе нет — только плоский тон и граница */
 
-    /* ── legacy-алиас ──
-       --hp-gradient-primary использовался через var(...) в 36 файлах
-       (все CTA-кнопки старых страниц). Не удалять до тех пор, пока эти
-       страницы не переведены на .hp-btn-primary явно (см. WORKFLOW.md). */
-    --hp-gradient-primary: var(--hp-accent);
+    /* Алиас --hp-gradient-primary удалён 01.09.2026: все 36 файлов, что его
+       использовали, переведены на var(--hp-accent) сквозным проходом вместе
+       со снятием теней и slate-палитры. Градиентов в системе нет. */
   }
 
   .dark {
@@ -330,6 +330,206 @@ input[type="date"]::-webkit-calendar-picker-indicator { margin-left: 4px; }
 .hp-block-header + .hp-block-row { border-top: none; }
 .hp-block-row > .label { color: var(--hp-sub); flex-shrink: 0; }
 .hp-block-row > .value { color: var(--hp-ink); font-weight: 500; text-align: right; min-width: 0; }
+
+/* «Блок» в две колонки — лейбл/значение слева и справа (карточка сделки,
+   секция «Объект и условия»). На мобилке схлопывается в одну колонку. */
+.hp-block-grid { display: grid; grid-template-columns: 1fr 1fr; }
+.hp-block-grid > .hp-block-row { border-top: 1px solid var(--hp-border-soft); }
+.hp-block-grid > .hp-block-row:nth-child(odd) { border-right: 1px solid var(--hp-border-soft); }
+.hp-block-grid > .hp-block-row:nth-child(1),
+.hp-block-grid > .hp-block-row:nth-child(2) { border-top: none; }
+@media (max-width: 640px) {
+  .hp-block-grid { grid-template-columns: 1fr; }
+  .hp-block-grid > .hp-block-row:nth-child(odd) { border-right: none; }
+  .hp-block-grid > .hp-block-row:nth-child(2) { border-top: 1px solid var(--hp-border-soft); }
+}
+.hp-block-row > .value.accent  { color: var(--hp-accent); }
+.hp-block-row > .value.danger  { color: var(--hp-danger); }
+.hp-block-row > .value.good    { color: var(--hp-good); }
+.hp-block-row > .value.muted   { color: var(--hp-tertiary); font-weight: 400; }
+
+/* Строка-запись внутри блока (задача, документ, участник) — кликабельная,
+   с тем же ритмом, что и .hp-block-row, но контент произвольный. */
+.hp-block-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 18px;
+  border-top: 1px solid var(--hp-border-soft);
+  font-size: 13px;
+  transition: background-color 0.15s ease;
+}
+.hp-block-header + .hp-block-item { border-top: none; }
+a.hp-block-item:hover { background: var(--hp-neutral-tint); }
+
+/* ── Хлебные крошки ── */
+.hp-crumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font: 600 10px 'Source Sans 3', sans-serif;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--hp-tertiary);
+}
+.hp-crumbs a { transition: color 0.15s ease; }
+.hp-crumbs a:hover { color: var(--hp-ink); }
+.hp-crumbs .current { color: var(--hp-sub); }
+
+/* ── Мета-строка под заголовком: создана · риелтор · изменено ── */
+.hp-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+  color: var(--hp-sub);
+}
+.hp-meta .sep { color: var(--hp-tertiary); }
+
+/* ── Полоса показателей: одна панель, ячейки разделены линиями ── */
+.hp-strip {
+  display: grid;
+  background: var(--hp-surface);
+  border: 1px solid var(--hp-border);
+  border-radius: var(--hp-radius);
+  overflow: hidden;
+}
+.hp-strip-cell { padding: 16px 20px; border-left: 1px solid var(--hp-border-soft); min-width: 0; }
+.hp-strip-cell:first-child { border-left: none; }
+.hp-strip-label {
+  font: 600 10px 'Source Sans 3', sans-serif;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--hp-sub);
+  margin-bottom: 6px;
+}
+.hp-strip-value {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.05;
+  color: var(--hp-ink);
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+.hp-strip-value.sm { font-size: 19px; }
+.hp-strip-hint { font-size: 11.5px; color: var(--hp-tertiary); margin-top: 5px; overflow-wrap: anywhere; }
+.hp-strip-cell.is-alert .hp-strip-value,
+.hp-strip-cell.is-alert .hp-strip-hint { color: var(--hp-danger); }
+@media (max-width: 900px) {
+  .hp-strip { grid-template-columns: 1fr 1fr !important; }
+  .hp-strip-cell:nth-child(odd) { border-left: none; }
+  .hp-strip-cell:nth-child(n+3) { border-top: 1px solid var(--hp-border-soft); }
+}
+
+/* ── Степпер этапов сделки ── */
+.hp-stages { display: flex; gap: 4px; flex-wrap: wrap; }
+.hp-stage {
+  flex: 1 1 96px;
+  padding: 9px 10px;
+  text-align: center;
+  border-radius: var(--hp-radius-sm);
+  background: var(--hp-neutral-tint);
+  color: var(--hp-sub);
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.hp-stage.done    { background: var(--hp-good-tint);  color: var(--hp-good); }
+.hp-stage.current { background: var(--hp-accent);     color: #fff; }
+.hp-stage.cancel  { background: var(--hp-danger-tint);color: var(--hp-danger); }
+button.hp-stage:hover:not(.current) { background: var(--hp-accent-tint); color: var(--hp-ink); }
+
+/* ── Реестр (таблица-список) — плотный, с капс-заголовками колонок ── */
+.hp-registry { width: 100%; border-collapse: collapse; font-size: 13px; }
+.hp-registry thead th {
+  padding: 10px 16px;
+  text-align: left;
+  font: 600 10px 'Source Sans 3', sans-serif;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--hp-sub);
+  border-bottom: 1px solid var(--hp-border);
+  white-space: nowrap;
+}
+.hp-registry tbody tr { border-top: 1px solid var(--hp-border-soft); transition: background-color 0.15s ease; }
+.hp-registry tbody tr:first-child { border-top: none; }
+.hp-registry tbody tr:hover { background: var(--hp-neutral-tint); }
+.hp-registry td { padding: 12px 16px; color: var(--hp-ink); vertical-align: middle; }
+.hp-registry td.sub { color: var(--hp-sub); }
+.hp-registry td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Подпись под реестром: «Показано 1–20 из 1 248» ── */
+.hp-registry-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--hp-border);
+  font: 600 10px 'Source Sans 3', sans-serif;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--hp-sub);
+}
+.hp-page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 8px;
+  border-radius: var(--hp-radius-sm);
+  border: 1px solid var(--hp-border);
+  background: var(--hp-surface);
+  color: var(--hp-sub);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.hp-page-btn:hover { border-color: var(--hp-sub); color: var(--hp-ink); }
+.hp-page-btn.current { background: var(--hp-accent); border-color: var(--hp-accent); color: #fff; }
+.hp-page-btn.disabled { opacity: 0.4; pointer-events: none; }
+
+/* ── Фильтр-чип ── */
+.hp-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: var(--hp-radius-sm);
+  border: 1px solid var(--hp-border);
+  background: var(--hp-surface);
+  color: var(--hp-sub);
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+}
+.hp-chip:hover { border-color: var(--hp-sub); color: var(--hp-ink); }
+.hp-chip.active { background: var(--hp-accent-tint); border-color: var(--hp-accent-tint); color: var(--hp-ink); }
+
+/* ── Аватар-инициал — плоский акцент ── */
+.hp-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: var(--hp-accent-tint);
+  color: var(--hp-accent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
 
 /* ── Анимации — только hover-состояние границы, без translateY/скейлов ── */
 .hp-lift { transition: border-color 0.15s ease; }

@@ -45,7 +45,7 @@ export function ContractStatusSelector({ contractId, currentStatus }: { contract
  {open && !isPending && (
  <>
  <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
- <div className="absolute top-full left-0 mt-1 bg-card border border-border shadow-lg z-50 min-w-40 overflow-hidden">
+ <div className="absolute top-full left-0 mt-1 hp-card z-50 min-w-40 overflow-hidden">
  {statuses.map(s => (
  <button
  key={s.value}

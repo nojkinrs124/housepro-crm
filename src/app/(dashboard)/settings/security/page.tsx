@@ -24,7 +24,7 @@ export default async function SecurityPage() {
         subtitle="Пароль, сессии, аутентификация"
         backHref="/settings"
         backLabel="Настройки"
-        icon={<Shield className="text-[#16A34A]" style={{ width: 20, height: 20 }} />}
+        icon={<Shield className="text-[var(--hp-accent)]" style={{ width: 20, height: 20 }} />}
       />
 
       <SecuritySettingsForm

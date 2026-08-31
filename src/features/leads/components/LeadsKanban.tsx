@@ -89,7 +89,7 @@ export function LeadsKanban({ leads: initialLeads }: { leads: any[] }) {
  <div
  key={col.status}
  className={`w-[82vw] sm:w-72 md:w-64 bg-card border-t-2 ${col.color} border flex flex-col transition-all ${
- isOver ? 'border-primary/50 shadow-lg shadow-primary/10' : 'border-border'
+ isOver ? 'border-primary/50 shadow-primary/10' : 'border-border'
  }`}
  style={{ scrollSnapAlign: 'start' }}
  onDragOver={(e) => handleDragOver(e, col.status)}
@@ -122,7 +122,7 @@ export function LeadsKanban({ leads: initialLeads }: { leads: any[] }) {
  draggable
  onDragStart={(e) => handleDragStart(e, lead)}
  onDragEnd={() => { setDraggedLead(null); setDragOverCol(null); isDragging.current = false }}
- className={`bg-background border border-border p-3 space-y-2 hover:shadow-sm transition-all cursor-move select-none ${
+ className={`bg-background border border-border p-3 space-y-2 transition-all cursor-move select-none ${
  draggedLead?.id === lead.id ? 'opacity-40 scale-95' : ''
  }`}
  >

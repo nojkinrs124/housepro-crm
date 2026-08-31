@@ -58,7 +58,7 @@ export default async function ShowingDetailPage({ params }: { params: Promise<{ 
 
  {showing.status !== 'cancelled' && (
  <ServerActionForm action={cancelAction}>
- <button type="submit" className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-red-600 hover:border-red-200 transition-colors">
+ <button type="submit" className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-[var(--hp-border)] text-[var(--hp-sub)] hover:bg-[var(--hp-neutral-tint)] hover:text-red-600 hover:border-red-200 transition-colors">
  <Trash2 className="w-3.5 h-3.5" />
  Отменить показ
  </button>
@@ -71,7 +71,7 @@ export default async function ShowingDetailPage({ params }: { params: Promise<{ 
  <div className="lg:col-span-2 space-y-5">
  {/* Property */}
  {showing.property && (
- <div className="bg-white border border-slate-100 shadow-sm p-5">
+ <div className="hp-card p-5">
  <h2 className="font-semibold mb-3 flex items-center gap-2">
  <Home className="w-4 h-4 text-primary" />
  Объект
@@ -92,7 +92,7 @@ export default async function ShowingDetailPage({ params }: { params: Promise<{ 
 
  {/* Result form (only if planned) */}
  {showing.status === 'planned' && (
- <div className="bg-white border border-slate-100 shadow-sm p-5">
+ <div className="hp-card p-5">
  <h2 className="font-semibold mb-4">Результат показа</h2>
  <ShowingResultForm showingId={id} />
  </div>
@@ -100,7 +100,7 @@ export default async function ShowingDetailPage({ params }: { params: Promise<{ 
 
  {/* Completed result */}
  {showing.status === 'completed' && (
- <div className="bg-white border border-slate-100 shadow-sm p-5 space-y-3">
+ <div className="hp-card p-5 space-y-3">
  <h2 className="font-semibold">Итоги показа</h2>
  {showing.result && (
  <div>
@@ -129,7 +129,7 @@ export default async function ShowingDetailPage({ params }: { params: Promise<{ 
 
  {/* Sidebar */}
  <div className="space-y-4">
- <div className="bg-white border border-slate-100 shadow-sm p-5 space-y-4">
+ <div className="hp-card p-5 space-y-4">
  <h2 className="font-semibold">Информация</h2>
  <div className="space-y-3 text-sm">
  <div className="flex items-start gap-2">

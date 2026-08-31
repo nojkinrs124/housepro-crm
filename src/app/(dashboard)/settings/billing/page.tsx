@@ -33,9 +33,9 @@ export default async function BillingPage({
  name: 'Бесплатный',
  price: 0,
  icon: Zap,
- color: 'text-slate-600',
+ color: 'text-[var(--hp-sub)]',
  bg: 'bg-slate-50',
- border: 'border-slate-200',
+ border: 'border-[var(--hp-border)]',
  features: ['1 пользователь', '20 объектов', '10 договоров', 'Базовая аналитика'],
  limits: getFeatureGate('free'),
  },
@@ -80,7 +80,7 @@ export default async function BillingPage({
  )}
 
  {/* Current plan */}
- <div className="bg-white border border-slate-100 shadow-sm p-6">
+ <div className="hp-card p-6">
  <h2 className="font-semibold mb-4">Текущий тариф</h2>
  <div className="flex items-center justify-between gap-4 flex-wrap">
  <div>
@@ -89,7 +89,7 @@ export default async function BillingPage({
  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
  org?.subscription_status === 'active' ? 'bg-emerald-50 text-emerald-600' :
  org?.subscription_status === 'past_due' ? 'bg-red-50 text-red-600' :
- 'bg-slate-100 text-slate-600'
+ 'bg-slate-100 text-[var(--hp-sub)]'
  }`}>
  {org?.subscription_status === 'active' ? 'Активен' :
  org?.subscription_status === 'past_due' ? 'Просрочен' :
@@ -119,7 +119,7 @@ export default async function BillingPage({
  <div
  key={plan.id}
  className={`relative flex flex-col p-5 border-2 transition-all ${
- isCurrent ? `${plan.border} ${plan.bg}` : 'border-slate-100 bg-white hover:border-slate-200 hover:shadow-sm'
+ isCurrent ? `${plan.border} ${plan.bg}` : 'border-[var(--hp-border-soft)] bg-white hover:border-[var(--hp-border)]'
  }`}
  >
  {'popular' in plan && plan.popular && (

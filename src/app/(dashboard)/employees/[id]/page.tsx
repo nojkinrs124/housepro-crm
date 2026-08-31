@@ -53,7 +53,7 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
 
  const boundUpdate = updateEmployeeAction.bind(null, id)
 
- const inp = 'w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30'
+ const inp = 'w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)]'
  const lbl = 'block text-sm font-medium text-foreground mb-1.5'
 
  return (
@@ -100,7 +100,7 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
  { label: 'Договоров', value: contractStats?.length ?? 0, sub: 'всего' },
  { label: 'Задач', value: taskStats?.length ?? 0, sub: 'назначено' },
  ].map(s => (
- <div key={s.label} className="bg-white border border-slate-100 shadow-sm p-4 text-center">
+ <div key={s.label} className="hp-card p-4 text-center">
  <p className="text-2xl font-bold text-foreground">{s.value}</p>
  <p className="text-xs text-muted-foreground mt-0.5">{s.label}</p>
  <p className="text-xs text-muted-foreground/60">{s.sub}</p>
@@ -109,7 +109,7 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
  </div>
 
  {/* KPI текущего месяца */}
- <div className="bg-white border border-slate-100 shadow-sm p-5">
+ <div className="hp-card p-5">
  <h2 className="font-semibold text-foreground mb-4">KPI за текущий месяц</h2>
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
  {[
@@ -127,7 +127,7 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
  </div>
 
  {/* Контакты */}
- <div className="bg-white border border-slate-100 shadow-sm p-5 space-y-3">
+ <div className="hp-card p-5 space-y-3">
  <h2 className="font-semibold text-foreground">Контакты</h2>
  {emp.email && (
  <div className="flex items-center gap-3 text-sm min-w-0">
@@ -145,7 +145,7 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
 
  {/* Редактирование — только для admin */}
  {isAdmin && (
- <div className="bg-white border border-slate-100 shadow-sm p-6 space-y-5">
+ <div className="hp-card p-6 space-y-5">
  <h2 className="font-semibold text-foreground">Редактировать</h2>
 
  <ServerActionForm action={boundUpdate} className="space-y-4">
@@ -162,7 +162,7 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
  <div>
  <label className={lbl}>Роль</label>
  <select name="role" defaultValue={emp.role}
- className="w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer">
+ className="w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer">
  <option value="admin">Администратор</option>
  <option value="manager">Менеджер</option>
  <option value="agent">Риелтор</option>
@@ -170,7 +170,7 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
  </select>
  </div>
  <button type="submit"
- className="w-full h-10 text-white text-sm font-bold hover:-translate-y-0.5 transition" style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 4px 16px rgba(22,163,74,0.35)' }}>
+ className="w-full h-10 text-white text-sm font-bold transition" style={{ background: 'var(--hp-accent)', }}>
  Сохранить изменения
  </button>
  </ServerActionForm>

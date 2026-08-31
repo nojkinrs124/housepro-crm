@@ -24,7 +24,7 @@ export function GenerateRecurringButton() {
  <button
  onClick={handleGenerate}
  disabled={isPending}
- className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-sm font-semibold text-[#374151] hover:bg-slate-50 hover:border-slate-300 transition-all disabled:opacity-50 whitespace-nowrap"
+ className="flex items-center gap-2 px-4 py-2 hp-card text-sm font-semibold text-[var(--hp-ink)] hover:bg-[var(--hp-neutral-tint)] hover:border-[var(--hp-sub)] transition-all disabled:opacity-50 whitespace-nowrap"
  title="Проверить и создать просроченные транзакции сейчас, не дожидаясь ночного крона"
  >
  <RefreshCw style={{ width: 14, height: 14 }} className={isPending ? 'animate-spin' : ''} />

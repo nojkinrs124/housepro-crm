@@ -52,7 +52,7 @@ export function ShowingResultForm({ showingId }: { showingId: string }) {
  name="feedback"
  rows={3}
  placeholder="Что понравилось / не понравилось клиенту…"
- className="w-full px-3 py-2 text-sm border border-slate-200 resize-none focus:outline-none focus:ring-2 focus:ring-primary/30"
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] resize-none outline-none focus:border-[var(--hp-ink)]"
  />
  </div>
 
@@ -62,7 +62,7 @@ export function ShowingResultForm({ showingId }: { showingId: string }) {
  type="text"
  name="next_step"
  placeholder="Повторный показ, согласование условий…"
- className="w-full px-3 py-2 text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/30"
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] outline-none focus:border-[var(--hp-ink)]"
  />
  </div>
 

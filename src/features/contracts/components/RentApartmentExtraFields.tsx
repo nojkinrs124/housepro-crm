@@ -18,7 +18,7 @@ interface Props {
  defaultValue?: unknown
 }
 
-const inp = 'w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all'
+const inp = 'w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all'
 const lbl = 'block text-sm font-medium text-foreground mb-1.5'
 const sectionTitle = 'font-semibold text-foreground flex items-center gap-2'
 const smallBtn = 'text-xs font-medium text-primary hover:underline'
@@ -56,7 +56,7 @@ export function RentApartmentExtraFields({ defaultValue }: Props) {
  <input ref={hiddenRef} type="hidden" name="contract_type_data_json" defaultValue={JSON.stringify(data)} />
 
  {/* Проживающие и животные */}
- <div className="bg-card border border-border p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className={sectionTitle}><Users className="w-4 h-4 text-blue-500" /> Проживающие и животные</h2>
 
  <div className="space-y-2">
@@ -104,7 +104,7 @@ export function RentApartmentExtraFields({ defaultValue }: Props) {
  </div>
 
  {/* Сроки уведомлений и неустойка */}
- <div className="bg-card border border-border p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className={sectionTitle}><Bell className="w-4 h-4 text-violet-500" /> Уведомления и неустойка</h2>
  <div className="grid grid-cols-2 gap-3">
  <div>
@@ -131,7 +131,7 @@ export function RentApartmentExtraFields({ defaultValue }: Props) {
  </div>
 
  {/* Коммунальные и экземпляры */}
- <div className="bg-card border border-border p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className={sectionTitle}><Wallet className="w-4 h-4 text-emerald-500" /> Коммунальные платежи</h2>
  <label className="flex items-center gap-2 text-sm font-medium">
  <input type="checkbox" checked={data.utilities_included_in_rent}
@@ -161,7 +161,7 @@ export function RentApartmentExtraFields({ defaultValue }: Props) {
  </div>
 
  {/* Акт приёма-передачи */}
- <div className="bg-card border border-border p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className={sectionTitle}><Key className="w-4 h-4 text-orange-500" /> Акт приёма-передачи (при заселении)</h2>
  <p className="text-xs text-muted-foreground -mt-2">Можно заполнить сразу или позже, перед фактическим заселением.</p>
  <div className="grid grid-cols-2 gap-3">
@@ -212,7 +212,7 @@ export function RentApartmentExtraFields({ defaultValue }: Props) {
  </div>
 
  {/* Акт возврата */}
- <div className="bg-card border border-border p-6 space-y-4">
+ <div className="hp-card p-6 space-y-4">
  <h2 className={sectionTitle}><DoorOpen className="w-4 h-4 text-rose-500" /> Акт возврата (при выезде)</h2>
  <p className="text-xs text-muted-foreground -mt-2">Заполняется в момент окончания найма — можно оставить пустым сейчас.</p>
  <div className="grid grid-cols-2 gap-3">
@@ -229,7 +229,7 @@ export function RentApartmentExtraFields({ defaultValue }: Props) {
  </div>
  <div>
  <label className={lbl}>Претензии арендодателя к состоянию помещения</label>
- <textarea className="w-full px-4 py-2.5 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all resize-none"
+ <textarea className="w-full px-4 py-2.5 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all resize-none"
  rows={2} value={data.return_claims}
  onChange={e => set('return_claims', e.target.value)} />
  </div>

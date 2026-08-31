@@ -18,7 +18,7 @@ export function CategoryPieChart({ data, title }: Props) {
 
   if (data.length === 0 || total === 0) {
     return (
-      <div className="h-[200px] flex items-center justify-center text-slate-400 text-sm">
+      <div className="h-[200px] flex items-center justify-center text-[var(--hp-tertiary)] text-sm">
         Нет данных
       </div>
     )
@@ -59,7 +59,7 @@ export function CategoryPieChart({ data, title }: Props) {
                 className="shrink-0 w-2.5 h-2.5 rounded-full"
                 style={{ background: d.color }}
               />
-              <span className="text-xs text-[#374151] truncate flex-1">{d.name}</span>
+              <span className="text-xs text-[var(--hp-ink)] truncate flex-1">{d.name}</span>
               <span className="text-xs font-semibold text-foreground shrink-0">
                 {Math.round((d.value / total) * 100)}%
               </span>

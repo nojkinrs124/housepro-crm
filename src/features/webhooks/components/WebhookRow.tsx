@@ -39,16 +39,16 @@ export function WebhookRow({ id, url, events, isActive }: Props) {
  }
 
  return (
- <div className="flex items-center justify-between gap-4 px-5 py-3.5 bg-white border border-slate-100">
+ <div className="flex items-center justify-between gap-4 px-5 py-3.5 hp-card">
  <div className="flex items-start gap-3 min-w-0">
  <div className={`w-8 h-8 flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-primary/10' : 'bg-slate-100'}`}>
- <Webhook className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-slate-400'}`} />
+ <Webhook className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-[var(--hp-tertiary)]'}`} />
  </div>
  <div className="min-w-0">
  <div className="font-mono text-sm text-foreground truncate">{url}</div>
  <div className="flex flex-wrap gap-1.5 mt-1.5">
  {events.map(e => (
- <span key={e} className="text-xs px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded-full">
+ <span key={e} className="text-xs px-1.5 py-0.5 bg-slate-100 text-[var(--hp-sub)] rounded-full">
  {EVENT_LABELS[e] ?? e}
  </span>
  ))}

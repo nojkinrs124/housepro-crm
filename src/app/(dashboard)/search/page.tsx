@@ -16,7 +16,7 @@ export default async function SearchPage({
  return (
  <div className="max-w-3xl mx-auto space-y-6">
  <PageHeader title="Поиск" />
- <div className="bg-white border border-slate-100 shadow-sm p-12 text-center">
+ <div className="hp-card p-12 text-center">
  <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-40" />
  <p className="text-muted-foreground">Введите запрос в строку поиска</p>
  </div>
@@ -57,7 +57,7 @@ export default async function SearchPage({
  </div>
 
  {total === 0 ? (
- <div className="bg-white border border-slate-100 shadow-sm p-12 text-center">
+ <div className="hp-card p-12 text-center">
  <p className="text-muted-foreground">Ничего не найдено по запросу «{query}»</p>
  </div>
  ) : (
@@ -65,7 +65,7 @@ export default async function SearchPage({
 
  {/* Контакты */}
  {(contacts?.length ?? 0) > 0 && (
- <div className="bg-white border border-slate-100 shadow-sm overflow-hidden">
+ <div className="hp-card overflow-hidden">
  <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/20">
  <User className="w-4 h-4 text-blue-500" />
  <span className="font-semibold text-sm text-foreground">Контакты</span>
@@ -88,7 +88,7 @@ export default async function SearchPage({
 
  {/* Объекты */}
  {(properties?.length ?? 0) > 0 && (
- <div className="bg-white border border-slate-100 shadow-sm overflow-hidden">
+ <div className="hp-card overflow-hidden">
  <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/20">
  <Home className="w-4 h-4 text-emerald-500" />
  <span className="font-semibold text-sm text-foreground">Объекты</span>
@@ -110,7 +110,7 @@ export default async function SearchPage({
 
  {/* Договоры */}
  {(contracts?.length ?? 0) > 0 && (
- <div className="bg-white border border-slate-100 shadow-sm overflow-hidden">
+ <div className="hp-card overflow-hidden">
  <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/20">
  <FileText className="w-4 h-4 text-violet-500" />
  <span className="font-semibold text-sm text-foreground">Договоры</span>
@@ -132,7 +132,7 @@ export default async function SearchPage({
 
  {/* Задачи */}
  {(tasks?.length ?? 0) > 0 && (
- <div className="bg-white border border-slate-100 shadow-sm overflow-hidden">
+ <div className="hp-card overflow-hidden">
  <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/20">
  <CheckSquare className="w-4 h-4 text-orange-500" />
  <span className="font-semibold text-sm text-foreground">Задачи</span>
@@ -151,7 +151,7 @@ export default async function SearchPage({
 
  {/* Сделки */}
  {(deals?.length ?? 0) > 0 && (
- <div className="bg-white border border-slate-100 shadow-sm overflow-hidden">
+ <div className="hp-card overflow-hidden">
  <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/20">
  <TrendingUp className="w-4 h-4 text-green-500" />
  <span className="font-semibold text-sm text-foreground">Сделки</span>

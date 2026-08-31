@@ -8,6 +8,7 @@ interface FileUploadProps {
  clientId?: string
  propertyId?: string
  contractId?: string
+ dealId?: string
 }
 
 const ACCEPTED_TYPES = [
@@ -28,7 +29,7 @@ function getFileIcon(type: string) {
 
 type Status = 'idle' | 'uploading' | 'success' | 'error'
 
-export function FileUpload({ clientId, propertyId, contractId }: FileUploadProps) {
+export function FileUpload({ clientId, propertyId, contractId, dealId }: FileUploadProps) {
  const [dragging, setDragging] = useState(false)
  const [selectedFile, setSelectedFile] = useState<File | null>(null)
  const [status, setStatus] = useState<Status>('idle')
@@ -73,6 +74,7 @@ export function FileUpload({ clientId, propertyId, contractId }: FileUploadProps
  if (clientId) formData.append('client_id', clientId)
  if (propertyId) formData.append('property_id', propertyId)
  if (contractId) formData.append('contract_id', contractId)
+ if (dealId) formData.append('deal_id', dealId)
 
  startTransition(async () => {
  const result = await uploadFileAction(formData)

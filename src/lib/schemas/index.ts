@@ -133,6 +133,15 @@ export const DealSchema = z.object({
   amount: optPositiveNum,
   commission: optPositiveNum,
   notes: optStr,
+  // Условия сделки — блок «Объект и условия» на карточке
+  advance_amount: optPositiveNum,
+  down_payment: optPositiveNum,
+  bargain_amount: optPositiveNum,
+  expected_close_date: optDate,
+  bank_approval_date: optDate,
+  payment_method: optStr,
+  bank_name: optStr,
+  source: optStr,
 })
 
 export type DealInput = z.infer<typeof DealSchema>

@@ -20,7 +20,7 @@ const STATUS_UI: Record<string, { label: string; className: string; icon: typeof
  pending: { label: 'Ожидает публикации', className: 'bg-amber-100 text-amber-700', icon: Clock },
  active: { label: 'Опубликован', className: 'bg-green-100 text-green-700', icon: CheckCircle2 },
  error: { label: 'Ошибка публикации', className: 'bg-red-100 text-red-700', icon: AlertTriangle },
- removed: { label: 'Снят на Авито', className: 'bg-slate-100 text-slate-600', icon: AlertTriangle },
+ removed: { label: 'Снят на Авито', className: 'bg-slate-100 text-[var(--hp-sub)]', icon: AlertTriangle },
 }
 
 export function AvitoPublishToggle({ propertyId, isPublished, status, error, syncedAt, eligible }: Props) {
@@ -43,7 +43,7 @@ export function AvitoPublishToggle({ propertyId, isPublished, status, error, syn
  const Icon = ui?.icon
 
  return (
- <div className="bg-white border border-slate-100 shadow-sm p-5 space-y-3">
+ <div className="hp-card p-5 space-y-3">
  <div className="flex items-center gap-2.5">
  <div className="w-9 h-9 flex items-center justify-center shrink-0 bg-blue-50">
  <Megaphone className="text-blue-600" style={{ width: 16, height: 16 }} />
@@ -81,11 +81,11 @@ export function AvitoPublishToggle({ propertyId, isPublished, status, error, syn
  <button
  onClick={handleToggle}
  disabled={loading}
- className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold transition-all hover:-translate-y-0.5 disabled:opacity-60 disabled:hover:translate-y-0"
+ className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold transition-all disabled:opacity-60 disabled:hover:translate-y-0"
  style={
  isPublished
- ? { background: '#FFFFFF', border: '1px solid #E2E8F0', color: '#374151', boxShadow: 'none' }
- : { background: 'linear-gradient(135deg, #2563EB, #3B82F6)', color: '#fff', boxShadow: '0 4px 16px rgba(37,99,235,0.3)' }
+ ? { background: '#FFFFFF', border: '1px solid #E2E8F0', color: '#374151', }
+ : { background: 'linear-gradient(135deg, #2563EB, #3B82F6)', color: '#fff', }
  }
  >
  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Megaphone className="w-4 h-4" />}

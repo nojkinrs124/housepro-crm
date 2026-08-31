@@ -66,17 +66,17 @@ export function LeadsViewSwitcher({ leads }: { leads: any[] }) {
  <div className="flex flex-wrap items-center gap-3">
  {/* Search */}
  <div className="relative flex-1 min-w-[200px] max-w-xs">
- <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+ <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--hp-tertiary)] pointer-events-none" />
  <input
  type="text"
  value={search}
  onChange={(e) => setSearch(e.target.value)}
  placeholder="Поиск по лидам..."
- className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 text-sm focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-100 placeholder:text-slate-400 transition-all"
+ className="w-full pl-9 pr-4 py-2.5 hp-card text-sm focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-100 placeholder:text-[var(--hp-tertiary)] transition-all"
  />
  {search && (
  <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2">
- <X className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600" />
+ <X className="w-3.5 h-3.5 text-[var(--hp-tertiary)] hover:text-[var(--hp-sub)]" />
  </button>
  )}
  </div>
@@ -85,7 +85,7 @@ export function LeadsViewSwitcher({ leads }: { leads: any[] }) {
  <div className="relative">
  <button
  onClick={() => { setStatusOpen(p => !p); setTypeOpen(false) }}
- className={`flex items-center gap-2 px-3.5 py-2.5 bg-white border text-sm font-medium transition-all ${statusFilter !== 'all' ? 'border-green-400 text-green-700 bg-green-50' : 'border-slate-200 text-slate-600 hover:border-slate-300'}`}
+ className={`flex items-center gap-2 px-3.5 py-2.5 bg-white border text-sm font-medium transition-all ${statusFilter !== 'all' ? 'border-green-400 text-green-700 bg-green-50' : 'border-[var(--hp-border)] text-[var(--hp-sub)] hover:border-[var(--hp-sub)]'}`}
  >
  {currentStatus?.label}
  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${statusOpen ? 'rotate-180' : ''}`} />
@@ -97,13 +97,13 @@ export function LeadsViewSwitcher({ leads }: { leads: any[] }) {
  animate={{ opacity: 1, y: 0, scale: 1 }}
  exit={{ opacity: 0, y: -6, scale: 0.97 }}
  transition={{ duration: 0.15 }}
- className="absolute top-full mt-1.5 left-0 z-50 bg-white border border-slate-200 shadow-lg py-1 min-w-[180px]"
+ className="absolute top-full mt-1.5 left-0 z-50 hp-card py-1 min-w-[180px]"
  >
  {statusOptions.map(opt => (
  <button
  key={opt.value}
  onClick={() => { setStatusFilter(opt.value); setStatusOpen(false) }}
- className={`w-full text-left px-3.5 py-2 text-sm hover:bg-slate-50 transition-colors ${statusFilter === opt.value ? 'text-green-700 font-semibold' : 'text-[#374151]'}`}
+ className={`w-full text-left px-3.5 py-2 text-sm hover:bg-[var(--hp-neutral-tint)] transition-colors ${statusFilter === opt.value ? 'text-green-700 font-semibold' : 'text-[var(--hp-ink)]'}`}
  >
  {opt.label}
  </button>
@@ -117,7 +117,7 @@ export function LeadsViewSwitcher({ leads }: { leads: any[] }) {
  <div className="relative">
  <button
  onClick={() => { setTypeOpen(p => !p); setStatusOpen(false) }}
- className={`flex items-center gap-2 px-3.5 py-2.5 bg-white border text-sm font-medium transition-all ${typeFilter !== 'all' ? 'border-green-400 text-green-700 bg-green-50' : 'border-slate-200 text-slate-600 hover:border-slate-300'}`}
+ className={`flex items-center gap-2 px-3.5 py-2.5 bg-white border text-sm font-medium transition-all ${typeFilter !== 'all' ? 'border-green-400 text-green-700 bg-green-50' : 'border-[var(--hp-border)] text-[var(--hp-sub)] hover:border-[var(--hp-sub)]'}`}
  >
  {currentType?.label}
  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${typeOpen ? 'rotate-180' : ''}`} />
@@ -129,13 +129,13 @@ export function LeadsViewSwitcher({ leads }: { leads: any[] }) {
  animate={{ opacity: 1, y: 0, scale: 1 }}
  exit={{ opacity: 0, y: -6, scale: 0.97 }}
  transition={{ duration: 0.15 }}
- className="absolute top-full mt-1.5 left-0 z-50 bg-white border border-slate-200 shadow-lg py-1 min-w-[160px]"
+ className="absolute top-full mt-1.5 left-0 z-50 hp-card py-1 min-w-[160px]"
  >
  {typeOptions.map(opt => (
  <button
  key={opt.value}
  onClick={() => { setTypeFilter(opt.value); setTypeOpen(false) }}
- className={`w-full text-left px-3.5 py-2 text-sm hover:bg-slate-50 transition-colors ${typeFilter === opt.value ? 'text-green-700 font-semibold' : 'text-[#374151]'}`}
+ className={`w-full text-left px-3.5 py-2 text-sm hover:bg-[var(--hp-neutral-tint)] transition-colors ${typeFilter === opt.value ? 'text-green-700 font-semibold' : 'text-[var(--hp-ink)]'}`}
  >
  {opt.label}
  </button>
@@ -151,7 +151,7 @@ export function LeadsViewSwitcher({ leads }: { leads: any[] }) {
  animate={{ opacity: 1, scale: 1 }}
  exit={{ opacity: 0, scale: 0.9 }}
  onClick={clearFilters}
- className="flex items-center gap-1.5 px-3 py-2.5 text-sm text-slate-500 hover:text-slate-700 transition-colors"
+ className="flex items-center gap-1.5 px-3 py-2.5 text-sm text-[var(--hp-sub)] hover:text-[var(--hp-ink)] transition-colors"
  >
  <X className="w-3.5 h-3.5" />
  Сбросить
@@ -160,17 +160,17 @@ export function LeadsViewSwitcher({ leads }: { leads: any[] }) {
 
  <div className="flex-1" />
 
- <div className="flex items-center gap-1 bg-white border border-slate-200 p-1">
+ <div className="flex items-center gap-1 hp-card p-1">
  <button
  onClick={() => setView('kanban')}
- className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-all ${view === 'kanban' ? 'bg-[#16A34A] text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+ className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-all ${view === 'kanban' ? 'bg-[var(--hp-accent)] text-white' : 'text-[var(--hp-sub)] hover:text-[var(--hp-ink)]'}`}
  >
  <LayoutGrid className="w-4 h-4" />
  <span className="hidden sm:inline">Канбан</span>
  </button>
  <button
  onClick={() => setView('list')}
- className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-all ${view === 'list' ? 'bg-[#16A34A] text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+ className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-all ${view === 'list' ? 'bg-[var(--hp-accent)] text-white' : 'text-[var(--hp-sub)] hover:text-[var(--hp-ink)]'}`}
  >
  <List className="w-4 h-4" />
  <span className="hidden sm:inline">Список</span>
@@ -179,7 +179,7 @@ export function LeadsViewSwitcher({ leads }: { leads: any[] }) {
  </div>
 
  {hasFilters && (
- <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-slate-500">
+ <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-[var(--hp-sub)]">
  Найдено: <span className="font-semibold text-foreground">{filteredLeads.length}</span> из {leads.length}
  </motion.p>
  )}

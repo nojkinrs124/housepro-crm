@@ -70,7 +70,7 @@ export default async function CollectionDetailPage({ params }: { params: Promise
  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs border transition-colors ${
  col.is_public
  ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
- : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+ : 'border-[var(--hp-border)] bg-white text-[var(--hp-sub)] hover:bg-[var(--hp-neutral-tint)]'
  }`}
  >
  {col.is_public ? <><Globe className="w-3.5 h-3.5" />Публичная</> : <><Lock className="w-3.5 h-3.5" />Приватная</>}
@@ -106,13 +106,13 @@ export default async function CollectionDetailPage({ params }: { params: Promise
  </h2>
 
  {(!col.items || col.items.length === 0) ? (
- <div className="py-12 text-center text-muted-foreground bg-white border border-dashed border-slate-200">
+ <div className="py-12 text-center text-muted-foreground bg-white border border-dashed border-[var(--hp-border)]">
  <p className="text-sm">Подборка пуста</p>
  <p className="text-xs mt-1">Добавьте объекты из списка справа</p>
  </div>
  ) : (
  col.items.map((item: { property: { id: string; title: string; address?: string; price?: number; deal_type?: string; status?: string }; agent_note?: string }) => (
- <div key={item.property?.id} className="flex items-start justify-between gap-3 p-4 bg-white border border-slate-100 shadow-sm">
+ <div key={item.property?.id} className="flex items-start justify-between gap-3 p-4 hp-card">
  <div className="min-w-0">
  <Link href={`/properties/${item.property?.id}`} className="font-medium text-foreground hover:underline truncate block">
  {item.property?.title}
@@ -152,7 +152,7 @@ export default async function CollectionDetailPage({ params }: { params: Promise
  <ServerActionForm key={p.id} action={addPropertyToCollectionAction.bind(null, id, p.id)}>
  <button
  type="submit"
- className="w-full flex items-start justify-between gap-2 p-3 bg-white border border-slate-100 text-left hover:border-primary/40 hover:shadow-sm transition-all group"
+ className="w-full flex items-start justify-between gap-2 p-3 hp-card text-left hover:border-primary/40 transition-all group"
  >
  <div className="min-w-0">
  <div className="text-sm font-medium text-foreground truncate">{p.title}</div>

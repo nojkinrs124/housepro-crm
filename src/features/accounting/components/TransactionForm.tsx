@@ -18,15 +18,15 @@ interface Props {
 
 type State = { error?: string; fields?: Record<string, string[]> } | null
 
-const inputCls = 'w-full h-10 px-4 border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all'
+const inputCls = 'w-full h-10 px-4 border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm outline-none focus:border-[var(--hp-ink)] transition-all'
 const selectCls = `${inputCls} cursor-pointer`
-const cardCls = 'bg-white border border-slate-100 p-5'
-const cardShadow = { boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }
+const cardCls = 'hp-card p-5'
+const cardShadow = { }
 
 function sectionTitle(icon: React.ReactNode, text: string) {
  return (
  <h2 className="flex items-center gap-2 font-bold text-foreground text-[15px] mb-4">
- <span className="text-slate-400">{icon}</span>
+ <span className="text-[var(--hp-tertiary)]">{icon}</span>
  {text}
  </h2>
  )
@@ -86,7 +86,7 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
  key={t}
  className="flex items-center gap-3 p-4 border-2 cursor-pointer transition-all has-[:checked]:shadow-sm"
  style={{
- borderColor: type === t ? (t === 'income' ? '#16A34A' : '#EF4444') : '#E2E8F0',
+ borderColor: type === t ? (t === 'income' ? 'var(--hp-accent)' : '#EF4444') : '#E2E8F0',
  background: type === t ? (t === 'income' ? '#F0FDF4' : '#FEF2F2') : '#FFFFFF',
  }}
  >
@@ -131,7 +131,7 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
  className={inputCls}
  />
  {amountPreview && (
- <p className="text-xs text-slate-400">{amountPreview}</p>
+ <p className="text-xs text-[var(--hp-tertiary)]">{amountPreview}</p>
  )}
  </div>
  <div className="space-y-1.5">
@@ -177,7 +177,7 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
  defaultValue={transaction?.due_date ?? ''}
  className={`${inputCls} min-w-0`}
  />
- <p className="text-xs text-slate-400">Актуально для запланированных операций</p>
+ <p className="text-xs text-[var(--hp-tertiary)]">Актуально для запланированных операций</p>
  </div>
  </div>
 
@@ -188,7 +188,7 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
  rows={2}
  defaultValue={transaction?.description ?? ''}
  placeholder="Краткое описание операции"
- className="w-full px-4 py-2.5 border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all resize-none"
+ className="w-full px-4 py-2.5 border border-input bg-background text-foreground placeholder:text-muted-foreground text-sm outline-none focus:border-[var(--hp-ink)] transition-all resize-none"
  />
  </div>
  </div>
@@ -286,17 +286,16 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
  <div className="flex items-center justify-end gap-3 flex-wrap">
  <Link
  href="/accounting"
- className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-sm font-semibold text-[#374151] hover:bg-slate-50 hover:border-slate-300 transition-all whitespace-nowrap"
+ className="flex items-center gap-2 px-5 py-2.5 hp-card text-sm font-semibold text-[var(--hp-ink)] hover:bg-[var(--hp-neutral-tint)] hover:border-[var(--hp-sub)] transition-all whitespace-nowrap"
  >
  Отмена
  </Link>
  <button
  type="submit"
  disabled={isPending}
- className="flex items-center gap-2 px-5 py-2.5 text-white text-sm font-bold hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:hover:translate-y-0 whitespace-nowrap"
+ className="flex items-center gap-2 px-5 py-2.5 text-white text-sm font-bold transition-all disabled:opacity-60 disabled:hover:translate-y-0 whitespace-nowrap"
  style={{
- background: 'var(--hp-gradient-primary)',
- boxShadow: '0 4px 16px rgba(22,163,74,0.35)',
+ background: 'var(--hp-accent)',
  }}
  >
  {isPending ? 'Сохранение...' : (isEdit ? 'Сохранить' : 'Создать')}

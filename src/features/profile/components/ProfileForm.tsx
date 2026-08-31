@@ -93,7 +93,7 @@ export function ProfileForm({ user }: { user: UserType }) {
  <div className="space-y-6">
 
  {/* ── Avatar + basic info ── */}
- <div className="bg-card border border-border p-6">
+ <div className="hp-card p-6">
  <div className="flex items-start gap-5 mb-6">
  {/* Avatar */}
  <div className="relative shrink-0">
@@ -109,7 +109,7 @@ export function ProfileForm({ user }: { user: UserType }) {
  type="button"
  onClick={() => avatarInputRef.current?.click()}
  disabled={avatarLoading}
- className="absolute -bottom-1.5 -right-1.5 w-8 h-8 bg-primary text-primary-foreground flex items-center justify-center shadow-md hover:bg-primary/90 transition-all"
+ className="absolute -bottom-1.5 -right-1.5 w-8 h-8 bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 transition-all"
  title="Сменить фото"
  >
  {avatarLoading
@@ -151,7 +151,7 @@ export function ProfileForm({ user }: { user: UserType }) {
  name="full_name"
  defaultValue={user.full_name}
  required
- className="w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+ className="w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all"
  />
  </div>
  <div className="space-y-1.5">
@@ -163,7 +163,7 @@ export function ProfileForm({ user }: { user: UserType }) {
  defaultValue={user.phone ?? ''}
  type="tel"
  placeholder="+7 (999) 000-00-00"
- className="w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+ className="w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all"
  />
  </div>
  </div>
@@ -205,7 +205,7 @@ export function ProfileForm({ user }: { user: UserType }) {
  </div>
 
  {/* ── Password ── */}
- <div className="bg-card border border-border p-6">
+ <div className="hp-card p-6">
  <h3 className="font-medium text-foreground flex items-center gap-2 text-sm mb-4">
  <Lock className="w-4 h-4 text-muted-foreground" />
  Смена пароля
@@ -223,7 +223,7 @@ export function ProfileForm({ user }: { user: UserType }) {
  minLength={6}
  required
  placeholder="Минимум 6 символов"
- className="w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+ className="w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all"
  />
  </div>
  <div className="space-y-1.5">
@@ -235,7 +235,7 @@ export function ProfileForm({ user }: { user: UserType }) {
  type="password"
  required
  placeholder="Повторите пароль"
- className="w-full h-10 px-4 border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+ className="w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all"
  />
  </div>
  </div>

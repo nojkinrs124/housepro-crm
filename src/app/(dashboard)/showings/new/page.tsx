@@ -28,13 +28,13 @@ export default async function NewShowingPage() {
  </div>
  </div>
 
- <ServerActionForm action={createShowingAction} className="bg-white border border-slate-100 shadow-sm p-6 space-y-5">
+ <ServerActionForm action={createShowingAction} className="hp-card p-6 space-y-5">
  {/* Property */}
  <div>
  <label className="block text-sm font-medium text-foreground mb-1.5">Объект</label>
  <select
  name="property_id"
- className="w-full px-3 py-2 text-sm border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30"
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] bg-white outline-none focus:border-[var(--hp-ink)]"
  >
  <option value="">— Выбрать объект —</option>
  {properties?.map(p => (
@@ -48,7 +48,7 @@ export default async function NewShowingPage() {
  <label className="block text-sm font-medium text-foreground mb-1.5">Лид (клиент)</label>
  <select
  name="lead_id"
- className="w-full px-3 py-2 text-sm border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30"
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] bg-white outline-none focus:border-[var(--hp-ink)]"
  >
  <option value="">— Выбрать лида —</option>
  {leads?.map(l => (
@@ -67,14 +67,14 @@ export default async function NewShowingPage() {
  type="datetime-local"
  name="scheduled_at"
  required
- className="w-full px-3 py-2 text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-primary/30"
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] outline-none focus:border-[var(--hp-ink)]"
  />
  </div>
  <div>
  <label className="block text-sm font-medium text-foreground mb-1.5">Длительность (мин)</label>
  <select
  name="duration_min"
- className="w-full px-3 py-2 text-sm border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30"
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] bg-white outline-none focus:border-[var(--hp-ink)]"
  >
  <option value="15">15 мин</option>
  <option value="30" selected>30 мин</option>
@@ -91,7 +91,7 @@ export default async function NewShowingPage() {
  <label className="block text-sm font-medium text-foreground mb-1.5">Агент</label>
  <select
  name="agent_id"
- className="w-full px-3 py-2 text-sm border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30"
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] bg-white outline-none focus:border-[var(--hp-ink)]"
  >
  {agents?.map(a => (
  <option key={a.id} value={a.id}>{a.full_name}</option>
@@ -106,7 +106,7 @@ export default async function NewShowingPage() {
  name="feedback"
  rows={3}
  placeholder="Пожелания, особенности показа…"
- className="w-full px-3 py-2 text-sm border border-slate-200 resize-none focus:outline-none focus:ring-2 focus:ring-primary/30"
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] resize-none outline-none focus:border-[var(--hp-ink)]"
  />
  </div>
 
@@ -119,7 +119,7 @@ export default async function NewShowingPage() {
  </button>
  <Link
  href="/showings"
- className="px-5 py-2.5 border border-slate-200 text-foreground text-sm font-medium hover:bg-slate-50 transition-colors"
+ className="px-5 py-2.5 border border-[var(--hp-border)] text-foreground text-sm font-medium hover:bg-[var(--hp-neutral-tint)] transition-colors"
  >
  Отмена
  </Link>

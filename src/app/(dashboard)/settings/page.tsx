@@ -29,12 +29,12 @@ export default async function SettingsPage() {
  {profile && (
  <Link
  href="/settings/profile"
- className="flex items-center gap-4 bg-white border border-slate-100 p-5 transition-all hover:-translate-y-0.5"
- style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
+ className="flex items-center gap-4 hp-card p-5 transition-all"
+ style={{ }}
  >
  <div
  className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center shrink-0 text-white text-base font-bold"
- style={{ background: 'var(--hp-gradient-primary)', boxShadow: '0 2px 8px rgba(22,163,74,0.3)' }}
+ style={{ background: 'var(--hp-accent)', }}
  >
  {avatarUrl ? (
  // eslint-disable-next-line @next/next/no-img-element
@@ -52,7 +52,7 @@ export default async function SettingsPage() {
  {roleLabels[(profile as { role?: string }).role ?? ''] ?? (profile as { role?: string }).role}
  </p>
  </div>
- <span className="hidden sm:flex items-center gap-1 text-[#16A34A] text-sm font-semibold shrink-0">
+ <span className="hidden sm:flex items-center gap-1 text-[var(--hp-accent)] text-sm font-semibold shrink-0">
  Редактировать <ChevronRight style={{ width: 14, height: 14 }} />
  </span>
  </Link>
@@ -137,7 +137,7 @@ export default async function SettingsPage() {
  title: 'Общие настройки',
  desc: 'Язык, валюта, временная зона',
  iconBg: 'bg-slate-100',
- iconColor: 'text-slate-600',
+ iconColor: 'text-[var(--hp-sub)]',
  href: '/settings/general',
  },
  ].map((item) => {
@@ -146,8 +146,8 @@ export default async function SettingsPage() {
  <Link
  key={item.title}
  href={item.href}
- className="flex items-center gap-4 bg-white border border-slate-100 p-5 transition-all hover:-translate-y-0.5"
- style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
+ className="flex items-center gap-4 hp-card p-5 transition-all"
+ style={{ }}
  >
  <div className={`w-11 h-11 flex items-center justify-center shrink-0 ${item.iconBg}`}>
  <Icon className={item.iconColor} style={{ width: 20, height: 20 }} />
@@ -156,7 +156,7 @@ export default async function SettingsPage() {
  <p className="font-semibold text-foreground text-sm">{item.title}</p>
  <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
  </div>
- <ChevronRight className="text-slate-400 shrink-0" style={{ width: 16, height: 16 }} />
+ <ChevronRight className="text-[var(--hp-tertiary)] shrink-0" style={{ width: 16, height: 16 }} />
  </Link>
  )
  })}

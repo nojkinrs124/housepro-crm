@@ -17,7 +17,7 @@ import { buttonVariants } from '@/components/ui/button'
 const STATUS_CFG: Record<string, { label: string; cls: string }> = {
  completed: { label: 'Выполнено', cls: 'bg-green-50 text-green-700' },
  planned: { label: 'Запланировано', cls: 'bg-amber-50 text-amber-700' },
- cancelled: { label: 'Отменено', cls: 'bg-slate-50 text-slate-500' },
+ cancelled: { label: 'Отменено', cls: 'bg-slate-50 text-[var(--hp-sub)]' },
 }
 
 function fmt(n: number) { return n.toLocaleString('ru-RU') + ' ₽' }
@@ -129,14 +129,14 @@ export default async function AccountingPage({
  <ExportCsvButton transactions={transactions} />
  <Link
  href="/accounting/recurring"
- className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-sm font-semibold text-[#374151] hover:bg-slate-50 transition-all"
+ className="flex items-center gap-2 px-4 py-2.5 hp-card text-sm font-semibold text-[var(--hp-ink)] hover:bg-[var(--hp-neutral-tint)] transition-all"
  >
  <RefreshCw className="w-4 h-4" />
  Периодические
  </Link>
  <Link
  href="/accounting/categories"
- className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-sm font-semibold text-[#374151] hover:bg-slate-50 transition-all"
+ className="flex items-center gap-2 px-4 py-2.5 hp-card text-sm font-semibold text-[var(--hp-ink)] hover:bg-[var(--hp-neutral-tint)] transition-all"
  >
  <Tag className="w-4 h-4" />
  Категории
@@ -156,8 +156,8 @@ export default async function AccountingPage({
  return (
  <div
  key={card.label}
- className="bg-white border border-slate-100 p-5"
- style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
+ className="hp-card p-5"
+ style={{ }}
  >
  <div className="flex items-center justify-between gap-2 mb-3">
  <p className="text-xs font-medium text-muted-foreground min-w-0 leading-tight break-words">
@@ -168,7 +168,7 @@ export default async function AccountingPage({
  </div>
  </div>
  <p className={`text-xl font-bold ${card.valueColor}`}>{card.value}</p>
- <p className="text-xs text-slate-400 mt-0.5 font-medium">{card.sub}</p>
+ <p className="text-xs text-[var(--hp-tertiary)] mt-0.5 font-medium">{card.sub}</p>
  </div>
  )
  })}
@@ -177,20 +177,20 @@ export default async function AccountingPage({
  {/* Charts row */}
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
  <div
- className="lg:col-span-2 bg-white border border-slate-100 p-5"
- style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
+ className="lg:col-span-2 hp-card p-5"
+ style={{ }}
  >
  <h2 className="font-bold text-foreground text-[15px] mb-4">P&L — последние 6 месяцев</h2>
  <PnLChart data={chartData} />
  </div>
  <div
- className="bg-white border border-slate-100 p-5"
- style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
+ className="hp-card p-5"
+ style={{ }}
  >
  <h2 className="font-bold text-foreground text-[15px] mb-4">Структура месяца</h2>
  <div className="space-y-5">
  <CategoryPieChart data={incomePie} title="Доходы" />
- <div className="border-t border-slate-100 pt-5">
+ <div className="border-t border-[var(--hp-border-soft)] pt-5">
  <CategoryPieChart data={expensePie} title="Расходы" />
  </div>
  </div>
@@ -206,7 +206,7 @@ export default async function AccountingPage({
  <Link
  key={f.value}
  href={buildHref(f.value)}
- className={`px-4 py-2 text-sm font-semibold transition-all whitespace-nowrap ${isActive ? 'bg-white text-foreground shadow-sm' : 'text-slate-500 hover:text-foreground'}`}
+ className={`px-4 py-2 text-sm font-semibold transition-all whitespace-nowrap ${isActive ? 'bg-white text-foreground' : 'text-[var(--hp-sub)] hover:text-foreground'}`}
  >
  {f.label}
  </Link>
@@ -220,7 +220,7 @@ export default async function AccountingPage({
  <Link
  key={f.value}
  href={buildHref(undefined, f.value)}
- className={`px-4 py-2 text-sm font-semibold transition-all whitespace-nowrap ${isActive ? 'bg-white text-foreground shadow-sm' : 'text-slate-500 hover:text-foreground'}`}
+ className={`px-4 py-2 text-sm font-semibold transition-all whitespace-nowrap ${isActive ? 'bg-white text-foreground' : 'text-[var(--hp-sub)] hover:text-foreground'}`}
  >
  {f.label}
  </Link>
@@ -231,15 +231,15 @@ export default async function AccountingPage({
 
  {/* Transactions table */}
  <div
- className="bg-white border border-slate-100"
- style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06)' }}
+ className="hp-card"
+ style={{ }}
  >
  {transactions.length === 0 ? (
  <div className="py-16 text-center">
  <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
- <DollarSign style={{ width: 20, height: 20 }} className="text-slate-400" />
+ <DollarSign style={{ width: 20, height: 20 }} className="text-[var(--hp-tertiary)]" />
  </div>
- <p className="text-[#374151] font-semibold">Транзакций нет</p>
+ <p className="text-[var(--hp-ink)] font-semibold">Транзакций нет</p>
  <Link
  href="/accounting/transactions/new"
  className="mt-2 inline-block text-sm text-green-600 hover:underline font-medium"
@@ -253,7 +253,7 @@ export default async function AccountingPage({
  <div className="hidden md:block w-full overflow-x-auto">
  <table className="w-full">
  <thead>
- <tr className="border-b border-slate-100" style={{ background: '#F8FAFC' }}>
+ <tr className="border-b border-[var(--hp-border-soft)]" style={{ background: '#F8FAFC' }}>
  {['Тип', 'Дата', 'Сумма', 'Категория', 'Договор / Сотрудник', 'Статус', ''].map(h => (
  <th key={h} className="text-left px-5 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
  {h}
@@ -261,12 +261,12 @@ export default async function AccountingPage({
  ))}
  </tr>
  </thead>
- <tbody className="divide-y divide-slate-100">
+ <tbody className="divide-y divide-[var(--hp-border-soft)]">
  {transactions.map(t => {
  const sc = STATUS_CFG[t.status] ?? STATUS_CFG.completed
  const isIncome = t.type === 'income'
  return (
- <tr key={t.id} className="hover:bg-slate-50 transition-colors">
+ <tr key={t.id} className="hover:bg-[var(--hp-neutral-tint)] transition-colors">
  <td className="px-5 py-3.5">
  {isIncome
  ? <ArrowDownCircle className="w-4 h-4 text-green-500" />
@@ -290,7 +290,7 @@ export default async function AccountingPage({
  </td>
  <td className="px-5 py-3.5">
  {t.category ? (
- <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[#374151]">
+ <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--hp-ink)]">
  <span
  className="w-2 h-2 rounded-full shrink-0"
  style={{ background: t.category.color }}
@@ -298,7 +298,7 @@ export default async function AccountingPage({
  {t.category.name}
  </span>
  ) : (
- <span className="text-xs text-slate-400">—</span>
+ <span className="text-xs text-[var(--hp-tertiary)]">—</span>
  )}
  </td>
  <td className="px-5 py-3.5">
@@ -313,7 +313,7 @@ export default async function AccountingPage({
  {t.employee?.full_name && (
  <p className="text-xs text-muted-foreground">{t.employee.full_name}</p>
  )}
- {!t.contract && !t.employee && <span className="text-xs text-slate-400">—</span>}
+ {!t.contract && !t.employee && <span className="text-xs text-[var(--hp-tertiary)]">—</span>}
  </td>
  <td className="px-5 py-3.5">
  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${sc.cls}`}>
@@ -324,7 +324,7 @@ export default async function AccountingPage({
  <div className="flex items-center gap-1 justify-end">
  <Link
  href={`/accounting/transactions/${t.id}/edit`}
- className="p-1.5 text-slate-400 hover:text-green-600 hover:bg-green-50 transition-colors"
+ className="p-1.5 text-[var(--hp-tertiary)] hover:text-green-600 hover:bg-green-50 transition-colors"
  title="Редактировать"
  >
  <Pencil style={{ width: 14, height: 14 }} />
@@ -340,7 +340,7 @@ export default async function AccountingPage({
  </div>
 
  {/* Mobile */}
- <div className="md:hidden divide-y divide-slate-100">
+ <div className="md:hidden divide-y divide-[var(--hp-border-soft)]">
  {transactions.map(t => {
  const sc = STATUS_CFG[t.status] ?? STATUS_CFG.completed
  const isIncome = t.type === 'income'

@@ -1,19 +1,28 @@
 /**
- * Единый набор цветовых пар для канбан-колонок (leads/deals/tasks).
- * Раньше у каждой доски был свой независимый набор Tailwind-классов:
- * счётчик карточек в колонке либо красился в цвет колонки (leads),
- * либо всегда был серым (deals, tasks) — доски выглядели по-разному
- * без причины. Теперь все доски берут пару { border, badge } отсюда.
+ * Оформление канбан-колонок (leads/tasks). Раньше у каждой доски был свой
+ * независимый набор Tailwind-классов, и колонки красились в шесть разных
+ * палитр (blue/yellow/orange/purple/cyan/green) — доска пестрила без пользы.
+ *
+ * В системе «Кабинет» этап читается по позиции колонки слева направо, а не
+ * по цвету: единственный акцент в системе один, а цвет несёт только семантику
+ * статуса. Поэтому колонки нейтральные, и лишь завершение/отмена получают
+ * смысловой бейдж (`good` / `danger`).
+ *
+ * Ключи оставлены прежними (blue, yellow, …), чтобы не переписывать вызовы на
+ * трёх досках: это теперь просто имена позиций, а не названия цветов.
  */
+
+const NEUTRAL = { color: 'border-t-[var(--hp-border)]', badge: 'hp-badge hp-badge-neutral' } as const
+
 export const STAGE_COLORS = {
-  blue:   { color: 'border-t-blue-400',   badge: 'bg-blue-100 text-blue-700' },
-  yellow: { color: 'border-t-yellow-400', badge: 'bg-yellow-100 text-yellow-700' },
-  orange: { color: 'border-t-orange-400', badge: 'bg-orange-100 text-orange-700' },
-  purple: { color: 'border-t-purple-400', badge: 'bg-purple-100 text-purple-700' },
-  cyan:   { color: 'border-t-cyan-400',   badge: 'bg-cyan-100 text-cyan-700' },
-  green:  { color: 'border-t-green-400',  badge: 'bg-green-100 text-green-700' },
-  gray:   { color: 'border-t-gray-300',   badge: 'bg-gray-100 text-gray-600' },
-  red:    { color: 'border-t-red-300',    badge: 'bg-red-100 text-red-600' },
+  blue:   NEUTRAL,
+  yellow: NEUTRAL,
+  orange: NEUTRAL,
+  purple: NEUTRAL,
+  cyan:   NEUTRAL,
+  gray:   NEUTRAL,
+  green:  { color: 'border-t-[var(--hp-good)]',   badge: 'hp-badge hp-badge-good' },
+  red:    { color: 'border-t-[var(--hp-danger)]', badge: 'hp-badge hp-badge-danger' },
 } as const
 
 export type StageColorKey = keyof typeof STAGE_COLORS

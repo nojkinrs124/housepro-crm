@@ -88,7 +88,7 @@ export default async function AnalyticsPage({
  ['new', 'showing', 'negotiation', 'contract', 'payment', 'completed'] as const
  ).map((status, i) => ({
  stage: ['Новые', 'Показы', 'Переговоры', 'Договор', 'Оплата', 'Завершено'][i],
- color: ['#60A5FA', '#FBBF24', '#F97316', '#A78BFA', '#22D3EE', '#22C55E'][i],
+ color: ['#60A5FA', '#FBBF24', '#F97316', '#A78BFA', '#22D3EE', 'var(--hp-accent)'][i],
  count: deals.filter(d => d.status === status).length,
  }))
 
@@ -109,7 +109,7 @@ export default async function AnalyticsPage({
  })
 
  const dealTypeMap: Record<string, { name: string; color: string }> = {
- rent: { name: 'Аренда', color: '#16A34A' },
+ rent: { name: 'Аренда', color: 'var(--hp-accent)' },
  sale: { name: 'Продажа', color: '#2563EB' },
  management: { name: 'Управление', color: '#7C3AED' },
  commercial: { name: 'Коммерция', color: '#EA580C' },
@@ -131,7 +131,7 @@ export default async function AnalyticsPage({
  const priorityBadge: Record<string, string> = {
  high: 'bg-red-100 text-red-700',
  medium: 'bg-yellow-100 text-yellow-700',
- low: 'bg-slate-100 text-slate-600',
+ low: 'bg-slate-100 text-[var(--hp-sub)]',
  }
  const priorityLabel: Record<string, string> = {
  high: 'Высокий', medium: 'Средний', low: 'Низкий',
@@ -177,13 +177,13 @@ export default async function AnalyticsPage({
  gradient: 'from-orange-500 to-orange-600',
  },
  ].map(card => (
- <div key={card.label} className="bg-white border border-border p-5 shadow-sm">
+ <div key={card.label} className="bg-white border border-border p-5">
  <div className={`w-10 h-10 bg-gradient-to-br ${card.gradient} flex items-center justify-center text-white mb-3`}>
  {card.icon}
  </div>
  <p className="text-2xl font-bold text-foreground">{card.value}</p>
  <p className="text-xs text-muted-foreground mt-0.5">{card.label}</p>
- <p className="text-xs text-slate-400 mt-1">{card.sub}</p>
+ <p className="text-xs text-[var(--hp-tertiary)] mt-1">{card.sub}</p>
  </div>
  ))}
  </div>
@@ -196,7 +196,7 @@ export default async function AnalyticsPage({
  { label: 'Продано объектов', value: soldProps, icon: <CheckCircle2 style={{ width: 16, height: 16 }} />, color: 'text-violet-600 bg-violet-50' },
  { label: 'Активных договоров', value: activeContracts, icon: <FileText style={{ width: 16, height: 16 }} />, color: 'text-orange-600 bg-orange-50' },
  ].map(item => (
- <div key={item.label} className="bg-white border border-border p-4 shadow-sm flex items-center gap-3">
+ <div key={item.label} className="bg-white border border-border p-4 flex items-center gap-3">
  <div className={`w-9 h-9 flex items-center justify-center ${item.color}`}>
  {item.icon}
  </div>
@@ -210,7 +210,7 @@ export default async function AnalyticsPage({
 
  {/* Charts row 1 */}
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
- <div className="bg-white border border-border p-5 shadow-sm">
+ <div className="bg-white border border-border p-5">
  <h2 className="text-sm font-semibold text-foreground mb-4">Сумма и комиссия по сделкам</h2>
  <DealsAreaChart data={monthlyDeals} />
  <div className="flex items-center gap-4 mt-3">
@@ -222,7 +222,7 @@ export default async function AnalyticsPage({
  </span>
  </div>
  </div>
- <div className="bg-white border border-border p-5 shadow-sm">
+ <div className="bg-white border border-border p-5">
  <h2 className="text-sm font-semibold text-foreground mb-4">Воронка сделок</h2>
  <DealFunnelChart data={funnelStages} />
  </div>
@@ -230,16 +230,16 @@ export default async function AnalyticsPage({
 
  {/* Charts row 2 */}
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
- <div className="bg-white border border-border p-5 shadow-sm">
+ <div className="bg-white border border-border p-5">
  <h2 className="text-sm font-semibold text-foreground mb-4">Платежи по месяцам</h2>
  <PaymentsMonthlyChart data={paymentsMonthly} />
  </div>
- <div className="bg-white border border-border p-5 shadow-sm">
+ <div className="bg-white border border-border p-5">
  <h2 className="text-sm font-semibold text-foreground mb-4">Типы сделок</h2>
  {dealTypePie.length > 0 ? (
  <DealTypePieChart data={dealTypePie} />
  ) : (
- <div className="h-[220px] flex items-center justify-center text-sm text-slate-400">
+ <div className="h-[220px] flex items-center justify-center text-sm text-[var(--hp-tertiary)]">
  Нет данных о сделках
  </div>
  )}
@@ -247,7 +247,7 @@ export default async function AnalyticsPage({
  </div>
 
  {/* Chart row 3 */}
- <div className="bg-white border border-border p-5 shadow-sm">
+ <div className="bg-white border border-border p-5">
  <h2 className="text-sm font-semibold text-foreground mb-4">Лиды и конверсия по месяцам</h2>
  <LeadsConversionChart data={leadsConversionData} />
  </div>
@@ -255,7 +255,7 @@ export default async function AnalyticsPage({
  {/* Alerts row */}
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  {/* Overdue payments */}
- <div className="bg-white border border-border p-5 shadow-sm">
+ <div className="bg-white border border-border p-5">
  <div className="flex items-center gap-2 mb-4">
  <div className="w-7 h-7 bg-red-100 flex items-center justify-center">
  <AlertTriangle style={{ width: 14, height: 14, color: '#DC2626' }} />
@@ -269,7 +269,7 @@ export default async function AnalyticsPage({
  </div>
  {overduePayments.length === 0 ? (
  <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200">
- <CheckCircle2 style={{ width: 16, height: 16, color: '#16A34A' }} />
+ <CheckCircle2 style={{ width: 16, height: 16, color: 'var(--hp-accent)' }} />
  <p className="text-sm text-green-700 font-medium">Просроченных платежей нет</p>
  </div>
  ) : (
@@ -299,7 +299,7 @@ export default async function AnalyticsPage({
  </div>
 
  {/* Overdue tasks */}
- <div className="bg-white border border-border p-5 shadow-sm">
+ <div className="bg-white border border-border p-5">
  <div className="flex items-center gap-2 mb-4">
  <div className="w-7 h-7 bg-orange-100 flex items-center justify-center">
  <Clock style={{ width: 14, height: 14, color: '#EA580C' }} />
@@ -313,7 +313,7 @@ export default async function AnalyticsPage({
  </div>
  {overdueTasks.length === 0 ? (
  <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200">
- <CheckCircle2 style={{ width: 16, height: 16, color: '#16A34A' }} />
+ <CheckCircle2 style={{ width: 16, height: 16, color: 'var(--hp-accent)' }} />
  <p className="text-sm text-green-700 font-medium">Просроченных задач нет</p>
  </div>
  ) : (
@@ -330,7 +330,7 @@ export default async function AnalyticsPage({
  <p className="text-sm font-medium text-foreground group-hover:text-orange-700 transition-colors truncate">
  {t.title}
  </p>
- <p className="text-xs text-slate-400">
+ <p className="text-xs text-[var(--hp-tertiary)]">
  {assignee?.full_name ? `${assignee.full_name} · ` : ''}
  Просрочена на {daysOverdue} дн.
  </p>

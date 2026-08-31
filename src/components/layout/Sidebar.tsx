@@ -247,7 +247,6 @@ function MobileDrawer({
         )}
         style={{
           transform: open ? 'translateX(0)' : 'translateX(-100%)',
-          boxShadow: '8px 0 48px rgba(0,0,0,0.15)',
         }}
       >
         <div className="h-[72px] flex items-center justify-between px-5 border-b border-[var(--hp-border)] shrink-0">

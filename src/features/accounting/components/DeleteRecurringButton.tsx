@@ -21,7 +21,7 @@ export function DeleteRecurringButton({ id }: { id: string }) {
  <button
  onClick={handleDelete}
  disabled={isPending}
- className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
+ className="p-1.5 text-[var(--hp-tertiary)] hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
  title="Удалить"
  >
  <Trash2 style={{ width: 14, height: 14 }} />

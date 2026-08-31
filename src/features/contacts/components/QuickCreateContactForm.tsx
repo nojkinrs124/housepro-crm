@@ -5,7 +5,7 @@ import { AlertCircle } from 'lucide-react'
 import { createContactQuickAction } from '../actions/contacts.actions'
 import type { PartyContact } from './PartyContactSelect'
 
-const input = 'w-full h-10 px-4 border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all'
+const input = 'w-full h-10 px-4 border border-input bg-background text-foreground text-sm outline-none focus:border-[var(--hp-ink)] transition-all'
 
 export function QuickCreateContactForm({
  role,
