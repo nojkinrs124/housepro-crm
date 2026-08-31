@@ -54,7 +54,7 @@ export function CreateApiKeyForm() {
 
  return (
  <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4" onClick={close}>
- <div className="bg-white p-6 max-w-md w-full" onClick={e => e.stopPropagation()}>
+ <div className="bg-[var(--hp-surface)] p-6 max-w-md w-full" onClick={e => e.stopPropagation()}>
  {newKey ? (
  <div className="space-y-4">
  <div className="flex items-center gap-2 text-[var(--hp-warn)]">
@@ -107,7 +107,7 @@ export function CreateApiKeyForm() {
  <label className="block text-sm font-medium mb-1.5">Доступ</label>
  <select
  name="scope"
- className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] bg-white outline-none focus:border-[var(--hp-ink)]"
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] bg-[var(--hp-surface)] outline-none focus:border-[var(--hp-ink)]"
  >
  <option value="read">Только чтение</option>
  <option value="write">Чтение и запись</option>

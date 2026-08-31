@@ -61,7 +61,7 @@ export function CreateWebhookForm() {
 
  return (
  <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4" onClick={close}>
- <div className="bg-white p-6 max-w-md w-full" onClick={e => e.stopPropagation()}>
+ <div className="bg-[var(--hp-surface)] p-6 max-w-md w-full" onClick={e => e.stopPropagation()}>
  {newSecret ? (
  <div className="space-y-4">
  <div className="flex items-center gap-2 text-[var(--hp-warn)]">

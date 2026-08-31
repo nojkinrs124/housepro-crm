@@ -42,7 +42,7 @@ export function DashboardKpiCards({ cards }: { cards: KpiCard[] }) {
  >
  <Link href={card.href}>
  <motion.div
- className="group bg-white p-5 border border-[var(--hp-border-soft)] cursor-pointer"
+ className="group bg-[var(--hp-surface)] p-5 border border-[var(--hp-border-soft)] cursor-pointer"
  style={{ }}
  whileHover={{
  y: -4,

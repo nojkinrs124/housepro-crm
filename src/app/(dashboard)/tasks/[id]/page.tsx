@@ -78,7 +78,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
  </Link>
 
  {/* Header */}
- <div className="bg-white border border-border p-6">
+ <div className="bg-[var(--hp-surface)] border border-border p-6">
  <div className="flex items-start justify-between gap-4">
  <div className="flex items-start gap-4 flex-1 min-w-0">
  <div className="w-12 h-12 flex items-center justify-center shrink-0"
@@ -123,13 +123,13 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
  {/* Left: Status + details */}
  <div className="md:col-span-2 space-y-6">
  {/* Status control */}
- <div className="bg-white border border-border p-5">
+ <div className="bg-[var(--hp-surface)] border border-border p-5">
  <h2 className="text-sm font-semibold text-foreground mb-4">Статус задачи</h2>
  <TaskStatusSelect taskId={task.id} currentStatus={task.status} />
  </div>
 
  {/* Related entities */}
- <div className="bg-white border border-border p-5">
+ <div className="bg-[var(--hp-surface)] border border-border p-5">
  <h2 className="text-sm font-semibold text-foreground mb-4">Связанные объекты</h2>
  <div className="space-y-2">
  {(task.deal as { id: string; deal_type: string; status: string } | null) && (
@@ -206,7 +206,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
  {/* Right: Info panel */}
  <div className="space-y-4">
  {/* Assignee */}
- <div className="bg-white border border-border p-5">
+ <div className="bg-[var(--hp-surface)] border border-border p-5">
  <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Исполнитель</h2>
  {(task.assignee as { full_name?: string; email?: string; role?: string } | null) ? (
  <div className="flex items-center gap-3">
@@ -224,7 +224,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
  </div>
 
  {/* Deadline */}
- <div className="bg-white border border-border p-5">
+ <div className="bg-[var(--hp-surface)] border border-border p-5">
  <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Сроки</h2>
  <div className="space-y-2">
  {deadline && (
@@ -249,7 +249,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
  </div>
 
  {/* Current status badge */}
- <div className="bg-white border border-border p-5">
+ <div className="bg-[var(--hp-surface)] border border-border p-5">
  <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Текущий статус</h2>
  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold border ${status.bg} ${status.color}`}>
  {status.label}
@@ -257,7 +257,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
  </div>
 
  {/* Actions */}
- <div className="bg-white border border-border p-5 space-y-2">
+ <div className="bg-[var(--hp-surface)] border border-border p-5 space-y-2">
  <Link href={`/tasks/new?deal_id=${task.deal_id ?? ''}&contract_id=${task.contract_id ?? ''}`}
  className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-[#41546B] bg-[var(--hp-info-tint)] border border-[var(--hp-border)] hover:bg-[var(--hp-info-tint)] transition-all">
  <CheckSquare style={{ width: 15, height: 15 }} />

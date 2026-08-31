@@ -34,7 +34,7 @@ export default async function NewShowingPage() {
  <label className="block text-sm font-medium text-foreground mb-1.5">Объект</label>
  <select
  name="property_id"
- className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] bg-white outline-none focus:border-[var(--hp-ink)]"
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] bg-[var(--hp-surface)] outline-none focus:border-[var(--hp-ink)]"
  >
  <option value="">— Выбрать объект —</option>
  {properties?.map(p => (
@@ -48,7 +48,7 @@ export default async function NewShowingPage() {
  <label className="block text-sm font-medium text-foreground mb-1.5">Лид (клиент)</label>
  <select
  name="lead_id"
- className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] bg-white outline-none focus:border-[var(--hp-ink)]"
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] bg-[var(--hp-surface)] outline-none focus:border-[var(--hp-ink)]"
  >
  <option value="">— Выбрать лида —</option>
  {leads?.map(l => (
@@ -74,7 +74,7 @@ export default async function NewShowingPage() {
  <label className="block text-sm font-medium text-foreground mb-1.5">Длительность (мин)</label>
  <select
  name="duration_min"
- className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] bg-white outline-none focus:border-[var(--hp-ink)]"
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] bg-[var(--hp-surface)] outline-none focus:border-[var(--hp-ink)]"
  >
  <option value="15">15 мин</option>
  <option value="30" selected>30 мин</option>
@@ -91,7 +91,7 @@ export default async function NewShowingPage() {
  <label className="block text-sm font-medium text-foreground mb-1.5">Агент</label>
  <select
  name="agent_id"
- className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] bg-white outline-none focus:border-[var(--hp-ink)]"
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] bg-[var(--hp-surface)] outline-none focus:border-[var(--hp-ink)]"
  >
  {agents?.map(a => (
  <option key={a.id} value={a.id}>{a.full_name}</option>

@@ -41,7 +41,7 @@ export default async function WebhooksSettingsPage() {
 
  <div className="space-y-2">
  {(!webhooks || webhooks.length === 0) ? (
- <div className="py-12 text-center text-muted-foreground bg-white border border-dashed border-[var(--hp-border)]">
+ <div className="py-12 text-center text-muted-foreground bg-[var(--hp-surface)] border border-dashed border-[var(--hp-border)]">
  <Webhook className="w-8 h-8 mx-auto mb-2 opacity-30" />
  <p className="text-sm">Вебхуков пока нет</p>
  </div>

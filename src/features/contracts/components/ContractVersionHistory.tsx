@@ -36,7 +36,7 @@ export function ContractVersionHistory({ contractId, versions }: Props) {
  }
 
  return (
- <div className="border border-[var(--hp-border-soft)] overflow-hidden bg-white">
+ <div className="border border-[var(--hp-border-soft)] overflow-hidden bg-[var(--hp-surface)]">
  <button
  onClick={() => setOpen(v => !v)}
  className="w-full flex items-center justify-between px-5 py-3.5 bg-[var(--hp-neutral-tint)] hover:bg-[var(--hp-accent-tint)] transition-colors"

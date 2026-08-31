@@ -173,7 +173,7 @@ export default async function AnalyticsPage({
  icon: <Users style={{ width: 20, height: 20 }} />,
  },
  ].map(card => (
- <div key={card.label} className="bg-white border border-border p-5">
+ <div key={card.label} className="bg-[var(--hp-surface)] border border-border p-5">
  <div className="w-10 h-10 flex items-center justify-center mb-3 bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)] text-[var(--hp-sub)]">
  {card.icon}
  </div>
@@ -192,7 +192,7 @@ export default async function AnalyticsPage({
  { label: 'Продано объектов', value: soldProps, icon: <CheckCircle2 style={{ width: 16, height: 16 }} />, color: 'text-[var(--hp-sub)] bg-[var(--hp-neutral-tint)]' },
  { label: 'Активных договоров', value: activeContracts, icon: <FileText style={{ width: 16, height: 16 }} />, color: 'text-[var(--hp-warn)] bg-[var(--hp-warn-tint)]' },
  ].map(item => (
- <div key={item.label} className="bg-white border border-border p-4 flex items-center gap-3">
+ <div key={item.label} className="bg-[var(--hp-surface)] border border-border p-4 flex items-center gap-3">
  <div className={`w-9 h-9 flex items-center justify-center ${item.color}`}>
  {item.icon}
  </div>
@@ -206,7 +206,7 @@ export default async function AnalyticsPage({
 
  {/* Charts row 1 */}
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
- <div className="bg-white border border-border p-5">
+ <div className="bg-[var(--hp-surface)] border border-border p-5">
  <h2 className="text-sm font-semibold text-foreground mb-4">Сумма и комиссия по сделкам</h2>
  <DealsAreaChart data={monthlyDeals} />
  <div className="flex items-center gap-4 mt-3">
@@ -218,7 +218,7 @@ export default async function AnalyticsPage({
  </span>
  </div>
  </div>
- <div className="bg-white border border-border p-5">
+ <div className="bg-[var(--hp-surface)] border border-border p-5">
  <h2 className="text-sm font-semibold text-foreground mb-4">Воронка сделок</h2>
  <DealFunnelChart data={funnelStages} />
  </div>
@@ -226,11 +226,11 @@ export default async function AnalyticsPage({
 
  {/* Charts row 2 */}
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
- <div className="bg-white border border-border p-5">
+ <div className="bg-[var(--hp-surface)] border border-border p-5">
  <h2 className="text-sm font-semibold text-foreground mb-4">Платежи по месяцам</h2>
  <PaymentsMonthlyChart data={paymentsMonthly} />
  </div>
- <div className="bg-white border border-border p-5">
+ <div className="bg-[var(--hp-surface)] border border-border p-5">
  <h2 className="text-sm font-semibold text-foreground mb-4">Типы сделок</h2>
  {dealTypePie.length > 0 ? (
  <DealTypePieChart data={dealTypePie} />
@@ -243,7 +243,7 @@ export default async function AnalyticsPage({
  </div>
 
  {/* Chart row 3 */}
- <div className="bg-white border border-border p-5">
+ <div className="bg-[var(--hp-surface)] border border-border p-5">
  <h2 className="text-sm font-semibold text-foreground mb-4">Лиды и конверсия по месяцам</h2>
  <LeadsConversionChart data={leadsConversionData} />
  </div>
@@ -251,7 +251,7 @@ export default async function AnalyticsPage({
  {/* Alerts row */}
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  {/* Overdue payments */}
- <div className="bg-white border border-border p-5">
+ <div className="bg-[var(--hp-surface)] border border-border p-5">
  <div className="flex items-center gap-2 mb-4">
  <div className="w-7 h-7 bg-[var(--hp-danger-tint)] flex items-center justify-center">
  <AlertTriangle style={{ width: 14, height: 14, color: '#A24B30' }} />
@@ -295,7 +295,7 @@ export default async function AnalyticsPage({
  </div>
 
  {/* Overdue tasks */}
- <div className="bg-white border border-border p-5">
+ <div className="bg-[var(--hp-surface)] border border-border p-5">
  <div className="flex items-center gap-2 mb-4">
  <div className="w-7 h-7 bg-[var(--hp-warn-tint)] flex items-center justify-center">
  <Clock style={{ width: 14, height: 14, color: 'var(--hp-warn)' }} />

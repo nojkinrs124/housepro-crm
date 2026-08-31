@@ -44,7 +44,7 @@ export default async function NewCollectionPage() {
  <label className="block text-sm font-medium text-foreground mb-1.5">Привязать к лиду</label>
  <select
  name="lead_id"
- className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] bg-white outline-none focus:border-[var(--hp-ink)]"
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] bg-[var(--hp-surface)] outline-none focus:border-[var(--hp-ink)]"
  >
  <option value="">— Выбрать лида (необязательно) —</option>
  {leads?.map(l => (

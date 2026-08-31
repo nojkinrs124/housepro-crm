@@ -119,7 +119,7 @@ export default async function BillingPage({
  <div
  key={plan.id}
  className={`relative flex flex-col p-5 border-2 transition-all ${
- isCurrent ? `${plan.border} ${plan.bg}` : 'border-[var(--hp-border-soft)] bg-white hover:border-[var(--hp-border)]'
+ isCurrent ? `${plan.border} ${plan.bg}` : 'border-[var(--hp-border-soft)] bg-[var(--hp-surface)] hover:border-[var(--hp-border)]'
  }`}
  >
  {'popular' in plan && plan.popular && (

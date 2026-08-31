@@ -83,25 +83,50 @@
   }
 
   .dark {
-    --background:         129 12% 9%;
-    --foreground:         77 15% 92%;
-    --card:               129 10% 13%;
-    --card-foreground:    77 15% 92%;
-    --popover:            129 10% 13%;
-    --popover-foreground: 77 15% 92%;
-    --primary:            112 25% 55%;
-    --primary-foreground: 129 12% 9%;
-    --secondary:          129 8% 20%;
-    --secondary-foreground: 77 15% 92%;
-    --muted:              129 8% 20%;
-    --muted-foreground:   92 7% 65%;
-    --accent:             129 8% 20%;
-    --accent-foreground:  77 15% 92%;
-    --destructive:        14 54% 52%;
-    --destructive-foreground: 0 0% 100%;
-    --border:             129 8% 24%;
-    --input:              129 8% 24%;
-    --ring:               112 25% 55%;
+    /* ── shadcn/ui токены — держим в той же палитре, что и --hp-* ниже
+       (тот же приём, что и в :root: дублируем значения, чтобы bg-primary/
+       text-foreground/border-input не жили отдельной жизнью от --hp-*) ── */
+    --background:         93 19% 9%;    /* #171C13 */
+    --foreground:         93 19% 91%;   /* #E7ECE3 */
+    --card:               93 18% 12%;   /* #1E2419 */
+    --card-foreground:    93 19% 91%;
+    --popover:            93 18% 12%;
+    --popover-foreground: 93 19% 91%;
+    --primary:            111 20% 50%;  /* #6E9A66 — тот же мховый, но светлее для контраста на тёмном фоне */
+    --primary-foreground: 100 29% 6%;   /* #0E140B — тёмный текст на светлом акценте, не белый */
+    --secondary:          92 19% 15%;
+    --secondary-foreground: 93 19% 91%;
+    --muted:              92 19% 15%;
+    --muted-foreground:   93 10% 64%;   /* #A3AD9B */
+    --accent:             92 19% 15%;
+    --accent-foreground:  93 19% 91%;
+    --destructive:        18 67% 63%;   /* #E08862 — та же терракота, светлее */
+    --destructive-foreground: 13 40% 10%;
+    --border:             92 18% 20%;   /* #333D2A */
+    --input:              92 18% 20%;
+    --ring:               111 20% 50%;
+
+    /* ── HousePro design tokens — тёмный вариант «Кабинета».
+       Та же тёплая шалфейно-моховая палитра, инвертированная светлота:
+       акцент и статусы светлее (иначе не читаются на тёмном фоне), hover
+       у акцента — светлее, а не темнее (правильная конвенция для тёмной темы). ── */
+    --hp-ink:             #E7ECE3;
+    --hp-sub:             #A3AD9B;
+    --hp-tertiary:        #707A68;
+    --hp-bg:              #171C13;
+    --hp-surface:         #1E2419;
+    --hp-border:          #333D2A;
+    --hp-border-soft:     #262E1F;
+
+    --hp-accent:          #6E9A66;
+    --hp-accent-hover:    #7FAE76;
+    --hp-neutral-tint:    #262E1F;
+    --hp-accent-tint:     #2B3B25;
+
+    --hp-good:            #7FBF74; --hp-good-tint:  #1E2E19;
+    --hp-warn:            #D8C171; --hp-warn-tint:  #332C16;
+    --hp-danger:          #E08862; --hp-danger-tint:#3A2019;
+    --hp-info:            #8FA7C9; --hp-info-tint:  #1C2530;
   }
 }
 

@@ -113,7 +113,7 @@ export default async function PropertiesPage({
  className="px-4 py-2 text-sm font-bold transition-all"
  style={!params.deal_type
  ? { background: 'var(--hp-accent)', color: '#fff' }
- : { background: '#FBFBF8', color: '#5C6659' }}>
+ : { background: 'var(--hp-surface)', color: 'var(--hp-sub)' }}>
  Все
  </Link>
  {Object.entries(dealLabels).map(([value, label]) => (
@@ -121,7 +121,7 @@ export default async function PropertiesPage({
  className="px-4 py-2 text-sm font-bold transition-all"
  style={params.deal_type === value
  ? { background: 'var(--hp-accent)', color: '#fff' }
- : { background: '#FBFBF8', color: '#5C6659' }}>
+ : { background: 'var(--hp-surface)', color: 'var(--hp-sub)' }}>
  {label}
  </Link>
  ))}
@@ -133,7 +133,7 @@ export default async function PropertiesPage({
  className="px-3 py-2 text-xs font-bold transition-all flex items-center gap-1.5"
  style={!params.status
  ? { background: '#1E293B', color: '#fff' }
- : { background: '#FBFBF8', color: '#5C6659' }}>
+ : { background: 'var(--hp-surface)', color: 'var(--hp-sub)' }}>
  Любой статус
  </Link>
  {Object.entries(statusConfig).map(([value, cfg]) => (
@@ -141,7 +141,7 @@ export default async function PropertiesPage({
  className="px-3 py-2 text-xs font-bold transition-all flex items-center gap-1.5"
  style={params.status === value
  ? { background: '#1E293B', color: '#fff' }
- : { background: '#FBFBF8', color: '#5C6659' }}>
+ : { background: 'var(--hp-surface)', color: 'var(--hp-sub)' }}>
  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: cfg.dot }} />
  {cfg.label}
  </Link>
@@ -159,7 +159,7 @@ export default async function PropertiesPage({
  className="px-3 py-2 text-xs font-bold transition-all flex items-center gap-1.5"
  style={params.avito === opt.value || (!params.avito && !opt.value)
  ? { background: '#41546B', color: '#fff' }
- : { background: '#FBFBF8', color: '#5C6659' }}>
+ : { background: 'var(--hp-surface)', color: 'var(--hp-sub)' }}>
  <Megaphone style={{ width: 12, height: 12 }} />
  {opt.label}
  </Link>
@@ -187,12 +187,12 @@ export default async function PropertiesPage({
  {/* View switcher */}
  <div className="flex items-center gap-1 p-1 bg-[var(--hp-neutral-tint)] shrink-0 ml-auto">
  <Link href={buildHref({ view: undefined })}
- className={`w-9 h-9 flex items-center justify-center transition-all ${view === 'grid' ? 'bg-white text-foreground' : 'text-[var(--hp-tertiary)] hover:text-muted-foreground'}`}
+ className={`w-9 h-9 flex items-center justify-center transition-all ${view === 'grid' ? 'bg-[var(--hp-surface)] text-foreground' : 'text-[var(--hp-tertiary)] hover:text-muted-foreground'}`}
  title="Карточки">
  <LayoutGrid style={{ width: 16, height: 16 }} />
  </Link>
  <Link href={buildHref({ view: 'list' })}
- className={`w-9 h-9 flex items-center justify-center transition-all ${view === 'list' ? 'bg-white text-foreground' : 'text-[var(--hp-tertiary)] hover:text-muted-foreground'}`}
+ className={`w-9 h-9 flex items-center justify-center transition-all ${view === 'list' ? 'bg-[var(--hp-surface)] text-foreground' : 'text-[var(--hp-tertiary)] hover:text-muted-foreground'}`}
  title="Список">
  <List style={{ width: 16, height: 16 }} />
  </Link>

@@ -233,7 +233,7 @@ function MobileDrawer({
 
       <aside
         className={cn(
-          'fixed left-0 top-0 bottom-0 z-50 w-[300px] flex flex-col bg-white transition-transform duration-300 ease-in-out md:hidden',
+          'fixed left-0 top-0 bottom-0 z-50 w-[300px] flex flex-col bg-[var(--hp-surface)] transition-transform duration-300 ease-in-out md:hidden',
         )}
         style={{
           transform: open ? 'translateX(0)' : 'translateX(-100%)',
@@ -280,7 +280,7 @@ export function MobileBottomNav({ user }: { user: User | null }) {
       <MobileDrawer user={user} open={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
       <nav
-        className="fixed bottom-0 left-0 right-0 z-30 md:hidden bg-white"
+        className="fixed bottom-0 left-0 right-0 z-30 md:hidden bg-[var(--hp-surface)]"
         style={{
           borderTop: '1px solid var(--hp-border)',
           paddingBottom: 'env(safe-area-inset-bottom)',
@@ -326,7 +326,7 @@ export function Sidebar({ user }: { user: User | null }) {
   return (
     <aside
       className={cn(
-        'relative hidden md:flex flex-col shrink-0 transition-all duration-300 ease-in-out bg-white border-r border-[var(--hp-border)]',
+        'relative hidden md:flex flex-col shrink-0 transition-all duration-300 ease-in-out bg-[var(--hp-surface)] border-r border-[var(--hp-border)]',
         collapsed ? 'w-[72px]' : 'w-[260px]'
       )}
     >
@@ -361,7 +361,7 @@ export function Sidebar({ user }: { user: User | null }) {
       {/* Collapse toggle */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-3.5 top-[88px] w-7 h-7 flex items-center justify-center rounded-[var(--hp-radius)] text-[var(--hp-sub)] hover:text-[var(--hp-ink)] transition-colors z-10 bg-white border border-[var(--hp-border)]"
+        className="absolute -right-3.5 top-[88px] w-7 h-7 flex items-center justify-center rounded-[var(--hp-radius)] text-[var(--hp-sub)] hover:text-[var(--hp-ink)] transition-colors z-10 bg-[var(--hp-surface)] border border-[var(--hp-border)]"
       >
         {collapsed ? <ChevronRight style={{ width: 13, height: 13 }} /> : <ChevronLeft style={{ width: 13, height: 13 }} />}
       </button>

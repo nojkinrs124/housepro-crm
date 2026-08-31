@@ -15,7 +15,7 @@ export default function DashboardLoading() {
  {Array.from({ length: 4 }).map((_, i) => (
  <div
  key={i}
- className="bg-white p-5 border border-[var(--hp-border)] space-y-3"
+ className="bg-[var(--hp-surface)] p-5 border border-[var(--hp-border)] space-y-3"
  >
  <div className="flex items-center justify-between">
  <div className="h-4 w-24 bg-[var(--hp-neutral-tint)]" />
@@ -28,7 +28,7 @@ export default function DashboardLoading() {
  </div>
 
  {/* Content area skeleton */}
- <div className="bg-white border border-[var(--hp-border)] p-6 space-y-4">
+ <div className="bg-[var(--hp-surface)] border border-[var(--hp-border)] p-6 space-y-4">
  <div className="h-5 w-40 bg-[var(--hp-neutral-tint)]" />
  {Array.from({ length: 5 }).map((_, i) => (
  <div key={i} className="flex items-center gap-4 py-3 border-b border-[var(--hp-border)] last:border-0">

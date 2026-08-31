@@ -42,7 +42,7 @@ export function Header({ unreadCount = 0 }: { user?: User | null; unreadCount?: 
 
   return (
     <header
-      className="h-[68px] flex items-center px-5 gap-4 shrink-0 sticky top-0 z-30 w-full bg-white"
+      className="h-[68px] flex items-center px-5 gap-4 shrink-0 sticky top-0 z-30 w-full bg-[var(--hp-surface)]"
       style={{ borderBottom: '1px solid var(--hp-border)' }}
     >
       {/* Search bar */}
@@ -111,7 +111,7 @@ export function Header({ unreadCount = 0 }: { user?: User | null; unreadCount?: 
 
           {createOpen && (
             <div
-              className="absolute right-0 top-full mt-2 w-52 py-2 rounded-[var(--hp-radius)] z-50 bg-white"
+              className="absolute right-0 top-full mt-2 w-52 py-2 rounded-[var(--hp-radius)] z-50 bg-[var(--hp-surface)]"
               style={{ border: '1px solid var(--hp-border)' }}
               onClick={e => e.stopPropagation()}
             >

@@ -70,7 +70,7 @@ export default async function CollectionDetailPage({ params }: { params: Promise
  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs border transition-colors ${
  col.is_public
  ? 'border-[var(--hp-border)] bg-[var(--hp-good-tint)] text-[var(--hp-good)] hover:bg-[var(--hp-good-tint)]'
- : 'border-[var(--hp-border)] bg-white text-[var(--hp-sub)] hover:bg-[var(--hp-neutral-tint)]'
+ : 'border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-sub)] hover:bg-[var(--hp-neutral-tint)]'
  }`}
  >
  {col.is_public ? <><Globe className="w-3.5 h-3.5" />Публичная</> : <><Lock className="w-3.5 h-3.5" />Приватная</>}
@@ -106,7 +106,7 @@ export default async function CollectionDetailPage({ params }: { params: Promise
  </h2>
 
  {(!col.items || col.items.length === 0) ? (
- <div className="py-12 text-center text-muted-foreground bg-white border border-dashed border-[var(--hp-border)]">
+ <div className="py-12 text-center text-muted-foreground bg-[var(--hp-surface)] border border-dashed border-[var(--hp-border)]">
  <p className="text-sm">Подборка пуста</p>
  <p className="text-xs mt-1">Добавьте объекты из списка справа</p>
  </div>

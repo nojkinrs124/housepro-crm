@@ -206,7 +206,7 @@ export default async function AccountingPage({
  <Link
  key={f.value}
  href={buildHref(f.value)}
- className={`px-4 py-2 text-sm font-semibold transition-all whitespace-nowrap ${isActive ? 'bg-white text-foreground' : 'text-[var(--hp-sub)] hover:text-foreground'}`}
+ className={`px-4 py-2 text-sm font-semibold transition-all whitespace-nowrap ${isActive ? 'bg-[var(--hp-surface)] text-foreground' : 'text-[var(--hp-sub)] hover:text-foreground'}`}
  >
  {f.label}
  </Link>
@@ -220,7 +220,7 @@ export default async function AccountingPage({
  <Link
  key={f.value}
  href={buildHref(undefined, f.value)}
- className={`px-4 py-2 text-sm font-semibold transition-all whitespace-nowrap ${isActive ? 'bg-white text-foreground' : 'text-[var(--hp-sub)] hover:text-foreground'}`}
+ className={`px-4 py-2 text-sm font-semibold transition-all whitespace-nowrap ${isActive ? 'bg-[var(--hp-surface)] text-foreground' : 'text-[var(--hp-sub)] hover:text-foreground'}`}
  >
  {f.label}
  </Link>
@@ -253,7 +253,7 @@ export default async function AccountingPage({
  <div className="hidden md:block w-full overflow-x-auto">
  <table className="w-full">
  <thead>
- <tr className="border-b border-[var(--hp-border-soft)]" style={{ background: '#FBFBF8' }}>
+ <tr className="border-b border-[var(--hp-border-soft)]" style={{ background: 'var(--hp-surface)' }}>
  {['Тип', 'Дата', 'Сумма', 'Категория', 'Договор / Сотрудник', 'Статус', ''].map(h => (
  <th key={h} className="text-left px-5 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
  {h}

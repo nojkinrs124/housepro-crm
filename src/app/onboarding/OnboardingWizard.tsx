@@ -172,7 +172,7 @@ export function OnboardingWizard({ orgId, orgName: initialName, userId, employee
  <div>
  <label className="block text-sm font-medium mb-1.5">Форма собственности</label>
  <select value={companyType} onChange={e => setCompanyType(e.target.value)}
- className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] bg-white outline-none focus:border-[var(--hp-ink)]">
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] bg-[var(--hp-surface)] outline-none focus:border-[var(--hp-ink)]">
  <option value="ip">ИП</option>
  <option value="ooo">ООО</option>
  <option value="ao">АО</option>
@@ -207,7 +207,7 @@ export function OnboardingWizard({ orgId, orgName: initialName, userId, employee
  <div>
  <label className="block text-sm font-medium mb-1.5">Тип</label>
  <select value={propType} onChange={e => setPropType(e.target.value)}
- className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] bg-white outline-none focus:border-[var(--hp-ink)]">
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] bg-[var(--hp-surface)] outline-none focus:border-[var(--hp-ink)]">
  <option value="apartment">Квартира</option>
  <option value="house">Дом</option>
  <option value="commercial">Коммерция</option>

@@ -54,7 +54,7 @@ export default async function ApiSettingsPage() {
  {/* Keys list */}
  <div className="space-y-2">
  {(!keys || keys.length === 0) ? (
- <div className="py-12 text-center text-muted-foreground bg-white border border-dashed border-[var(--hp-border)]">
+ <div className="py-12 text-center text-muted-foreground bg-[var(--hp-surface)] border border-dashed border-[var(--hp-border)]">
  <Key className="w-8 h-8 mx-auto mb-2 opacity-30" />
  <p className="text-sm">Ключей пока нет</p>
  </div>

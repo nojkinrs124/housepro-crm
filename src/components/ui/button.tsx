@@ -16,7 +16,7 @@ const buttonVariants = cva(
         primary:
           'bg-[var(--hp-accent)] text-white border border-[var(--hp-accent)] hover:bg-[var(--hp-accent-hover)] hover:border-[var(--hp-accent-hover)]',
         secondary:
-          'bg-white text-foreground border border-[var(--hp-border)] hover:border-[var(--hp-sub)]',
+          'bg-[var(--hp-surface)] text-foreground border border-[var(--hp-border)] hover:border-[var(--hp-sub)]',
         ghost:
           'text-muted-foreground hover:text-foreground hover:bg-[var(--hp-neutral-tint)]',
         destructive:

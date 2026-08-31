@@ -91,7 +91,7 @@ export function PropertyPhotosManager({ propertyId, initialPhotos }: Props) {
  <div key={url} className="relative group aspect-[4/3] overflow-hidden border border-[var(--hp-border-soft)] bg-[var(--hp-neutral-tint)]">
  <Image src={url} alt={`Фото ${i + 1}`} fill sizes="200px" className="object-cover" />
  {i === 0 && (
- <span className="absolute top-1.5 left-1.5 flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-[var(--hp-radius-badge)] bg-white/90 text-[var(--hp-warn)]">
+ <span className="absolute top-1.5 left-1.5 flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-[var(--hp-radius-badge)] bg-[var(--hp-surface)]/90 text-[var(--hp-warn)]">
  <Star className="w-2.5 h-2.5 fill-amber-500 text-[var(--hp-warn)]" />
  Обложка
  </span>
@@ -103,7 +103,7 @@ export function PropertyPhotosManager({ propertyId, initialPhotos }: Props) {
  onClick={() => handleMakeCover(url)}
  disabled={busyUrl === url}
  title="Сделать обложкой"
- className="w-7 h-7 rounded-[var(--hp-radius)] bg-white/90 flex items-center justify-center hover:bg-white transition disabled:opacity-50"
+ className="w-7 h-7 rounded-[var(--hp-radius)] bg-[var(--hp-surface)]/90 flex items-center justify-center hover:bg-[var(--hp-surface)] transition disabled:opacity-50"
  >
  {busyUrl === url ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Star className="w-3.5 h-3.5 text-[var(--hp-warn)]" />}
  </button>
@@ -113,7 +113,7 @@ export function PropertyPhotosManager({ propertyId, initialPhotos }: Props) {
  onClick={() => handleDelete(url)}
  disabled={busyUrl === url}
  title="Удалить"
- className="w-7 h-7 rounded-[var(--hp-radius)] bg-white/90 flex items-center justify-center hover:bg-white transition disabled:opacity-50"
+ className="w-7 h-7 rounded-[var(--hp-radius)] bg-[var(--hp-surface)]/90 flex items-center justify-center hover:bg-[var(--hp-surface)] transition disabled:opacity-50"
  >
  {busyUrl === url ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <X className="w-3.5 h-3.5 text-[var(--hp-danger)]" />}
  </button>

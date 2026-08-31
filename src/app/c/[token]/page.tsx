@@ -30,7 +30,7 @@ export default async function PublicCollectionPage({ params }: { params: Promise
  return (
  <div className="min-h-screen bg-[var(--hp-neutral-tint)]">
  {/* Header */}
- <header className="bg-white border-b border-[var(--hp-border-soft)] sticky top-0 z-10">
+ <header className="bg-[var(--hp-surface)] border-b border-[var(--hp-border-soft)] sticky top-0 z-10">
  <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
  <div className="flex items-center gap-2">
  <div className="w-8 h-8 bg-primary flex items-center justify-center">

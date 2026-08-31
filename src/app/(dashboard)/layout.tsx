@@ -44,7 +44,7 @@ export default async function DashboardLayout({
   ])
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: '#FBFBF8' }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--hp-surface)' }}>
       {/* Desktop sidebar */}
       <Sidebar user={profile} />
 

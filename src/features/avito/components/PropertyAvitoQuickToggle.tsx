@@ -57,7 +57,7 @@ export function PropertyAvitoQuickToggle({ propertyId, isPublished, status, elig
       disabled={loading}
       title={isPublished ? 'Снять с публикации на Авито' : 'Опубликовать на Авито'}
       className={`inline-flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold border transition-all disabled:opacity-60 ${
-        ui ? ui.className : 'bg-white text-[var(--hp-sub)] border-[var(--hp-border)] hover:border-[var(--hp-border)] hover:text-[var(--hp-info)]'
+        ui ? ui.className : 'bg-[var(--hp-surface)] text-[var(--hp-sub)] border-[var(--hp-border)] hover:border-[var(--hp-border)] hover:text-[var(--hp-info)]'
       }`}
     >
       {loading ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : <Icon className="w-2.5 h-2.5" />}

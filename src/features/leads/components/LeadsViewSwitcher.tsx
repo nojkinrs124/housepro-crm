@@ -85,7 +85,7 @@ export function LeadsViewSwitcher({ leads }: { leads: any[] }) {
  <div className="relative">
  <button
  onClick={() => { setStatusOpen(p => !p); setTypeOpen(false) }}
- className={`flex items-center gap-2 px-3.5 py-2.5 bg-white border text-sm font-medium transition-all ${statusFilter !== 'all' ? 'border-[var(--hp-border)] text-[var(--hp-good)] bg-[var(--hp-good-tint)]' : 'border-[var(--hp-border)] text-[var(--hp-sub)] hover:border-[var(--hp-sub)]'}`}
+ className={`flex items-center gap-2 px-3.5 py-2.5 bg-[var(--hp-surface)] border text-sm font-medium transition-all ${statusFilter !== 'all' ? 'border-[var(--hp-border)] text-[var(--hp-good)] bg-[var(--hp-good-tint)]' : 'border-[var(--hp-border)] text-[var(--hp-sub)] hover:border-[var(--hp-sub)]'}`}
  >
  {currentStatus?.label}
  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${statusOpen ? 'rotate-180' : ''}`} />
@@ -117,7 +117,7 @@ export function LeadsViewSwitcher({ leads }: { leads: any[] }) {
  <div className="relative">
  <button
  onClick={() => { setTypeOpen(p => !p); setStatusOpen(false) }}
- className={`flex items-center gap-2 px-3.5 py-2.5 bg-white border text-sm font-medium transition-all ${typeFilter !== 'all' ? 'border-[var(--hp-border)] text-[var(--hp-good)] bg-[var(--hp-good-tint)]' : 'border-[var(--hp-border)] text-[var(--hp-sub)] hover:border-[var(--hp-sub)]'}`}
+ className={`flex items-center gap-2 px-3.5 py-2.5 bg-[var(--hp-surface)] border text-sm font-medium transition-all ${typeFilter !== 'all' ? 'border-[var(--hp-border)] text-[var(--hp-good)] bg-[var(--hp-good-tint)]' : 'border-[var(--hp-border)] text-[var(--hp-sub)] hover:border-[var(--hp-sub)]'}`}
  >
  {currentType?.label}
  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${typeOpen ? 'rotate-180' : ''}`} />
