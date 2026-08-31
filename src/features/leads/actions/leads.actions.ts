@@ -7,6 +7,7 @@ import { requireOrgId } from '@/lib/org'
 import { dispatchWebhook } from '@/lib/webhooks'
 import { requirePermission } from '@/lib/permissions'
 import { normalizePhone } from '@/lib/utils'
+import { notifyNewLead } from '@/lib/telegram/notify-lead'
 
 const VALID_STATUSES = ['new','contacted','showing','searching','converted','closed','interested','rejected']
 
@@ -54,6 +55,13 @@ export async function createLeadAction(formData: FormData) {
   if (error) return { error: error.message }
 
   dispatchWebhook(orgId, 'lead.created', {
+    id: lead.id, full_name: lead.full_name, phone: lead.phone, source: lead.source,
+  })
+
+  // Ждём отправку — сам notifyNewLead не бросает исключений при сбое Telegram,
+  // а await страхует от обрыва serverless-функции до вылета запроса (в отличие
+  // от dispatchWebhook выше, здесь нет внешнего ретрая, если функция не успеет).
+  await notifyNewLead(orgId, {
     id: lead.id, full_name: lead.full_name, phone: lead.phone, source: lead.source,
   })
 

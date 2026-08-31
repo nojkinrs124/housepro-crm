@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { rateLimit } from '@/lib/rate-limit'
 import { normalizePhone } from '@/lib/utils'
+import { notifyNewLead } from '@/lib/telegram/notify-lead'
 
 /**
  * Приём заявок с публичного сайта «ХаусПро».
@@ -137,21 +138,33 @@ export async function POST(request: Request) {
     return json({ error: 'Не удалось отправить заявку. Позвоните нам, пожалуйста.' }, 500)
   }
 
-  const { error } = await supabase.from('leads').insert({
-    organization_id: organizationId,
-    full_name: name,
-    phone: normalizePhone(phone),
-    email: email || null,
-    comment: message || null,
-    property_id: resolvedPropertyId,
-    source: 'website',
-    status: 'new',
-  })
+  const normalizedPhone = normalizePhone(phone)
+
+  const { data: insertedLead, error } = await supabase
+    .from('leads')
+    .insert({
+      organization_id: organizationId,
+      full_name: name,
+      phone: normalizedPhone,
+      email: email || null,
+      comment: message || null,
+      property_id: resolvedPropertyId,
+      source: 'website',
+      status: 'new',
+    })
+    .select('id')
+    .single()
 
   if (error) {
     console.error('[public/leads] insert failed:', error.message)
     return json({ error: 'Не удалось отправить заявку. Позвоните нам, пожалуйста.' }, 500)
   }
+
+  // Не должно блокировать ответ посетителю сайта надолго и не должно ронять
+  // заявку при сбое Telegram — notifyNewLead сама гасит любые исключения.
+  await notifyNewLead(organizationId, {
+    id: insertedLead.id, full_name: name, phone: normalizedPhone, source: 'website',
+  })
 
   return json({ ok: true }, 201)
 }
