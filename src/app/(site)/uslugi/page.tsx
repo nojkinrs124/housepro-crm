@@ -1,97 +1,83 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
-import { Building2, Handshake, KeyRound, Search, ShieldCheck } from 'lucide-react'
+import { Check, KeyRound, Building2, ShieldCheck } from 'lucide-react'
 import { LeadForm } from '@/features/site/components/LeadForm'
 
 export const metadata: Metadata = {
-  title: 'Услуги агентства — ХаусПро, Красноярск',
+  title: 'Тарифы для собственников — ХаусПро, Красноярск',
   description:
-    'Сдача квартиры в аренду, подбор жилья для нанимателя, продажа, доверительное управление и юридическое сопровождение сделки в Красноярске. Что входит в каждую услугу и сколько это стоит.',
+    'Три тарифа сдачи квартиры в аренду: разовый подбор нанимателя, ежемесячное управление и управление с полной защитой. Что входит в каждый тариф и сколько это стоит.',
 }
 
-interface Service {
+interface Tariff {
   Icon: typeof KeyRound
   slug: string
+  eyebrow: string
   title: string
   lead: string
-  includes: string[]
-  price: string
+  priceValue: string
+  priceNote: string
+  badge?: string
+  includesFrom?: string
+  features: string[]
+  highlighted?: boolean
 }
 
-const SERVICES: Service[] = [
+const TARIFFS: Tariff[] = [
   {
     Icon: KeyRound,
-    slug: 'sdat',
-    title: 'Сдать квартиру в аренду',
-    lead:
-      'Вы отдаёте ключи и документы — дальше показы, отбор нанимателя и оформление на нас. Собственник участвует один раз: на подписании.',
-    includes: [
-      'Оценка ставки по реальным сделкам в вашем доме и районе, а не по объявлениям',
-      'Фотосъёмка, текст объявления и размещение на площадках',
-      'Показы без вашего участия, отсев нанимателей до просмотра',
-      'Проверка нанимателя: паспорт, место работы, история прошлых аренд',
-      'Договор найма под ваш объект и акт приёма-передачи с описью имущества',
+    slug: 'agent',
+    eyebrow: 'Тариф 1',
+    title: 'Агент по недвижимости',
+    lead: 'Разовая сделка: находим и заселяем нанимателя, дальше вы работаете с ним сами.',
+    priceValue: '25%',
+    priceNote: 'от суммы сделки, разово при заселении',
+    badge: 'Первая сделка — бесплатно',
+    features: [
+      'Размещение рекламы объекта на площадках',
+      'Поиск потенциальных арендаторов',
+      'Проверка арендатора по всем доступным базам',
+      'Гарантия надёжности арендатора',
+      'Подготовка документов: договор, акт и сопутствующие бумаги',
+      'Заселение арендатора, передача ключей',
     ],
-    price: 'Комиссия удерживается с нанимателя. Собственник не платит за сдачу.',
-  },
-  {
-    Icon: Search,
-    slug: 'snyat',
-    title: 'Снять квартиру',
-    lead:
-      'Подбор под ваш бюджет и район, включая объекты, которых нет в открытом доступе — часть собственников просит не публиковать адрес.',
-    includes: [
-      'Разбор запроса: бюджет с учётом коммуналки, сроки заезда, животные, дети, техника',
-      'Отбор вариантов и организация показов подряд, а не по одному в день',
-      'Проверка документов собственника до внесения залога',
-      'Разбор договора: что подписываете, за что отвечаете, как возвращается залог',
-      'Фиксация счётчиков и состояния квартиры при заезде',
-    ],
-    price: 'Комиссия обсуждается до начала подбора и фиксируется в договоре.',
-  },
-  {
-    Icon: Handshake,
-    slug: 'prodazha',
-    title: 'Продажа и покупка',
-    lead:
-      'Сопровождение сделки купли-продажи: от оценки и предпродажной подготовки до регистрации перехода права.',
-    includes: [
-      'Оценка на основе состоявшихся сделок, а не запрашиваемых цен',
-      'Проверка юридической чистоты: ЕГРН, история переходов права, обременения, дееспособность',
-      'Организация задатка и безопасных расчётов (аккредитив или ячейка)',
-      'Подготовка договора и подача документов на регистрацию',
-      'Передача объекта по акту и закрытие расчётов',
-    ],
-    price: 'Стоимость зависит от объекта и объёма работ, называется до подписания договора.',
   },
   {
     Icon: Building2,
     slug: 'upravlenie',
-    title: 'Доверительное управление',
-    lead:
-      'Для собственников, которые живут в другом городе или не хотят заниматься арендой сами. Мы ведём объект круглый год.',
-    includes: [
-      'Поиск и смена нанимателей без простоев между договорами',
-      'Контроль поступления платежей и работа с просрочкой',
-      'Приём показаний счётчиков, оплата коммунальных услуг',
-      'Выезд на объект при аварии, организация мелкого ремонта',
-      'Отчёт собственнику по поступлениям и расходам',
+    eyebrow: 'Тариф 2',
+    title: 'Управление',
+    lead: 'Вы получаете деньги за аренду, мы занимаемся квартирой и арендаторами.',
+    priceValue: '10%',
+    priceNote: 'от ежемесячного платежа',
+    includesFrom: 'Всё из тарифа «Агент», плюс:',
+    highlighted: true,
+    features: [
+      'Смена арендаторов: заселение и выселение',
+      'Плановая проверка состояния квартиры',
+      'Поиск нового арендатора при смене нанимателя',
+      'Генеральная уборка между нанимателями',
+      'Мелкий ремонт за наш счёт — до 5 000 ₽ (смесители, электрика и подобное)',
+      'Полная отчётность по сдаче',
+      'Стабильные переводы арендной платы собственнику',
+      'Решение любых вопросов по квартире и с арендаторами',
     ],
-    price: 'Ежемесячный процент от арендной платы, зафиксирован в договоре управления.',
   },
   {
     Icon: ShieldCheck,
-    slug: 'soprovozhdenie',
-    title: 'Юридическое сопровождение отдельной сделки',
-    lead:
-      'Если объект вы нашли сами, но не хотите подписывать документы вслепую — берём на себя только правовую часть.',
-    includes: [
-      'Проверка документов собственника и истории объекта',
-      'Составление или разбор договора под вашу ситуацию',
-      'Присутствие на подписании и передаче денег',
-      'Акт приёма-передачи с описью и фотофиксацией',
+    slug: 'upravlenie-premium',
+    eyebrow: 'Тариф 3',
+    title: 'Управление Премиум',
+    lead: 'Максимальная защита объекта — вы не думаете о квартире вообще.',
+    priceValue: '15%',
+    priceNote: 'от ежемесячного платежа',
+    includesFrom: 'Всё из тарифа «Управление», плюс:',
+    features: [
+      'Полная страховка квартиры — затопление, порча имущества и другие риски',
+      'Все вопросы с управляющей компанией берём на себя',
+      'Выезд на объект для решения проблем в любое время, включая ночь и выходные',
+      'Персональный менеджер на связи 24/7',
+      'Ежегодный пересмотр ставки аренды по рынку, чтобы доход не отставал от рынка',
     ],
-    price: 'Фиксированная стоимость за сделку, известна заранее.',
   },
 ]
 
@@ -103,82 +89,100 @@ export default function ServicesPage() {
           className="text-[30px] sm:text-[40px] font-bold tracking-tight leading-tight"
           style={{ color: 'var(--hp-ink)' }}
         >
-          Услуги
+          Тарифы для собственников
         </h1>
         <p className="mt-4 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
-          Каждая услуга — это перечень конкретных действий, который мы фиксируем в договоре
-          с вами. Ниже написано, что именно входит и за что вы платите.
+          Три тарифа сдачи квартиры в аренду — от разового подбора нанимателя до полного
+          управления объектом. Каждый тариф фиксируется в договоре: что именно входит
+          и сколько это стоит, известно заранее.
         </p>
       </header>
 
-      <div className="mt-8 space-y-4">
-        {SERVICES.map(({ Icon, slug, title, lead, includes, price }) => (
+      <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
+        {TARIFFS.map(({ Icon, slug, eyebrow, title, lead, priceValue, priceNote, badge, includesFrom, features, highlighted }) => (
           <section
             key={slug}
             id={slug}
-            className="border p-5 sm:p-7 scroll-mt-20"
+            className="p-5 sm:p-6 flex flex-col h-full scroll-mt-20"
             style={{
               background: 'var(--hp-surface)',
-              borderColor: 'var(--hp-border)',
+              border: `1px solid ${highlighted ? 'var(--hp-accent)' : 'var(--hp-border)'}`,
               borderRadius: 'var(--hp-radius)',
             }}
           >
-            <div className="flex items-start gap-4 min-w-0">
+            {highlighted && (
+              <span className="hp-badge hp-badge-good self-start mb-3">Оптимальный выбор</span>
+            )}
+
+            <div className="flex items-center gap-3">
               <div
-                className="w-11 h-11 flex items-center justify-center shrink-0 border"
+                className="w-10 h-10 flex items-center justify-center shrink-0 border"
                 style={{
                   background: 'var(--hp-neutral-tint)',
                   borderColor: 'var(--hp-border)',
                   borderRadius: 'var(--hp-radius)',
                 }}
               >
-                <Icon style={{ width: 19, height: 19, color: 'var(--hp-ink)' }} />
+                <Icon style={{ width: 18, height: 18, color: 'var(--hp-ink)' }} />
               </div>
-              <div className="min-w-0">
-                <h2 className="text-[20px] sm:text-[23px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
-                  {title}
-                </h2>
-                <p className="mt-2 text-[15px] leading-relaxed max-w-[720px]" style={{ color: 'var(--hp-sub)' }}>
-                  {lead}
-                </p>
+              <span className="text-[11px] font-bold tracking-widest uppercase" style={{ color: 'var(--hp-tertiary)' }}>
+                {eyebrow}
+              </span>
+            </div>
+
+            <h2 className="mt-3 text-[21px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
+              {title}
+            </h2>
+            <p className="mt-2 text-[14px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+              {lead}
+            </p>
+
+            <div className="mt-5 pt-5 border-t" style={{ borderColor: 'var(--hp-border-soft)' }}>
+              {badge && (
+                <span className="hp-badge hp-badge-warn mb-2">{badge}</span>
+              )}
+              <div className="flex items-baseline gap-2">
+                <span
+                  className="text-[34px] font-bold tracking-tight"
+                  style={{ fontFamily: "'Source Serif 4', Georgia, serif", color: 'var(--hp-ink)' }}
+                >
+                  {priceValue}
+                </span>
+                <span className="text-[13px] font-medium" style={{ color: 'var(--hp-sub)' }}>
+                  {priceNote}
+                </span>
               </div>
             </div>
 
-            <ul className="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-x-8">
-              {includes.map(item => (
-                <li
-                  key={item}
-                  className="flex items-start gap-3 py-2.5 border-t text-[14px] leading-relaxed"
-                  style={{ borderColor: 'var(--hp-border-soft)', color: 'var(--hp-ink)' }}
-                >
-                  <span
-                    className="w-1.5 h-1.5 mt-2 shrink-0"
-                    style={{ background: 'var(--hp-accent)' }}
-                    aria-hidden="true"
-                  />
-                  <span className="break-words">{item}</span>
-                </li>
-              ))}
-            </ul>
+            <div className="mt-5 flex-1">
+              {includesFrom && (
+                <p className="text-[12.5px] font-semibold mb-3" style={{ color: 'var(--hp-accent)' }}>
+                  {includesFrom}
+                </p>
+              )}
+              <ul className="space-y-2.5">
+                {features.map(item => (
+                  <li key={item} className="flex items-start gap-2.5 text-[13.5px] leading-relaxed" style={{ color: 'var(--hp-ink)' }}>
+                    <Check style={{ width: 15, height: 15, marginTop: 2, color: 'var(--hp-accent)', flexShrink: 0 }} />
+                    <span className="break-words">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-            <p
-              className="mt-5 px-4 py-3 text-[13.5px] leading-relaxed border"
-              style={{
-                background: 'var(--hp-neutral-tint)',
-                borderColor: 'var(--hp-border)',
-                color: 'var(--hp-ink)',
-                borderRadius: 'var(--hp-radius)',
-              }}
+            <a
+              href="#zayavka"
+              className={highlighted ? 'hp-btn-primary justify-center mt-6' : 'hp-btn-secondary justify-center mt-6'}
             >
-              <strong className="font-semibold">Стоимость. </strong>
-              {price}
-            </p>
+              Оставить заявку
+            </a>
           </section>
         ))}
       </div>
 
       <section
-        className="mt-10 border p-5 sm:p-8 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] gap-8"
+        id="zayavka"
+        className="mt-10 border p-5 sm:p-8 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] gap-8 scroll-mt-20"
         style={{
           background: 'var(--hp-surface)',
           borderColor: 'var(--hp-border)',
@@ -187,21 +191,15 @@ export default function ServicesPage() {
       >
         <div className="min-w-0">
           <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
-            Не знаете, какая услуга нужна?
+            Не знаете, какой тариф подойдёт?
           </h2>
           <p className="mt-3 text-[15px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
-            Опишите ситуацию своими словами — агент скажет, что именно потребуется
-            и сколько это будет стоить. Консультация до заключения договора бесплатная.
+            Опишите квартиру и ситуацию своими словами — агент подскажет подходящий тариф
+            и посчитает стоимость. Консультация до заключения договора бесплатная.
           </p>
-          <Link
-            href="/catalog"
-            className="hp-btn-secondary h-11 mt-5"
-          >
-            Сначала посмотреть объекты
-          </Link>
         </div>
         <div className="min-w-0">
-          <LeadForm submitLabel="Получить консультацию" />
+          <LeadForm submitLabel="Отправить заявку" />
         </div>
       </section>
     </div>
