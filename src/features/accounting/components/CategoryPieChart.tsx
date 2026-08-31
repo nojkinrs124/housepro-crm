@@ -29,6 +29,24 @@ export function CategoryPieChart({ data, title }: Props) {
       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">{title}</p>
       <div className="flex items-center gap-4">
         <div className="shrink-0" style={{ width: 120, height: 120 }}>
+          {data.length === 1 ? (
+            /*
+             * Единственная доля = сектор ровно на 360°, у которого начало дуги
+             * совпадает с концом. Recharts на таком секторе строит вырожденный
+             * path и не рисует ничего: в интерфейсе оставалась только легенда
+             * «Категория — 100%» рядом с пустым местом. Рисуем кольцо сами —
+             * тут всё равно нечего сегментировать.
+             */
+            <svg width="120" height="120" viewBox="0 0 120 120" role="img"
+              aria-label={`${data[0].name} — 100%`}>
+              <circle
+                cx="60" cy="60" r="42"
+                fill="none"
+                stroke={data[0].color}
+                strokeWidth="24"
+              />
+            </svg>
+          ) : (
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -51,6 +69,7 @@ export function CategoryPieChart({ data, title }: Props) {
               />
             </PieChart>
           </ResponsiveContainer>
+          )}
         </div>
         <div className="flex-1 space-y-1.5 min-w-0">
           {data.slice(0, 6).map((d) => (
