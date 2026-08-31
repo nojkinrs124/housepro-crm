@@ -32,12 +32,29 @@ export default async function AuditLogPage() {
  redirect('/settings')
  }
 
- const { data: logs } = await supabase
+ // audit_logs.user_id ссылается на auth.users (не на public.users) — PostgREST не может
+ // резолвить embed через FK-хинт между схемами ("Could not find a relationship..."),
+ // поэтому автора подтягиваем отдельным запросом и склеиваем вручную (тот же приём,
+ // что и для base_contract на карточке договора — см. contracts/[id]/page.tsx).
+ const { data: rawLogs } = await supabase
  .from('audit_logs')
- .select(`id, action, entity_type, entity_id, entity_label, changes, created_at,
- author:users!audit_logs_user_id_fkey(full_name, email)`)
+ .select('id, action, entity_type, entity_id, entity_label, changes, created_at, user_id')
  .order('created_at', { ascending: false })
  .limit(200)
+
+ const authorIds = [...new Set((rawLogs ?? []).map((l) => l.user_id).filter((id): id is string => !!id))]
+ const authorsById = new Map<string, { full_name: string | null; email: string | null }>()
+ if (authorIds.length > 0) {
+ const { data: authors } = await supabase.from('users').select('id, full_name, email').in('id', authorIds)
+ for (const a of authors ?? []) authorsById.set(a.id, { full_name: a.full_name, email: a.email })
+ }
+
+ const logs = (rawLogs ?? []).map((l) => ({
+ ...l,
+ // Записи без совпадения в public.users — как правило, действия через API-ключ или
+ // бота (авторизованы как auth.users, но профиля сотрудника у них нет).
+ author: (l.user_id && authorsById.get(l.user_id)) || null,
+ }))
 
  return (
  <div className="max-w-5xl mx-auto space-y-6">
