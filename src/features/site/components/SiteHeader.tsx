@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Menu, X, Phone } from 'lucide-react'
+import { Menu, X, Phone, LogIn } from 'lucide-react'
 import { SITE_BRAND, SITE_NAV } from '@/features/site/config'
 
 interface Props {
@@ -67,6 +67,18 @@ export function SiteHeader({ phone, phoneHref }: Props) {
             {phone}
           </a>
 
+          {/* Вход для сотрудников — намеренно скромный (не конкурирует с телефоном/CTA
+              для посетителей сайта), но всегда виден: раньше в CRM попадали только
+              по прямой ссылке /login, теперь есть заметная точка входа. */}
+          <Link
+            href="/login"
+            className="hidden sm:flex items-center gap-1.5 text-[13px] font-semibold transition-colors hover:text-[var(--hp-ink)]"
+            style={{ color: 'var(--hp-sub)' }}
+          >
+            <LogIn style={{ width: 14, height: 14 }} />
+            Вход
+          </Link>
+
           <button
             type="button"
             onClick={() => setOpen(v => !v)}
@@ -109,6 +121,15 @@ export function SiteHeader({ phone, phoneHref }: Props) {
               <Phone style={{ width: 16, height: 16, color: 'var(--hp-accent)' }} />
               {phone}
             </a>
+            <Link
+              href="/login"
+              onClick={() => setOpen(false)}
+              className="py-3 text-[15px] font-semibold flex items-center gap-2 border-t"
+              style={{ color: 'var(--hp-sub)', borderColor: 'var(--hp-border-soft)' }}
+            >
+              <LogIn style={{ width: 16, height: 16 }} />
+              Вход для сотрудников
+            </Link>
           </nav>
         </div>
       )}
