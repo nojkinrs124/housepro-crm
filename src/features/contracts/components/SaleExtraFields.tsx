@@ -44,7 +44,7 @@ export function SaleExtraFields({ defaultValue }: Props) {
  <input ref={hiddenRef} type="hidden" name="contract_type_data_json" defaultValue={JSON.stringify(data)} />
 
  <div className="hp-card p-6 space-y-4">
- <h2 className={sectionTitle}><Banknote className="w-4 h-4 text-emerald-500" /> Расчёты</h2>
+ <h2 className={sectionTitle}><Banknote className="w-4 h-4 text-[var(--hp-good)]" /> Расчёты</h2>
 
  <div className="grid grid-cols-2 gap-3">
  <div>
@@ -83,7 +83,7 @@ export function SaleExtraFields({ defaultValue }: Props) {
  </div>
 
  <div className="hp-card p-6 space-y-4">
- <h2 className={sectionTitle}><ShieldAlert className="w-4 h-4 text-amber-500" /> Обременения и зарегистрированные лица</h2>
+ <h2 className={sectionTitle}><ShieldAlert className="w-4 h-4 text-[var(--hp-warn)]" /> Обременения и зарегистрированные лица</h2>
  <div>
  <label className={lbl}>Обременения (залог, аренда, арест и т.д.)</label>
  <input className={inp} value={data.encumbrances}
@@ -97,7 +97,7 @@ export function SaleExtraFields({ defaultValue }: Props) {
  </div>
 
  <div className="hp-card p-6 space-y-4">
- <h2 className={sectionTitle}><Key className="w-4 h-4 text-orange-500" /> Передача объекта</h2>
+ <h2 className={sectionTitle}><Key className="w-4 h-4 text-[var(--hp-warn)]" /> Передача объекта</h2>
  <div>
  <label className={lbl}>Порядок и срок передачи ключей / объекта</label>
  <textarea className="w-full px-4 py-2.5 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all resize-none"

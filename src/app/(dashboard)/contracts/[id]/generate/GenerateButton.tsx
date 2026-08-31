@@ -37,7 +37,7 @@ export function GenerateButton({ contractId }: { contractId: string }) {
 
  {state === 'success' && result.docxUrl && (
  <div className="flex items-center gap-3">
- <div className="flex items-center gap-1.5 text-sm text-green-700 bg-green-50 border border-green-200 px-3 py-2">
+ <div className="flex items-center gap-1.5 text-sm text-[var(--hp-good)] bg-[var(--hp-good-tint)] border border-[var(--hp-border)] px-3 py-2">
  <CheckCircle2 className="w-4 h-4" />
  Версия {result.version} создана!
  </div>
@@ -55,7 +55,7 @@ export function GenerateButton({ contractId }: { contractId: string }) {
  )}
 
  {state === 'error' && (
- <div className="flex items-center gap-1.5 text-sm text-red-700 bg-red-50 border border-red-200 px-3 py-2">
+ <div className="flex items-center gap-1.5 text-sm text-[var(--hp-danger)] bg-[var(--hp-danger-tint)] border border-[var(--hp-border)] px-3 py-2">
  <AlertCircle className="w-4 h-4" />
  {result.error || 'Ошибка генерации'}
  </div>

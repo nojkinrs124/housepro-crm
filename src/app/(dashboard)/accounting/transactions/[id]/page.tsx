@@ -6,9 +6,9 @@ import Link from 'next/link'
 import { PageHeader } from '@/components/layout/PageHeader'
 
 const STATUS_CFG: Record<string, { label: string; cls: string }> = {
- completed: { label: 'Выполнено', cls: 'bg-green-50 text-green-700 border border-green-200' },
- planned: { label: 'Запланировано', cls: 'bg-amber-50 text-amber-700 border border-amber-200' },
- cancelled: { label: 'Отменено', cls: 'bg-slate-50 text-[var(--hp-sub)] border border-[var(--hp-border)]' },
+ completed: { label: 'Выполнено', cls: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)] border border-[var(--hp-border)]' },
+ planned: { label: 'Запланировано', cls: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)] border border-[var(--hp-border)]' },
+ cancelled: { label: 'Отменено', cls: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)] border border-[var(--hp-border)]' },
 }
 const METHOD_LABEL: Record<string, string> = {
  cash: 'Наличные', bank: 'Безналичный', card: 'Карта', other: 'Другое',
@@ -58,12 +58,12 @@ export default async function TransactionDetailPage({
  subtitle={`${isIncome ? 'Доход' : 'Расход'} · ${fmtDate(t.date)}`}
  backHref="/accounting"
  backLabel="Бухгалтерия"
- iconBg={isIncome ? 'bg-green-50' : 'bg-red-50'}
+ iconBg={isIncome ? 'bg-[var(--hp-good-tint)]' : 'bg-[var(--hp-danger-tint)]'}
  iconBoxClassName="w-11 h-11"
  icon={
  isIncome
- ? <ArrowDownCircle className="w-6 h-6 text-green-600" />
- : <ArrowUpCircle className="w-6 h-6 text-red-500" />
+ ? <ArrowDownCircle className="w-6 h-6 text-[var(--hp-good)]" />
+ : <ArrowUpCircle className="w-6 h-6 text-[var(--hp-danger)]" />
  }
  actions={
  <>
@@ -136,7 +136,7 @@ export default async function TransactionDetailPage({
  {t.contract && (
  <div>
  <p className="text-xs text-muted-foreground font-medium mb-0.5">Договор</p>
- <Link href={`/contracts/${t.contract.id}`} className="text-sm font-medium text-blue-600 hover:underline">
+ <Link href={`/contracts/${t.contract.id}`} className="text-sm font-medium text-[var(--hp-info)] hover:underline">
  №{t.contract.contract_number ?? t.contract.id.slice(0, 8)}
  </Link>
  </div>
@@ -144,7 +144,7 @@ export default async function TransactionDetailPage({
  {t.deal && (
  <div>
  <p className="text-xs text-muted-foreground font-medium mb-0.5">Сделка</p>
- <Link href={`/deals/${t.deal.id}`} className="text-sm font-medium text-blue-600 hover:underline">
+ <Link href={`/deals/${t.deal.id}`} className="text-sm font-medium text-[var(--hp-info)] hover:underline">
  {t.deal.deal_type} · {t.deal.id.slice(0, 8)}
  </Link>
  </div>
@@ -152,7 +152,7 @@ export default async function TransactionDetailPage({
  {t.employee && (
  <div>
  <p className="text-xs text-muted-foreground font-medium mb-0.5">Сотрудник</p>
- <Link href={`/employees/${t.employee.id}`} className="text-sm font-medium text-foreground hover:text-blue-600">
+ <Link href={`/employees/${t.employee.id}`} className="text-sm font-medium text-foreground hover:text-[var(--hp-info)]">
  {t.employee.full_name}
  </Link>
  </div>
@@ -160,7 +160,7 @@ export default async function TransactionDetailPage({
  {t.contact && (
  <div>
  <p className="text-xs text-muted-foreground font-medium mb-0.5">Контакт</p>
- <Link href={`/contacts/${t.contact.id}`} className="text-sm font-medium text-blue-600 hover:underline">
+ <Link href={`/contacts/${t.contact.id}`} className="text-sm font-medium text-[var(--hp-info)] hover:underline">
  {t.contact.full_name}
  </Link>
  </div>

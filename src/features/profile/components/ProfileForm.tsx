@@ -13,10 +13,10 @@ const roleLabels: Record<string, string> = {
 }
 
 const roleColors: Record<string, string> = {
- admin: 'bg-purple-100 text-purple-700',
- manager: 'bg-blue-100 text-blue-700',
- agent: 'bg-green-100 text-green-700',
- accountant: 'bg-orange-100 text-orange-700',
+ admin: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]',
+ manager: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]',
+ agent: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]',
+ accountant: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]',
 }
 
 type FeedbackState = { type: 'success' | 'error'; message: string } | null
@@ -129,7 +129,7 @@ export function ProfileForm({ user }: { user: UserType }) {
  <div>
  <h2 className="text-lg font-semibold text-foreground">{user.full_name}</h2>
  <p className="text-sm text-muted-foreground">{user.email}</p>
- <span className={`inline-block mt-2 text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium ${roleColors[user.role] ?? 'bg-gray-100 text-gray-600'}`}>
+ <span className={`inline-block mt-2 text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium ${roleColors[user.role] ?? 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]'}`}>
  {roleLabels[user.role] ?? user.role}
  </span>
  </div>
@@ -182,7 +182,7 @@ export function ProfileForm({ user }: { user: UserType }) {
 
  <div className="flex items-center justify-between pt-1">
  {profileFeedback && (
- <div className={`flex items-center gap-2 text-sm ${profileFeedback.type === 'success' ? 'text-green-600' : 'text-destructive'}`}>
+ <div className={`flex items-center gap-2 text-sm ${profileFeedback.type === 'success' ? 'text-[var(--hp-good)]' : 'text-destructive'}`}>
  {profileFeedback.type === 'success'
  ? <CheckCircle className="w-4 h-4" />
  : <AlertCircle className="w-4 h-4" />
@@ -242,7 +242,7 @@ export function ProfileForm({ user }: { user: UserType }) {
 
  <div className="flex items-center justify-between">
  {passwordFeedback && (
- <div className={`flex items-center gap-2 text-sm ${passwordFeedback.type === 'success' ? 'text-green-600' : 'text-destructive'}`}>
+ <div className={`flex items-center gap-2 text-sm ${passwordFeedback.type === 'success' ? 'text-[var(--hp-good)]' : 'text-destructive'}`}>
  {passwordFeedback.type === 'success'
  ? <CheckCircle className="w-4 h-4" />
  : <AlertCircle className="w-4 h-4" />

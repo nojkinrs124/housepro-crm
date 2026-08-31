@@ -9,16 +9,16 @@ import { TaskStatusSelect } from '@/features/tasks/components/TaskStatusSelect'
 import { TaskDeleteButton } from '@/features/tasks/components/TaskDeleteButton'
 
 const PRIORITY_LABELS: Record<string, { label: string; color: string; bg: string }> = {
- low: { label: 'Низкий', color: 'text-green-700', bg: 'bg-green-50 border-green-200' },
- medium: { label: 'Средний', color: 'text-yellow-700', bg: 'bg-yellow-50 border-yellow-200' },
- high: { label: 'Высокий', color: 'text-red-700', bg: 'bg-red-50 border-red-200' },
+ low: { label: 'Низкий', color: 'text-[var(--hp-good)]', bg: 'bg-[var(--hp-good-tint)] border-[var(--hp-border)]' },
+ medium: { label: 'Средний', color: 'text-[var(--hp-warn)]', bg: 'bg-[var(--hp-warn-tint)] border-[var(--hp-border)]' },
+ high: { label: 'Высокий', color: 'text-[var(--hp-danger)]', bg: 'bg-[var(--hp-danger-tint)] border-[var(--hp-border)]' },
 }
 
 const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
- todo: { label: 'К выполнению', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200' },
- in_progress: { label: 'В работе', color: 'text-yellow-700', bg: 'bg-yellow-50 border-yellow-200' },
- done: { label: 'Выполнена', color: 'text-green-700', bg: 'bg-green-50 border-green-200' },
- cancelled: { label: 'Отменена', color: 'text-gray-600', bg: 'bg-gray-50 border-gray-200' },
+ todo: { label: 'К выполнению', color: 'text-[var(--hp-info)]', bg: 'bg-[var(--hp-info-tint)] border-[var(--hp-border)]' },
+ in_progress: { label: 'В работе', color: 'text-[var(--hp-warn)]', bg: 'bg-[var(--hp-warn-tint)] border-[var(--hp-border)]' },
+ done: { label: 'Выполнена', color: 'text-[var(--hp-good)]', bg: 'bg-[var(--hp-good-tint)] border-[var(--hp-border)]' },
+ cancelled: { label: 'Отменена', color: 'text-[var(--hp-sub)]', bg: 'bg-[var(--hp-neutral-tint)] border-[var(--hp-border)]' },
 }
 
 function formatDate(dt: string | null | undefined) {
@@ -103,7 +103,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
 
  {/* Overdue warning */}
  {isOverdue && (
- <span className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold bg-red-50 text-red-700 border border-red-200">
+ <span className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold bg-[var(--hp-danger-tint)] text-[var(--hp-danger)] border border-[var(--hp-border)]">
  <AlertTriangle style={{ width: 12, height: 12 }} />
  Просрочена
  </span>
@@ -134,13 +134,13 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
  <div className="space-y-2">
  {(task.deal as { id: string; deal_type: string; status: string } | null) && (
  <Link href={`/deals/${(task.deal as { id: string }).id}`}
- className="flex items-center gap-3 p-3 border border-border hover:border-blue-300 hover:bg-blue-50/40 transition-all group">
- <div className="w-8 h-8 bg-blue-100 flex items-center justify-center">
+ className="flex items-center gap-3 p-3 border border-border hover:border-[var(--hp-border)] hover:bg-[var(--hp-info-tint)]/40 transition-all group">
+ <div className="w-8 h-8 bg-[var(--hp-info-tint)] flex items-center justify-center">
  <Banknote style={{ width: 16, height: 16, color: '#2563EB' }} />
  </div>
  <div>
  <p className="text-xs text-muted-foreground">Сделка</p>
- <p className="text-sm font-medium text-foreground group-hover:text-blue-600 transition-colors">
+ <p className="text-sm font-medium text-foreground group-hover:text-[var(--hp-info)] transition-colors">
  {(task.deal as { deal_type: string }).deal_type === 'rent' ? 'Аренда' :
  (task.deal as { deal_type: string }).deal_type === 'sale' ? 'Продажа' : 'Управление'}
  </p>
@@ -150,13 +150,13 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
 
  {(task.property as { id: string; title: string; address?: string } | null) && (
  <Link href={`/properties/${(task.property as { id: string }).id}`}
- className="flex items-center gap-3 p-3 border border-border hover:border-purple-300 hover:bg-purple-50/40 transition-all group">
- <div className="w-8 h-8 bg-purple-100 flex items-center justify-center">
+ className="flex items-center gap-3 p-3 border border-border hover:border-[var(--hp-border)] hover:bg-[var(--hp-neutral-tint)]/40 transition-all group">
+ <div className="w-8 h-8 bg-[var(--hp-neutral-tint)] flex items-center justify-center">
  <Building2 style={{ width: 16, height: 16, color: '#7C3AED' }} />
  </div>
  <div className="min-w-0">
  <p className="text-xs text-muted-foreground">Объект</p>
- <p className="text-sm font-medium text-foreground group-hover:text-purple-600 transition-colors truncate">
+ <p className="text-sm font-medium text-foreground group-hover:text-[var(--hp-sub)] transition-colors truncate">
  {(task.property as { title: string }).title}
  </p>
  {(task.property as { address?: string }).address && (
@@ -168,13 +168,13 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
 
  {(task.contract as { id: string; contract_number?: string } | null) && (
  <Link href={`/contracts/${(task.contract as { id: string }).id}`}
- className="flex items-center gap-3 p-3 border border-border hover:border-green-300 hover:bg-green-50/40 transition-all group">
- <div className="w-8 h-8 bg-green-100 flex items-center justify-center">
+ className="flex items-center gap-3 p-3 border border-border hover:border-[var(--hp-border)] hover:bg-[var(--hp-good-tint)]/40 transition-all group">
+ <div className="w-8 h-8 bg-[var(--hp-good-tint)] flex items-center justify-center">
  <FileText style={{ width: 16, height: 16, color: 'var(--hp-accent)' }} />
  </div>
  <div>
  <p className="text-xs text-muted-foreground">Договор</p>
- <p className="text-sm font-medium text-foreground group-hover:text-green-600 transition-colors">
+ <p className="text-sm font-medium text-foreground group-hover:text-[var(--hp-good)] transition-colors">
  № {(task.contract as { contract_number?: string }).contract_number ?? '—'}
  </p>
  </div>
@@ -183,13 +183,13 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
 
  {(task.lead as { id: string; full_name?: string; phone?: string } | null) && (
  <Link href={`/leads/${(task.lead as { id: string }).id}`}
- className="flex items-center gap-3 p-3 border border-border hover:border-orange-300 hover:bg-orange-50/40 transition-all group">
- <div className="w-8 h-8 bg-orange-100 flex items-center justify-center">
+ className="flex items-center gap-3 p-3 border border-border hover:border-[var(--hp-border)] hover:bg-[var(--hp-warn-tint)]/40 transition-all group">
+ <div className="w-8 h-8 bg-[var(--hp-warn-tint)] flex items-center justify-center">
  <User style={{ width: 16, height: 16, color: '#EA580C' }} />
  </div>
  <div>
  <p className="text-xs text-muted-foreground">Лид</p>
- <p className="text-sm font-medium text-foreground group-hover:text-orange-600 transition-colors">
+ <p className="text-sm font-medium text-foreground group-hover:text-[var(--hp-warn)] transition-colors">
  {(task.lead as { full_name?: string }).full_name ?? (task.lead as { phone?: string }).phone ?? '—'}
  </p>
  </div>
@@ -210,7 +210,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
  <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Исполнитель</h2>
  {(task.assignee as { full_name?: string; email?: string; role?: string } | null) ? (
  <div className="flex items-center gap-3">
- <div className="w-10 h-10 rounded-[var(--hp-radius)] bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-sm font-bold">
+ <div className="w-10 h-10 rounded-[var(--hp-radius)] bg-[var(--hp-accent)] flex items-center justify-center text-white text-sm font-bold">
  {(task.assignee as { full_name: string }).full_name.charAt(0).toUpperCase()}
  </div>
  <div>
@@ -228,11 +228,11 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
  <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Сроки</h2>
  <div className="space-y-2">
  {deadline && (
- <div className={`flex items-center gap-2.5 p-3 border ${isOverdue ? 'bg-red-50 border-red-200' : 'bg-background border-border'}`}>
+ <div className={`flex items-center gap-2.5 p-3 border ${isOverdue ? 'bg-[var(--hp-danger-tint)] border-[var(--hp-border)]' : 'bg-background border-border'}`}>
  <Clock style={{ width: 15, height: 15, color: isOverdue ? '#DC2626' : '#64748B', flexShrink: 0 }} />
  <div>
  <p className="text-xs text-muted-foreground">Дедлайн</p>
- <p className={`text-sm font-semibold ${isOverdue ? 'text-red-600' : 'text-foreground'}`}>
+ <p className={`text-sm font-semibold ${isOverdue ? 'text-[var(--hp-danger)]' : 'text-foreground'}`}>
  {formatDate(deadline)}
  </p>
  </div>
@@ -259,7 +259,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
  {/* Actions */}
  <div className="bg-white border border-border p-5 space-y-2">
  <Link href={`/tasks/new?deal_id=${task.deal_id ?? ''}&contract_id=${task.contract_id ?? ''}`}
- className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-[#2563EB] bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-all">
+ className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-[#2563EB] bg-[var(--hp-info-tint)] border border-[var(--hp-border)] hover:bg-[var(--hp-info-tint)] transition-all">
  <CheckSquare style={{ width: 15, height: 15 }} />
  Создать похожую
  </Link>

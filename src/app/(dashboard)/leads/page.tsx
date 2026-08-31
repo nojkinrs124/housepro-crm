@@ -33,10 +33,10 @@ export default async function LeadsPage() {
  {/* Stats */}
  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
  {[
- { label: 'Всего лидов', value: total, Icon: Zap, iconCls: 'bg-blue-50', iconColor: 'text-blue-500' },
- { label: 'Новых', value: newCount, Icon: Clock, iconCls: 'bg-amber-50', iconColor: 'text-amber-500' },
- { label: 'В работе', value: inWork, Icon: TrendingUp, iconCls: 'bg-violet-50', iconColor: 'text-violet-600' },
- { label: 'Конвертировано', value: converted, Icon: CheckCircle2, iconCls: 'bg-green-50', iconColor: 'text-green-600' },
+ { label: 'Всего лидов', value: total, Icon: Zap, iconCls: 'bg-[var(--hp-info-tint)]', iconColor: 'text-[var(--hp-info)]' },
+ { label: 'Новых', value: newCount, Icon: Clock, iconCls: 'bg-[var(--hp-warn-tint)]', iconColor: 'text-[var(--hp-warn)]' },
+ { label: 'В работе', value: inWork, Icon: TrendingUp, iconCls: 'bg-[var(--hp-neutral-tint)]', iconColor: 'text-[var(--hp-sub)]' },
+ { label: 'Конвертировано', value: converted, Icon: CheckCircle2, iconCls: 'bg-[var(--hp-good-tint)]', iconColor: 'text-[var(--hp-good)]' },
  ].map(stat => {
  const Icon = stat.Icon
  return (

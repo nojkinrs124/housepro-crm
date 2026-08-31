@@ -63,7 +63,7 @@ export default async function RecurringPage() {
  <p className="text-[var(--hp-ink)] font-semibold">Нет периодических операций</p>
  <Link
  href="/accounting/recurring/new"
- className="mt-2 inline-block text-sm text-green-600 hover:underline font-medium"
+ className="mt-2 inline-block text-sm text-[var(--hp-good)] hover:underline font-medium"
  >
  Добавить первую →
  </Link>
@@ -77,7 +77,7 @@ export default async function RecurringPage() {
  style={{ }}
  >
  <div className="px-5 pt-5 pb-4 border-b border-[var(--hp-border-soft)] flex items-center gap-2">
- <span className="w-2 h-2 rounded-full bg-green-500" />
+ <span className="w-2 h-2 rounded-full bg-[var(--hp-accent)]" />
  <h2 className="font-bold text-foreground text-[15px]">Активные</h2>
  <span className="text-xs text-muted-foreground font-medium ml-1">{active.length}</span>
  </div>
@@ -96,7 +96,7 @@ export default async function RecurringPage() {
  style={{ }}
  >
  <div className="px-5 pt-5 pb-4 border-b border-[var(--hp-border-soft)] flex items-center gap-2">
- <span className="w-2 h-2 rounded-full bg-slate-300" />
+ <span className="w-2 h-2 rounded-full bg-[var(--hp-tertiary)]" />
  <h2 className="font-bold text-foreground text-[15px]">Приостановлены</h2>
  <span className="text-xs text-muted-foreground font-medium ml-1">{inactive.length}</span>
  </div>
@@ -148,7 +148,7 @@ function RuleRow({ rule: r }: { rule: any }) {
  </div>
  </div>
  <div className="shrink-0 text-right">
- <p className={`text-base font-bold ${isIncome ? 'text-green-700' : 'text-red-600'}`}>
+ <p className={`text-base font-bold ${isIncome ? 'text-[var(--hp-good)]' : 'text-[var(--hp-danger)]'}`}>
  {isIncome ? '+' : '−'}{fmt(Number(r.amount))}
  </p>
  {r.last_generated_date && (
@@ -160,7 +160,7 @@ function RuleRow({ rule: r }: { rule: any }) {
  <div className="flex items-center gap-1 shrink-0">
  <Link
  href={`/accounting/recurring/${r.id}/edit`}
- className="p-1.5 text-[var(--hp-tertiary)] hover:text-green-600 hover:bg-green-50 transition-colors"
+ className="p-1.5 text-[var(--hp-tertiary)] hover:text-[var(--hp-good)] hover:bg-[var(--hp-good-tint)] transition-colors"
  title="Редактировать"
  >
  <Pencil style={{ width: 14, height: 14 }} />

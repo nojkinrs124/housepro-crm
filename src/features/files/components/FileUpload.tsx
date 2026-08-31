@@ -105,7 +105,7 @@ export function FileUpload({ clientId, propertyId, contractId, dealId }: FileUpl
  : 'border-border hover:border-primary/50 hover:bg-accent/50'
  }
  ${status === 'error' ? 'border-destructive/50 bg-destructive/5' : ''}
- ${status === 'success' ? 'border-green-500/50 bg-green-50' : ''}
+ ${status === 'success' ? 'border-[var(--hp-border)]/50 bg-[var(--hp-good-tint)]' : ''}
  `}
  >
  <input
@@ -118,8 +118,8 @@ export function FileUpload({ clientId, propertyId, contractId, dealId }: FileUpl
 
  {status === 'success' ? (
  <div className="flex flex-col items-center gap-2">
- <CheckCircle className="w-8 h-8 text-green-500" />
- <p className="text-sm font-medium text-green-700">Файл загружен!</p>
+ <CheckCircle className="w-8 h-8 text-[var(--hp-good)]" />
+ <p className="text-sm font-medium text-[var(--hp-good)]">Файл загружен!</p>
  </div>
  ) : status === 'error' ? (
  <div className="flex flex-col items-center gap-2">

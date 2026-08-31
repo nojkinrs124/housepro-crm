@@ -57,7 +57,7 @@ export function RentApartmentExtraFields({ defaultValue }: Props) {
 
  {/* Проживающие и животные */}
  <div className="hp-card p-6 space-y-4">
- <h2 className={sectionTitle}><Users className="w-4 h-4 text-blue-500" /> Проживающие и животные</h2>
+ <h2 className={sectionTitle}><Users className="w-4 h-4 text-[var(--hp-info)]" /> Проживающие и животные</h2>
 
  <div className="space-y-2">
  <label className={lbl}>Лица, совместно проживающие с нанимателем</label>
@@ -81,7 +81,7 @@ export function RentApartmentExtraFields({ defaultValue }: Props) {
 
  <div className="space-y-2 pt-2 border-t border-border">
  <label className="flex items-center gap-2 text-sm font-medium">
- <PawPrint className="w-4 h-4 text-amber-500" />
+ <PawPrint className="w-4 h-4 text-[var(--hp-warn)]" />
  <input type="checkbox" checked={data.pets_allowed}
  onChange={e => set('pets_allowed', e.target.checked)} className="accent-primary" />
  Разрешено содержание животных
@@ -105,7 +105,7 @@ export function RentApartmentExtraFields({ defaultValue }: Props) {
 
  {/* Сроки уведомлений и неустойка */}
  <div className="hp-card p-6 space-y-4">
- <h2 className={sectionTitle}><Bell className="w-4 h-4 text-violet-500" /> Уведомления и неустойка</h2>
+ <h2 className={sectionTitle}><Bell className="w-4 h-4 text-[var(--hp-sub)]" /> Уведомления и неустойка</h2>
  <div className="grid grid-cols-2 gap-3">
  <div>
  <label className={lbl}>Срок уведомления о непродлении (мес.)</label>
@@ -132,7 +132,7 @@ export function RentApartmentExtraFields({ defaultValue }: Props) {
 
  {/* Коммунальные и экземпляры */}
  <div className="hp-card p-6 space-y-4">
- <h2 className={sectionTitle}><Wallet className="w-4 h-4 text-emerald-500" /> Коммунальные платежи</h2>
+ <h2 className={sectionTitle}><Wallet className="w-4 h-4 text-[var(--hp-good)]" /> Коммунальные платежи</h2>
  <label className="flex items-center gap-2 text-sm font-medium">
  <input type="checkbox" checked={data.utilities_included_in_rent}
  onChange={e => set('utilities_included_in_rent', e.target.checked)} className="accent-primary" />
@@ -162,7 +162,7 @@ export function RentApartmentExtraFields({ defaultValue }: Props) {
 
  {/* Акт приёма-передачи */}
  <div className="hp-card p-6 space-y-4">
- <h2 className={sectionTitle}><Key className="w-4 h-4 text-orange-500" /> Акт приёма-передачи (при заселении)</h2>
+ <h2 className={sectionTitle}><Key className="w-4 h-4 text-[var(--hp-warn)]" /> Акт приёма-передачи (при заселении)</h2>
  <p className="text-xs text-muted-foreground -mt-2">Можно заполнить сразу или позже, перед фактическим заселением.</p>
  <div className="grid grid-cols-2 gap-3">
  <div>
@@ -213,7 +213,7 @@ export function RentApartmentExtraFields({ defaultValue }: Props) {
 
  {/* Акт возврата */}
  <div className="hp-card p-6 space-y-4">
- <h2 className={sectionTitle}><DoorOpen className="w-4 h-4 text-rose-500" /> Акт возврата (при выезде)</h2>
+ <h2 className={sectionTitle}><DoorOpen className="w-4 h-4 text-[var(--hp-danger)]" /> Акт возврата (при выезде)</h2>
  <p className="text-xs text-muted-foreground -mt-2">Заполняется в момент окончания найма — можно оставить пустым сейчас.</p>
  <div className="grid grid-cols-2 gap-3">
  <div>

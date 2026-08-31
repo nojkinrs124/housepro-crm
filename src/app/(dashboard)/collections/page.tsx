@@ -56,7 +56,7 @@ export default async function CollectionsPage() {
  <FolderOpen className="w-4 h-4 text-primary" />
  </div>
  <span className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-medium ${
- col.is_public ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-[var(--hp-sub)]'
+ col.is_public ? 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]' : 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]'
  }`}>
  {col.is_public ? <><Globe className="w-3 h-3" />Публичная</> : <><Lock className="w-3 h-3" />Приватная</>}
  </span>

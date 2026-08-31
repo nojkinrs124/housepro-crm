@@ -34,7 +34,7 @@ export default async function CategoriesPage() {
  >
  <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[var(--hp-border-soft)]">
  <div className="flex items-center gap-2">
- <span className="w-2.5 h-2.5 rounded-full bg-green-500" />
+ <span className="w-2.5 h-2.5 rounded-full bg-[var(--hp-accent)]" />
  <h2 className="font-bold text-foreground text-[15px]">Доходы</h2>
  <span className="ml-1 text-xs text-muted-foreground font-medium">{income.length}</span>
  </div>
@@ -44,7 +44,7 @@ export default async function CategoriesPage() {
  <CategoryRow key={c.id} category={c} />
  ))}
  </div>
- <div className="px-5 py-4 border-t border-[var(--hp-border-soft)] bg-slate-50/40">
+ <div className="px-5 py-4 border-t border-[var(--hp-border-soft)] bg-[var(--hp-neutral-tint)]/40">
  <AddCategoryForm defaultType="income" />
  </div>
  </div>
@@ -56,7 +56,7 @@ export default async function CategoriesPage() {
  >
  <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[var(--hp-border-soft)]">
  <div className="flex items-center gap-2">
- <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
+ <span className="w-2.5 h-2.5 rounded-full bg-[var(--hp-danger)]" />
  <h2 className="font-bold text-foreground text-[15px]">Расходы</h2>
  <span className="ml-1 text-xs text-muted-foreground font-medium">{expense.length}</span>
  </div>
@@ -66,7 +66,7 @@ export default async function CategoriesPage() {
  <CategoryRow key={c.id} category={c} />
  ))}
  </div>
- <div className="px-5 py-4 border-t border-[var(--hp-border-soft)] bg-slate-50/40">
+ <div className="px-5 py-4 border-t border-[var(--hp-border-soft)] bg-[var(--hp-neutral-tint)]/40">
  <AddCategoryForm defaultType="expense" />
  </div>
  </div>

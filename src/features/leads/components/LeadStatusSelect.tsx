@@ -4,14 +4,14 @@ import { useState } from 'react'
 import { updateLeadStatusAction } from '@/features/leads/actions/leads.actions'
 
 const statuses = [
- { value: 'new', label: 'Новый', color: 'border-blue-300 bg-blue-50 text-blue-700' },
- { value: 'contacted', label: 'Связались', color: 'border-yellow-300 bg-yellow-50 text-yellow-700' },
- { value: 'showing', label: 'Показ', color: 'border-orange-300 bg-orange-50 text-orange-700' },
- { value: 'searching', label: 'Подбор', color: 'border-purple-300 bg-purple-50 text-purple-700' },
- { value: 'interested', label: 'Заинтересован', color: 'border-cyan-300 bg-cyan-50 text-cyan-700' },
- { value: 'converted', label: 'Конвертирован', color: 'border-green-300 bg-green-50 text-green-700' },
- { value: 'closed', label: 'Закрыт', color: 'border-gray-300 bg-gray-50 text-gray-600' },
- { value: 'rejected', label: 'Отказ', color: 'border-red-300 bg-red-50 text-red-600' },
+ { value: 'new', label: 'Новый', color: 'border-[var(--hp-border)] bg-[var(--hp-info-tint)] text-[var(--hp-info)]' },
+ { value: 'contacted', label: 'Связались', color: 'border-[var(--hp-border)] bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]' },
+ { value: 'showing', label: 'Показ', color: 'border-[var(--hp-border)] bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]' },
+ { value: 'searching', label: 'Подбор', color: 'border-[var(--hp-border)] bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]' },
+ { value: 'interested', label: 'Заинтересован', color: 'border-[var(--hp-border)] bg-[var(--hp-info-tint)] text-[var(--hp-info)]' },
+ { value: 'converted', label: 'Конвертирован', color: 'border-[var(--hp-border)] bg-[var(--hp-good-tint)] text-[var(--hp-good)]' },
+ { value: 'closed', label: 'Закрыт', color: 'border-[var(--hp-border)] bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]' },
+ { value: 'rejected', label: 'Отказ', color: 'border-[var(--hp-border)] bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]' },
 ]
 
 export function LeadStatusSelect({ leadId, currentStatus }: { leadId: string; currentStatus: string }) {

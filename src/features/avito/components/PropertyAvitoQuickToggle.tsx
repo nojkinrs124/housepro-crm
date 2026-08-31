@@ -15,10 +15,10 @@ interface Props {
 }
 
 const STATUS_UI: Record<string, { label: string; className: string; icon: typeof Clock }> = {
-  pending: { label: 'В очереди',  className: 'bg-amber-50 text-amber-700 border-amber-200', icon: Clock },
-  active:  { label: 'На Авито',   className: 'bg-green-50 text-green-700 border-green-200', icon: CheckCircle2 },
-  error:   { label: 'Ошибка',     className: 'bg-red-50 text-red-700 border-red-200',       icon: AlertTriangle },
-  removed: { label: 'Снят',       className: 'bg-slate-100 text-[var(--hp-sub)] border-[var(--hp-border)]', icon: AlertTriangle },
+  pending: { label: 'В очереди',  className: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)] border-[var(--hp-border)]', icon: Clock },
+  active:  { label: 'На Авито',   className: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)] border-[var(--hp-border)]', icon: CheckCircle2 },
+  error:   { label: 'Ошибка',     className: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)] border-[var(--hp-border)]',       icon: AlertTriangle },
+  removed: { label: 'Снят',       className: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)] border-[var(--hp-border)]', icon: AlertTriangle },
 }
 
 /**
@@ -57,7 +57,7 @@ export function PropertyAvitoQuickToggle({ propertyId, isPublished, status, elig
       disabled={loading}
       title={isPublished ? 'Снять с публикации на Авито' : 'Опубликовать на Авито'}
       className={`inline-flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold border transition-all disabled:opacity-60 ${
-        ui ? ui.className : 'bg-white text-[var(--hp-sub)] border-[var(--hp-border)] hover:border-blue-300 hover:text-blue-600'
+        ui ? ui.className : 'bg-white text-[var(--hp-sub)] border-[var(--hp-border)] hover:border-[var(--hp-border)] hover:text-[var(--hp-info)]'
       }`}
     >
       {loading ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : <Icon className="w-2.5 h-2.5" />}

@@ -11,10 +11,10 @@ const statusLabels: Record<string, string> = {
  rejected: 'Отказ',
 }
 const statusColors: Record<string, string> = {
- new: 'bg-blue-50 text-blue-600 border-blue-200',
- in_work: 'bg-amber-50 text-amber-700 border-amber-200',
- converted: 'bg-green-50 text-green-700 border-green-200',
- rejected: 'bg-red-50 text-red-500 border-red-200',
+ new: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)] border-[var(--hp-border)]',
+ in_work: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)] border-[var(--hp-border)]',
+ converted: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)] border-[var(--hp-border)]',
+ rejected: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)] border-[var(--hp-border)]',
 }
 const sourceLabels: Record<string, string> = {
  avito: 'Авито',
@@ -33,11 +33,11 @@ const dealTypeLabels: Record<string, string> = {
  subrent: 'Субаренда',
 }
 const dealTypeColors: Record<string, string> = {
- rent: 'bg-blue-100 text-blue-700',
- sale: 'bg-green-100 text-green-700',
- management: 'bg-purple-100 text-purple-700',
- commercial: 'bg-orange-100 text-orange-700',
- subrent: 'bg-pink-100 text-pink-700',
+ rent: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]',
+ sale: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]',
+ management: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]',
+ commercial: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]',
+ subrent: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]',
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -83,7 +83,7 @@ export function LeadsListView({ leads }: { leads: any[] }) {
  >
  <td className="px-5 py-3.5">
  <div className="flex items-center gap-2">
- <div className="w-7 h-7 rounded-[var(--hp-radius)] bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center shrink-0">
+ <div className="w-7 h-7 rounded-[var(--hp-radius)] bg-[var(--hp-neutral-tint)] flex items-center justify-center shrink-0">
  <User className="w-3.5 h-3.5 text-white" />
  </div>
  <span className="text-sm font-semibold text-foreground truncate max-w-[180px]">{lead.full_name || '—'}</span>
@@ -101,7 +101,7 @@ export function LeadsListView({ leads }: { leads: any[] }) {
  </td>
  <td className="px-5 py-3.5">
  {lead.deal_type ? (
- <span className={`inline-block text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium ${dealTypeColors[lead.deal_type] ?? 'bg-gray-100 text-gray-600'}`}>
+ <span className={`inline-block text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium ${dealTypeColors[lead.deal_type] ?? 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]'}`}>
  {dealTypeLabels[lead.deal_type] ?? lead.deal_type}
  </span>
  ) : (
@@ -114,7 +114,7 @@ export function LeadsListView({ leads }: { leads: any[] }) {
  </span>
  </td>
  <td className="px-5 py-3.5">
- <span className={`inline-block text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium border ${statusColors[lead.status] ?? 'bg-gray-50 text-gray-500 border-gray-200'}`}>
+ <span className={`inline-block text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium border ${statusColors[lead.status] ?? 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)] border-[var(--hp-border)]'}`}>
  {statusLabels[lead.status] ?? lead.status}
  </span>
  </td>
@@ -126,7 +126,7 @@ export function LeadsListView({ leads }: { leads: any[] }) {
  )}
  </td>
  <td className="px-5 py-3.5">
- <ExternalLink className="w-4 h-4 text-slate-300 group-hover:text-[var(--hp-sub)] transition-colors" />
+ <ExternalLink className="w-4 h-4 text-[var(--hp-tertiary)] group-hover:text-[var(--hp-sub)] transition-colors" />
  </td>
  </tr>
  )
@@ -149,7 +149,7 @@ export function LeadsListView({ leads }: { leads: any[] }) {
  <Link key={lead.id} href={`/leads/${lead.id}`} className="block p-4 hover:bg-[var(--hp-neutral-tint)] transition-colors">
  <div className="flex items-center justify-between gap-2 mb-2">
  <span className="text-sm font-semibold text-foreground truncate min-w-0 flex-1">{lead.full_name || '—'}</span>
- <span className={`text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-medium border whitespace-nowrap shrink-0 ${statusColors[lead.status] ?? 'bg-gray-50 text-gray-500 border-gray-200'}`}>
+ <span className={`text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-medium border whitespace-nowrap shrink-0 ${statusColors[lead.status] ?? 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)] border-[var(--hp-border)]'}`}>
  {statusLabels[lead.status] ?? lead.status}
  </span>
  </div>
@@ -161,7 +161,7 @@ export function LeadsListView({ leads }: { leads: any[] }) {
  )}
  <div className="flex items-center gap-2 mt-2 flex-wrap">
  {lead.deal_type && (
- <span className={`text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-medium ${dealTypeColors[lead.deal_type] ?? 'bg-gray-100 text-gray-600'}`}>
+ <span className={`text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-medium ${dealTypeColors[lead.deal_type] ?? 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]'}`}>
  {dealTypeLabels[lead.deal_type] ?? lead.deal_type}
  </span>
  )}
@@ -177,7 +177,7 @@ export function LeadsListView({ leads }: { leads: any[] }) {
  <a
  href={`tel:${lead.phone}`}
  onClick={e => e.stopPropagation()}
- className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-bold bg-green-50 text-green-700 border border-green-100"
+ className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-bold bg-[var(--hp-good-tint)] text-[var(--hp-good)] border border-[var(--hp-border)]"
  >
  <Phone className="w-3 h-3" />
  Звонок
@@ -186,7 +186,7 @@ export function LeadsListView({ leads }: { leads: any[] }) {
  href={`https://wa.me/${lead.phone.replace(/\D/g, '')}`}
  target="_blank" rel="noopener noreferrer"
  onClick={e => e.stopPropagation()}
- className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-bold bg-green-50 text-green-700 border border-green-100"
+ className="flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-bold bg-[var(--hp-good-tint)] text-[var(--hp-good)] border border-[var(--hp-border)]"
  >
  <MessageCircle className="w-3 h-3" />
  WA

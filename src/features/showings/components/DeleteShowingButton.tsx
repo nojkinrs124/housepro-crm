@@ -9,7 +9,7 @@ export function DeleteShowingButton({ id }: { id: string }) {
  <button
  type="submit"
  onClick={(e) => { if (!confirm('Удалить показ? Это действие нельзя отменить.')) e.preventDefault() }}
- className="w-full py-2 text-sm text-red-500 border border-red-100 hover:bg-red-50 transition-colors"
+ className="w-full py-2 text-sm text-[var(--hp-danger)] border border-[var(--hp-border)] hover:bg-[var(--hp-danger-tint)] transition-colors"
  >
  Удалить показ
  </button>

@@ -39,7 +39,7 @@ export default async function ShowingDetailPage({ params }: { params: Promise<{ 
  {/* Header */}
  <div className="flex items-start justify-between gap-4">
  <div className="flex items-center gap-3">
- <Link href="/showings" className="p-2 hover:bg-slate-100 transition-colors text-muted-foreground">
+ <Link href="/showings" className="p-2 hover:bg-[var(--hp-neutral-tint)] transition-colors text-muted-foreground">
  <ArrowLeft className="w-4 h-4" />
  </Link>
  <div>
@@ -58,7 +58,7 @@ export default async function ShowingDetailPage({ params }: { params: Promise<{ 
 
  {showing.status !== 'cancelled' && (
  <ServerActionForm action={cancelAction}>
- <button type="submit" className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-[var(--hp-border)] text-[var(--hp-sub)] hover:bg-[var(--hp-neutral-tint)] hover:text-red-600 hover:border-red-200 transition-colors">
+ <button type="submit" className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-[var(--hp-border)] text-[var(--hp-sub)] hover:bg-[var(--hp-neutral-tint)] hover:text-[var(--hp-danger)] hover:border-[var(--hp-border)] transition-colors">
  <Trash2 className="w-3.5 h-3.5" />
  Отменить показ
  </button>

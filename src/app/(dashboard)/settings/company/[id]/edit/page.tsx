@@ -29,12 +29,12 @@ export default async function EditCompanyProfilePage({
  subtitle="Реквизиты профиля"
  backHref="/settings/company"
  backLabel="Назад к профилям"
- iconBg="bg-blue-50"
- icon={<Building2 className="w-5 h-5 text-blue-600" />}
+ iconBg="bg-[var(--hp-info-tint)]"
+ icon={<Building2 className="w-5 h-5 text-[var(--hp-info)]" />}
  actions={
  <ServerActionForm action={boundDelete}>
  <button type="submit"
- className="flex items-center gap-2 px-4 py-2.5 border border-red-200 text-red-600 text-sm font-medium hover:bg-red-50 transition-all shrink-0">
+ className="flex items-center gap-2 px-4 py-2.5 border border-[var(--hp-border)] text-[var(--hp-danger)] text-sm font-medium hover:bg-[var(--hp-danger-tint)] transition-all shrink-0">
  <Trash2 className="w-4 h-4" />
  Удалить
  </button>
@@ -43,7 +43,7 @@ export default async function EditCompanyProfilePage({
  />
 
  {created === '1' && (
- <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 text-sm">
+ <div className="flex items-center gap-2 bg-[var(--hp-good-tint)] border border-[var(--hp-border)] text-[var(--hp-good)] px-4 py-3 text-sm">
  <CheckCircle className="w-4 h-4" />
  Профиль создан. Теперь можно загрузить логотип и проверить реквизиты.
  </div>

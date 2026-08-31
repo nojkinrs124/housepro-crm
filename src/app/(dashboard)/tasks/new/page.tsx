@@ -32,8 +32,8 @@ export default async function NewTaskPage({
  subtitle="Создайте задачу для команды"
  backHref="/tasks"
  backLabel="Назад к задачам"
- iconBg="bg-orange-100"
- icon={<CheckSquare className="w-5 h-5 text-orange-600" />}
+ iconBg="bg-[var(--hp-warn-tint)]"
+ icon={<CheckSquare className="w-5 h-5 text-[var(--hp-warn)]" />}
  />
 
  <ServerActionForm action={createTaskAction} className="space-y-4">

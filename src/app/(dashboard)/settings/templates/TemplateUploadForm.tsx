@@ -56,17 +56,17 @@ export function TemplateUploadForm() {
  <div className="space-y-1.5">
  <label className="text-sm font-medium text-foreground">DOCX файл</label>
  <input name="file" type="file" accept=".docx" required
- className="w-full px-4 py-2 border border-input bg-background text-foreground text-sm file:mr-4 file:py-1 file:px-3 file: file:border-0 file:text-sm file:font-medium file:bg-green-600 file:text-white hover:file:bg-green-700 cursor-pointer" />
+ className="w-full px-4 py-2 border border-input bg-background text-foreground text-sm file:mr-4 file:py-1 file:px-3 file: file:border-0 file:text-sm file:font-medium file:bg-[var(--hp-accent)] file:text-white hover:file:bg-[var(--hp-accent)] cursor-pointer" />
  </div>
 
  {result?.error && (
- <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 text-sm text-red-700">
+ <div className="flex items-center gap-2 p-3 bg-[var(--hp-danger-tint)] border border-[var(--hp-border)] text-sm text-[var(--hp-danger)]">
  <AlertCircle className="w-4 h-4 shrink-0" />
  {result.error}
  </div>
  )}
  {result?.success && (
- <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 text-sm text-green-700">
+ <div className="flex items-center gap-2 p-3 bg-[var(--hp-good-tint)] border border-[var(--hp-border)] text-sm text-[var(--hp-good)]">
  <CheckCircle2 className="w-4 h-4 shrink-0" />
  Шаблон успешно загружен
  </div>

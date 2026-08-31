@@ -63,7 +63,7 @@ export function CategoryRow({ category }: { category: AccountingCategory }) {
  <button
  onClick={handleSave}
  disabled={isPending || !name.trim()}
- className="p-1.5 text-green-600 hover:bg-green-50 transition-colors disabled:opacity-40 shrink-0"
+ className="p-1.5 text-[var(--hp-good)] hover:bg-[var(--hp-good-tint)] transition-colors disabled:opacity-40 shrink-0"
  title="Сохранить"
  >
  <Check style={{ width: 14, height: 14 }} />
@@ -71,7 +71,7 @@ export function CategoryRow({ category }: { category: AccountingCategory }) {
  <button
  onClick={handleCancel}
  disabled={isPending}
- className="p-1.5 text-[var(--hp-tertiary)] hover:bg-slate-100 transition-colors disabled:opacity-40 shrink-0"
+ className="p-1.5 text-[var(--hp-tertiary)] hover:bg-[var(--hp-neutral-tint)] transition-colors disabled:opacity-40 shrink-0"
  title="Отмена"
  >
  <X style={{ width: 14, height: 14 }} />
@@ -87,12 +87,12 @@ export function CategoryRow({ category }: { category: AccountingCategory }) {
  {category.name}
  </span>
  {category.is_system ? (
- <Lock style={{ width: 13, height: 13 }} className="text-slate-300 shrink-0" />
+ <Lock style={{ width: 13, height: 13 }} className="text-[var(--hp-tertiary)] shrink-0" />
  ) : (
  <div className="flex items-center gap-0.5 shrink-0">
  <button
  onClick={() => setIsEditing(true)}
- className="p-1.5 text-slate-300 hover:text-foreground hover:bg-slate-100 transition-colors"
+ className="p-1.5 text-[var(--hp-tertiary)] hover:text-foreground hover:bg-[var(--hp-neutral-tint)] transition-colors"
  title="Редактировать"
  >
  <Pencil style={{ width: 13, height: 13 }} />

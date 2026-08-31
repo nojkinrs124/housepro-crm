@@ -22,11 +22,11 @@ const dealLabels: Record<string, string> = {
  rent: 'Аренда', sale: 'Продажа', management: 'Управление', subrent: 'Субаренда',
 }
 const statusColors: Record<string, string> = {
- available: 'bg-green-100 text-green-700',
- reserved: 'bg-yellow-100 text-yellow-700',
- rented: 'bg-blue-100 text-blue-700',
- sold: 'bg-gray-100 text-gray-600',
- inactive: 'bg-red-100 text-red-700',
+ available: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]',
+ reserved: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]',
+ rented: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]',
+ sold: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]',
+ inactive: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]',
 }
 const statusLabels: Record<string, string> = {
  available: 'Свободен', reserved: 'Забронирован',
@@ -80,7 +80,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
  <div className="flex items-center justify-between py-1.5">
  <span className="text-sm text-muted-foreground">{label}</span>
  {val
- ? <CheckCircle className="w-4 h-4 text-green-500" />
+ ? <CheckCircle className="w-4 h-4 text-[var(--hp-good)]" />
  : <XCircle className="w-4 h-4 text-muted-foreground/40" />}
  </div>
  )
@@ -99,18 +99,18 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
  title={p.title}
  backHref="/properties"
  backLabel="Все объекты"
- iconBg="bg-emerald-100"
+ iconBg="bg-[var(--hp-good-tint)]"
  iconBoxClassName="w-14 h-14"
- icon={<Home className="w-7 h-7 text-emerald-600" />}
+ icon={<Home className="w-7 h-7 text-[var(--hp-good)]" />}
  subtitle={
  <span className="flex items-center gap-2 flex-wrap">
  <span className="text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] bg-muted text-muted-foreground font-medium">
  {typeLabels[p.property_type] ?? p.property_type}
  </span>
- <span className="text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] bg-blue-100 text-blue-700 font-medium">
+ <span className="text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] bg-[var(--hp-info-tint)] text-[var(--hp-info)] font-medium">
  {dealLabels[p.deal_type] ?? p.deal_type}
  </span>
- <span className={`text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-medium ${statusColors[p.status] ?? 'bg-gray-100 text-gray-600'}`}>
+ <span className={`text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-medium ${statusColors[p.status] ?? 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]'}`}>
  {statusLabels[p.status] ?? p.status}
  </span>
  </span>
@@ -146,7 +146,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
  </div>
  <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
  {(p.photo_urls as string[]).map((url, i) => (
- <div key={url} className="relative aspect-[4/3] overflow-hidden border border-[var(--hp-border-soft)] bg-slate-50">
+ <div key={url} className="relative aspect-[4/3] overflow-hidden border border-[var(--hp-border-soft)] bg-[var(--hp-neutral-tint)]">
  <Image src={url} alt={`Фото ${i + 1}`} fill sizes="150px" className="object-cover" />
  </div>
  ))}
@@ -158,21 +158,21 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
  {(p.price || p.deposit || p.management_fee) && (
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
  {p.price && (
- <div className="bg-green-50 border border-green-200 p-4 text-center">
- <p className="text-xs text-green-600 font-medium">Цена</p>
- <p className="text-xl font-bold text-green-700 mt-1">{Number(p.price).toLocaleString('ru-RU')} ₽</p>
+ <div className="bg-[var(--hp-good-tint)] border border-[var(--hp-border)] p-4 text-center">
+ <p className="text-xs text-[var(--hp-good)] font-medium">Цена</p>
+ <p className="text-xl font-bold text-[var(--hp-good)] mt-1">{Number(p.price).toLocaleString('ru-RU')} ₽</p>
  </div>
  )}
  {p.deposit && (
- <div className="bg-blue-50 border border-blue-200 p-4 text-center">
- <p className="text-xs text-blue-600 font-medium">Депозит</p>
- <p className="text-xl font-bold text-blue-700 mt-1">{Number(p.deposit).toLocaleString('ru-RU')} ₽</p>
+ <div className="bg-[var(--hp-info-tint)] border border-[var(--hp-border)] p-4 text-center">
+ <p className="text-xs text-[var(--hp-info)] font-medium">Депозит</p>
+ <p className="text-xl font-bold text-[var(--hp-info)] mt-1">{Number(p.deposit).toLocaleString('ru-RU')} ₽</p>
  </div>
  )}
  {p.management_fee && (
- <div className="bg-orange-50 border border-orange-200 p-4 text-center">
- <p className="text-xs text-orange-600 font-medium">Комиссия управления</p>
- <p className="text-xl font-bold text-orange-700 mt-1">{Number(p.management_fee).toLocaleString('ru-RU')} ₽</p>
+ <div className="bg-[var(--hp-warn-tint)] border border-[var(--hp-border)] p-4 text-center">
+ <p className="text-xs text-[var(--hp-warn)] font-medium">Комиссия управления</p>
+ <p className="text-xl font-bold text-[var(--hp-warn)] mt-1">{Number(p.management_fee).toLocaleString('ru-RU')} ₽</p>
  </div>
  )}
  </div>

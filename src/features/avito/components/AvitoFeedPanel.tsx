@@ -57,7 +57,7 @@ export function AvitoFeedPanel({ feedUrl, lastSyncedAt, lastSyncError }: Props) 
  <div className="flex flex-col sm:flex-row gap-2">
  <input
  readOnly value={feedUrl} onFocus={(e) => e.currentTarget.select()}
- className="flex-1 min-w-0 h-10 px-4 border border-input bg-slate-50 text-foreground text-sm font-mono truncate"
+ className="flex-1 min-w-0 h-10 px-4 border border-input bg-[var(--hp-neutral-tint)] text-foreground text-sm font-mono truncate"
  />
  <button
  onClick={copyUrl}
@@ -83,7 +83,7 @@ export function AvitoFeedPanel({ feedUrl, lastSyncedAt, lastSyncError }: Props) 
  {lastSyncedAt ? `Обновлено: ${new Date(lastSyncedAt).toLocaleString('ru-RU')}` : 'Синхронизация ещё не запускалась'}
  </p>
  {lastSyncError && (
- <p className="text-xs text-amber-700 bg-amber-50 border border-amber-100 p-2 mt-2 leading-relaxed break-words">
+ <p className="text-xs text-[var(--hp-warn)] bg-[var(--hp-warn-tint)] border border-[var(--hp-border)] p-2 mt-2 leading-relaxed break-words">
  {lastSyncError}
  </p>
  )}

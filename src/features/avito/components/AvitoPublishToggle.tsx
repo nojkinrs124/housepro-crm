@@ -17,10 +17,10 @@ interface Props {
 }
 
 const STATUS_UI: Record<string, { label: string; className: string; icon: typeof Clock }> = {
- pending: { label: 'Ожидает публикации', className: 'bg-amber-100 text-amber-700', icon: Clock },
- active: { label: 'Опубликован', className: 'bg-green-100 text-green-700', icon: CheckCircle2 },
- error: { label: 'Ошибка публикации', className: 'bg-red-100 text-red-700', icon: AlertTriangle },
- removed: { label: 'Снят на Авито', className: 'bg-slate-100 text-[var(--hp-sub)]', icon: AlertTriangle },
+ pending: { label: 'Ожидает публикации', className: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]', icon: Clock },
+ active: { label: 'Опубликован', className: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]', icon: CheckCircle2 },
+ error: { label: 'Ошибка публикации', className: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]', icon: AlertTriangle },
+ removed: { label: 'Снят на Авито', className: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]', icon: AlertTriangle },
 }
 
 export function AvitoPublishToggle({ propertyId, isPublished, status, error, syncedAt, eligible }: Props) {
@@ -45,8 +45,8 @@ export function AvitoPublishToggle({ propertyId, isPublished, status, error, syn
  return (
  <div className="hp-card p-5 space-y-3">
  <div className="flex items-center gap-2.5">
- <div className="w-9 h-9 flex items-center justify-center shrink-0 bg-blue-50">
- <Megaphone className="text-blue-600" style={{ width: 16, height: 16 }} />
+ <div className="w-9 h-9 flex items-center justify-center shrink-0 bg-[var(--hp-info-tint)]">
+ <Megaphone className="text-[var(--hp-info)]" style={{ width: 16, height: 16 }} />
  </div>
  <div className="min-w-0">
  <h2 className="font-bold text-foreground text-[15px]">Авито</h2>
@@ -62,7 +62,7 @@ export function AvitoPublishToggle({ propertyId, isPublished, status, error, syn
  )}
 
  {isPublished && error && (
- <p className="text-xs text-red-600 bg-red-50 border border-red-100 p-2 leading-relaxed break-words">
+ <p className="text-xs text-[var(--hp-danger)] bg-[var(--hp-danger-tint)] border border-[var(--hp-border)] p-2 leading-relaxed break-words">
  {error}
  </p>
  )}

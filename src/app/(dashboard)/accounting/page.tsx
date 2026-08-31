@@ -15,9 +15,9 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { buttonVariants } from '@/components/ui/button'
 
 const STATUS_CFG: Record<string, { label: string; cls: string }> = {
- completed: { label: 'Выполнено', cls: 'bg-green-50 text-green-700' },
- planned: { label: 'Запланировано', cls: 'bg-amber-50 text-amber-700' },
- cancelled: { label: 'Отменено', cls: 'bg-slate-50 text-[var(--hp-sub)]' },
+ completed: { label: 'Выполнено', cls: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]' },
+ planned: { label: 'Запланировано', cls: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]' },
+ cancelled: { label: 'Отменено', cls: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]' },
 }
 
 function fmt(n: number) { return n.toLocaleString('ru-RU') + ' ₽' }
@@ -64,36 +64,36 @@ export default async function AccountingPage({
  value: fmt(stats.incomeThisMonth),
  sub: `Всего: ${fmt(stats.totalIncome)}`,
  Icon: TrendingUp,
- iconBg: 'bg-green-50',
- iconColor: 'text-green-600',
- valueColor: 'text-green-700',
+ iconBg: 'bg-[var(--hp-good-tint)]',
+ iconColor: 'text-[var(--hp-good)]',
+ valueColor: 'text-[var(--hp-good)]',
  },
  {
  label: 'Расходы за месяц',
  value: fmt(stats.expenseThisMonth),
  sub: `Всего: ${fmt(stats.totalExpense)}`,
  Icon: TrendingDown,
- iconBg: 'bg-red-50',
- iconColor: 'text-red-500',
- valueColor: 'text-red-600',
+ iconBg: 'bg-[var(--hp-danger-tint)]',
+ iconColor: 'text-[var(--hp-danger)]',
+ valueColor: 'text-[var(--hp-danger)]',
  },
  {
  label: 'Прибыль за месяц',
  value: fmt(stats.profitThisMonth),
  sub: `Всего: ${fmt(stats.profit)}`,
  Icon: DollarSign,
- iconBg: stats.profitThisMonth >= 0 ? 'bg-blue-50' : 'bg-red-50',
- iconColor: stats.profitThisMonth >= 0 ? 'text-blue-600' : 'text-red-500',
- valueColor: stats.profitThisMonth >= 0 ? 'text-blue-700' : 'text-red-600',
+ iconBg: stats.profitThisMonth >= 0 ? 'bg-[var(--hp-info-tint)]' : 'bg-[var(--hp-danger-tint)]',
+ iconColor: stats.profitThisMonth >= 0 ? 'text-[var(--hp-info)]' : 'text-[var(--hp-danger)]',
+ valueColor: stats.profitThisMonth >= 0 ? 'text-[var(--hp-info)]' : 'text-[var(--hp-danger)]',
  },
  {
  label: 'Запланировано',
  value: fmt(stats.plannedIncome - stats.plannedExpense),
  sub: `+${fmt(stats.plannedIncome)} / −${fmt(stats.plannedExpense)}`,
  Icon: Clock,
- iconBg: 'bg-amber-50',
- iconColor: 'text-amber-500',
- valueColor: 'text-amber-700',
+ iconBg: 'bg-[var(--hp-warn-tint)]',
+ iconColor: 'text-[var(--hp-warn)]',
+ valueColor: 'text-[var(--hp-warn)]',
  },
  ]
 
@@ -199,7 +199,7 @@ export default async function AccountingPage({
 
  {/* Filters */}
  <div className="flex flex-wrap gap-3 items-center">
- <div className="flex items-center gap-1 p-1 bg-slate-100 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+ <div className="flex items-center gap-1 p-1 bg-[var(--hp-neutral-tint)] overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
  {typeFilters.map(f => {
  const isActive = (f.value === 'all' && !filterType) || filterType === f.value
  return (
@@ -213,7 +213,7 @@ export default async function AccountingPage({
  )
  })}
  </div>
- <div className="flex items-center gap-1 p-1 bg-slate-100 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+ <div className="flex items-center gap-1 p-1 bg-[var(--hp-neutral-tint)] overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
  {statusFilters.map(f => {
  const isActive = (f.value === 'all' && !filterStatus) || filterStatus === f.value
  return (
@@ -242,7 +242,7 @@ export default async function AccountingPage({
  <p className="text-[var(--hp-ink)] font-semibold">Транзакций нет</p>
  <Link
  href="/accounting/transactions/new"
- className="mt-2 inline-block text-sm text-green-600 hover:underline font-medium"
+ className="mt-2 inline-block text-sm text-[var(--hp-good)] hover:underline font-medium"
  >
  Создать первую транзакцию →
  </Link>
@@ -269,13 +269,13 @@ export default async function AccountingPage({
  <tr key={t.id} className="hover:bg-[var(--hp-neutral-tint)] transition-colors">
  <td className="px-5 py-3.5">
  {isIncome
- ? <ArrowDownCircle className="w-4 h-4 text-green-500" />
- : <ArrowUpCircle className="w-4 h-4 text-red-400" />
+ ? <ArrowDownCircle className="w-4 h-4 text-[var(--hp-good)]" />
+ : <ArrowUpCircle className="w-4 h-4 text-[var(--hp-danger)]" />
  }
  </td>
  <td className="px-5 py-3.5">
- <Link href={`/accounting/transactions/${t.id}`} className="hover:text-blue-600 transition-colors group">
- <p className="text-sm font-semibold text-foreground group-hover:text-blue-600">
+ <Link href={`/accounting/transactions/${t.id}`} className="hover:text-[var(--hp-info)] transition-colors group">
+ <p className="text-sm font-semibold text-foreground group-hover:text-[var(--hp-info)]">
  {fmtDate(t.date)}
  </p>
  {t.description && (
@@ -284,7 +284,7 @@ export default async function AccountingPage({
  </Link>
  </td>
  <td className="px-5 py-3.5">
- <span className={`text-sm font-bold ${isIncome ? 'text-green-700' : 'text-red-600'}`}>
+ <span className={`text-sm font-bold ${isIncome ? 'text-[var(--hp-good)]' : 'text-[var(--hp-danger)]'}`}>
  {isIncome ? '+' : '−'}{fmt(Number(t.amount))}
  </span>
  </td>
@@ -305,7 +305,7 @@ export default async function AccountingPage({
  {t.contract?.contract_number && (
  <Link
  href={`/contracts/${t.contract.id}`}
- className="text-xs font-medium text-blue-600 hover:underline"
+ className="text-xs font-medium text-[var(--hp-info)] hover:underline"
  >
  №{t.contract.contract_number}
  </Link>
@@ -324,7 +324,7 @@ export default async function AccountingPage({
  <div className="flex items-center gap-1 justify-end">
  <Link
  href={`/accounting/transactions/${t.id}/edit`}
- className="p-1.5 text-[var(--hp-tertiary)] hover:text-green-600 hover:bg-green-50 transition-colors"
+ className="p-1.5 text-[var(--hp-tertiary)] hover:text-[var(--hp-good)] hover:bg-[var(--hp-good-tint)] transition-colors"
  title="Редактировать"
  >
  <Pencil style={{ width: 14, height: 14 }} />
@@ -350,8 +350,8 @@ export default async function AccountingPage({
  <Link href={`/accounting/transactions/${t.id}`} className="min-w-0">
  <div className="flex items-center gap-2">
  {isIncome
- ? <ArrowDownCircle className="w-4 h-4 text-green-500 shrink-0" />
- : <ArrowUpCircle className="w-4 h-4 text-red-400 shrink-0" />
+ ? <ArrowDownCircle className="w-4 h-4 text-[var(--hp-good)] shrink-0" />
+ : <ArrowUpCircle className="w-4 h-4 text-[var(--hp-danger)] shrink-0" />
  }
  <p className="text-sm font-bold text-foreground">{fmtDate(t.date)}</p>
  </div>
@@ -359,7 +359,7 @@ export default async function AccountingPage({
  <p className="text-xs text-muted-foreground mt-0.5 ml-6 truncate">{t.description}</p>
  )}
  </Link>
- <p className={`text-base font-bold shrink-0 ${isIncome ? 'text-green-700' : 'text-red-600'}`}>
+ <p className={`text-base font-bold shrink-0 ${isIncome ? 'text-[var(--hp-good)]' : 'text-[var(--hp-danger)]'}`}>
  {isIncome ? '+' : '−'}{fmt(Number(t.amount))}
  </p>
  </div>

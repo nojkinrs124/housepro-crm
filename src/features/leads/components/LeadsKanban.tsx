@@ -164,7 +164,7 @@ export function LeadsKanban({ leads: initialLeads }: { leads: any[] }) {
  {(lead.budget_max || lead.deal_type || lead.rooms) && (
  <div className="flex flex-wrap gap-1">
  {lead.deal_type && (
- <span className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-600 font-medium">
+ <span className="text-xs px-1.5 py-0.5 bg-[var(--hp-info-tint)] text-[var(--hp-info)] font-medium">
  {lead.deal_type === 'rent' ? 'Аренда' : lead.deal_type === 'sale' ? 'Покупка' : lead.deal_type}
  </span>
  )}
@@ -174,7 +174,7 @@ export function LeadsKanban({ leads: initialLeads }: { leads: any[] }) {
  </span>
  )}
  {lead.budget_max && (
- <span className="text-xs px-1.5 py-0.5 bg-green-50 text-green-700 font-medium">
+ <span className="text-xs px-1.5 py-0.5 bg-[var(--hp-good-tint)] text-[var(--hp-good)] font-medium">
  до {Number(lead.budget_max).toLocaleString('ru-RU')} ₽
  </span>
  )}
@@ -191,7 +191,7 @@ export function LeadsKanban({ leads: initialLeads }: { leads: any[] }) {
  <ServerActionForm action={convertLeadToClient.bind(null, lead.id)}
  onClick={e => e.stopPropagation()}>
  <button type="submit"
- className="w-full flex items-center justify-center gap-1.5 text-xs px-2 py-1.5 bg-green-100 text-green-700 hover:bg-green-200 transition-all font-medium">
+ className="w-full flex items-center justify-center gap-1.5 text-xs px-2 py-1.5 bg-[var(--hp-good-tint)] text-[var(--hp-good)] hover:bg-[var(--hp-accent-hover)] transition-all font-medium">
  <UserCheck className="w-3 h-3" />
  → Контакт
  </button>

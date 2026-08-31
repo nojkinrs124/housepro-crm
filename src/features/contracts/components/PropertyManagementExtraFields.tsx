@@ -51,7 +51,7 @@ export function PropertyManagementExtraFields({ defaultValue }: Props) {
  <input ref={hiddenRef} type="hidden" name="contract_type_data_json" defaultValue={JSON.stringify(data)} />
 
  <div className="hp-card p-6 space-y-4">
- <h2 className={sectionTitle}><ListChecks className="w-4 h-4 text-blue-500" /> Услуги по управлению</h2>
+ <h2 className={sectionTitle}><ListChecks className="w-4 h-4 text-[var(--hp-info)]" /> Услуги по управлению</h2>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
  {PROPERTY_MANAGEMENT_SERVICE_OPTIONS.map(opt => (
@@ -73,7 +73,7 @@ export function PropertyManagementExtraFields({ defaultValue }: Props) {
  </div>
 
  <div className="hp-card p-6 space-y-4">
- <h2 className={sectionTitle}><CalendarClock className="w-4 h-4 text-violet-500" /> Отчётность и вознаграждение</h2>
+ <h2 className={sectionTitle}><CalendarClock className="w-4 h-4 text-[var(--hp-sub)]" /> Отчётность и вознаграждение</h2>
  <div>
  <label className={lbl}>Периодичность отчёта перед собственником</label>
  <select className={sel} value={data.report_frequency}

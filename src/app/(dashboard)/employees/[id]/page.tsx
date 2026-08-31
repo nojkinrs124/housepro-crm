@@ -11,8 +11,8 @@ const roleLabels: Record<string, string> = {
  agent: 'Риелтор', accountant: 'Бухгалтер',
 }
 const roleColors: Record<string, string> = {
- admin: 'bg-red-100 text-red-700', manager: 'bg-blue-100 text-blue-700',
- agent: 'bg-green-100 text-green-700', accountant: 'bg-purple-100 text-purple-700',
+ admin: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]', manager: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]',
+ agent: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]', accountant: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]',
 }
 
 export default async function EmployeePage({ params }: { params: Promise<{ id: string }> }) {
@@ -72,15 +72,15 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
  subtitle={
  <>
  <span className="flex items-center gap-2 flex-wrap">
- <span className={`text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium shrink-0 ${roleColors[emp.role] ?? 'bg-gray-100'}`}>
+ <span className={`text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium shrink-0 ${roleColors[emp.role] ?? 'bg-[var(--hp-neutral-tint)]'}`}>
  {roleLabels[emp.role] ?? emp.role}
  </span>
  {emp.is_active ? (
- <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium bg-green-100 text-green-700 shrink-0">
+ <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium bg-[var(--hp-good-tint)] text-[var(--hp-good)] shrink-0">
  <CheckCircle className="w-3 h-3" /> Активен
  </span>
  ) : (
- <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium bg-red-100 text-red-600 shrink-0">
+ <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium bg-[var(--hp-danger-tint)] text-[var(--hp-danger)] shrink-0">
  <XCircle className="w-3 h-3" /> Неактивен
  </span>
  )}
@@ -113,10 +113,10 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
  <h2 className="font-semibold text-foreground mb-4">KPI за текущий месяц</h2>
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
  {[
- { label: 'Сделок открыто', value: monthDeals.count ?? 0, color: 'text-blue-600', bg: 'bg-blue-50' },
- { label: 'Сделок закрыто', value: monthCompleted.count ?? 0, color: 'text-emerald-600', bg: 'bg-emerald-50' },
- { label: 'Конверсия', value: `${conversionRate}%`, color: 'text-violet-600', bg: 'bg-violet-50' },
- { label: 'Комиссия', value: totalCommission > 0 ? `${(totalCommission / 1000).toFixed(0)}к ₽` : '—', color: 'text-amber-600', bg: 'bg-amber-50' },
+ { label: 'Сделок открыто', value: monthDeals.count ?? 0, color: 'text-[var(--hp-info)]', bg: 'bg-[var(--hp-info-tint)]' },
+ { label: 'Сделок закрыто', value: monthCompleted.count ?? 0, color: 'text-[var(--hp-good)]', bg: 'bg-[var(--hp-good-tint)]' },
+ { label: 'Конверсия', value: `${conversionRate}%`, color: 'text-[var(--hp-sub)]', bg: 'bg-[var(--hp-neutral-tint)]' },
+ { label: 'Комиссия', value: totalCommission > 0 ? `${(totalCommission / 1000).toFixed(0)}к ₽` : '—', color: 'text-[var(--hp-warn)]', bg: 'bg-[var(--hp-warn-tint)]' },
  ].map(k => (
  <div key={k.label} className={`${k.bg} p-4 text-center`}>
  <p className={`text-2xl font-bold ${k.color}`}>{k.value}</p>
@@ -188,7 +188,7 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
  ) : (
  <ServerActionForm action={activateEmployeeAction.bind(null, id)}>
  <button type="submit"
- className="w-full h-10 border border-green-300 text-green-700 text-sm font-medium hover:bg-green-50 transition">
+ className="w-full h-10 border border-[var(--hp-border)] text-[var(--hp-good)] text-sm font-medium hover:bg-[var(--hp-good-tint)] transition">
  Восстановить доступ
  </button>
  </ServerActionForm>

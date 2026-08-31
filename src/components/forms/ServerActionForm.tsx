@@ -31,7 +31,7 @@ export function ServerActionForm({ action, children, ...rest }: ServerActionForm
  return (
  <form action={formAction} {...rest}>
  {state?.error && (
- <div className="flex items-center gap-2 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 mb-4">
+ <div className="flex items-center gap-2 border border-[var(--hp-border)] bg-[var(--hp-danger-tint)] px-4 py-3 text-sm text-[var(--hp-danger)] mb-4">
  <AlertCircle className="w-4 h-4 shrink-0" />
  {state.error}
  </div>

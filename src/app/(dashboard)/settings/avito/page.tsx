@@ -40,13 +40,13 @@ export default async function AvitoSettingsPage() {
  subtitle="Публикация объектов через API и автозагрузку"
  backHref="/settings"
  backLabel="Настройки"
- iconBg="bg-blue-50"
- icon={<Megaphone className="text-blue-600" style={{ width: 20, height: 20 }} />}
+ iconBg="bg-[var(--hp-info-tint)]"
+ icon={<Megaphone className="text-[var(--hp-info)]" style={{ width: 20, height: 20 }} />}
  />
 
  <div className="flex items-center gap-4 hp-card p-5" style={{ }}>
- <div className="w-11 h-11 flex items-center justify-center shrink-0 bg-blue-50">
- <Megaphone className="text-blue-600" style={{ width: 20, height: 20 }} />
+ <div className="w-11 h-11 flex items-center justify-center shrink-0 bg-[var(--hp-info-tint)]">
+ <Megaphone className="text-[var(--hp-info)]" style={{ width: 20, height: 20 }} />
  </div>
  <div className="min-w-0">
  <p className="text-2xl font-bold text-foreground leading-tight">{publishedCount ?? 0}</p>
@@ -55,8 +55,8 @@ export default async function AvitoSettingsPage() {
  </div>
 
  <div className="p-4 flex gap-3" style={{ background: 'rgba(254,243,199,0.5)', border: '1px solid rgba(245,158,11,0.25)' }}>
- <AlertTriangle className="text-amber-600 shrink-0 mt-0.5" style={{ width: 18, height: 18 }} />
- <div className="min-w-0 text-sm text-amber-900 leading-relaxed">
+ <AlertTriangle className="text-[var(--hp-warn)] shrink-0 mt-0.5" style={{ width: 18, height: 18 }} />
+ <div className="min-w-0 text-sm text-[var(--hp-warn)] leading-relaxed">
  <p className="font-semibold">Важно про дубли объявлений</p>
  <p className="mt-1">
  У Авито нет API «опубликовать объявление мгновенно» — публикация всегда идёт через фид,

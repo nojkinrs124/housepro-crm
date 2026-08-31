@@ -6,10 +6,10 @@ import { updateTaskStatusAction } from '@/features/tasks/actions/tasks.actions'
 import { toast } from 'sonner'
 
 const STATUSES = [
- { value: 'todo', label: 'К выполнению', color: 'text-blue-700', bg: 'bg-blue-50', border: 'border-blue-200', dot: 'bg-blue-500' },
- { value: 'in_progress', label: 'В работе', color: 'text-yellow-700', bg: 'bg-yellow-50', border: 'border-yellow-200', dot: 'bg-yellow-500' },
- { value: 'done', label: 'Выполнена', color: 'text-green-700', bg: 'bg-green-50', border: 'border-green-200', dot: 'bg-green-500' },
- { value: 'cancelled', label: 'Отменена', color: 'text-gray-600', bg: 'bg-gray-50', border: 'border-gray-200', dot: 'bg-gray-400' },
+ { value: 'todo', label: 'К выполнению', color: 'text-[var(--hp-info)]', bg: 'bg-[var(--hp-info-tint)]', border: 'border-[var(--hp-border)]', dot: 'bg-[var(--hp-info)]' },
+ { value: 'in_progress', label: 'В работе', color: 'text-[var(--hp-warn)]', bg: 'bg-[var(--hp-warn-tint)]', border: 'border-[var(--hp-border)]', dot: 'bg-[var(--hp-warn)]' },
+ { value: 'done', label: 'Выполнена', color: 'text-[var(--hp-good)]', bg: 'bg-[var(--hp-good-tint)]', border: 'border-[var(--hp-border)]', dot: 'bg-[var(--hp-accent)]' },
+ { value: 'cancelled', label: 'Отменена', color: 'text-[var(--hp-sub)]', bg: 'bg-[var(--hp-neutral-tint)]', border: 'border-[var(--hp-border)]', dot: 'bg-[var(--hp-neutral-tint)]' },
 ]
 
 interface Props {

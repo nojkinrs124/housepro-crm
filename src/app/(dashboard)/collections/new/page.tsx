@@ -20,7 +20,7 @@ export default async function NewCollectionPage() {
  return (
  <div className="max-w-lg mx-auto space-y-6">
  <div className="flex items-center gap-3">
- <Link href="/collections" className="p-2 hover:bg-slate-100 transition-colors text-muted-foreground">
+ <Link href="/collections" className="p-2 hover:bg-[var(--hp-neutral-tint)] transition-colors text-muted-foreground">
  <ArrowLeft className="w-4 h-4" />
  </Link>
  <h1 className="text-xl font-bold">Новая подборка</h1>
@@ -29,7 +29,7 @@ export default async function NewCollectionPage() {
  <ServerActionForm action={createCollectionAction} className="hp-card p-6 space-y-5">
  <div>
  <label className="block text-sm font-medium text-foreground mb-1.5">
- Название <span className="text-red-500">*</span>
+ Название <span className="text-[var(--hp-danger)]">*</span>
  </label>
  <input
  type="text"

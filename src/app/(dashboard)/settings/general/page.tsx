@@ -19,7 +19,7 @@ export default async function GeneralSettingsPage() {
         subtitle="Язык, валюта, временная зона"
         backHref="/settings"
         backLabel="Настройки"
-        iconBg="bg-slate-100"
+        iconBg="bg-[var(--hp-neutral-tint)]"
         icon={<Settings className="text-[var(--hp-sub)]" style={{ width: 20, height: 20 }} />}
       />
 

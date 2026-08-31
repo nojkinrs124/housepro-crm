@@ -129,9 +129,9 @@ export default async function AnalyticsPage({
  .sort((a, b) => b.value - a.value)
 
  const priorityBadge: Record<string, string> = {
- high: 'bg-red-100 text-red-700',
- medium: 'bg-yellow-100 text-yellow-700',
- low: 'bg-slate-100 text-[var(--hp-sub)]',
+ high: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]',
+ medium: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]',
+ low: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]',
  }
  const priorityLabel: Record<string, string> = {
  high: 'Высокий', medium: 'Средний', low: 'Низкий',
@@ -153,32 +153,28 @@ export default async function AnalyticsPage({
  value: formatMoney(totalRevenue),
  sub: `${completedDeals} сделок закрыто`,
  icon: <Banknote style={{ width: 20, height: 20 }} />,
- gradient: 'from-green-500 to-emerald-600',
  },
  {
  label: 'Объём сделок',
  value: formatMoney(totalDealsAmount),
  sub: `${activeDeals} в работе`,
  icon: <TrendingUp style={{ width: 20, height: 20 }} />,
- gradient: 'from-blue-500 to-blue-600',
  },
  {
  label: 'Платежи получены',
  value: formatMoney(paidTotal),
  sub: overdueTotal > 0 ? `Просрочено: ${formatMoney(overdueTotal)}` : 'Нет просроченных',
  icon: <CheckCircle2 style={{ width: 20, height: 20 }} />,
- gradient: 'from-violet-500 to-purple-600',
  },
  {
  label: 'Конверсия лидов',
  value: `${conversionRate}%`,
  sub: `${leads.length} лидов, ${leadsConverted.length} закрыто`,
  icon: <Users style={{ width: 20, height: 20 }} />,
- gradient: 'from-orange-500 to-orange-600',
  },
  ].map(card => (
  <div key={card.label} className="bg-white border border-border p-5">
- <div className={`w-10 h-10 bg-gradient-to-br ${card.gradient} flex items-center justify-center text-white mb-3`}>
+ <div className="w-10 h-10 flex items-center justify-center mb-3 bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)] text-[var(--hp-sub)]">
  {card.icon}
  </div>
  <p className="text-2xl font-bold text-foreground">{card.value}</p>
@@ -191,10 +187,10 @@ export default async function AnalyticsPage({
  {/* Secondary KPIs */}
  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
  {[
- { label: 'Объектов свободно', value: availableProps, icon: <Home style={{ width: 16, height: 16 }} />, color: 'text-green-600 bg-green-50' },
- { label: 'Сдано в аренду', value: rentedProps, icon: <Clock style={{ width: 16, height: 16 }} />, color: 'text-blue-600 bg-blue-50' },
- { label: 'Продано объектов', value: soldProps, icon: <CheckCircle2 style={{ width: 16, height: 16 }} />, color: 'text-violet-600 bg-violet-50' },
- { label: 'Активных договоров', value: activeContracts, icon: <FileText style={{ width: 16, height: 16 }} />, color: 'text-orange-600 bg-orange-50' },
+ { label: 'Объектов свободно', value: availableProps, icon: <Home style={{ width: 16, height: 16 }} />, color: 'text-[var(--hp-good)] bg-[var(--hp-good-tint)]' },
+ { label: 'Сдано в аренду', value: rentedProps, icon: <Clock style={{ width: 16, height: 16 }} />, color: 'text-[var(--hp-info)] bg-[var(--hp-info-tint)]' },
+ { label: 'Продано объектов', value: soldProps, icon: <CheckCircle2 style={{ width: 16, height: 16 }} />, color: 'text-[var(--hp-sub)] bg-[var(--hp-neutral-tint)]' },
+ { label: 'Активных договоров', value: activeContracts, icon: <FileText style={{ width: 16, height: 16 }} />, color: 'text-[var(--hp-warn)] bg-[var(--hp-warn-tint)]' },
  ].map(item => (
  <div key={item.label} className="bg-white border border-border p-4 flex items-center gap-3">
  <div className={`w-9 h-9 flex items-center justify-center ${item.color}`}>
@@ -215,10 +211,10 @@ export default async function AnalyticsPage({
  <DealsAreaChart data={monthlyDeals} />
  <div className="flex items-center gap-4 mt-3">
  <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
- <span className="w-3 h-0.5 bg-green-600 inline-block" /> Сумма сделок
+ <span className="w-3 h-0.5 bg-[var(--hp-accent)] inline-block" /> Сумма сделок
  </span>
  <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
- <span className="w-3 h-0.5 bg-blue-600 inline-block" /> Комиссия
+ <span className="w-3 h-0.5 bg-[var(--hp-info)] inline-block" /> Комиссия
  </span>
  </div>
  </div>
@@ -257,20 +253,20 @@ export default async function AnalyticsPage({
  {/* Overdue payments */}
  <div className="bg-white border border-border p-5">
  <div className="flex items-center gap-2 mb-4">
- <div className="w-7 h-7 bg-red-100 flex items-center justify-center">
+ <div className="w-7 h-7 bg-[var(--hp-danger-tint)] flex items-center justify-center">
  <AlertTriangle style={{ width: 14, height: 14, color: '#DC2626' }} />
  </div>
  <h2 className="text-sm font-semibold text-foreground">Просроченные платежи</h2>
  {overduePayments.length > 0 && (
- <span className="ml-auto text-xs font-semibold bg-red-100 text-red-700 px-2 py-0.5 rounded-[var(--hp-radius-badge)]">
+ <span className="ml-auto text-xs font-semibold bg-[var(--hp-danger-tint)] text-[var(--hp-danger)] px-2 py-0.5 rounded-[var(--hp-radius-badge)]">
  {overduePayments.length}
  </span>
  )}
  </div>
  {overduePayments.length === 0 ? (
- <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200">
+ <div className="flex items-center gap-2 p-3 bg-[var(--hp-good-tint)] border border-[var(--hp-border)]">
  <CheckCircle2 style={{ width: 16, height: 16, color: 'var(--hp-accent)' }} />
- <p className="text-sm text-green-700 font-medium">Просроченных платежей нет</p>
+ <p className="text-sm text-[var(--hp-good)] font-medium">Просроченных платежей нет</p>
  </div>
  ) : (
  <div className="space-y-2">
@@ -281,14 +277,14 @@ export default async function AnalyticsPage({
  : 0
  return (
  <a key={p.id} href={`/payments/${p.id}`}
- className="flex items-center justify-between p-3 border border-red-100 hover:border-red-300 hover:bg-red-50/40 transition-all group">
+ className="flex items-center justify-between p-3 border border-[var(--hp-border)] hover:border-[var(--hp-border)] hover:bg-[var(--hp-danger-tint)]/40 transition-all group">
  <div>
- <p className="text-sm font-medium text-foreground group-hover:text-red-700 transition-colors">
+ <p className="text-sm font-medium text-foreground group-hover:text-[var(--hp-danger)] transition-colors">
  Договор № {contract?.contract_number ?? '—'}
  </p>
- <p className="text-xs text-red-500">Просрочен на {daysOverdue} дн.</p>
+ <p className="text-xs text-[var(--hp-danger)]">Просрочен на {daysOverdue} дн.</p>
  </div>
- <p className="text-sm font-bold text-red-600">
+ <p className="text-sm font-bold text-[var(--hp-danger)]">
  {formatMoney(Number(p.amount ?? 0))}
  </p>
  </a>
@@ -301,20 +297,20 @@ export default async function AnalyticsPage({
  {/* Overdue tasks */}
  <div className="bg-white border border-border p-5">
  <div className="flex items-center gap-2 mb-4">
- <div className="w-7 h-7 bg-orange-100 flex items-center justify-center">
+ <div className="w-7 h-7 bg-[var(--hp-warn-tint)] flex items-center justify-center">
  <Clock style={{ width: 14, height: 14, color: '#EA580C' }} />
  </div>
  <h2 className="text-sm font-semibold text-foreground">Просроченные задачи</h2>
  {overdueTasks.length > 0 && (
- <span className="ml-auto text-xs font-semibold bg-orange-100 text-orange-700 px-2 py-0.5 rounded-[var(--hp-radius-badge)]">
+ <span className="ml-auto text-xs font-semibold bg-[var(--hp-warn-tint)] text-[var(--hp-warn)] px-2 py-0.5 rounded-[var(--hp-radius-badge)]">
  {overdueTasks.length}
  </span>
  )}
  </div>
  {overdueTasks.length === 0 ? (
- <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200">
+ <div className="flex items-center gap-2 p-3 bg-[var(--hp-good-tint)] border border-[var(--hp-border)]">
  <CheckCircle2 style={{ width: 16, height: 16, color: 'var(--hp-accent)' }} />
- <p className="text-sm text-green-700 font-medium">Просроченных задач нет</p>
+ <p className="text-sm text-[var(--hp-good)] font-medium">Просроченных задач нет</p>
  </div>
  ) : (
  <div className="space-y-2">
@@ -325,9 +321,9 @@ export default async function AnalyticsPage({
  : 0
  return (
  <a key={t.id} href={`/tasks/${t.id}`}
- className="flex items-center justify-between p-3 border border-orange-100 hover:border-orange-300 hover:bg-orange-50/40 transition-all group">
+ className="flex items-center justify-between p-3 border border-[var(--hp-border)] hover:border-[var(--hp-border)] hover:bg-[var(--hp-warn-tint)]/40 transition-all group">
  <div className="min-w-0">
- <p className="text-sm font-medium text-foreground group-hover:text-orange-700 transition-colors truncate">
+ <p className="text-sm font-medium text-foreground group-hover:text-[var(--hp-warn)] transition-colors truncate">
  {t.title}
  </p>
  <p className="text-xs text-[var(--hp-tertiary)]">

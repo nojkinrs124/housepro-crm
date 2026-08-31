@@ -85,8 +85,8 @@ export default async function NewContractPage({
         subtitle="Укажите обе стороны из единой базы контактов"
         backHref="/contracts"
         backLabel="Назад к договорам"
-        iconBg="bg-violet-100"
-        icon={<FileText className="w-5 h-5 text-violet-600" />}
+        iconBg="bg-[var(--hp-neutral-tint)]"
+        icon={<FileText className="w-5 h-5 text-[var(--hp-sub)]" />}
       />
 
       <ContractForm

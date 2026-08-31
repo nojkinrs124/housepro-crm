@@ -48,7 +48,7 @@ export function QuickCreateContactForm({
  return (
  <div className="space-y-3">
  {error && (
- <div className="flex items-center gap-2 border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+ <div className="flex items-center gap-2 border border-[var(--hp-border)] bg-[var(--hp-danger-tint)] px-3 py-2 text-sm text-[var(--hp-danger)]">
  <AlertCircle className="w-4 h-4 shrink-0" />
  {error}
  </div>

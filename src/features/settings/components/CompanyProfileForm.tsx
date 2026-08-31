@@ -342,14 +342,14 @@ export function CompanyProfileForm({ mode, profile, action, isFirstProfile }: Co
  Отмена
  </button>
  <button type="button" onClick={handleRemoveLogo} disabled={logoPending}
- className="flex items-center gap-1.5 px-3 py-2 bg-red-500 text-white text-sm hover:bg-red-600 transition-all disabled:opacity-60">
+ className="flex items-center gap-1.5 px-3 py-2 bg-[var(--hp-danger)] text-white text-sm hover:bg-[var(--hp-danger)] transition-all disabled:opacity-60">
  <Trash2 className="w-3.5 h-3.5" />
  Удалить
  </button>
  </>
  ) : (
  <button type="button" onClick={handleRemoveLogo} disabled={logoPending}
- className="flex items-center gap-1.5 px-3 py-2 border border-red-200 text-red-600 text-sm hover:bg-red-50 transition-all disabled:opacity-60">
+ className="flex items-center gap-1.5 px-3 py-2 border border-[var(--hp-border)] text-[var(--hp-danger)] text-sm hover:bg-[var(--hp-danger-tint)] transition-all disabled:opacity-60">
  <Trash2 className="w-3.5 h-3.5" />
  Удалить
  </button>
@@ -357,7 +357,7 @@ export function CompanyProfileForm({ mode, profile, action, isFirstProfile }: Co
  )}
  </div>
  {logoFeedback && (
- <div className={`flex items-center gap-1.5 text-xs ${logoFeedback.type === 'success' ? 'text-green-600' : 'text-destructive'}`}>
+ <div className={`flex items-center gap-1.5 text-xs ${logoFeedback.type === 'success' ? 'text-[var(--hp-good)]' : 'text-destructive'}`}>
  {logoFeedback.type === 'success' ? <CheckCircle className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
  {logoFeedback.message}
  </div>
@@ -375,8 +375,8 @@ export function CompanyProfileForm({ mode, profile, action, isFirstProfile }: Co
  {isPending ? 'Сохранение...' : mode === 'create' ? 'Создать профиль' : 'Сохранить'}
  </button>
  {profile?.is_default && (
- <span className="flex items-center gap-1.5 text-xs font-medium text-amber-600 bg-amber-50 px-3 py-1.5 rounded-[var(--hp-radius-badge)]">
- <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+ <span className="flex items-center gap-1.5 text-xs font-medium text-[var(--hp-warn)] bg-[var(--hp-warn-tint)] px-3 py-1.5 rounded-[var(--hp-radius-badge)]">
+ <Star className="w-3.5 h-3.5 fill-amber-500 text-[var(--hp-warn)]" />
  Профиль по умолчанию
  </span>
  )}

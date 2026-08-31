@@ -15,8 +15,8 @@ export default async function NewCompanyProfilePage() {
         subtitle="Физ. лицо, ИП или ООО для подготовки документов"
         backHref="/settings/company"
         backLabel="Назад к профилям"
-        iconBg="bg-blue-50"
-        icon={<Building2 className="w-5 h-5 text-blue-600" />}
+        iconBg="bg-[var(--hp-info-tint)]"
+        icon={<Building2 className="w-5 h-5 text-[var(--hp-info)]" />}
       />
 
       <CompanyProfileForm mode="create" profile={null} action={createCompanyProfileAction} isFirstProfile={!count} />

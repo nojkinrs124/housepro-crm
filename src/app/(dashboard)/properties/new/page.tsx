@@ -20,8 +20,8 @@ export default async function NewPropertyPage() {
  subtitle="Добавьте объект недвижимости"
  backHref="/properties"
  backLabel="Назад к объектам"
- iconBg="bg-emerald-100"
- icon={<Home className="w-5 h-5 text-emerald-600" />}
+ iconBg="bg-[var(--hp-good-tint)]"
+ icon={<Home className="w-5 h-5 text-[var(--hp-good)]" />}
  />
 
  <ServerActionForm action={createPropertyAction} className="space-y-4">

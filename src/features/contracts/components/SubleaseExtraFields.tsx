@@ -39,7 +39,7 @@ export function SubleaseExtraFields({ defaultValue }: Props) {
  <input ref={hiddenRef} type="hidden" name="contract_type_data_json" defaultValue={JSON.stringify(data)} />
 
  <div className="hp-card p-6 space-y-4">
- <h2 className={sectionTitle}><FileCheck2 className="w-4 h-4 text-blue-500" /> Согласие собственника</h2>
+ <h2 className={sectionTitle}><FileCheck2 className="w-4 h-4 text-[var(--hp-info)]" /> Согласие собственника</h2>
  <p className="text-xs text-muted-foreground -mt-2">
  Ссылается на договор-основание, выбранный в блоке «Стороны договора» выше.
  </p>
@@ -61,7 +61,7 @@ export function SubleaseExtraFields({ defaultValue }: Props) {
  </div>
 
  <div className="hp-card p-6 space-y-4">
- <h2 className={sectionTitle}><Wallet className="w-4 h-4 text-emerald-500" /> Коммунальные платежи и неустойка</h2>
+ <h2 className={sectionTitle}><Wallet className="w-4 h-4 text-[var(--hp-good)]" /> Коммунальные платежи и неустойка</h2>
 
  <label className="flex items-center gap-2 text-sm font-medium">
  <input type="checkbox" checked={data.utilities_included_in_rent}

@@ -10,7 +10,7 @@ export function DeleteCollectionButton({ id }: { id: string }) {
  <button
  type="submit"
  onClick={(e) => { if (!confirm('Удалить подборку?')) e.preventDefault() }}
- className="p-1.5 text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-colors"
+ className="p-1.5 text-muted-foreground hover:text-[var(--hp-danger)] hover:bg-[var(--hp-danger-tint)] transition-colors"
  >
  <Trash2 className="w-4 h-4" />
  </button>

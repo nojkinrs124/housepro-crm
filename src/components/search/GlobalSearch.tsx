@@ -9,17 +9,17 @@ import type { SearchResult, SearchResults } from '@/features/search/actions/sear
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const GROUPS: { key: keyof SearchResults; label: string; Icon: React.ElementType; color: string }[] = [
- { key: 'contacts', label: 'Клиенты', Icon: Users, color: 'text-blue-500' },
- { key: 'properties', label: 'Объекты', Icon: Home, color: 'text-emerald-500' },
- { key: 'contracts', label: 'Договоры', Icon: FileText, color: 'text-violet-500' },
- { key: 'tasks', label: 'Задачи', Icon: CheckSquare, color: 'text-orange-500' },
+ { key: 'contacts', label: 'Клиенты', Icon: Users, color: 'text-[var(--hp-info)]' },
+ { key: 'properties', label: 'Объекты', Icon: Home, color: 'text-[var(--hp-good)]' },
+ { key: 'contracts', label: 'Договоры', Icon: FileText, color: 'text-[var(--hp-sub)]' },
+ { key: 'tasks', label: 'Задачи', Icon: CheckSquare, color: 'text-[var(--hp-warn)]' },
 ]
 
 const QUICK_LINKS = [
- { label: 'Новый клиент', href: '/clients/new', Icon: Users, color: 'text-blue-500' },
- { label: 'Новый объект', href: '/properties/new', Icon: Home, color: 'text-emerald-500' },
- { label: 'Новый договор', href: '/contracts/new', Icon: FileText, color: 'text-violet-500' },
- { label: 'Новая задача', href: '/tasks/new', Icon: CheckSquare, color: 'text-orange-500' },
+ { label: 'Новый клиент', href: '/clients/new', Icon: Users, color: 'text-[var(--hp-info)]' },
+ { label: 'Новый объект', href: '/properties/new', Icon: Home, color: 'text-[var(--hp-good)]' },
+ { label: 'Новый договор', href: '/contracts/new', Icon: FileText, color: 'text-[var(--hp-sub)]' },
+ { label: 'Новая задача', href: '/tasks/new', Icon: CheckSquare, color: 'text-[var(--hp-warn)]' },
 ]
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

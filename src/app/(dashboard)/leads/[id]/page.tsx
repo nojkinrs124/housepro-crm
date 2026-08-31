@@ -33,14 +33,14 @@ const activityLabels: Record<string, string> = {
 }
 
 const statusColors: Record<string, string> = {
- new: 'bg-blue-100 text-blue-700',
- contacted: 'bg-yellow-100 text-yellow-700',
- showing: 'bg-orange-100 text-orange-700',
- searching: 'bg-purple-100 text-purple-700',
- converted: 'bg-green-100 text-green-700',
- closed: 'bg-gray-100 text-gray-500',
- interested:'bg-cyan-100 text-cyan-700',
- rejected: 'bg-red-100 text-red-500',
+ new: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]',
+ contacted: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]',
+ showing: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]',
+ searching: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]',
+ converted: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]',
+ closed: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]',
+ interested:'bg-[var(--hp-info-tint)] text-[var(--hp-info)]',
+ rejected: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]',
 }
 const statusLabels: Record<string, string> = {
  new: 'Новый', contacted: 'Связались', showing: 'Показ',
@@ -83,23 +83,23 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
  title={lead.full_name || 'Без имени'}
  backHref="/leads"
  backLabel="Все лиды"
- iconBg="bg-blue-100"
+ iconBg="bg-[var(--hp-info-tint)]"
  iconBoxClassName="w-14 h-14"
  icon={
- <span className="text-blue-600 text-2xl font-bold">
+ <span className="text-[var(--hp-info)] text-2xl font-bold">
  {lead.full_name?.charAt(0)?.toUpperCase() ?? '?'}
  </span>
  }
  subtitle={
  <span className="flex items-center gap-2 flex-wrap">
- <span className={`text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium ${statusColors[lead.status] ?? 'bg-gray-100'}`}>
+ <span className={`text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium ${statusColors[lead.status] ?? 'bg-[var(--hp-neutral-tint)]'}`}>
  {statusLabels[lead.status] ?? lead.status}
  </span>
  {lead.source && (
  <span className="text-xs text-muted-foreground">{sourceLabels[lead.source] ?? lead.source}</span>
  )}
  {isOverdue && (
- <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium bg-red-100 text-red-700 animate-pulse">
+ <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium bg-[var(--hp-danger-tint)] text-[var(--hp-danger)] animate-pulse">
  <AlertTriangle className="w-3 h-3" />
  Просрочен контакт
  </span>
@@ -156,7 +156,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
  )}
  {lead.telegram && (
  <div className="flex items-center gap-3 p-3 bg-muted/30">
- <MessageCircle className="w-4 h-4 text-blue-400 shrink-0" />
+ <MessageCircle className="w-4 h-4 text-[var(--hp-info)] shrink-0" />
  <div>
  <p className="text-xs text-muted-foreground">Telegram</p>
  <p className="text-sm font-medium text-foreground">{lead.telegram}</p>
@@ -165,7 +165,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
  )}
  {lead.whatsapp && (
  <div className="flex items-center gap-3 p-3 bg-muted/30">
- <MessageCircle className="w-4 h-4 text-green-500 shrink-0" />
+ <MessageCircle className="w-4 h-4 text-[var(--hp-good)] shrink-0" />
  <div>
  <p className="text-xs text-muted-foreground">WhatsApp</p>
  <p className="text-sm font-medium text-foreground">{lead.whatsapp}</p>
@@ -184,9 +184,9 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
  </h2>
  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
  {lead.deal_type && (
- <div className="p-3 bg-blue-50 text-center">
- <p className="text-xs text-blue-500 font-medium">Тип сделки</p>
- <p className="text-sm font-semibold text-blue-900 mt-0.5">{dealTypeLabels[lead.deal_type] ?? lead.deal_type}</p>
+ <div className="p-3 bg-[var(--hp-info-tint)] text-center">
+ <p className="text-xs text-[var(--hp-info)] font-medium">Тип сделки</p>
+ <p className="text-sm font-semibold text-[var(--hp-info)] mt-0.5">{dealTypeLabels[lead.deal_type] ?? lead.deal_type}</p>
  </div>
  )}
  {lead.property_type && (
@@ -202,11 +202,11 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
  </div>
  )}
  {(lead.budget_min || lead.budget_max) && (
- <div className="p-3 bg-green-50 col-span-2 sm:col-span-1">
- <p className="text-xs text-green-600 font-medium flex items-center gap-1">
+ <div className="p-3 bg-[var(--hp-good-tint)] col-span-2 sm:col-span-1">
+ <p className="text-xs text-[var(--hp-good)] font-medium flex items-center gap-1">
  <DollarSign className="w-3 h-3" /> Бюджет
  </p>
- <p className="text-sm font-semibold text-green-900 mt-0.5">
+ <p className="text-sm font-semibold text-[var(--hp-good)] mt-0.5">
  {lead.budget_min ? `${Number(lead.budget_min).toLocaleString('ru-RU')}` : '0'} —{' '}
  {lead.budget_max ? `${Number(lead.budget_max).toLocaleString('ru-RU')} ₽` : '∞'}
  </p>
@@ -321,7 +321,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
  {lead.next_contact_at && (
  <div className="flex justify-between items-start">
  <span className="text-muted-foreground">След. контакт</span>
- <span className={`font-medium text-right ${isOverdue ? 'text-red-600' : 'text-foreground'}`}>
+ <span className={`font-medium text-right ${isOverdue ? 'text-[var(--hp-danger)]' : 'text-foreground'}`}>
  {new Date(lead.next_contact_at).toLocaleDateString('ru-RU', {
  day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
  })}

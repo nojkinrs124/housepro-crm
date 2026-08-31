@@ -4,9 +4,9 @@ import { Shield, User, Clock, Tag } from 'lucide-react'
 import Link from 'next/link'
 
 const ACTION_LABEL: Record<string, { label: string; color: string }> = {
- create: { label: 'Создание', color: 'text-emerald-600 bg-emerald-50' },
- update: { label: 'Изменение', color: 'text-blue-600 bg-blue-50' },
- delete: { label: 'Удаление', color: 'text-red-600 bg-red-50' },
+ create: { label: 'Создание', color: 'text-[var(--hp-good)] bg-[var(--hp-good-tint)]' },
+ update: { label: 'Изменение', color: 'text-[var(--hp-info)] bg-[var(--hp-info-tint)]' },
+ delete: { label: 'Удаление', color: 'text-[var(--hp-danger)] bg-[var(--hp-danger-tint)]' },
 }
 
 const ENTITY_LABEL: Record<string, string> = {
@@ -90,7 +90,7 @@ export default async function AuditLogPage() {
  created_at: string
  author: { full_name: string; email: string } | null
  }>).map((log) => {
- const actionMeta = ACTION_LABEL[log.action] ?? { label: log.action, color: 'text-gray-600 bg-gray-50' }
+ const actionMeta = ACTION_LABEL[log.action] ?? { label: log.action, color: 'text-[var(--hp-sub)] bg-[var(--hp-neutral-tint)]' }
  return (
  <tr key={log.id} className="hover:bg-[var(--hp-neutral-tint)]/50 transition-colors">
  <td className="px-4 py-3 whitespace-nowrap">

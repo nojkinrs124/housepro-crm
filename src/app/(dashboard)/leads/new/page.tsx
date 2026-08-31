@@ -51,8 +51,8 @@ export default async function NewLeadPage() {
  subtitle="Входящее обращение от потенциального клиента"
  backHref="/leads"
  backLabel="Назад к лидам"
- iconBg="bg-blue-100"
- icon={<Zap className="w-5 h-5 text-blue-600" />}
+ iconBg="bg-[var(--hp-info-tint)]"
+ icon={<Zap className="w-5 h-5 text-[var(--hp-info)]" />}
  />
 
  <ServerActionForm action={createLeadAction} className="space-y-4">

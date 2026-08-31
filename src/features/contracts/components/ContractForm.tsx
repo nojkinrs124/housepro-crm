@@ -155,7 +155,7 @@ export function ContractForm({
  {config.party1Role === 'agency' ? (
  <div className="space-y-1.5">
  <label className={lbl + ' flex items-center gap-2'}>
- <Briefcase className="w-4 h-4 text-violet-600" />
+ <Briefcase className="w-4 h-4 text-[var(--hp-sub)]" />
  {config.party1Label}
  </label>
  {companyProfiles.length > 0 ? (
@@ -179,7 +179,7 @@ export function ContractForm({
  <PartyContactSelect
  key={`party1-${selectedType}`}
  label={config.party1Label}
- icon={<Building2 className="w-4 h-4 text-orange-500" />}
+ icon={<Building2 className="w-4 h-4 text-[var(--hp-warn)]" />}
  contactFieldName={party1Fields.contactField}
  representativeFieldName={party1Fields.repField}
  contacts={owners}
@@ -194,8 +194,8 @@ export function ContractForm({
  key={`party2-${selectedType}`}
  label={config.party2Label}
  icon={config.party2Role === 'owner'
- ? <Building2 className="w-4 h-4 text-orange-500" />
- : <User className="w-4 h-4 text-blue-500" />}
+ ? <Building2 className="w-4 h-4 text-[var(--hp-warn)]" />
+ : <User className="w-4 h-4 text-[var(--hp-info)]" />}
  contactFieldName={party2Fields.contactField}
  representativeFieldName={party2Fields.repField}
  contacts={party2Contacts}
@@ -215,7 +215,7 @@ export function ContractForm({
 
  <div className="space-y-1.5">
  <label className={lbl + ' flex items-center gap-2'}>
- <Link2 className="w-4 h-4 text-emerald-600" />
+ <Link2 className="w-4 h-4 text-[var(--hp-good)]" />
  Сделка (необязательно)
  </label>
  <select name="deal_id" defaultValue={defaults.deal_id ?? ''} className={sel}>
@@ -233,7 +233,7 @@ export function ContractForm({
  {config.requiresBaseContract && (
  <div className="space-y-1.5">
  <label className={lbl + ' flex items-center gap-2'}>
- <Link2 className="w-4 h-4 text-violet-500" />
+ <Link2 className="w-4 h-4 text-[var(--hp-sub)]" />
  Договор-основание (исходная аренда)
  </label>
  <select name="base_contract_id" defaultValue={defaults.base_contract_id ?? ''} className={sel}>
@@ -250,7 +250,7 @@ export function ContractForm({
 
  <div className="space-y-1.5">
  <label className={lbl + ' flex items-center gap-2'}>
- <Home className="w-4 h-4 text-emerald-500" />
+ <Home className="w-4 h-4 text-[var(--hp-good)]" />
  Объект
  </label>
  <div className="flex items-center gap-2">

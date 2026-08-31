@@ -4,11 +4,11 @@ import { markAllNotificationsReadAction, markNotificationReadAction } from './no
 import { PageHeader } from '@/components/layout/PageHeader'
 
 const typeColors: Record<string, string> = {
- overdue_payment: 'bg-red-100 text-red-700',
- overdue_task: 'bg-orange-100 text-orange-700',
- new_lead: 'bg-blue-100 text-blue-700',
- deal_status: 'bg-green-100 text-green-700',
- contract_expiry: 'bg-yellow-100 text-yellow-700',
+ overdue_payment: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]',
+ overdue_task: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]',
+ new_lead: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]',
+ deal_status: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]',
+ contract_expiry: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]',
 }
 const typeLabels: Record<string, string> = {
  overdue_payment: 'Платёж', overdue_task: 'Задача',
@@ -42,8 +42,8 @@ export default async function NotificationsPage() {
  subtitle={unreadCount > 0 ? `${unreadCount} непрочитанных` : undefined}
  backHref="/settings"
  backLabel="Вернуться к настройкам"
- iconBg="bg-amber-50"
- icon={<Bell className="text-amber-600" style={{ width: 20, height: 20 }} />}
+ iconBg="bg-[var(--hp-warn-tint)]"
+ icon={<Bell className="text-[var(--hp-warn)]" style={{ width: 20, height: 20 }} />}
  actions={
  unreadCount > 0 ? (
  <form action={markAllNotificationsReadAction}>
@@ -72,9 +72,9 @@ export default async function NotificationsPage() {
  {notifications.map(n => {
  const href = n.entity_type && n.entity_id ? entityHref[n.entity_type]?.(n.entity_id) : null
  const Inner = (
- <div className={`flex items-start gap-4 px-5 py-4 hover:bg-background transition-all duration-200 ${!n.is_read ? 'bg-green-50/30' : ''}`}>
+ <div className={`flex items-start gap-4 px-5 py-4 hover:bg-background transition-all duration-200 ${!n.is_read ? 'bg-[var(--hp-good-tint)]/30' : ''}`}>
  <div className="shrink-0 mt-0.5">
- <span className={`text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold ${typeColors[n.type] ?? 'bg-gray-100 text-gray-600'}`}>
+ <span className={`text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold ${typeColors[n.type] ?? 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]'}`}>
  {typeLabels[n.type] ?? n.type}
  </span>
  </div>

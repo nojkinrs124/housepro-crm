@@ -5,11 +5,11 @@ import { ChevronDown, Loader2 } from 'lucide-react'
 import { updateContractStatusAction } from '@/features/contracts/actions/contracts.actions'
 
 const statuses = [
- { value: 'draft', label: 'Черновик', color: 'bg-gray-100 text-gray-600' },
- { value: 'generated', label: 'Создан', color: 'bg-blue-100 text-blue-700' },
- { value: 'signed', label: 'Подписан', color: 'bg-purple-100 text-purple-700' },
- { value: 'completed', label: 'Завершён', color: 'bg-green-100 text-green-700' },
- { value: 'cancelled', label: 'Отменён', color: 'bg-red-100 text-red-600' },
+ { value: 'draft', label: 'Черновик', color: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]' },
+ { value: 'generated', label: 'Создан', color: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]' },
+ { value: 'signed', label: 'Подписан', color: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]' },
+ { value: 'completed', label: 'Завершён', color: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]' },
+ { value: 'cancelled', label: 'Отменён', color: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]' },
 ]
 
 export function ContractStatusSelector({ contractId, currentStatus }: { contractId: string; currentStatus: string }) {

@@ -31,8 +31,8 @@ export default async function EditContractPage({ params }: { params: Promise<{ i
         subtitle={c.contract_number ?? `#${id.slice(0, 8)}`}
         backHref={`/contracts/${id}`}
         backLabel="Вернуться к договору"
-        iconBg="bg-violet-100"
-        icon={<FileText className="w-5 h-5 text-violet-600" />}
+        iconBg="bg-[var(--hp-neutral-tint)]"
+        icon={<FileText className="w-5 h-5 text-[var(--hp-sub)]" />}
       />
 
       <ContractForm

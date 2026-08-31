@@ -39,12 +39,12 @@ export function ContractVersionHistory({ contractId, versions }: Props) {
  <div className="border border-[var(--hp-border-soft)] overflow-hidden bg-white">
  <button
  onClick={() => setOpen(v => !v)}
- className="w-full flex items-center justify-between px-5 py-3.5 bg-[var(--hp-neutral-tint)] hover:bg-[var(--hp-neutral-tint)] transition-colors"
+ className="w-full flex items-center justify-between px-5 py-3.5 bg-[var(--hp-neutral-tint)] hover:bg-[var(--hp-accent-tint)] transition-colors"
  >
  <div className="flex items-center gap-2 text-sm font-medium text-foreground">
  <History className="w-4 h-4 text-muted-foreground" />
  История версий
- <span className="ml-1 px-1.5 py-0.5 text-xs font-semibold bg-slate-200 text-[var(--hp-sub)] rounded-[var(--hp-radius-badge)]">
+ <span className="ml-1 px-1.5 py-0.5 text-xs font-semibold bg-[var(--hp-tertiary)] text-[var(--hp-sub)] rounded-[var(--hp-radius-badge)]">
  {versions.length}
  </span>
  </div>
@@ -87,7 +87,7 @@ export function ContractVersionHistory({ contractId, versions }: Props) {
  href={v.docx_url}
  target="_blank"
  rel="noopener noreferrer"
- className="flex items-center gap-1 px-2.5 py-1 text-xs border border-[var(--hp-border)] text-[var(--hp-sub)] hover:bg-slate-100 transition-colors"
+ className="flex items-center gap-1 px-2.5 py-1 text-xs border border-[var(--hp-border)] text-[var(--hp-sub)] hover:bg-[var(--hp-neutral-tint)] transition-colors"
  >
  <FileText className="w-3 h-3" />
  DOCX
@@ -101,7 +101,7 @@ export function ContractVersionHistory({ contractId, versions }: Props) {
  handleRestore(v.id)
  }
  }}
- className="flex items-center gap-1 px-2.5 py-1 text-xs border border-[var(--hp-border)] text-[var(--hp-sub)] hover:bg-slate-100 transition-colors disabled:opacity-50"
+ className="flex items-center gap-1 px-2.5 py-1 text-xs border border-[var(--hp-border)] text-[var(--hp-sub)] hover:bg-[var(--hp-neutral-tint)] transition-colors disabled:opacity-50"
  >
  <RotateCcw className={`w-3 h-3 ${restoring === v.id ? 'animate-spin' : ''}`} />
  {restoring === v.id ? 'Восстанавливаю…' : 'Восстановить'}

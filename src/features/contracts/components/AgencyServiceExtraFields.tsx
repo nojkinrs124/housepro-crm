@@ -54,7 +54,7 @@ export function AgencyServiceExtraFields({ defaultValue }: Props) {
 
  {/* Услуги */}
  <div className="hp-card p-6 space-y-4">
- <h2 className={sectionTitle}><ListChecks className="w-4 h-4 text-blue-500" /> Оказываемые услуги</h2>
+ <h2 className={sectionTitle}><ListChecks className="w-4 h-4 text-[var(--hp-info)]" /> Оказываемые услуги</h2>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
  {AGENCY_SERVICE_OPTIONS.map(opt => (
@@ -78,7 +78,7 @@ export function AgencyServiceExtraFields({ defaultValue }: Props) {
 
  {/* Вознаграждение */}
  <div className="hp-card p-6 space-y-4">
- <h2 className={sectionTitle}><Wallet className="w-4 h-4 text-emerald-500" /> Модель вознаграждения</h2>
+ <h2 className={sectionTitle}><Wallet className="w-4 h-4 text-[var(--hp-good)]" /> Модель вознаграждения</h2>
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
  {(Object.keys(REWARD_MODEL_LABELS) as RewardModel[]).map(key => (

@@ -129,12 +129,12 @@ export function OnboardingWizard({ orgId, orgName: initialName, userId, employee
  <div className={`w-8 h-8 rounded-[var(--hp-radius)] flex items-center justify-center flex-shrink-0 transition-all ${
  done ? 'bg-primary text-white' :
  active ? 'bg-primary/10 border-2 border-primary text-primary' :
- 'bg-slate-100 text-[var(--hp-tertiary)]'
+ 'bg-[var(--hp-neutral-tint)] text-[var(--hp-tertiary)]'
  }`}>
  {done ? <Check className="w-4 h-4" /> : <Icon className="w-3.5 h-3.5" />}
  </div>
  {i < STEPS.length - 1 && (
- <div className={`flex-1 h-0.5 mx-1 transition-all ${step > s.id ? 'bg-primary' : 'bg-slate-200'}`} />
+ <div className={`flex-1 h-0.5 mx-1 transition-all ${step > s.id ? 'bg-primary' : 'bg-[var(--hp-tertiary)]'}`} />
  )}
  </div>
  )
@@ -239,7 +239,7 @@ export function OnboardingWizard({ orgId, orgName: initialName, userId, employee
  {/* Step 5 */}
  {step === 5 && (
  <div className="space-y-4">
- <div className="p-4 bg-slate-50 text-sm text-muted-foreground">
+ <div className="p-4 bg-[var(--hp-neutral-tint)] text-sm text-muted-foreground">
  <p className="font-medium text-foreground mb-2">Шаблоны DOCX договоров</p>
  <p>Загрузите шаблоны для автоматической генерации договоров купли-продажи, аренды и управления.</p>
  <p className="mt-2">Вы сможете добавить их позже в разделе <strong>Настройки → Шаблоны документов</strong>.</p>
@@ -257,7 +257,7 @@ export function OnboardingWizard({ orgId, orgName: initialName, userId, employee
  )}
 
  {error && (
- <div className="mt-4 px-3 py-2 bg-red-50 border border-red-100 text-sm text-red-600">
+ <div className="mt-4 px-3 py-2 bg-[var(--hp-danger-tint)] border border-[var(--hp-border)] text-sm text-[var(--hp-danger)]">
  {error}
  </div>
  )}

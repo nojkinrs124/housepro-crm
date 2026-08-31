@@ -23,7 +23,7 @@ export function TaskDeleteButton({ taskId }: { taskId: string }) {
  <button
  onClick={handleDelete}
  disabled={isPending}
- className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 transition-all disabled:opacity-50"
+ className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-[var(--hp-danger)] bg-[var(--hp-danger-tint)] border border-[var(--hp-border)] hover:bg-[var(--hp-danger-tint)] transition-all disabled:opacity-50"
  >
  {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
  Удалить задачу

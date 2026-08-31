@@ -19,7 +19,7 @@ export default async function NewShowingPage() {
  return (
  <div className="max-w-2xl mx-auto space-y-6">
  <div className="flex items-center gap-3">
- <Link href="/showings" className="p-2 hover:bg-slate-100 transition-colors text-muted-foreground">
+ <Link href="/showings" className="p-2 hover:bg-[var(--hp-neutral-tint)] transition-colors text-muted-foreground">
  <ArrowLeft className="w-4 h-4" />
  </Link>
  <div>
@@ -61,7 +61,7 @@ export default async function NewShowingPage() {
  <div className="grid grid-cols-2 gap-4">
  <div>
  <label className="block text-sm font-medium text-foreground mb-1.5">
- Дата и время <span className="text-red-500">*</span>
+ Дата и время <span className="text-[var(--hp-danger)]">*</span>
  </label>
  <input
  type="datetime-local"

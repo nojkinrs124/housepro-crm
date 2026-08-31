@@ -67,7 +67,7 @@ export default async function SearchPage({
  {(contacts?.length ?? 0) > 0 && (
  <div className="hp-card overflow-hidden">
  <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/20">
- <User className="w-4 h-4 text-blue-500" />
+ <User className="w-4 h-4 text-[var(--hp-info)]" />
  <span className="font-semibold text-sm text-foreground">Контакты</span>
  <span className="text-xs text-muted-foreground">({contacts!.length})</span>
  </div>
@@ -90,7 +90,7 @@ export default async function SearchPage({
  {(properties?.length ?? 0) > 0 && (
  <div className="hp-card overflow-hidden">
  <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/20">
- <Home className="w-4 h-4 text-emerald-500" />
+ <Home className="w-4 h-4 text-[var(--hp-good)]" />
  <span className="font-semibold text-sm text-foreground">Объекты</span>
  <span className="text-xs text-muted-foreground">({properties!.length})</span>
  </div>
@@ -112,7 +112,7 @@ export default async function SearchPage({
  {(contracts?.length ?? 0) > 0 && (
  <div className="hp-card overflow-hidden">
  <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/20">
- <FileText className="w-4 h-4 text-violet-500" />
+ <FileText className="w-4 h-4 text-[var(--hp-sub)]" />
  <span className="font-semibold text-sm text-foreground">Договоры</span>
  <span className="text-xs text-muted-foreground">({contracts!.length})</span>
  </div>
@@ -134,7 +134,7 @@ export default async function SearchPage({
  {(tasks?.length ?? 0) > 0 && (
  <div className="hp-card overflow-hidden">
  <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/20">
- <CheckSquare className="w-4 h-4 text-orange-500" />
+ <CheckSquare className="w-4 h-4 text-[var(--hp-warn)]" />
  <span className="font-semibold text-sm text-foreground">Задачи</span>
  <span className="text-xs text-muted-foreground">({tasks!.length})</span>
  </div>
@@ -153,7 +153,7 @@ export default async function SearchPage({
  {(deals?.length ?? 0) > 0 && (
  <div className="hp-card overflow-hidden">
  <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-muted/20">
- <TrendingUp className="w-4 h-4 text-green-500" />
+ <TrendingUp className="w-4 h-4 text-[var(--hp-good)]" />
  <span className="font-semibold text-sm text-foreground">Сделки</span>
  <span className="text-xs text-muted-foreground">({deals!.length})</span>
  </div>

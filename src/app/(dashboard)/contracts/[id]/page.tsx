@@ -12,11 +12,11 @@ import { PageHeader } from '@/components/layout/PageHeader'
 const contractTypeLabels = CONTRACT_TYPE_LABELS
 
 const statusColors: Record<string, string> = {
- draft: 'bg-gray-100 text-gray-600',
- generated: 'bg-blue-100 text-blue-700',
- signed: 'bg-green-100 text-green-700',
- completed: 'bg-emerald-100 text-emerald-700',
- cancelled: 'bg-red-100 text-red-700',
+ draft: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]',
+ generated: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]',
+ signed: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]',
+ completed: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]',
+ cancelled: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]',
 }
 
 const statusLabels: Record<string, string> = {
@@ -116,9 +116,9 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
  subtitle={contractTypeLabels[contract.contract_type] ?? contract.contract_type}
  backHref="/contracts"
  backLabel="Все договоры"
- iconBg="bg-violet-100"
+ iconBg="bg-[var(--hp-neutral-tint)]"
  iconBoxClassName="w-14 h-14"
- icon={<FileText className="w-7 h-7 text-violet-600" />}
+ icon={<FileText className="w-7 h-7 text-[var(--hp-sub)]" />}
  actions={
  <>
  <ContractStatusSelector contractId={id} currentStatus={contract.status} />
@@ -147,7 +147,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
  {/* Сторона 1 */}
  <div className="p-4 bg-muted/30">
  <div className="flex items-center gap-2 mb-2">
- <Building2 className="w-4 h-4 text-orange-500" />
+ <Building2 className="w-4 h-4 text-[var(--hp-warn)]" />
  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
  {typeConfig?.party1Label ?? 'Собственник'}
  </span>
@@ -171,7 +171,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
  {/* Сторона 2 */}
  <div className="p-4 bg-muted/30">
  <div className="flex items-center gap-2 mb-2">
- <User className="w-4 h-4 text-blue-500" />
+ <User className="w-4 h-4 text-[var(--hp-info)]" />
  <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
  {typeConfig?.party2Label ?? 'Клиент'}
  </span>
@@ -225,7 +225,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
  <h2 className="font-semibold text-foreground">Объект</h2>
  {!property && (
  <Link href="/properties/new" target="_blank"
- className="flex items-center gap-1.5 text-xs px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition font-medium">
+ className="flex items-center gap-1.5 text-xs px-3 py-1.5 bg-[var(--hp-good-tint)] text-[var(--hp-good)] border border-[var(--hp-border)] hover:bg-[var(--hp-good-tint)] transition font-medium">
  <Home className="w-3 h-3" />
  Создать объект
  </Link>
@@ -233,7 +233,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
  </div>
  {property ? (
  <div className="flex items-start gap-3 p-3 bg-muted/30">
- <Home className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+ <Home className="w-4 h-4 text-[var(--hp-good)] mt-0.5 shrink-0" />
  <div>
  <Link href={`/properties/${property.id ?? contract.property_id}`} className="text-sm font-medium text-primary hover:underline">
  {property.title}
@@ -260,7 +260,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
  Стадия сделки двигается автоматически: создание договора, формирование DOCX и оплата продвигают её сами.
  </p>
  </div>
- <span className="text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium bg-emerald-100 text-emerald-700 shrink-0 whitespace-nowrap">
+ <span className="text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium bg-[var(--hp-good-tint)] text-[var(--hp-good)] shrink-0 whitespace-nowrap">
  {dealStageLabels[deal.status ?? ''] ?? deal.status}
  </span>
  </div>
@@ -274,7 +274,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
  <h2 className="font-semibold text-foreground mb-4">Финансы</h2>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div className="flex items-center gap-3 p-4 bg-muted/30">
- <DollarSign className="w-5 h-5 text-emerald-600" />
+ <DollarSign className="w-5 h-5 text-[var(--hp-good)]" />
  <div>
  <p className="text-xs text-muted-foreground">Сумма</p>
  <p className="text-lg font-bold text-foreground">
@@ -283,7 +283,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
  </div>
  </div>
  <div className="flex items-center gap-3 p-4 bg-muted/30">
- <DollarSign className="w-5 h-5 text-blue-600" />
+ <DollarSign className="w-5 h-5 text-[var(--hp-info)]" />
  <div>
  <p className="text-xs text-muted-foreground">Залог</p>
  <p className="text-lg font-bold text-foreground">

@@ -16,8 +16,8 @@ export default async function ExportPage() {
  name: 'Авито',
  description: 'XML-фид для Avito.ru (formatVersion 3)',
  url: '/api/export/avito',
- iconBg: 'bg-blue-50',
- iconColor: 'text-blue-600',
+ iconBg: 'bg-[var(--hp-info-tint)]',
+ iconColor: 'text-[var(--hp-info)]',
  btnBg: 'linear-gradient(135deg, #2563EB, #3B82F6)',
  btnShadow: '0 4px 16px rgba(37,99,235,0.3)',
  icon: '',
@@ -27,8 +27,8 @@ export default async function ExportPage() {
  name: 'ЦИАН',
  description: 'XML-фид для Cian.ru (feed version 1)',
  url: '/api/export/cian',
- iconBg: 'bg-emerald-50',
- iconColor: 'text-emerald-600',
+ iconBg: 'bg-[var(--hp-good-tint)]',
+ iconColor: 'text-[var(--hp-good)]',
  btnBg: 'var(--hp-accent)',
  btnShadow: '0 4px 16px rgba(22,163,74,0.35)',
  icon: '',
@@ -57,8 +57,8 @@ export default async function ExportPage() {
 
  {/* Stats */}
  <div className="flex items-center gap-4 hp-card p-5" style={{ }}>
- <div className="w-11 h-11 flex items-center justify-center shrink-0 bg-emerald-50">
- <Home className="text-emerald-600" style={{ width: 20, height: 20 }} />
+ <div className="w-11 h-11 flex items-center justify-center shrink-0 bg-[var(--hp-good-tint)]">
+ <Home className="text-[var(--hp-good)]" style={{ width: 20, height: 20 }} />
  </div>
  <div className="min-w-0">
  <p className="text-2xl font-bold text-foreground leading-tight">{availableCount}</p>
@@ -68,10 +68,10 @@ export default async function ExportPage() {
 
  {availableCount === 0 && (
  <div className="flex items-start gap-3 p-4" style={{ background: 'rgba(254,243,199,0.5)', border: '1px solid rgba(245,158,11,0.25)' }}>
- <AlertCircle className="text-amber-600 shrink-0 mt-0.5" style={{ width: 18, height: 18 }} />
+ <AlertCircle className="text-[var(--hp-warn)] shrink-0 mt-0.5" style={{ width: 18, height: 18 }} />
  <div className="min-w-0">
- <p className="text-sm font-semibold text-amber-900">Нет объектов для выгрузки</p>
- <p className="text-sm text-amber-700 mt-0.5 leading-relaxed">
+ <p className="text-sm font-semibold text-[var(--hp-warn)]">Нет объектов для выгрузки</p>
+ <p className="text-sm text-[var(--hp-warn)] mt-0.5 leading-relaxed">
  Для выгрузки объект должен иметь статус «Свободен» и заполненные поля: название, адрес, цена.
  </p>
  </div>
@@ -95,7 +95,7 @@ export default async function ExportPage() {
  <div className="space-y-1.5">
  {checklist.map(item => (
  <p key={item} className="text-sm text-muted-foreground flex items-start gap-2">
- <span className="text-green-600 shrink-0">✓</span>
+ <span className="text-[var(--hp-good)] shrink-0">✓</span>
  <span>{item}</span>
  </p>
  ))}
@@ -120,8 +120,8 @@ export default async function ExportPage() {
  {/* CSV / 1C export */}
  <div className="hp-card p-6 space-y-4" style={{ }}>
  <div className="flex items-center gap-3">
- <div className="w-9 h-9 flex items-center justify-center shrink-0 bg-violet-50">
- <FileText className="text-violet-600" style={{ width: 16, height: 16 }} />
+ <div className="w-9 h-9 flex items-center justify-center shrink-0 bg-[var(--hp-neutral-tint)]">
+ <FileText className="text-[var(--hp-sub)]" style={{ width: 16, height: 16 }} />
  </div>
  <div>
  <h2 className="font-bold text-foreground text-[15px]">Экспорт CSV (для 1С)</h2>
@@ -139,7 +139,7 @@ export default async function ExportPage() {
  <a
  key={item.url}
  href={item.url}
- className="flex items-center justify-center gap-1.5 py-2.5 px-3 border border-[var(--hp-border)] text-sm font-medium text-[var(--hp-sub)] hover:border-violet-300 hover:bg-violet-50 hover:text-violet-700 transition-colors"
+ className="flex items-center justify-center gap-1.5 py-2.5 px-3 border border-[var(--hp-border)] text-sm font-medium text-[var(--hp-sub)] hover:border-[var(--hp-border)] hover:bg-[var(--hp-neutral-tint)] hover:text-[var(--hp-sub)] transition-colors"
  >
  <Download className="w-3.5 h-3.5" />
  {item.label}
@@ -151,7 +151,7 @@ export default async function ExportPage() {
  {/* Instructions */}
  <div className="hp-card p-6 space-y-4" style={{ }}>
  <div className="flex items-center gap-3">
- <div className="w-9 h-9 flex items-center justify-center shrink-0 bg-slate-100">
+ <div className="w-9 h-9 flex items-center justify-center shrink-0 bg-[var(--hp-neutral-tint)]">
  <FileText className="text-[var(--hp-sub)]" style={{ width: 16, height: 16 }} />
  </div>
  <h2 className="font-bold text-foreground text-[15px]">Как использовать</h2>
@@ -169,11 +169,11 @@ export default async function ExportPage() {
  </div>
 
  <div className="p-4 flex gap-3" style={{ background: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)', border: '1px solid rgba(59,130,246,0.15)' }}>
- <Lightbulb className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+ <Lightbulb className="w-5 h-5 text-[var(--hp-info)] shrink-0 mt-0.5" />
  <div>
- <p className="text-blue-900 font-semibold text-sm">Авто-обновление</p>
- <p className="text-blue-700 mt-1 text-sm leading-relaxed break-words">
- Укажите ссылку <code className="bg-blue-100 px-1.5 py-0.5 text-xs break-all">/api/export/avito</code> в настройках площадки для автоматического обновления объявлений.
+ <p className="text-[var(--hp-info)] font-semibold text-sm">Авто-обновление</p>
+ <p className="text-[var(--hp-info)] mt-1 text-sm leading-relaxed break-words">
+ Укажите ссылку <code className="bg-[var(--hp-info-tint)] px-1.5 py-0.5 text-xs break-all">/api/export/avito</code> в настройках площадки для автоматического обновления объявлений.
  </p>
  </div>
  </div>

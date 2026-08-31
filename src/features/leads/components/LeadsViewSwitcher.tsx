@@ -72,7 +72,7 @@ export function LeadsViewSwitcher({ leads }: { leads: any[] }) {
  value={search}
  onChange={(e) => setSearch(e.target.value)}
  placeholder="Поиск по лидам..."
- className="w-full pl-9 pr-4 py-2.5 hp-card text-sm focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-100 placeholder:text-[var(--hp-tertiary)] transition-all"
+ className="w-full pl-9 pr-4 py-2.5 hp-card text-sm focus:outline-none focus:border-[var(--hp-border)] focus:ring-2 focus:ring-green-100 placeholder:text-[var(--hp-tertiary)] transition-all"
  />
  {search && (
  <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -85,7 +85,7 @@ export function LeadsViewSwitcher({ leads }: { leads: any[] }) {
  <div className="relative">
  <button
  onClick={() => { setStatusOpen(p => !p); setTypeOpen(false) }}
- className={`flex items-center gap-2 px-3.5 py-2.5 bg-white border text-sm font-medium transition-all ${statusFilter !== 'all' ? 'border-green-400 text-green-700 bg-green-50' : 'border-[var(--hp-border)] text-[var(--hp-sub)] hover:border-[var(--hp-sub)]'}`}
+ className={`flex items-center gap-2 px-3.5 py-2.5 bg-white border text-sm font-medium transition-all ${statusFilter !== 'all' ? 'border-[var(--hp-border)] text-[var(--hp-good)] bg-[var(--hp-good-tint)]' : 'border-[var(--hp-border)] text-[var(--hp-sub)] hover:border-[var(--hp-sub)]'}`}
  >
  {currentStatus?.label}
  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${statusOpen ? 'rotate-180' : ''}`} />
@@ -103,7 +103,7 @@ export function LeadsViewSwitcher({ leads }: { leads: any[] }) {
  <button
  key={opt.value}
  onClick={() => { setStatusFilter(opt.value); setStatusOpen(false) }}
- className={`w-full text-left px-3.5 py-2 text-sm hover:bg-[var(--hp-neutral-tint)] transition-colors ${statusFilter === opt.value ? 'text-green-700 font-semibold' : 'text-[var(--hp-ink)]'}`}
+ className={`w-full text-left px-3.5 py-2 text-sm hover:bg-[var(--hp-neutral-tint)] transition-colors ${statusFilter === opt.value ? 'text-[var(--hp-good)] font-semibold' : 'text-[var(--hp-ink)]'}`}
  >
  {opt.label}
  </button>
@@ -117,7 +117,7 @@ export function LeadsViewSwitcher({ leads }: { leads: any[] }) {
  <div className="relative">
  <button
  onClick={() => { setTypeOpen(p => !p); setStatusOpen(false) }}
- className={`flex items-center gap-2 px-3.5 py-2.5 bg-white border text-sm font-medium transition-all ${typeFilter !== 'all' ? 'border-green-400 text-green-700 bg-green-50' : 'border-[var(--hp-border)] text-[var(--hp-sub)] hover:border-[var(--hp-sub)]'}`}
+ className={`flex items-center gap-2 px-3.5 py-2.5 bg-white border text-sm font-medium transition-all ${typeFilter !== 'all' ? 'border-[var(--hp-border)] text-[var(--hp-good)] bg-[var(--hp-good-tint)]' : 'border-[var(--hp-border)] text-[var(--hp-sub)] hover:border-[var(--hp-sub)]'}`}
  >
  {currentType?.label}
  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${typeOpen ? 'rotate-180' : ''}`} />
@@ -135,7 +135,7 @@ export function LeadsViewSwitcher({ leads }: { leads: any[] }) {
  <button
  key={opt.value}
  onClick={() => { setTypeFilter(opt.value); setTypeOpen(false) }}
- className={`w-full text-left px-3.5 py-2 text-sm hover:bg-[var(--hp-neutral-tint)] transition-colors ${typeFilter === opt.value ? 'text-green-700 font-semibold' : 'text-[var(--hp-ink)]'}`}
+ className={`w-full text-left px-3.5 py-2 text-sm hover:bg-[var(--hp-neutral-tint)] transition-colors ${typeFilter === opt.value ? 'text-[var(--hp-good)] font-semibold' : 'text-[var(--hp-ink)]'}`}
  >
  {opt.label}
  </button>

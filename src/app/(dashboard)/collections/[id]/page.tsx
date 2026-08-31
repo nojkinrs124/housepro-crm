@@ -50,7 +50,7 @@ export default async function CollectionDetailPage({ params }: { params: Promise
  {/* Header */}
  <div className="flex items-start justify-between gap-4">
  <div className="flex items-center gap-3">
- <Link href="/collections" className="p-2 hover:bg-slate-100 transition-colors text-muted-foreground">
+ <Link href="/collections" className="p-2 hover:bg-[var(--hp-neutral-tint)] transition-colors text-muted-foreground">
  <ArrowLeft className="w-4 h-4" />
  </Link>
  <div>
@@ -69,7 +69,7 @@ export default async function CollectionDetailPage({ params }: { params: Promise
  type="submit"
  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs border transition-colors ${
  col.is_public
- ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+ ? 'border-[var(--hp-border)] bg-[var(--hp-good-tint)] text-[var(--hp-good)] hover:bg-[var(--hp-good-tint)]'
  : 'border-[var(--hp-border)] bg-white text-[var(--hp-sub)] hover:bg-[var(--hp-neutral-tint)]'
  }`}
  >
@@ -82,17 +82,17 @@ export default async function CollectionDetailPage({ params }: { params: Promise
 
  {/* Share link */}
  {col.is_public && (
- <div className="flex items-center gap-3 px-4 py-3 bg-emerald-50 border border-emerald-100">
- <Globe className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+ <div className="flex items-center gap-3 px-4 py-3 bg-[var(--hp-good-tint)] border border-[var(--hp-border)]">
+ <Globe className="w-4 h-4 text-[var(--hp-good)] flex-shrink-0" />
  <div className="flex-1 min-w-0">
- <p className="text-xs text-emerald-700 font-medium mb-0.5">Публичная ссылка для клиента</p>
+ <p className="text-xs text-[var(--hp-good)] font-medium mb-0.5">Публичная ссылка для клиента</p>
  <a href={shareUrl} target="_blank" rel="noopener noreferrer"
- className="text-sm text-emerald-800 hover:underline truncate block">
+ className="text-sm text-[var(--hp-good)] hover:underline truncate block">
  {shareUrl}
  </a>
  </div>
  <a href={shareUrl} target="_blank" rel="noopener noreferrer"
- className="flex-shrink-0 p-1.5 text-emerald-600 hover:bg-emerald-100 transition-colors">
+ className="flex-shrink-0 p-1.5 text-[var(--hp-good)] hover:bg-[var(--hp-good-tint)] transition-colors">
  <ExternalLink className="w-4 h-4" />
  </a>
  </div>
@@ -130,7 +130,7 @@ export default async function CollectionDetailPage({ params }: { params: Promise
  )}
  </div>
  <ServerActionForm action={removePropertyFromCollectionAction.bind(null, id, item.property?.id)}>
- <button type="submit" className="p-1.5 text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0">
+ <button type="submit" className="p-1.5 text-muted-foreground hover:text-[var(--hp-danger)] hover:bg-[var(--hp-danger-tint)] transition-colors flex-shrink-0">
  <Trash2 className="w-3.5 h-3.5" />
  </button>
  </ServerActionForm>

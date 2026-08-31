@@ -40,7 +40,7 @@ export default async function ApiSettingsPage() {
  </div>
 
  {/* Docs hint */}
- <div className="flex items-start gap-3 p-4 bg-slate-50 border border-[var(--hp-border-soft)] text-sm">
+ <div className="flex items-start gap-3 p-4 bg-[var(--hp-neutral-tint)] border border-[var(--hp-border-soft)] text-sm">
  <Code className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
  <div className="text-muted-foreground">
  <p className="font-medium text-foreground mb-1">Использование</p>

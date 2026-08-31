@@ -28,10 +28,10 @@ export function DashboardKpiCards({ cards }: { cards: KpiCard[] }) {
  const Icon = iconMap[card.icon]
  const trendClass =
  card.trendPos === true
- ? 'text-green-600 bg-green-50 border border-green-100'
+ ? 'text-[var(--hp-good)] bg-[var(--hp-good-tint)] border border-[var(--hp-border)]'
  : card.trendPos === false
- ? 'text-red-600 bg-red-50 border border-red-100'
- : 'text-[var(--hp-sub)] bg-slate-50 border border-[var(--hp-border-soft)]'
+ ? 'text-[var(--hp-danger)] bg-[var(--hp-danger-tint)] border border-[var(--hp-border)]'
+ : 'text-[var(--hp-sub)] bg-[var(--hp-neutral-tint)] border border-[var(--hp-border-soft)]'
 
  return (
  <motion.div

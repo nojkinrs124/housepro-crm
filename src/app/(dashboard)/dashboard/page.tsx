@@ -87,24 +87,24 @@ export default async function DashboardPage() {
  rent: 'Аренда', sale: 'Продажа', management: 'Управление', commercial: 'Коммерция', subrent: 'Субаренда',
  }
  const dealStatusColors: Record<string, string> = {
- new: 'bg-blue-50 text-blue-700', showing: 'bg-yellow-50 text-yellow-700',
- negotiation: 'bg-orange-50 text-orange-700', contract: 'bg-purple-50 text-purple-700',
- payment: 'bg-cyan-50 text-cyan-700', completed: 'bg-green-50 text-green-700',
- cancelled: 'bg-gray-50 text-gray-500',
+ new: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]', showing: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]',
+ negotiation: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]', contract: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]',
+ payment: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]', completed: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]',
+ cancelled: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]',
  }
  const dealStatusLabels: Record<string, string> = {
  new: 'Новая', showing: 'Показ', negotiation: 'Переговоры',
  contract: 'Договор', payment: 'Оплата', completed: 'Завершена', cancelled: 'Отменена',
  }
  const priorityColors: Record<string, { bg: string; text: string; dot: string }> = {
- low: { bg: 'bg-slate-50', text: 'text-[var(--hp-sub)]', dot: 'bg-slate-400' },
- medium: { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-400' },
- high: { bg: 'bg-red-50', text: 'text-red-600', dot: 'bg-red-400' },
+ low: { bg: 'bg-[var(--hp-neutral-tint)]', text: 'text-[var(--hp-sub)]', dot: 'bg-[var(--hp-tertiary)]' },
+ medium: { bg: 'bg-[var(--hp-warn-tint)]', text: 'text-[var(--hp-warn)]', dot: 'bg-[var(--hp-warn)]' },
+ high: { bg: 'bg-[var(--hp-danger-tint)]', text: 'text-[var(--hp-danger)]', dot: 'bg-[var(--hp-danger)]' },
  }
  const priorityLabels: Record<string, string> = { low: 'Низкий', medium: 'Средний', high: 'Высокий' }
  const contactStatusColors: Record<string, string> = {
- new: 'bg-slate-50 text-[var(--hp-sub)]', active: 'bg-blue-50 text-blue-700',
- vip: 'bg-amber-50 text-amber-700', inactive: 'bg-red-50 text-red-500',
+ new: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]', active: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]',
+ vip: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]', inactive: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]',
  }
  const contactStatusLabels: Record<string, string> = {
  new: 'Новый', active: 'Активный', vip: 'VIP', inactive: 'Неактивный',
@@ -132,13 +132,13 @@ export default async function DashboardPage() {
  actions={
  <div className="flex items-center gap-2 flex-wrap">
  {(overdueTasksCount ?? 0) > 0 && (
- <Link href="/tasks" className="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 transition-colors">
+ <Link href="/tasks" className="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-[var(--hp-danger-tint)] text-[var(--hp-danger)] border border-[var(--hp-border)] hover:bg-[var(--hp-danger-tint)] transition-colors">
  <AlertTriangle style={{ width: 14, height: 14 }} />
  {overdueTasksCount} просроч. задач
  </Link>
  )}
  {(overduePaymentsCount ?? 0) > 0 && (
- <Link href="/payments" className="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-orange-50 text-orange-600 border border-orange-100 hover:bg-orange-100 transition-colors">
+ <Link href="/payments" className="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-[var(--hp-warn-tint)] text-[var(--hp-warn)] border border-[var(--hp-border)] hover:bg-[var(--hp-warn-tint)] transition-colors">
  <DollarSign style={{ width: 14, height: 14 }} />
  {overduePaymentsCount} просроч. платежей
  </Link>
@@ -173,7 +173,7 @@ export default async function DashboardPage() {
  <div className="w-8 h-8 flex items-center justify-center bg-white/80">
  <Banknote style={{ width: 15, height: 15, color: 'var(--hp-accent)' }} />
  </div>
- <p className="text-xs font-semibold text-green-700">Получено</p>
+ <p className="text-xs font-semibold text-[var(--hp-good)]">Получено</p>
  </div>
  <p className="text-xl font-bold text-foreground">
  {paidThisMonth.toLocaleString('ru-RU')} ₽
@@ -186,7 +186,7 @@ export default async function DashboardPage() {
  <div className="w-8 h-8 flex items-center justify-center bg-white/80">
  <Wallet style={{ width: 15, height: 15, color: '#F59E0B' }} />
  </div>
- <p className="text-xs font-semibold text-amber-700">Ожидается</p>
+ <p className="text-xs font-semibold text-[var(--hp-warn)]">Ожидается</p>
  </div>
  <p className="text-xl font-bold text-foreground">
  {pendingThisMonth.toLocaleString('ru-RU')} ₽
@@ -196,7 +196,7 @@ export default async function DashboardPage() {
 
  {(overduePaymentsList?.length ?? 0) > 0 && (
  <div>
- <p className="text-xs font-bold text-red-600 mb-3 flex items-center gap-1.5">
+ <p className="text-xs font-bold text-[var(--hp-danger)] mb-3 flex items-center gap-1.5">
  <AlertTriangle style={{ width: 12, height: 12 }} />
  Просроченные платежи
  </p>
@@ -212,7 +212,7 @@ export default async function DashboardPage() {
  {p.due_date ? new Date(p.due_date).toLocaleDateString('ru-RU') : '—'}
  </p>
  </div>
- <p className="text-sm font-bold text-red-600">{Number(p.amount).toLocaleString('ru-RU')} ₽</p>
+ <p className="text-sm font-bold text-[var(--hp-danger)]">{Number(p.amount).toLocaleString('ru-RU')} ₽</p>
  </Link>
  ))}
  </div>
@@ -250,7 +250,7 @@ export default async function DashboardPage() {
  {count > 0 && <span className="text-white text-xs font-bold">{count}</span>}
  </div>
  </div>
- {count === 0 && <span className="text-xs text-slate-300 font-medium w-4">0</span>}
+ {count === 0 && <span className="text-xs text-[var(--hp-tertiary)] font-medium w-4">0</span>}
  </div>
  )
  })}
@@ -272,7 +272,7 @@ export default async function DashboardPage() {
  {!recentContacts?.length ? (
  <div className="text-center py-8">
  <div className="w-12 h-12 rounded-[var(--hp-radius)] bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)] flex items-center justify-center mx-auto mb-3">
- <Users style={{ width: 20, height: 20 }} className="text-slate-300" />
+ <Users style={{ width: 20, height: 20 }} className="text-[var(--hp-tertiary)]" />
  </div>
  <p className="text-sm text-muted-foreground">Нет контактов</p>
  <Link href="/contacts/new" className="text-xs text-[var(--hp-accent)] hover:underline mt-1 block font-semibold">+ Добавить</Link>
@@ -292,7 +292,7 @@ export default async function DashboardPage() {
  <p className="text-xs text-muted-foreground">{roleLabels[c.role] ?? c.role}</p>
  </div>
  </div>
- <span className={`text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold shrink-0 ${contactStatusColors[c.status] ?? 'bg-slate-50 text-[var(--hp-sub)]'}`}>
+ <span className={`text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold shrink-0 ${contactStatusColors[c.status] ?? 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]'}`}>
  {contactStatusLabels[c.status] ?? c.status}
  </span>
  </Link>
@@ -312,7 +312,7 @@ export default async function DashboardPage() {
  {!recentDeals?.length ? (
  <div className="text-center py-8">
  <div className="w-12 h-12 rounded-[var(--hp-radius)] bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)] flex items-center justify-center mx-auto mb-3">
- <TrendingUp style={{ width: 20, height: 20 }} className="text-slate-300" />
+ <TrendingUp style={{ width: 20, height: 20 }} className="text-[var(--hp-tertiary)]" />
  </div>
  <p className="text-sm text-muted-foreground">Нет сделок</p>
  <Link href="/deals/new" className="text-xs text-[var(--hp-accent)] hover:underline mt-1 block font-semibold">+ Создать</Link>
@@ -330,7 +330,7 @@ export default async function DashboardPage() {
  <p className="text-xs text-muted-foreground truncate">{clientName ?? new Date(d.created_at).toLocaleDateString('ru-RU')}</p>
  </div>
  <div className="shrink-0 text-right">
- <span className={`text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold block ${dealStatusColors[d.status] ?? 'bg-gray-50'}`}>
+ <span className={`text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold block ${dealStatusColors[d.status] ?? 'bg-[var(--hp-neutral-tint)]'}`}>
  {dealStatusLabels[d.status] ?? d.status}
  </span>
  {d.amount && <p className="text-xs text-muted-foreground mt-0.5 font-medium">{Number(d.amount).toLocaleString('ru-RU')} ₽</p>}
@@ -353,7 +353,7 @@ export default async function DashboardPage() {
  {!myTasks?.length ? (
  <div className="text-center py-8">
  <div className="w-12 h-12 rounded-[var(--hp-radius)] bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)] flex items-center justify-center mx-auto mb-3">
- <CheckSquare style={{ width: 20, height: 20 }} className="text-slate-300" />
+ <CheckSquare style={{ width: 20, height: 20 }} className="text-[var(--hp-tertiary)]" />
  </div>
  <p className="text-sm text-muted-foreground">Нет активных задач</p>
  <Link href="/tasks/new" className="text-xs text-[var(--hp-accent)] hover:underline mt-1 block font-semibold">+ Создать задачу</Link>
@@ -378,7 +378,7 @@ export default async function DashboardPage() {
  </span>
  </div>
  {task.deadline && (
- <div className={`flex items-center gap-1 mt-1.5 text-xs font-semibold ${isOverdue ? 'text-red-600' : 'text-muted-foreground'}`}>
+ <div className={`flex items-center gap-1 mt-1.5 text-xs font-semibold ${isOverdue ? 'text-[var(--hp-danger)]' : 'text-muted-foreground'}`}>
  <Clock style={{ width: 11, height: 11 }} />
  {new Date(task.deadline).toLocaleDateString('ru-RU')}
  </div>

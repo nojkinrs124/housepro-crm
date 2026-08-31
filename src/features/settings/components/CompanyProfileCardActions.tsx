@@ -39,7 +39,7 @@ export function CompanyProfileCardActions({ id, isDefault }: { id: string; isDef
  </button>
  )}
  <button type="button" onClick={handleDelete} disabled={pending} title="Удалить профиль"
- className="flex items-center gap-1.5 px-3 py-1.5 border border-red-200 text-xs font-medium text-red-600 hover:bg-red-50 transition-all disabled:opacity-60">
+ className="flex items-center gap-1.5 px-3 py-1.5 border border-[var(--hp-border)] text-xs font-medium text-[var(--hp-danger)] hover:bg-[var(--hp-danger-tint)] transition-all disabled:opacity-60">
  <Trash2 className="w-3.5 h-3.5" />
  </button>
  </div>

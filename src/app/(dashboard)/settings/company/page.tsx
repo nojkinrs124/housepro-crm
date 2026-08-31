@@ -32,8 +32,8 @@ export default async function CompanyPage() {
  subtitle="Профили реквизитов для подготовки документов"
  backHref="/settings"
  backLabel="Настройки"
- iconBg="bg-blue-50"
- icon={<Building2 className="text-blue-600" style={{ width: 20, height: 20 }} />}
+ iconBg="bg-[var(--hp-info-tint)]"
+ icon={<Building2 className="text-[var(--hp-info)]" style={{ width: 20, height: 20 }} />}
  actions={
  isAdmin ? (
  <Link href="/settings/company/new"
@@ -46,10 +46,10 @@ export default async function CompanyPage() {
  />
 
  {!isAdmin && (
- <div className="bg-yellow-50 border border-yellow-200 p-6 text-center">
- <Building2 className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
- <p className="font-semibold text-yellow-900">Только для администраторов</p>
- <p className="text-sm text-yellow-700 mt-1">Управление профилями компании доступно только администраторам системы.</p>
+ <div className="bg-[var(--hp-warn-tint)] border border-[var(--hp-border)] p-6 text-center">
+ <Building2 className="w-8 h-8 text-[var(--hp-warn)] mx-auto mb-2" />
+ <p className="font-semibold text-[var(--hp-warn)]">Только для администраторов</p>
+ <p className="text-sm text-[var(--hp-warn)] mt-1">Управление профилями компании доступно только администраторам системы.</p>
  </div>
  )}
 
@@ -86,7 +86,7 @@ export default async function CompanyPage() {
  <div className="min-w-0">
  <div className="flex items-center gap-2">
  <p className="font-semibold text-foreground truncate">{p.name || 'Без названия'}</p>
- {p.is_default && <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500 shrink-0" />}
+ {p.is_default && <Star className="w-3.5 h-3.5 fill-amber-500 text-[var(--hp-warn)] shrink-0" />}
  </div>
  <p className="text-xs text-muted-foreground mt-0.5">
  {LEGAL_FORM_LABELS[p.legal_form] ?? p.legal_form}

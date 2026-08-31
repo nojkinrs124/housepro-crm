@@ -5,13 +5,13 @@ import { updateDealStatusAction } from '@/features/deals/actions/deals.actions'
 import { ChevronDown, Loader2 } from 'lucide-react'
 
 const statuses = [
- { value: 'new', label: 'Новая', color: 'bg-blue-100 text-blue-700' },
- { value: 'showing', label: 'Показ', color: 'bg-yellow-100 text-yellow-700' },
- { value: 'negotiation', label: 'Переговоры', color: 'bg-orange-100 text-orange-700' },
- { value: 'contract', label: 'Договор', color: 'bg-purple-100 text-purple-700' },
- { value: 'payment', label: 'Оплата', color: 'bg-cyan-100 text-cyan-700' },
- { value: 'completed', label: 'Завершена', color: 'bg-green-100 text-green-700' },
- { value: 'cancelled', label: 'Отменена', color: 'bg-gray-100 text-gray-500' },
+ { value: 'new', label: 'Новая', color: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]' },
+ { value: 'showing', label: 'Показ', color: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]' },
+ { value: 'negotiation', label: 'Переговоры', color: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]' },
+ { value: 'contract', label: 'Договор', color: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]' },
+ { value: 'payment', label: 'Оплата', color: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]' },
+ { value: 'completed', label: 'Завершена', color: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]' },
+ { value: 'cancelled', label: 'Отменена', color: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]' },
 ]
 
 export function DealStatusSelector({ dealId, currentStatus }: { dealId: string; currentStatus: string }) {

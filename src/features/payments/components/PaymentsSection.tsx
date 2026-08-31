@@ -5,10 +5,10 @@ import { AddContractPaymentForm } from '@/features/accounting/components/AddCont
 import { CreditCard } from 'lucide-react'
 
 const statusConfig: Record<string, { label: string; className: string }> = {
- planned: { label: 'Ожидает', className: 'bg-yellow-100 text-yellow-700' },
- completed: { label: 'Оплачен', className: 'bg-green-100 text-green-700' },
- overdue: { label: 'Просрочен', className: 'bg-red-100 text-red-700' },
- cancelled: { label: 'Отменён', className: 'bg-gray-100 text-gray-500' },
+ planned: { label: 'Ожидает', className: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]' },
+ completed: { label: 'Оплачен', className: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]' },
+ overdue: { label: 'Просрочен', className: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]' },
+ cancelled: { label: 'Отменён', className: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]' },
 }
 
 function fmt(n: number) {
@@ -53,13 +53,13 @@ export async function PaymentsSection({ contractId }: { contractId: string }) {
 
  {rows.length > 0 && (
  <div className="grid grid-cols-2 gap-3">
- <div className="bg-green-50 p-3">
- <p className="text-xs text-green-600 mb-0.5">Получено</p>
- <p className="text-sm font-bold text-green-700">{fmt(totalPaid)}</p>
+ <div className="bg-[var(--hp-good-tint)] p-3">
+ <p className="text-xs text-[var(--hp-good)] mb-0.5">Получено</p>
+ <p className="text-sm font-bold text-[var(--hp-good)]">{fmt(totalPaid)}</p>
  </div>
- <div className="bg-yellow-50 p-3">
- <p className="text-xs text-yellow-600 mb-0.5">Ожидается</p>
- <p className="text-sm font-bold text-yellow-700">{fmt(totalOwed)}</p>
+ <div className="bg-[var(--hp-warn-tint)] p-3">
+ <p className="text-xs text-[var(--hp-warn)] mb-0.5">Ожидается</p>
+ <p className="text-sm font-bold text-[var(--hp-warn)]">{fmt(totalOwed)}</p>
  </div>
  </div>
  )}

@@ -21,7 +21,7 @@ export function DeleteCategoryButton({ id }: { id: string }) {
  <button
  onClick={handleDelete}
  disabled={isPending}
- className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-40"
+ className="p-1.5 text-[var(--hp-tertiary)] hover:text-[var(--hp-danger)] hover:bg-[var(--hp-danger-tint)] transition-colors disabled:opacity-40"
  title="Удалить"
  >
  <Trash2 style={{ width: 13, height: 13 }} />

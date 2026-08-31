@@ -34,7 +34,7 @@ export default async function BillingPage({
  price: 0,
  icon: Zap,
  color: 'text-[var(--hp-sub)]',
- bg: 'bg-slate-50',
+ bg: 'bg-[var(--hp-neutral-tint)]',
  border: 'border-[var(--hp-border)]',
  features: ['1 пользователь', '20 объектов', '10 договоров', 'Базовая аналитика'],
  limits: getFeatureGate('free'),
@@ -56,9 +56,9 @@ export default async function BillingPage({
  name: 'Enterprise',
  price: PLAN_PRICES.enterprise.monthly,
  icon: Building2,
- color: 'text-violet-600',
- bg: 'bg-violet-50',
- border: 'border-violet-200',
+ color: 'text-[var(--hp-sub)]',
+ bg: 'bg-[var(--hp-neutral-tint)]',
+ border: 'border-[var(--hp-border)]',
  features: ['Неограниченно пользователей', 'Неограниченно всего', 'API + Webhooks', 'SLA 99.9%', 'Персональный менеджер'],
  limits: getFeatureGate('enterprise'),
  },
@@ -73,7 +73,7 @@ export default async function BillingPage({
  </div>
 
  {sp.success && (
- <div className="flex items-center gap-3 px-4 py-3 bg-emerald-50 border border-emerald-100 text-emerald-700 text-sm">
+ <div className="flex items-center gap-3 px-4 py-3 bg-[var(--hp-good-tint)] border border-[var(--hp-border)] text-[var(--hp-good)] text-sm">
  <Check className="w-4 h-4 flex-shrink-0" />
  Оплата прошла успешно! Тариф активирован.
  </div>
@@ -87,9 +87,9 @@ export default async function BillingPage({
  <div className="flex items-center gap-2">
  <span className="text-xl font-bold">{PLAN_LABELS[currentPlan]}</span>
  <span className={`text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-medium ${
- org?.subscription_status === 'active' ? 'bg-emerald-50 text-emerald-600' :
- org?.subscription_status === 'past_due' ? 'bg-red-50 text-red-600' :
- 'bg-slate-100 text-[var(--hp-sub)]'
+ org?.subscription_status === 'active' ? 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]' :
+ org?.subscription_status === 'past_due' ? 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]' :
+ 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]'
  }`}>
  {org?.subscription_status === 'active' ? 'Активен' :
  org?.subscription_status === 'past_due' ? 'Просрочен' :
@@ -141,7 +141,7 @@ export default async function BillingPage({
  <ul className="space-y-2 mt-2 flex-1">
  {plan.features.map(f => (
  <li key={f} className="flex items-center gap-2 text-sm">
- <Check className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+ <Check className="w-3.5 h-3.5 text-[var(--hp-good)] flex-shrink-0" />
  {f}
  </li>
  ))}
@@ -149,7 +149,7 @@ export default async function BillingPage({
 
  <div className="mt-5">
  {isCurrent ? (
- <div className="w-full py-2 text-center text-sm font-medium text-muted-foreground bg-slate-100">
+ <div className="w-full py-2 text-center text-sm font-medium text-muted-foreground bg-[var(--hp-neutral-tint)]">
  Текущий тариф
  </div>
  ) : (

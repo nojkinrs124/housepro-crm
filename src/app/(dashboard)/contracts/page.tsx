@@ -7,11 +7,11 @@ import { buttonVariants } from '@/components/ui/button'
 
 const contractTypeLabels = CONTRACT_TYPE_LABELS
 const statusConfig: Record<string, { label: string; cls: string; dot: string }> = {
- draft: { label: 'Черновик', cls: 'bg-slate-50 text-[var(--hp-sub)]', dot: 'bg-slate-400' },
- generated: { label: 'Создан', cls: 'bg-blue-50 text-blue-700', dot: 'bg-blue-400' },
- signed: { label: 'Подписан', cls: 'bg-green-50 text-green-700', dot: 'bg-green-400' },
- completed: { label: 'Завершён', cls: 'bg-emerald-50 text-emerald-700', dot: 'bg-emerald-400' },
- cancelled: { label: 'Отменён', cls: 'bg-red-50 text-red-600', dot: 'bg-red-400' },
+ draft: { label: 'Черновик', cls: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]', dot: 'bg-[var(--hp-tertiary)]' },
+ generated: { label: 'Создан', cls: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]', dot: 'bg-[var(--hp-info)]' },
+ signed: { label: 'Подписан', cls: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]', dot: 'bg-[var(--hp-accent)]' },
+ completed: { label: 'Завершён', cls: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]', dot: 'bg-[var(--hp-accent)]' },
+ cancelled: { label: 'Отменён', cls: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]', dot: 'bg-[var(--hp-danger)]' },
 }
 
 export default async function ContractsPage({
@@ -85,18 +85,18 @@ export default async function ContractsPage({
  style={{ width: 15, height: 15 }} />
  <input name="search" defaultValue={params.search}
  placeholder="Поиск по номеру договора..."
- className="w-full h-10 pl-10 pr-4 text-sm text-foreground placeholder:text-[var(--hp-tertiary)] outline-none bg-slate-50 border border-[var(--hp-border)] focus:border-green-400 focus:ring-2 focus:ring-green-100 transition-all" />
+ className="w-full h-10 pl-10 pr-4 text-sm text-foreground placeholder:text-[var(--hp-tertiary)] outline-none bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)] focus:border-[var(--hp-border)] focus:ring-2 focus:ring-green-100 transition-all" />
  </div>
  </form>
  <div className="flex gap-2 flex-wrap">
  <Link href="/contracts"
- className={`px-4 py-2 text-sm font-semibold transition-colors ${!params.status ? 'text-white' : 'bg-slate-100 text-[var(--hp-sub)] hover:bg-slate-200'}`}
+ className={`px-4 py-2 text-sm font-semibold transition-colors ${!params.status ? 'text-white' : 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)] hover:bg-[var(--hp-tertiary)]'}`}
  style={!params.status ? { background: 'var(--hp-accent)' } : {}}>
  Все
  </Link>
  {statusKeys.map(value => (
  <Link key={value} href={`/contracts?status=${value}`}
- className={`px-4 py-2 text-sm font-semibold transition-colors ${params.status === value ? 'text-white' : 'bg-slate-100 text-[var(--hp-sub)] hover:bg-slate-200'}`}
+ className={`px-4 py-2 text-sm font-semibold transition-colors ${params.status === value ? 'text-white' : 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)] hover:bg-[var(--hp-tertiary)]'}`}
  style={params.status === value ? { background: 'var(--hp-accent)' } : {}}>
  {statusConfig[value].label}
  </Link>
@@ -127,7 +127,7 @@ export default async function ContractsPage({
  <div className="hidden md:block overflow-x-auto">
  <table className="w-full">
  <thead>
- <tr className="bg-slate-50 border-b border-[var(--hp-border-soft)]">
+ <tr className="bg-[var(--hp-neutral-tint)] border-b border-[var(--hp-border-soft)]">
  {['Номер', 'Тип', 'Клиент', 'Объект', 'Сумма', 'Статус', 'Дата', ''].map(h => (
  <th key={h} className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide px-4 py-3.5 first:px-6">{h}</th>
  ))}
@@ -144,8 +144,8 @@ export default async function ContractsPage({
  <tr key={contract.id} className="hover:bg-[var(--hp-neutral-tint)] transition-colors">
  <td className="px-6 py-4">
  <div className="flex items-center gap-3">
- <div className="w-8 h-8 flex items-center justify-center bg-violet-50 shrink-0">
- <FileText style={{ width: 14, height: 14 }} className="text-violet-600" />
+ <div className="w-8 h-8 flex items-center justify-center bg-[var(--hp-neutral-tint)] shrink-0">
+ <FileText style={{ width: 14, height: 14 }} className="text-[var(--hp-sub)]" />
  </div>
  <span className="text-sm font-semibold text-foreground">
  {contract.contract_number ?? `#${contract.id.slice(0, 8)}`}
@@ -176,12 +176,12 @@ export default async function ContractsPage({
  <td className="px-4 py-4">
  <div className="flex items-center gap-3">
  <Link href={`/contracts/${contract.id}`}
- className="text-sm text-green-600 font-semibold hover:underline">
+ className="text-sm text-[var(--hp-good)] font-semibold hover:underline">
  Открыть
  </Link>
- <span className="text-slate-300">·</span>
+ <span className="text-[var(--hp-tertiary)]">·</span>
  <Link href={`/contracts/${contract.id}/generate`}
- className="text-sm text-violet-600 font-semibold hover:underline">
+ className="text-sm text-[var(--hp-sub)] font-semibold hover:underline">
  DOCX
  </Link>
  </div>
@@ -205,8 +205,8 @@ export default async function ContractsPage({
  <Link key={contract.id} href={`/contracts/${contract.id}`} className="block p-4 hover:bg-[var(--hp-neutral-tint)] transition-colors">
  <div className="flex items-start justify-between gap-3 mb-2">
  <div className="flex items-center gap-2.5 min-w-0">
- <div className="w-8 h-8 flex items-center justify-center bg-violet-50 shrink-0">
- <FileText style={{ width: 13, height: 13 }} className="text-violet-600" />
+ <div className="w-8 h-8 flex items-center justify-center bg-[var(--hp-neutral-tint)] shrink-0">
+ <FileText style={{ width: 13, height: 13 }} className="text-[var(--hp-sub)]" />
  </div>
  <div className="min-w-0">
  <p className="text-sm font-bold text-foreground">

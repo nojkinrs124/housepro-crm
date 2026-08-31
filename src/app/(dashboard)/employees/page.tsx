@@ -9,14 +9,14 @@ const roleLabels: Record<string, string> = {
  agent: 'Риелтор', accountant: 'Бухгалтер',
 }
 const roleColors: Record<string, string> = {
- admin: 'bg-red-100/80 text-red-700',
- manager: 'bg-blue-100/80 text-blue-700',
- agent: 'bg-green-100/80 text-green-700',
- accountant: 'bg-purple-100/80 text-purple-700',
+ admin: 'bg-[var(--hp-danger-tint)]/80 text-[var(--hp-danger)]',
+ manager: 'bg-[var(--hp-info-tint)]/80 text-[var(--hp-info)]',
+ agent: 'bg-[var(--hp-good-tint)]/80 text-[var(--hp-good)]',
+ accountant: 'bg-[var(--hp-neutral-tint)]/80 text-[var(--hp-sub)]',
 }
 const roleIconColors: Record<string, string> = {
- admin: 'bg-red-50 text-red-600', manager: 'bg-blue-50 text-blue-600',
- agent: 'bg-green-50 text-green-600', accountant: 'bg-purple-50 text-purple-600',
+ admin: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]', manager: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]',
+ agent: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]', accountant: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]',
 }
 const roleIcons: Record<string, typeof Shield> = {
  admin: Shield, manager: UserCheck, agent: User, accountant: User,
@@ -118,11 +118,11 @@ export default async function EmployeesPage() {
  <p className="font-semibold text-foreground group-hover:text-[var(--hp-accent)] transition-colors text-sm truncate max-w-[200px] sm:max-w-none">
  {emp.full_name}
  </p>
- <span className={`text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold shrink-0 ${roleColors[emp.role] ?? 'bg-gray-100'}`}>
+ <span className={`text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold shrink-0 ${roleColors[emp.role] ?? 'bg-[var(--hp-neutral-tint)]'}`}>
  {roleLabels[emp.role] ?? emp.role}
  </span>
  {!emp.is_active && (
- <span className="text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold bg-red-100 text-red-600 shrink-0">
+ <span className="text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold bg-[var(--hp-danger-tint)] text-[var(--hp-danger)] shrink-0">
  Неактивен
  </span>
  )}

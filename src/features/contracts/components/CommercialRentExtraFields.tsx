@@ -50,7 +50,7 @@ export function CommercialRentExtraFields({ defaultValue }: Props) {
  <input ref={hiddenRef} type="hidden" name="contract_type_data_json" defaultValue={JSON.stringify(data)} />
 
  <div className="hp-card p-6 space-y-4">
- <h2 className={sectionTitle}><Building2 className="w-4 h-4 text-blue-500" /> Условия использования</h2>
+ <h2 className={sectionTitle}><Building2 className="w-4 h-4 text-[var(--hp-info)]" /> Условия использования</h2>
 
  <div>
  <label className={lbl}>Назначение использования помещения</label>
@@ -83,7 +83,7 @@ export function CommercialRentExtraFields({ defaultValue }: Props) {
  </div>
 
  <div className="hp-card p-6 space-y-4">
- <h2 className={sectionTitle}><Wallet className="w-4 h-4 text-rose-500" /> Неустойка</h2>
+ <h2 className={sectionTitle}><Wallet className="w-4 h-4 text-[var(--hp-danger)]" /> Неустойка</h2>
  <div className="max-w-xs">
  <label className={lbl}>Неустойка за просрочку возврата (₽/день)</label>
  <input className={inp} type="number" min={0} value={data.late_return_penalty_per_day}
@@ -92,7 +92,7 @@ export function CommercialRentExtraFields({ defaultValue }: Props) {
  </div>
 
  <div className="hp-card p-6 space-y-4">
- <h2 className={sectionTitle}><ClipboardList className="w-4 h-4 text-orange-500" /> Опись оборудования / имущества</h2>
+ <h2 className={sectionTitle}><ClipboardList className="w-4 h-4 text-[var(--hp-warn)]" /> Опись оборудования / имущества</h2>
  <div className="space-y-2">
  {data.inventory_items.map((it, i) => (
  <div key={i} className="grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-2 items-center">

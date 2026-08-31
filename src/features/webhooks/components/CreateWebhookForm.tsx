@@ -64,21 +64,21 @@ export function CreateWebhookForm() {
  <div className="bg-white p-6 max-w-md w-full" onClick={e => e.stopPropagation()}>
  {newSecret ? (
  <div className="space-y-4">
- <div className="flex items-center gap-2 text-amber-600">
+ <div className="flex items-center gap-2 text-[var(--hp-warn)]">
  <AlertTriangle className="w-5 h-5" />
  <h2 className="font-semibold">Сохраните secret сейчас</h2>
  </div>
  <p className="text-sm text-muted-foreground">
  Используйте этот secret для проверки подписи HMAC-SHA256 в заголовке <code className="text-xs">X-HousePro-Signature</code>.
  </p>
- <div className="flex items-center gap-2 p-3 bg-slate-50 border border-[var(--hp-border)] font-mono text-xs break-all">
+ <div className="flex items-center gap-2 p-3 bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)] font-mono text-xs break-all">
  {newSecret}
  </div>
  <button
  onClick={copySecret}
  className="w-full flex items-center justify-center gap-2 py-2 border border-[var(--hp-border)] text-sm font-medium hover:bg-[var(--hp-neutral-tint)] transition-colors"
  >
- {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+ {copied ? <Check className="w-4 h-4 text-[var(--hp-good)]" /> : <Copy className="w-4 h-4" />}
  {copied ? 'Скопировано' : 'Скопировать secret'}
  </button>
  <button
@@ -124,7 +124,7 @@ export function CreateWebhookForm() {
  </div>
 
  {error && (
- <div className="px-3 py-2 bg-red-50 border border-red-100 text-sm text-red-600">
+ <div className="px-3 py-2 bg-[var(--hp-danger-tint)] border border-[var(--hp-border)] text-sm text-[var(--hp-danger)]">
  {error}
  </div>
  )}

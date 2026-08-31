@@ -13,8 +13,8 @@ interface FilesSectionProps {
 
 function FileTypeIcon({ type }: { type?: string }) {
  if (!type) return <FileIcon className="w-5 h-5 text-muted-foreground" />
- if (type.startsWith('image/')) return <Image className="w-5 h-5 text-blue-500" />
- if (type === 'application/pdf') return <FileText className="w-5 h-5 text-red-500" />
+ if (type.startsWith('image/')) return <Image className="w-5 h-5 text-[var(--hp-info)]" />
+ if (type === 'application/pdf') return <FileText className="w-5 h-5 text-[var(--hp-danger)]" />
  return <FileIcon className="w-5 h-5 text-muted-foreground" />
 }
 

@@ -181,7 +181,7 @@ export function GeneralSettingsForm({ settings }: { settings: GeneralSettings })
  {/* Footer */}
  <div className="flex items-center justify-between">
  {feedback ? (
- <div className={`flex items-center gap-2 text-sm ${feedback.type === 'success' ? 'text-green-600' : 'text-destructive'}`}>
+ <div className={`flex items-center gap-2 text-sm ${feedback.type === 'success' ? 'text-[var(--hp-good)]' : 'text-destructive'}`}>
  {feedback.type === 'success'
  ? <CheckCircle className="w-4 h-4" />
  : <AlertCircle className="w-4 h-4" />

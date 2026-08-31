@@ -28,7 +28,7 @@ export default async function PublicCollectionPage({ params }: { params: Promise
  }
 
  return (
- <div className="min-h-screen bg-slate-50">
+ <div className="min-h-screen bg-[var(--hp-neutral-tint)]">
  {/* Header */}
  <header className="bg-white border-b border-[var(--hp-border-soft)] sticky top-0 z-10">
  <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -78,8 +78,8 @@ export default async function PublicCollectionPage({ params }: { params: Promise
  return (
  <div key={p.id} className="hp-card overflow-hidden">
  {/* Photo placeholder */}
- <div className="w-full h-48 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
- <Home className="w-10 h-10 text-slate-300" />
+ <div className="w-full h-48 bg-[var(--hp-neutral-tint)] flex items-center justify-center">
+ <Home className="w-10 h-10 text-[var(--hp-tertiary)]" />
  </div>
 
  <div className="p-5 space-y-3">

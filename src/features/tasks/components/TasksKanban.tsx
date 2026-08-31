@@ -14,9 +14,9 @@ const columns = [
 ]
 
 const priorityColors: Record<string, string> = {
- low: 'bg-gray-100 text-gray-600',
- medium: 'bg-yellow-100 text-yellow-700',
- high: 'bg-red-100 text-red-700',
+ low: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]',
+ medium: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]',
+ high: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]',
 }
 
 const priorityLabels: Record<string, string> = {

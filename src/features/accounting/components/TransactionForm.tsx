@@ -71,7 +71,7 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
  return (
  <form action={formAction} className="space-y-6">
  {state?.error && (
- <div className="p-3 bg-red-50 border border-red-200 text-sm text-red-700 font-medium flex items-center gap-2">
+ <div className="p-3 bg-[var(--hp-danger-tint)] border border-[var(--hp-border)] text-sm text-[var(--hp-danger)] font-medium flex items-center gap-2">
  <CircleAlert className="w-4 h-4 shrink-0" />
  {state.error}
  </div>
@@ -99,11 +99,11 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
  className="sr-only"
  />
  {t === 'income'
- ? <ArrowDownCircle className="w-5 h-5 text-green-600 shrink-0" />
- : <ArrowUpCircle className="w-5 h-5 text-red-500 shrink-0" />
+ ? <ArrowDownCircle className="w-5 h-5 text-[var(--hp-good)] shrink-0" />
+ : <ArrowUpCircle className="w-5 h-5 text-[var(--hp-danger)] shrink-0" />
  }
  <div>
- <p className={`text-sm font-bold ${t === 'income' ? 'text-green-700' : 'text-red-600'}`}>
+ <p className={`text-sm font-bold ${t === 'income' ? 'text-[var(--hp-good)]' : 'text-[var(--hp-danger)]'}`}>
  {t === 'income' ? 'Доход' : 'Расход'}
  </p>
  <p className="text-xs text-muted-foreground">
@@ -212,7 +212,7 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
  ))}
  </select>
  {visibleCategories.length === 0 && (
- <p className="text-xs text-amber-600">
+ <p className="text-xs text-[var(--hp-warn)]">
  Нет категорий для «{type === 'income' ? 'Дохода' : 'Расхода'}». {' '}
  <Link href="/accounting/categories" className="font-semibold underline">Добавить категорию</Link>
  </p>

@@ -88,11 +88,11 @@ export function PropertyPhotosManager({ propertyId, initialPhotos }: Props) {
  {photos.length > 0 && (
  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
  {photos.map((url, i) => (
- <div key={url} className="relative group aspect-[4/3] overflow-hidden border border-[var(--hp-border-soft)] bg-slate-50">
+ <div key={url} className="relative group aspect-[4/3] overflow-hidden border border-[var(--hp-border-soft)] bg-[var(--hp-neutral-tint)]">
  <Image src={url} alt={`Фото ${i + 1}`} fill sizes="200px" className="object-cover" />
  {i === 0 && (
- <span className="absolute top-1.5 left-1.5 flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-[var(--hp-radius-badge)] bg-white/90 text-amber-600">
- <Star className="w-2.5 h-2.5 fill-amber-500 text-amber-500" />
+ <span className="absolute top-1.5 left-1.5 flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-[var(--hp-radius-badge)] bg-white/90 text-[var(--hp-warn)]">
+ <Star className="w-2.5 h-2.5 fill-amber-500 text-[var(--hp-warn)]" />
  Обложка
  </span>
  )}
@@ -105,7 +105,7 @@ export function PropertyPhotosManager({ propertyId, initialPhotos }: Props) {
  title="Сделать обложкой"
  className="w-7 h-7 rounded-[var(--hp-radius)] bg-white/90 flex items-center justify-center hover:bg-white transition disabled:opacity-50"
  >
- {busyUrl === url ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Star className="w-3.5 h-3.5 text-amber-600" />}
+ {busyUrl === url ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Star className="w-3.5 h-3.5 text-[var(--hp-warn)]" />}
  </button>
  )}
  <button
@@ -115,7 +115,7 @@ export function PropertyPhotosManager({ propertyId, initialPhotos }: Props) {
  title="Удалить"
  className="w-7 h-7 rounded-[var(--hp-radius)] bg-white/90 flex items-center justify-center hover:bg-white transition disabled:opacity-50"
  >
- {busyUrl === url ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <X className="w-3.5 h-3.5 text-red-600" />}
+ {busyUrl === url ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <X className="w-3.5 h-3.5 text-[var(--hp-danger)]" />}
  </button>
  </div>
  </div>
@@ -147,7 +147,7 @@ export function PropertyPhotosManager({ propertyId, initialPhotos }: Props) {
  </div>
 
  {photos.length === 0 && (
- <p className="text-xs text-amber-700 bg-amber-50 border border-amber-100 p-2 leading-relaxed flex items-start gap-1.5">
+ <p className="text-xs text-[var(--hp-warn)] bg-[var(--hp-warn-tint)] border border-[var(--hp-border)] p-2 leading-relaxed flex items-start gap-1.5">
  <Upload className="w-3 h-3 mt-0.5 shrink-0" />
  Без фото Авито почти наверняка отклонит объявление — добавьте хотя бы одно
  </p>

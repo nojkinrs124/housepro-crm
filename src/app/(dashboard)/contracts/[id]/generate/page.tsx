@@ -65,8 +65,8 @@ export default async function GenerateContractPage({
  subtitle={`${contract.contract_number} · ${contractTypeLabels[contract.contract_type]}`}
  backHref={`/contracts/${id}`}
  backLabel="Назад к договору"
- iconBg="bg-violet-100"
- icon={<Sparkles className="w-5 h-5 text-violet-600" />}
+ iconBg="bg-[var(--hp-neutral-tint)]"
+ icon={<Sparkles className="w-5 h-5 text-[var(--hp-sub)]" />}
  />
 
  {/* Checklist */}
@@ -77,20 +77,20 @@ export default async function GenerateContractPage({
  <div key={field.label}
  className={`flex items-start gap-2.5 p-3 text-sm ${
  field.ok
- ? 'bg-green-50 border border-green-100'
+ ? 'bg-[var(--hp-good-tint)] border border-[var(--hp-border)]'
  : field.warn
- ? 'bg-yellow-50 border border-yellow-100'
- : 'bg-red-50 border border-red-100'
+ ? 'bg-[var(--hp-warn-tint)] border border-[var(--hp-border)]'
+ : 'bg-[var(--hp-danger-tint)] border border-[var(--hp-border)]'
  }`}>
  <div className={`w-4 h-4 rounded-[var(--hp-radius)] flex items-center justify-center shrink-0 mt-0.5 ${
- field.ok ? 'bg-green-500' : field.warn ? 'bg-yellow-400' : 'bg-red-400'
+ field.ok ? 'bg-[var(--hp-accent)]' : field.warn ? 'bg-[var(--hp-warn)]' : 'bg-[var(--hp-danger)]'
  }`}>
  <CheckCircle2 className="w-3 h-3 text-white" />
  </div>
  <div className="min-w-0">
  <p className="font-medium text-foreground text-xs">{field.label}</p>
  <p className={`text-xs mt-0.5 truncate ${
- field.ok ? 'text-green-700' : field.warn ? 'text-yellow-700' : 'text-red-700'
+ field.ok ? 'text-[var(--hp-good)]' : field.warn ? 'text-[var(--hp-warn)]' : 'text-[var(--hp-danger)]'
  }`}>
  {field.value || 'Не заполнено'}
  </p>
@@ -100,7 +100,7 @@ export default async function GenerateContractPage({
  </div>
 
  {missingCount > 0 && (
- <div className="mt-4 flex items-start gap-2 p-3 bg-yellow-50 border border-yellow-200 text-sm text-yellow-800">
+ <div className="mt-4 flex items-start gap-2 p-3 bg-[var(--hp-warn-tint)] border border-[var(--hp-border)] text-sm text-[var(--hp-warn)]">
  <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
  <span>Не заполнено {missingCount} обязательных полей. Договор будет создан с прочерками.</span>
  </div>
@@ -135,8 +135,8 @@ export default async function GenerateContractPage({
  <div key={v.id}
  className="flex items-center justify-between p-3 bg-muted/30">
  <div className="flex items-center gap-3">
- <div className="w-8 h-8 bg-violet-100 flex items-center justify-center">
- <FileText className="w-4 h-4 text-violet-600" />
+ <div className="w-8 h-8 bg-[var(--hp-neutral-tint)] flex items-center justify-center">
+ <FileText className="w-4 h-4 text-[var(--hp-sub)]" />
  </div>
  <div>
  <p className="text-sm font-medium text-foreground">Версия {v.version}</p>

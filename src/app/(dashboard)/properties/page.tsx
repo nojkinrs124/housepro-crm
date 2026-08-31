@@ -14,17 +14,17 @@ const dealLabels: Record<string, string> = {
  rent: 'Аренда', sale: 'Продажа', management: 'Управление', subrent: 'Субаренда',
 }
 const statusConfig: Record<string, { label: string; dot: string; badge: string }> = {
- available: { label: 'Свободен', dot: 'var(--hp-accent)', badge: 'bg-green-50 text-green-700' },
- reserved: { label: 'Забронирован', dot: '#F59E0B', badge: 'bg-amber-50 text-amber-700' },
- rented: { label: 'Сдан', dot: '#3B82F6', badge: 'bg-blue-50 text-blue-700' },
- sold: { label: 'Продан', dot: '#94A3B8', badge: 'bg-slate-100 text-[var(--hp-sub)]' },
- inactive: { label: 'Неактивен', dot: '#EF4444', badge: 'bg-red-50 text-red-600' },
+ available: { label: 'Свободен', dot: 'var(--hp-accent)', badge: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]' },
+ reserved: { label: 'Забронирован', dot: '#F59E0B', badge: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]' },
+ rented: { label: 'Сдан', dot: '#3B82F6', badge: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]' },
+ sold: { label: 'Продан', dot: '#94A3B8', badge: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]' },
+ inactive: { label: 'Неактивен', dot: '#EF4444', badge: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]' },
 }
 const dealBadge: Record<string, string> = {
- rent: 'bg-blue-50 text-blue-700',
- sale: 'bg-violet-50 text-violet-700',
- management: 'bg-amber-50 text-amber-700',
- subrent: 'bg-green-50 text-green-700',
+ rent: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]',
+ sale: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]',
+ management: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]',
+ subrent: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]',
 }
 const placeholderImages: Record<string, string> = {
  apartment: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&h=360&fit=crop&auto=format',
@@ -185,7 +185,7 @@ export default async function PropertiesPage({
  </div>
 
  {/* View switcher */}
- <div className="flex items-center gap-1 p-1 bg-slate-100 shrink-0 ml-auto">
+ <div className="flex items-center gap-1 p-1 bg-[var(--hp-neutral-tint)] shrink-0 ml-auto">
  <Link href={buildHref({ view: undefined })}
  className={`w-9 h-9 flex items-center justify-center transition-all ${view === 'grid' ? 'bg-white text-foreground' : 'text-[var(--hp-tertiary)] hover:text-muted-foreground'}`}
  title="Карточки">
@@ -232,7 +232,7 @@ export default async function PropertiesPage({
  className="group block hp-card overflow-hidden transition-all duration-300"
  style={{ }}>
  {/* Photo */}
- <div className="relative h-52 overflow-hidden bg-slate-100">
+ <div className="relative h-52 overflow-hidden bg-[var(--hp-neutral-tint)]">
  {/* eslint-disable-next-line @next/next/no-img-element */}
  <img src={imgSrc} alt={property.title}
  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
@@ -285,7 +285,7 @@ export default async function PropertiesPage({
  <div className="flex items-center gap-4 pt-3 border-t border-[var(--hp-border-soft)]">
  {property.area && (
  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
- <div className="w-6 h-6 bg-slate-50 flex items-center justify-center">
+ <div className="w-6 h-6 bg-[var(--hp-neutral-tint)] flex items-center justify-center">
  <Maximize2 style={{ width: 11, height: 11, color: '#94A3B8' }} />
  </div>
  <span className="font-semibold text-[var(--hp-ink)]">{property.area}</span>
@@ -294,7 +294,7 @@ export default async function PropertiesPage({
  )}
  {property.rooms && (
  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
- <div className="w-6 h-6 bg-slate-50 flex items-center justify-center">
+ <div className="w-6 h-6 bg-[var(--hp-neutral-tint)] flex items-center justify-center">
  <DoorOpen style={{ width: 11, height: 11, color: '#94A3B8' }} />
  </div>
  <span className="font-semibold text-[var(--hp-ink)]">{property.rooms}</span>
@@ -312,7 +312,7 @@ export default async function PropertiesPage({
  propertyId={property.id}
  isPublished={!!property.site_publish}
  />
- <div className="w-8 h-8 flex items-center justify-center bg-green-50 text-green-600 group-hover:bg-green-600 group-hover:text-white transition-all shrink-0">
+ <div className="w-8 h-8 flex items-center justify-center bg-[var(--hp-good-tint)] text-[var(--hp-good)] group-hover:bg-[var(--hp-accent-hover)] group-hover:text-white transition-all shrink-0">
  <ArrowUpRight style={{ width: 15, height: 15 }} />
  </div>
  </div>
@@ -337,7 +337,7 @@ export default async function PropertiesPage({
  className="flex items-center gap-4 px-5 py-4 hover:bg-background transition-all duration-200 group">
 
  {/* Thumbnail */}
- <div className="w-16 h-16 sm:w-20 sm:h-16 overflow-hidden shrink-0 bg-slate-100">
+ <div className="w-16 h-16 sm:w-20 sm:h-16 overflow-hidden shrink-0 bg-[var(--hp-neutral-tint)]">
  {/* eslint-disable-next-line @next/next/no-img-element */}
  <img src={imgSrc} alt={property.title}
  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -372,11 +372,11 @@ export default async function PropertiesPage({
  {status.label}
  </span>
  {/* Deal type */}
- <span className={`text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold ${dealBadge[property.deal_type] ?? 'bg-slate-100 text-[var(--hp-sub)]'}`}>
+ <span className={`text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold ${dealBadge[property.deal_type] ?? 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]'}`}>
  {dealLabels[property.deal_type] ?? property.deal_type}
  </span>
  {/* Property type */}
- <span className="text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold bg-slate-100 text-[var(--hp-sub)]">
+ <span className="text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]">
  {typeLabels[property.property_type] ?? property.property_type}
  </span>
  {/* Area */}
@@ -413,7 +413,7 @@ export default async function PropertiesPage({
 
  {/* Arrow */}
  <div className="shrink-0 hidden sm:block">
- <div className="w-8 h-8 flex items-center justify-center bg-slate-50 text-[var(--hp-tertiary)] group-hover:bg-green-600 group-hover:text-white transition-all">
+ <div className="w-8 h-8 flex items-center justify-center bg-[var(--hp-neutral-tint)] text-[var(--hp-tertiary)] group-hover:bg-[var(--hp-accent-hover)] group-hover:text-white transition-all">
  <ArrowUpRight style={{ width: 15, height: 15 }} />
  </div>
  </div>
