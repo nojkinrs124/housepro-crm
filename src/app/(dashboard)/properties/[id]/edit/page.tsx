@@ -66,9 +66,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
  metro: 'metro',
  cityDistrict: 'district',
  }}
- renderHint={(s) =>
- s.latitude && s.longitude ? `Координаты: ${s.latitude}, ${s.longitude}` : null
- }
+ hintTemplate="Координаты: {latitude}, {longitude}"
  />
  {/* Геоданные из подсказки: пользователь их не редактирует, но без них
  нет карты в подборке и корректного фида на площадки. */}

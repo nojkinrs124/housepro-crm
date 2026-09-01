@@ -36,8 +36,51 @@ interface DadataSuggestInputProps {
  * Заполняются и обычные, и hidden-поля (координаты объекта).
  */
  fillFields?: Record<string, string>
- /** Дополнительная подпись под полем — например, найденные координаты. */
- renderHint?: (suggestion: SuggestionRecord) => string | null
+ /**
+ * Дополнительная подпись под полем — например, найденные координаты.
+ *
+ * Шаблон, а не функция: компонент клиентский, и функция-проп из Server
+ * Component не сериализуется — RSC-рендер падает целиком ещё до гидрации.
+ *
+ * Синтаксис: `{ключ}` — значение подсказки; `[…]` — необязательный кусок,
+ * он выводится только если все его ключи заполнены. Если хоть один ключ вне
+ * скобок пуст — подпись не показывается вовсе.
+ *
+ * Пример: `Координаты: {latitude}, {longitude}`
+ * Пример: `Руководитель по ЕГРЮЛ: {managerName}[, {managerPost}]`
+ */
+ hintTemplate?: string
+}
+
+const PLACEHOLDER_RE = /\{([\w.]+)\}/g
+const OPTIONAL_GROUP_RE = /\[([^\][]*)\]/g
+
+/** Подставляет значения подсказки в шаблон; null — если обязательных данных нет. */
+export function formatHint(template: string, suggestion: SuggestionRecord): string | null {
+ const valueOf = (key: string) => {
+ const raw = suggestion[key]
+ return raw === null || raw === undefined || raw === '' ? null : String(raw)
+ }
+
+ let missingRequired = false
+ const fill = (text: string, onMissing: () => void) =>
+ text.replace(PLACEHOLDER_RE, (_, key: string) => {
+ const value = valueOf(key)
+ if (value === null) {
+ onMissing()
+ return ''
+ }
+ return value
+ })
+
+ const withOptional = template.replace(OPTIONAL_GROUP_RE, (_, group: string) => {
+ let groupIncomplete = false
+ const filled = fill(group, () => { groupIncomplete = true })
+ return groupIncomplete ? '' : filled
+ })
+
+ const result = fill(withOptional, () => { missingRequired = true })
+ return missingRequired || result.trim() === '' ? null : result
 }
 
 const MIN_QUERY_LENGTH = 3
@@ -53,7 +96,7 @@ export function DadataSuggestInput({
  id,
  labelKey = kind === 'address' ? 'value' : 'name',
  fillFields,
- renderHint,
+ hintTemplate,
 }: DadataSuggestInputProps) {
  const generatedId = useId()
  const inputId = id ?? `${name}-${generatedId}`
@@ -115,7 +158,7 @@ export function DadataSuggestInput({
  skipNextFetch.current = true
  setValue(label)
  setOpen(false)
- setHint(renderHint ? renderHint(suggestion) : null)
+ setHint(hintTemplate ? formatHint(hintTemplate, suggestion) : null)
 
  if (!fillFields) return
  // Форма может быть неконтролируемой (defaultValue + name), поэтому значения

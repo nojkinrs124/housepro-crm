@@ -47,6 +47,13 @@ export default async function Page() {
 
 Любая интерактивность → отдельный файл с `'use client'` наверху.
 
+Обратное направление тоже запрещено: **функцию нельзя передать пропом** из
+Server Component в клиентский — RSC-payload её не сериализует и падает весь
+рендер страницы, в проде это «Minified React error #441» без указания места.
+Исключение — Server Action в `action`/`formAction`. Вместо колбэка передавать
+сериализуемое: строку-шаблон, объект, массив (образец — `hintTemplate` в
+`src/components/forms/DadataSuggestInput.tsx`).
+
 Из файла с `'use client'` серверный код может рендерить только PascalCase-компонент
 как JSX. **Обычную функцию оттуда импортировать нельзя** — вызов с сервера падает в
 рантайме. Чистые типы и функции выносить в файл без `'use client'`; образец —
@@ -169,8 +176,8 @@ import type { Contact, Deal } from '@/types/database' // ✅
 | `session-start` | ветка, незакоммиченное, статус проверки, открытые пункты бэклога |
 | `stop-readme` | напоминает обновить README, если появился новый модуль |
 
-`npm run check` — 7 шагов: tsc → event handlers → границы client/server → визуальный
-стандарт → кроны → build → тесты. Отдельно: `npm run check:design`, `check:boundary`,
+`npm run check` — 8 шагов: tsc → event handlers → границы client/server →
+функции-пропы через границу → визуальный стандарт → кроны → build → тесты. Отдельно: `npm run check:design`, `check:boundary`,
 `check:cron`. После правок дизайна легаси-файла — `npm run check:design:baseline`.
 
 ---

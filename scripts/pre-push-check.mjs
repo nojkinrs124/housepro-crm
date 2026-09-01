@@ -14,8 +14,10 @@
  *      Next.js не выполняет тело компонента во время сборки (страница
  *      помечается 'ƒ Dynamic, server-rendered on demand'), поэтому баг
  *      всплывает только в реальном запросе в проде.
- *   4. npm run build
- *   5. npm test
+ *   4. Функции-пропы из Server Component в Client Component — не сериализуются
+ *      в RSC-payload, в проде это «Minified React error #441» на всю страницу.
+ *   5. npm run build
+ *   6. npm test
  *
  * Любой шаг с ошибкой -> exit code 1, сборка/пуш не выполняются.
  */
@@ -62,7 +64,7 @@ const allSourceFiles = walk(SRC, ['.ts', '.tsx'], ['node_modules', '.next', 'tes
 
 // ── Шаг 1: TypeScript ───────────────────────────────────────────────────
 
-section('1/7 · TypeScript (tsc --noEmit)')
+section('1/8 · TypeScript (tsc --noEmit)')
 try {
   execSync('npx tsc --noEmit', { cwd: ROOT, stdio: 'pipe' })
   record('TypeScript: ошибок нет', true)
@@ -72,7 +74,7 @@ try {
 
 // ── Шаг 2: event handlers в Server Components ───────────────────────────
 
-section('2/7 · Event handlers в Server Components')
+section('2/8 · Event handlers в Server Components')
 {
   const eventHandlerRe = /\bon(Click|Change|Submit|Drag|Drop|MouseEnter|MouseLeave|KeyDown|KeyUp|Focus|Blur)\w*\s*=/
   const problems = []
@@ -93,7 +95,7 @@ section('2/7 · Event handlers в Server Components')
 
 // ── Шаг 3: границы client/server (импорт функций из 'use client' файлов) ──
 
-section('3/7 · Границы client/server (импорт функций из \'use client\' файлов)')
+section('3/8 · Границы client/server (импорт функций из \'use client\' файлов)')
 {
   // 3.1 Найти все 'use client' файлы и их "функциональные" (не-компонентные) экспорты.
   // Эвристика: имя с маленькой буквы = обычная функция/значение (не React-компонент,
@@ -192,9 +194,26 @@ section('3/7 · Границы client/server (импорт функций из \
   )
 }
 
-// ── Шаг 4: визуальный стандарт «Кабинет» ─────────────────────────────────
+// ── Шаг 4: функции-пропы через границу client/server ─────────────────────
 
-section('4/7 · Визуальный стандарт «Кабинет»')
+section('4/8 · Функции-пропы из Server Component в Client Component')
+{
+  const { checkFunctionProps } = await import('./checks/client-boundary.mjs')
+  const violations = checkFunctionProps()
+  record(
+    violations.length === 0
+      ? 'Функции через границу client/server не передаются'
+      : `Найдено ${violations.length} функци${violations.length === 1 ? 'я' : 'й'} в пропах клиентских компонентов`,
+    violations.length === 0,
+    violations
+      .map(v => `  - ${v.file}:${v.line} проп "${v.prop}" у <${v.component}/> ('use client') — RSC-payload функцию не сериализует, страница падает с React error #441`)
+      .join('\n')
+  )
+}
+
+// ── Шаг 5: визуальный стандарт «Кабинет» ─────────────────────────────────
+
+section('5/8 · Визуальный стандарт «Кабинет»')
 {
   const { checkFiles, allSourceFiles } = await import('./checks/design-tokens.mjs')
   const { violations } = checkFiles(allSourceFiles())
@@ -210,9 +229,9 @@ section('4/7 · Визуальный стандарт «Кабинет»')
   )
 }
 
-// ── Шаг 5: vercel.json — частота кронов ──────────────────────────────────
+// ── Шаг 6: vercel.json — частота кронов ──────────────────────────────────
 
-section('5/7 · vercel.json — кроны не чаще суток')
+section('6/8 · vercel.json — кроны не чаще суток')
 {
   const { checkVercelCron } = await import('./checks/vercel-cron.mjs')
   const problems = checkVercelCron()
@@ -223,9 +242,9 @@ section('5/7 · vercel.json — кроны не чаще суток')
   )
 }
 
-// ── Шаг 6: build ─────────────────────────────────────────────────────────
+// ── Шаг 7: build ─────────────────────────────────────────────────────────
 
-section('6/7 · npm run build')
+section('7/8 · npm run build')
 if (!hasErrors) {
   try {
     execSync('npm run build', { cwd: ROOT, stdio: 'pipe' })
@@ -239,7 +258,7 @@ if (!hasErrors) {
 
 // ── Шаг 7: тесты ────────────────────────────────────────────────────────
 
-section('7/7 · npm test')
+section('8/8 · npm test')
 if (!hasErrors) {
   try {
     const out = execSync('npm test', { cwd: ROOT, stdio: 'pipe' }).toString()

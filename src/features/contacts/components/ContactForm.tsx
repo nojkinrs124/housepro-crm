@@ -263,9 +263,7 @@ export function ContactForm({ action, defaults = {}, backHref, submitLabel }: Co
                 ogrn: 'ogrn',
                 legalAddress: 'legal_address',
               }}
-              renderHint={(s) =>
-                s.managerName ? `Руководитель по ЕГРЮЛ: ${s.managerName}${s.managerPost ? `, ${s.managerPost}` : ''}` : null
-              }
+              hintTemplate="Руководитель по ЕГРЮЛ: {managerName}[, {managerPost}]"
             />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
