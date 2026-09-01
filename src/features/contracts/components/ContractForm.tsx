@@ -91,55 +91,68 @@ export function ContractForm({
  ? properties.filter(p => config.propertyTypes!.includes(p.property_type ?? '') || p.id === defaults.property_id)
  : properties
 
- const inp = 'w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all'
- const sel = 'w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer'
- const lbl = 'block text-sm font-medium text-foreground mb-1.5'
+ const inp = 'w-full h-10 px-4 border border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-ink)] text-sm outline-none focus:border-[var(--hp-ink)] transition-colors'
+ const sel = 'w-full h-10 px-4 border border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-ink)] text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer'
+ const lbl = 'block text-sm font-medium text-[var(--hp-ink)] mb-1.5'
+ const h2 = 'font-bold text-[var(--hp-ink)] text-[15px]'
 
  return (
  <form action={formAction} className="space-y-4">
  {state?.error && (
- <div className="bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
+ <div className="bg-[var(--hp-danger-tint)] border border-[var(--hp-danger)] text-[var(--hp-danger)] px-4 py-3 text-sm">
  {state.error}
  </div>
  )}
 
  {/* Тип договора */}
- <div className="hp-card p-6 space-y-4">
- <h2 className="font-semibold text-foreground">Тип договора</h2>
+ <div className="hp-card p-5 space-y-4">
+ <h2 className={h2}>Тип договора</h2>
 
- <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Между собственником и клиентом</p>
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
- {directTypes.map(t => (
+ <div className="space-y-1.5">
+ <p className="text-[11px] font-semibold text-[var(--hp-sub)] uppercase tracking-[0.06em]">Между собственником и клиентом</p>
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+ {directTypes.map(t => {
+ const Icon = t.icon
+ return (
  <label key={t.value}
- className="flex items-center gap-3 p-3 border border-border cursor-pointer hover:bg-accent transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5 text-sm">
+ className="flex items-center gap-3 p-3 border border-[var(--hp-border)] cursor-pointer transition-colors hover:bg-[var(--hp-neutral-tint)] has-[:checked]:border-[var(--hp-accent)] has-[:checked]:bg-[var(--hp-accent-tint)] text-sm">
  <input type="radio" name="contract_type" value={t.value}
  checked={selectedType === t.value}
  onChange={() => setSelectedType(t.value)}
- className="accent-primary shrink-0" />
- {t.label}
+ className="shrink-0" style={{ accentColor: 'var(--hp-accent)' }} />
+ <Icon style={{ width: 16, height: 16, color: 'var(--hp-sub)' }} className="shrink-0" />
+ <span className="text-[var(--hp-ink)]">{t.label}</span>
  </label>
- ))}
+ )
+ })}
+ </div>
  </div>
 
- <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide pt-1">Агентство — сторона договора</p>
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
- {agencyTypes.map(t => (
+ <div className="space-y-1.5 pt-1">
+ <p className="text-[11px] font-semibold text-[var(--hp-sub)] uppercase tracking-[0.06em]">Агентство — сторона договора</p>
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+ {agencyTypes.map(t => {
+ const Icon = t.icon
+ return (
  <label key={t.value}
- className="flex items-center gap-3 p-3 border border-border cursor-pointer hover:bg-accent transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5 text-sm">
+ className="flex items-center gap-3 p-3 border border-[var(--hp-border)] cursor-pointer transition-colors hover:bg-[var(--hp-neutral-tint)] has-[:checked]:border-[var(--hp-accent)] has-[:checked]:bg-[var(--hp-accent-tint)] text-sm">
  <input type="radio" name="contract_type" value={t.value}
  checked={selectedType === t.value}
  onChange={() => setSelectedType(t.value)}
- className="accent-primary shrink-0" />
- {t.label}
+ className="shrink-0" style={{ accentColor: 'var(--hp-accent)' }} />
+ <Icon style={{ width: 16, height: 16, color: 'var(--hp-sub)' }} className="shrink-0" />
+ <span className="text-[var(--hp-ink)]">{t.label}</span>
  </label>
- ))}
+ )
+ })}
+ </div>
  </div>
  </div>
 
  {/* Статус (только для edit) */}
  {mode === 'edit' && (
- <div className="hp-card p-6 space-y-3">
- <h2 className="font-semibold text-foreground">Статус</h2>
+ <div className="hp-card p-5 space-y-3">
+ <h2 className={h2}>Статус</h2>
  <select name="status" defaultValue={defaults.status ?? 'draft'} className={sel}>
  {statusOptions.map(o => (
  <option key={o.value} value={o.value}>{o.label}</option>
@@ -149,8 +162,8 @@ export function ContractForm({
  )}
 
  {/* Стороны */}
- <div className="hp-card p-6 space-y-5">
- <h2 className="font-semibold text-foreground">Стороны договора</h2>
+ <div className="hp-card p-5 space-y-5">
+ <h2 className={h2}>Стороны договора</h2>
 
  {config.party1Role === 'agency' ? (
  <div className="space-y-1.5">
@@ -169,7 +182,7 @@ export function ContractForm({
  ))}
  </select>
  ) : (
- <div className="flex items-center gap-2 p-3 border border-dashed border-destructive/40 bg-destructive/5 text-sm text-destructive">
+ <div className="flex items-center gap-2 p-3 border border-dashed border-[var(--hp-danger)] bg-[var(--hp-danger-tint)] text-sm text-[var(--hp-danger)]">
  Нет ни одного профиля компании.{' '}
  <Link href="/settings/company/new" target="_blank" className="underline font-medium">Создать</Link>
  </div>
@@ -261,7 +274,7 @@ export function ContractForm({
  ))}
  </select>
  <Link href="/properties/new" target="_blank"
- className="h-10 px-3 border border-primary/30 text-primary text-sm font-medium hover:bg-primary/10 transition flex items-center gap-1 whitespace-nowrap">
+ className="h-10 px-3 border border-[var(--hp-accent)] text-[var(--hp-accent)] text-sm font-medium hover:bg-[var(--hp-accent-tint)] transition-colors flex items-center gap-1 whitespace-nowrap">
  <Home className="w-4 h-4" />
  Создать
  </Link>
@@ -270,8 +283,8 @@ export function ContractForm({
  </div>
 
  {/* Финансы и сроки */}
- <div className="hp-card p-6 space-y-5">
- <h2 className="font-semibold text-foreground">Финансы и сроки</h2>
+ <div className="hp-card p-5 space-y-5">
+ <h2 className={h2}>Финансы и сроки</h2>
  <div className="grid grid-cols-2 gap-4">
  <div className={`space-y-1.5 ${config.showDeposit ? '' : 'col-span-2'}`}>
  <label className={lbl}>{config.amountLabel}</label>
@@ -329,21 +342,21 @@ export function ContractForm({
  )}
 
  {/* Примечания */}
- <div className="hp-card p-6 space-y-3">
- <h2 className="font-semibold text-foreground">Примечания</h2>
+ <div className="hp-card p-5 space-y-3">
+ <h2 className={h2}>Примечания</h2>
  <textarea name="notes" rows={3} placeholder="Дополнительные условия..."
  defaultValue={defaults.notes ?? ''}
- className="w-full px-4 py-3 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] resize-none" />
+ className="w-full px-4 py-3 border border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-ink)] text-sm outline-none focus:border-[var(--hp-ink)] resize-none" />
  </div>
 
  <div className="flex items-center gap-3">
  <button type="submit" disabled={isPending}
- className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-all disabled:opacity-60">
+ className="flex items-center gap-2 px-6 py-2.5 bg-[var(--hp-accent)] text-white text-sm font-semibold hover:bg-[var(--hp-accent-hover)] transition-colors disabled:opacity-60">
  <FileText className="w-4 h-4" />
  {isPending ? 'Сохранение...' : submitLabel}
  </button>
  <Link href={backHref}
- className="px-6 py-2.5 border border-border text-foreground text-sm font-medium hover:bg-accent transition-all">
+ className="px-6 py-2.5 border border-[var(--hp-border)] text-[var(--hp-ink)] text-sm font-semibold hover:border-[var(--hp-sub)] transition-colors">
  Отмена
  </Link>
  </div>

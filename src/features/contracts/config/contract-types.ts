@@ -11,13 +11,15 @@
 //   'owner'  — выбирается из контактов с ролью owner/both
 //   'client' — выбирается из контактов с ролью client/both
 
+import { Home, Building2, HandCoins, ClipboardList, FileSignature, Briefcase, Settings, Repeat, type LucideIcon } from 'lucide-react'
+
 export type ContractPartyRole = 'agency' | 'owner' | 'client'
 
 export interface ContractTypeConfig {
   value: string
   label: string
   shortLabel: string
-  icon: string
+  icon: LucideIcon
   group: 'direct' | 'agency'
   party1Role: ContractPartyRole
   party2Role: ContractPartyRole
@@ -46,9 +48,9 @@ export interface ContractTypeConfig {
 export const CONTRACT_TYPES: ContractTypeConfig[] = [
   {
     value: 'rent_apartment',
-    label: '🏠 Аренда квартиры',
+    label: 'Аренда квартиры',
     shortLabel: 'Аренда квартиры',
-    icon: '🏠',
+    icon: Home,
     group: 'direct',
     party1Role: 'owner',
     party2Role: 'client',
@@ -66,9 +68,9 @@ export const CONTRACT_TYPES: ContractTypeConfig[] = [
   },
   {
     value: 'rent_commercial',
-    label: '🏢 Аренда коммерческой недвижимости',
+    label: 'Аренда коммерческой недвижимости',
     shortLabel: 'Коммерческая аренда',
-    icon: '🏢',
+    icon: Building2,
     group: 'direct',
     party1Role: 'owner',
     party2Role: 'client',
@@ -86,9 +88,9 @@ export const CONTRACT_TYPES: ContractTypeConfig[] = [
   },
   {
     value: 'sale',
-    label: '💰 Купля-продажа недвижимости',
+    label: 'Купля-продажа недвижимости',
     shortLabel: 'Купля-продажа',
-    icon: '💰',
+    icon: HandCoins,
     group: 'direct',
     party1Role: 'owner',
     party2Role: 'client',
@@ -104,9 +106,9 @@ export const CONTRACT_TYPES: ContractTypeConfig[] = [
   },
   {
     value: 'agency_owner',
-    label: '📋 Агентский договор с собственником',
+    label: 'Агентский договор с собственником',
     shortLabel: 'Агентский (собственник)',
-    icon: '📋',
+    icon: ClipboardList,
     group: 'agency',
     party1Role: 'agency',
     party2Role: 'owner',
@@ -122,9 +124,9 @@ export const CONTRACT_TYPES: ContractTypeConfig[] = [
   },
   {
     value: 'agency_client',
-    label: '📋 Агентский договор с заказчиком',
+    label: 'Агентский договор с заказчиком',
     shortLabel: 'Агентский (заказчик)',
-    icon: '📋',
+    icon: FileSignature,
     group: 'agency',
     party1Role: 'agency',
     party2Role: 'client',
@@ -140,9 +142,9 @@ export const CONTRACT_TYPES: ContractTypeConfig[] = [
   },
   {
     value: 'agency_legal_entity',
-    label: '🏢 Агентский договор с юр. лицом',
+    label: 'Агентский договор с юр. лицом',
     shortLabel: 'Агентский (юр. лицо)',
-    icon: '🏢',
+    icon: Briefcase,
     group: 'agency',
     party1Role: 'agency',
     party2Role: 'client',
@@ -159,9 +161,9 @@ export const CONTRACT_TYPES: ContractTypeConfig[] = [
   },
   {
     value: 'property_management',
-    label: '⚙️ Договор управления недвижимостью',
+    label: 'Договор управления недвижимостью',
     shortLabel: 'Управление',
-    icon: '⚙️',
+    icon: Settings,
     group: 'agency',
     party1Role: 'agency',
     party2Role: 'owner',
@@ -177,9 +179,9 @@ export const CONTRACT_TYPES: ContractTypeConfig[] = [
   },
   {
     value: 'sublease',
-    label: '🔄 Договор субаренды',
+    label: 'Договор субаренды',
     shortLabel: 'Субаренда',
-    icon: '🔄',
+    icon: Repeat,
     group: 'agency',
     party1Role: 'agency',
     party2Role: 'client',
