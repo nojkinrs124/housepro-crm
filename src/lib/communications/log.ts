@@ -157,7 +157,7 @@ export async function logCommunication(input: CommunicationInput): Promise<{ id:
  * Вид интеграции. 'payments' живёт в той же таблице, что каналы связи:
  * структура настроек одинакова — провайдер, учётные данные, секрет вебхука.
  */
-export type IntegrationKind = 'telephony' | 'whatsapp' | 'payments'
+export type IntegrationKind = 'telephony' | 'whatsapp' | 'payments' | 'signing'
 
 /** Настройки интеграции организации: учётные данные провайдера и секрет вебхука. */
 export async function getChannelIntegration(orgId: string, kind: IntegrationKind) {

@@ -17,7 +17,7 @@ export interface CredentialField {
 }
 
 interface ChannelIntegrationFormProps {
- kind: 'telephony' | 'whatsapp' | 'payments'
+ kind: 'telephony' | 'whatsapp' | 'payments' | 'signing'
  /** Путь роута вебхука: /api/<webhookPath>/... */
  webhookPath?: string
  title: string

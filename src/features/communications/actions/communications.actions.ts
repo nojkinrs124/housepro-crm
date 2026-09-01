@@ -18,6 +18,9 @@ import { TELEPHONY_PROVIDERS } from '@/lib/communications/telephony'
 /** Эквайринг: пока поддержана только ЮKassa, список — точка расширения. */
 const PAYMENT_PROVIDERS = ['yookassa'] as const
 
+/** Электронная подпись через внешнего оператора. */
+const SIGNING_PROVIDERS = ['podpislon'] as const
+
 const MANUAL_CHANNELS = ['call', 'note', 'meeting', 'sms', 'telegram', 'email'] as const
 type ManualChannel = (typeof MANUAL_CHANNELS)[number]
 
@@ -155,7 +158,10 @@ export async function saveChannelIntegrationAction(
 
   const provider = (formData.get('provider') as string)?.trim()
   const allowed =
-    kind === 'telephony' ? TELEPHONY_PROVIDERS : kind === 'whatsapp' ? WHATSAPP_PROVIDERS : PAYMENT_PROVIDERS
+    kind === 'telephony' ? TELEPHONY_PROVIDERS
+      : kind === 'whatsapp' ? WHATSAPP_PROVIDERS
+      : kind === 'signing' ? SIGNING_PROVIDERS
+      : PAYMENT_PROVIDERS
   if (!allowed.includes(provider as never)) return { error: 'Выберите провайдера' }
 
   // Каждое поле учётных данных приходит под префиксом cred_ — так набор полей
@@ -195,6 +201,8 @@ export async function saveChannelIntegrationAction(
   if (error) return { error: error.message }
 
   revalidatePath('/settings/channels')
+  revalidatePath('/settings/payments')
+  revalidatePath('/settings/signing')
   return { success: true }
 }
 
@@ -227,5 +235,6 @@ export async function regenerateWebhookSecretAction(
 
   revalidatePath('/settings/channels')
   revalidatePath('/settings/payments')
+  revalidatePath('/settings/signing')
   return { success: true }
 }

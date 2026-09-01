@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { Settings, Building2, Bell, Shield, Database, ChevronRight, ScrollText, CreditCard, Key, Webhook, Megaphone, Mail, Upload, PhoneCall } from 'lucide-react'
+import { Settings, Building2, Bell, Shield, Database, ChevronRight, ScrollText, CreditCard, Key, Webhook, Megaphone, Mail, Upload, PhoneCall, Signature } from 'lucide-react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/layout/PageHeader'
 
@@ -42,6 +42,7 @@ const SETTINGS_GROUPS = [
       { icon: Mail, title: 'Почта', desc: 'Отправитель и журнал писем клиентам', href: '/settings/email' },
       { icon: PhoneCall, title: 'Каналы связи', desc: 'Телефония и WhatsApp в карточках клиентов', href: '/settings/channels' },
       { icon: CreditCard, title: 'Приём платежей', desc: 'Ссылки на оплату для клиентов агентства', href: '/settings/payments' },
+      { icon: Signature, title: 'Электронная подпись', desc: 'Подписание договоров через Подпислон', href: '/settings/signing' },
     ],
   },
 ]

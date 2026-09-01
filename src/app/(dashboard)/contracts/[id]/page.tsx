@@ -14,6 +14,10 @@ import {
  ContractSigningPanel,
  type SignatureSummary,
 } from '@/features/contracts/components/ContractSigningPanel'
+import {
+ PodpislonSigningPanel,
+ type PodpislonSignature,
+} from '@/features/contracts/components/PodpislonSigningPanel'
 import { getSiteUrl } from '@/lib/telegram/site-url'
 
 const contractTypeLabels = CONTRACT_TYPE_LABELS
@@ -113,10 +117,25 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
  // (переотправка после правок, второй подписант со стороны юрлица).
  const { data: signaturesRaw } = await supabase
  .from('contract_signatures')
- .select('id, status, signer_email, signer_name, signed_at, created_at, expires_at, sign_token')
+ .select(`id, provider, status, signer_email, signer_name, signer_phone, signed_at, created_at,
+ expires_at, sign_token, sign_url, signed_document_url`)
  .eq('contract_id', id)
  .order('created_at', { ascending: false })
- const signatures = (signaturesRaw ?? []) as SignatureSummary[]
+
+ // Две подписи живут в одной таблице и различаются провайдером: внутренняя ПЭП
+ // по коду из письма и внешняя — через Подпислон по коду из СМС.
+ const allSignatures = (signaturesRaw ?? []) as (SignatureSummary & PodpislonSignature & { provider: string })[]
+ const signatures = allSignatures.filter((s) => s.provider !== 'podpislon') as SignatureSummary[]
+ const podpislonSignatures = allSignatures.filter((s) => s.provider === 'podpislon') as PodpislonSignature[]
+
+ // Панель Подпислона показываем только подключившим интеграцию: RLS отдаёт
+ // строку только своей организации, поэтому дополнительный фильтр не нужен.
+ const { data: signingIntegration } = await supabase
+ .from('channel_integrations')
+ .select('provider, is_active')
+ .eq('kind', 'signing')
+ .maybeSingle()
+ const podpislonEnabled = signingIntegration?.provider === 'podpislon' && signingIntegration.is_active
  const legacyClient = contract.client as { full_name?: string; phone?: string } | null
 
  const client = clientContact ?? legacyClient
@@ -160,6 +179,16 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
  defaultEmail={clientContact?.email ?? null}
  signatures={signatures}
  siteUrl={getSiteUrl()}
+ />
+ )}
+
+ {/* Подпись через внешнего оператора ПЭП — код из СМС, согласия в файле. */}
+ {contract.generated_docx_url && podpislonEnabled && (
+ <PodpislonSigningPanel
+ contractId={id}
+ defaultName={clientContact?.full_name ?? null}
+ defaultPhone={clientContact?.phone ?? null}
+ signatures={podpislonSignatures}
  />
  )}
 
