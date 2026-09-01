@@ -4,169 +4,115 @@ import Link from 'next/link'
 import { PageHeader } from '@/components/layout/PageHeader'
 
 const roleLabels: Record<string, string> = {
- admin: 'Администратор',
- manager: 'Менеджер',
- agent: 'Агент',
- accountant: 'Бухгалтер',
+  admin: 'Администратор',
+  manager: 'Менеджер',
+  agent: 'Агент',
+  accountant: 'Бухгалтер',
 }
 
+// Разделы сгруппированы по смыслу, а не свалены в один плоский список —
+// тот же принцип, что и в боковом меню (рубрики ПРОДАЖИ/БАЗА/...).
+// Иконка-бокс везде нейтральная (см. CLAUDE.md «Иконки, аватары»): цвет
+// в системе — только семантика статуса, а не подсветка модуля.
+const SETTINGS_GROUPS = [
+  {
+    title: 'Рабочее пространство',
+    items: [
+      { icon: Building2, title: 'Компания', desc: 'Название, логотип, реквизиты', href: '/settings/company' },
+      { icon: Settings, title: 'Общие настройки', desc: 'Язык, валюта, временная зона', href: '/settings/general' },
+      { icon: CreditCard, title: 'Тарифы и оплата', desc: 'Управление подпиской и тарифом', href: '/settings/billing' },
+      { icon: Bell, title: 'Уведомления', desc: 'Email и push-уведомления', href: '/settings/notifications' },
+      { icon: Database, title: 'Шаблоны документов', desc: 'DOCX шаблоны договоров', href: '/settings/templates' },
+    ],
+  },
+  {
+    title: 'Доступ и данные',
+    items: [
+      { icon: Shield, title: 'Безопасность', desc: 'Роли, доступы, пароли', href: '/settings/security' },
+      { icon: ScrollText, title: 'Журнал аудита', desc: 'История изменений (только admin)', href: '/settings/audit' },
+    ],
+  },
+  {
+    title: 'Интеграции',
+    items: [
+      { icon: Key, title: 'API‑ключи', desc: 'Доступ для интеграций', href: '/settings/api' },
+      { icon: Webhook, title: 'Вебхуки', desc: 'Уведомления о событиях в реальном времени', href: '/settings/webhooks' },
+      { icon: Megaphone, title: 'Авито', desc: 'Публикация объектов через автозагрузку', href: '/settings/avito' },
+    ],
+  },
+]
+
 export default async function SettingsPage() {
- const supabase = await createClient()
- const { data: { user } } = await supabase.auth.getUser()
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
- const { data: profile } = user
- ? await supabase.from('users').select('id, full_name, email, role, avatar_url, phone').eq('id', user.id).single()
- : { data: null }
+  const { data: profile } = user
+    ? await supabase.from('users').select('id, full_name, email, role, avatar_url, phone').eq('id', user.id).single()
+    : { data: null }
 
- const initials = (profile as { full_name?: string } | null)?.full_name?.charAt(0)?.toUpperCase() ?? 'U'
- const avatarUrl = (profile as { avatar_url?: string } | null)?.avatar_url ?? null
+  const initials = (profile as { full_name?: string } | null)?.full_name?.charAt(0)?.toUpperCase() ?? 'U'
+  const avatarUrl = (profile as { avatar_url?: string } | null)?.avatar_url ?? null
 
- return (
- <div className="space-y-6 max-w-4xl mx-auto">
- <PageHeader title="Настройки" subtitle="Управление системой HousePro CRM" />
+  return (
+    <div className="space-y-5 max-w-3xl mx-auto">
+      <PageHeader title="Настройки" subtitle="Управление системой ХаусПро CRM" />
 
- {/* Profile card */}
- {profile && (
- <Link
- href="/settings/profile"
- className="flex items-center gap-4 hp-card p-5 transition-all"
- style={{ }}
- >
- <div
- className="w-12 h-12 rounded-[var(--hp-radius)] overflow-hidden flex items-center justify-center shrink-0 text-white text-base font-bold"
- style={{ background: 'var(--hp-accent)', }}
- >
- {avatarUrl ? (
- // eslint-disable-next-line @next/next/no-img-element
- <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
- ) : (
- initials
- )}
- </div>
- <div className="min-w-0 flex-1">
- <p className="font-semibold text-foreground text-sm truncate">
- {(profile as { full_name?: string }).full_name}
- </p>
- <p className="text-xs text-muted-foreground mt-0.5 truncate">
- {(profile as { email?: string }).email} ·{' '}
- {roleLabels[(profile as { role?: string }).role ?? ''] ?? (profile as { role?: string }).role}
- </p>
- </div>
- <span className="hidden sm:flex items-center gap-1 text-[var(--hp-accent)] text-sm font-semibold shrink-0">
- Редактировать <ChevronRight style={{ width: 14, height: 14 }} />
- </span>
- </Link>
- )}
+      {/* Профиль — отдельно от рубрик, это не раздел системы, а сам пользователь */}
+      {profile && (
+        <Link
+          href="/settings/profile"
+          className="flex items-center gap-3 hp-card p-4 hp-card-hover transition-colors"
+        >
+          <div
+            className="w-11 h-11 rounded-[var(--hp-radius)] overflow-hidden flex items-center justify-center shrink-0 text-white text-base font-bold"
+            style={{ background: 'var(--hp-accent)' }}
+          >
+            {avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+            ) : (
+              initials
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold text-foreground text-sm truncate">
+              {(profile as { full_name?: string }).full_name}
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5 truncate">
+              {(profile as { email?: string }).email} ·{' '}
+              {roleLabels[(profile as { role?: string }).role ?? ''] ?? (profile as { role?: string }).role}
+            </p>
+          </div>
+          <span className="hidden sm:flex items-center gap-1 text-[var(--hp-accent)] text-sm font-semibold shrink-0">
+            Редактировать <ChevronRight style={{ width: 14, height: 14 }} />
+          </span>
+        </Link>
+      )}
 
- <div className="grid gap-3">
- {[
- {
- icon: Building2,
- title: 'Компания',
- desc: 'Название, логотип, реквизиты',
- iconBg: 'bg-[var(--hp-info-tint)]',
- iconColor: 'text-[var(--hp-info)]',
- href: '/settings/company',
- },
- {
- icon: Bell,
- title: 'Уведомления',
- desc: 'Email и push-уведомления',
- iconBg: 'bg-[var(--hp-warn-tint)]',
- iconColor: 'text-[var(--hp-warn)]',
- href: '/settings/notifications',
- },
- {
- icon: Shield,
- title: 'Безопасность',
- desc: 'Роли, доступы, пароли',
- iconBg: 'bg-[var(--hp-good-tint)]',
- iconColor: 'text-[var(--hp-good)]',
- href: '/settings/security',
- },
- {
- icon: CreditCard,
- title: 'Тарифы и оплата',
- desc: 'Управление подпиской и тарифом',
- iconBg: 'bg-[var(--hp-info-tint)]',
- iconColor: 'text-[var(--hp-info)]',
- href: '/settings/billing',
- },
- {
- icon: ScrollText,
- title: 'Журнал аудита',
- desc: 'История изменений (только admin)',
- iconBg: 'bg-[var(--hp-warn-tint)]',
- iconColor: 'text-[var(--hp-warn)]',
- href: '/settings/audit',
- },
- {
- icon: Key,
- title: 'API ключи',
- desc: 'Доступ для интеграций',
- iconBg: 'bg-[var(--hp-info-tint)]',
- iconColor: 'text-[var(--hp-info)]',
- href: '/settings/api',
- },
- {
- icon: Webhook,
- title: 'Вебхуки',
- desc: 'Уведомления о событиях в реальном времени',
- iconBg: 'bg-[var(--hp-info-tint)]',
- iconColor: 'text-[var(--hp-info)]',
- href: '/settings/webhooks',
- },
- {
- icon: Megaphone,
- title: 'Авито',
- desc: 'Публикация объектов через автозагрузку',
- iconBg: 'bg-[var(--hp-info-tint)]',
- iconColor: 'text-[var(--hp-info)]',
- href: '/settings/avito',
- },
- {
- icon: Database,
- title: 'Шаблоны документов',
- desc: 'DOCX шаблоны договоров',
- iconBg: 'bg-[var(--hp-neutral-tint)]',
- iconColor: 'text-[var(--hp-sub)]',
- href: '/settings/templates',
- },
- {
- icon: Settings,
- title: 'Общие настройки',
- desc: 'Язык, валюта, временная зона',
- iconBg: 'bg-[var(--hp-neutral-tint)]',
- iconColor: 'text-[var(--hp-sub)]',
- href: '/settings/general',
- },
- ].map((item) => {
- const Icon = item.icon
- return (
- <Link
- key={item.title}
- href={item.href}
- className="flex items-center gap-4 hp-card p-5 transition-all"
- style={{ }}
- >
- <div className={`w-11 h-11 flex items-center justify-center shrink-0 ${item.iconBg}`}>
- <Icon className={item.iconColor} style={{ width: 20, height: 20 }} />
- </div>
- <div className="min-w-0 flex-1">
- <p className="font-semibold text-foreground text-sm">{item.title}</p>
- <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
- </div>
- <ChevronRight className="text-[var(--hp-tertiary)] shrink-0" style={{ width: 16, height: 16 }} />
- </Link>
- )
- })}
- </div>
+      {SETTINGS_GROUPS.map((group) => (
+        <div key={group.title} className="hp-block">
+          <div className="hp-block-header">{group.title}</div>
+          {group.items.map((item) => {
+            const Icon = item.icon
+            return (
+              <Link key={item.href} href={item.href} className="hp-block-item">
+                <div className="w-9 h-9 flex items-center justify-center shrink-0 bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)]">
+                  <Icon className="text-[var(--hp-sub)]" style={{ width: 17, height: 17 }} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-foreground text-sm">{item.title}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 truncate">{item.desc}</p>
+                </div>
+                <ChevronRight className="text-[var(--hp-tertiary)] shrink-0" style={{ width: 16, height: 16 }} />
+              </Link>
+            )
+          })}
+        </div>
+      ))}
 
- <div className="p-4 text-center" style={{ background: 'rgba(248,250,252,0.8)', border: '1px solid rgba(214,219,235,0.5)' }}>
- <p className="text-xs text-muted-foreground font-medium">
- HousePro CRM v1.0.0 · Powered by Next.js + Supabase
- </p>
- </div>
- </div>
- )
+      <p className="text-xs text-muted-foreground text-center py-1">
+        ХаусПро CRM v1.0.0 · Powered by Next.js + Supabase
+      </p>
+    </div>
+  )
 }
