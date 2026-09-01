@@ -198,8 +198,15 @@ Apple-календарь как «календарь по URL».
 | `/api/cron/daily-digest` | 06:00 | Утренний дайджест админу в Telegram |
 | `/api/cron/payment-reminders` | 07:00 | Письма о предстоящих и просроченных платежах |
 | `/api/cron/generate-recurring-transactions` | 03:00 | Периодические операции бухгалтерии |
-| `/api/cron/avito-messenger` | каждые 15 мин | Сообщения с Авито → лиды |
+| `/api/cron/avito-messenger` | каждые 15 мин | Сообщения с Авито → лиды (**через GitHub Actions**, не Vercel) |
 | `/api/cron/channel-weekly-summary` | вс 12:00 | Недельная сводка по Telegram-каналу |
+
+**Ограничение тарифа Hobby:** встроенный крон Vercel запускается не чаще раза в
+сутки. Расписание чаще суточного Vercel отвергает при валидации `vercel.json` и
+**молча отбрасывает весь деплой** — в списке деплоев не появляется даже упавшего.
+Поэтому частые задачи (`channel-heartbeat`, `avito-messenger`) вынесены в GitHub
+Actions: там cron каждые 15 минут бесплатен. Секреты — `CHANNEL_CRON_SECRET`
+(равен `CRON_SECRET` из Vercel) и `CHANNEL_SITE_URL`.
 
 ---
 

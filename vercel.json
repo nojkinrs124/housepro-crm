@@ -15,10 +15,6 @@
     {
       "path": "/api/cron/payment-reminders",
       "schedule": "0 7 * * *"
-    },
-    {
-      "path": "/api/cron/avito-messenger",
-      "schedule": "*/15 * * * *"
     }
   ]
 }

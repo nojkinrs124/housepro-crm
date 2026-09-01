@@ -1,0 +1,25 @@
+name: Avito messenger sync
+
+# Vercel Hobby-план разрешает встроенному крону не чаще одного запуска в сутки —
+# для мессенджера этого мало: клиент, написавший объявлению, ждёт ответ в течение
+# часа, а не следующего дня. GitHub Actions под этот лимит не подпадает, поэтому
+# дёргаем /api/cron/avito-messenger отсюда каждые 15 минут — тем же способом, что
+# и channel-heartbeat (см. соседний workflow).
+#
+# ВАЖНО: не возвращать этот крон в vercel.json. Выражение чаще суточного Vercel
+# отвергает при валидации и молча отбрасывает ВЕСЬ деплой — без ошибки в списке
+# деплоев, из-за чего поломку долго не видно.
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call avito-messenger endpoint
+        run: |
+          curl -sf --max-time 120 \
+            -H "Authorization: Bearer ${{ secrets.CHANNEL_CRON_SECRET }}" \
+            "${{ secrets.CHANNEL_SITE_URL }}/api/cron/avito-messenger"
