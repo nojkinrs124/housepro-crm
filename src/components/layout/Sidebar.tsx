@@ -275,15 +275,15 @@ function MobileDrawer({
         }}
       >
         <div className="h-[68px] flex items-center justify-between px-5 border-b border-[var(--hp-border)] shrink-0">
-          <div>
+          <a href="/" title="На сайт ХаусПро" className="group">
             <span
-              className="font-bold text-[var(--hp-ink)] text-[18px] leading-tight block tracking-tight"
+              className="font-bold text-[var(--hp-ink)] text-[18px] leading-tight block tracking-tight transition-colors group-hover:text-[var(--hp-accent)]"
               style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}
             >
               ХаусПро
             </span>
             <span className="text-[10px] text-[var(--hp-tertiary)] font-semibold tracking-widest uppercase leading-tight">CRM</span>
-          </div>
+          </a>
           <button
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center rounded-[var(--hp-radius)] text-[var(--hp-sub)] hover:text-[var(--hp-ink)] hover:bg-[var(--hp-neutral-tint)] transition-colors"
@@ -364,26 +364,32 @@ export function Sidebar({ user }: { user: User | null }) {
         'h-[68px] flex items-center border-b border-[var(--hp-border)] shrink-0',
         collapsed ? 'px-4 justify-center' : 'px-5',
       )}>
+        {/* Логотип ведёт на публичный сайт «ХаусПро» — привычное поведение
+            бренда в шапке; переход внутрь CRM даёт пункт «Дашборд» в меню.
+            Обычный <a>, а не <Link>: сайт и кабинет — разные разделы,
+            клиентская навигация Next.js тут ничего не ускоряет. */}
         {collapsed ? (
           // Свёрнутая ширина (72px) слишком узкая для текста — здесь остаётся
           // компактный монограмма-квадрат вместо иконки здания: буква имени,
           // а не сторонний глиф, тот же принцип «только название».
-          <div
-            className="w-8 h-8 rounded-[var(--hp-radius)] flex items-center justify-center shrink-0 text-white text-sm font-bold"
+          <a
+            href="/"
+            title="На сайт ХаусПро"
+            className="w-8 h-8 rounded-[var(--hp-radius)] flex items-center justify-center shrink-0 text-white text-sm font-bold transition-opacity hover:opacity-90"
             style={{ background: 'var(--hp-accent)', fontFamily: "'Source Serif 4', Georgia, serif" }}
           >
             Х
-          </div>
+          </a>
         ) : (
-          <div className="min-w-0">
+          <a href="/" title="На сайт ХаусПро" className="min-w-0 group">
             <span
-              className="font-bold text-[var(--hp-ink)] text-[18px] leading-tight block tracking-tight"
+              className="font-bold text-[var(--hp-ink)] text-[18px] leading-tight block tracking-tight transition-colors group-hover:text-[var(--hp-accent)]"
               style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}
             >
               ХаусПро
             </span>
             <span className="text-[10px] text-[var(--hp-tertiary)] font-semibold tracking-widest uppercase leading-tight">CRM</span>
-          </div>
+          </a>
         )}
       </div>
 

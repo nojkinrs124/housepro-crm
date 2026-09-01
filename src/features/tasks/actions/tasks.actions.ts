@@ -63,7 +63,19 @@ export async function createTaskAction(formData: FormData) {
   redirect('/tasks')
 }
 
-export async function updateTaskStatusAction(id: string, status: string) {
+/**
+ * Общая форма ответа перетаскивания на Kanban-доске: клиенту нужно знать
+ * только, откатывать ли оптимистичное перемещение карточки.
+ */
+export interface StatusUpdateResult {
+  error?: string
+  success?: boolean
+}
+
+export async function updateTaskStatusAction(
+  id: string,
+  status: string
+): Promise<StatusUpdateResult> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 

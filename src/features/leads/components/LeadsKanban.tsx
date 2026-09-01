@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react'
 import { Phone, MessageCircle, UserCheck } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { updateLeadStatusAction } from '../actions/leads.actions'
 import { convertLeadToClient } from '@/features/leads/actions/leads.actions'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { STAGE_COLORS } from '@/lib/design/stageColors'
@@ -57,13 +57,13 @@ export function LeadsKanban({ leads: initialLeads }: { leads: any[] }) {
  // Optimistic update
  setLeads(prev => prev.map(l => l.id === draggedLead.id ? { ...l, status: newStatus } : l))
 
- const supabase = createClient()
- const { error } = await supabase
- .from('leads')
- .update({ status: newStatus })
- .eq('id', draggedLead.id)
+ // Через server action, а не браузерный клиент Supabase: тот требует
+ // NEXT_PUBLIC_SUPABASE_* в бандле, и без них перетаскивание молча не
+ // сохранялось — карточка переезжала на экране, а в базу ничего не шло.
+ // Заодно экшен проверяет права роли, чего прямой запрос из браузера не делал.
+ const res = await updateLeadStatusAction(draggedLead.id, newStatus)
 
- if (error) {
+ if (res?.error) {
  // Rollback
  setLeads(prev => prev.map(l => l.id === draggedLead.id ? { ...l, status: draggedLead.status } : l))
  }

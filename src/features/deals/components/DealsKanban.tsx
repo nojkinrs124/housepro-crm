@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useRef } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { updateDealStatusAction } from '../actions/deals.actions'
 import { Building2, Home, User } from 'lucide-react'
 import { DEAL_STAGES, DEAL_TYPE_LABELS } from '@/features/deals/config/deal-stages'
 import { formatAmount } from '@/lib/utils'
@@ -60,13 +60,13 @@ export function DealsKanbanBoard({ deals: initialDeals }: { deals: any[] }) {
     const prevStatus = draggedDeal.status
     setDeals(prev => prev.map(d => d.id === draggedDeal.id ? { ...d, status: newStatus } : d))
 
-    const supabase = createClient()
-    const { error } = await supabase
-      .from('deals')
-      .update({ status: newStatus })
-      .eq('id', draggedDeal.id)
+    // Через server action, а не браузерный клиент Supabase: тот требует
+    // NEXT_PUBLIC_SUPABASE_* в бандле, и без них перетаскивание молча не
+    // сохранялось — карточка переезжала на экране, а в базу ничего не шло.
+    // Заодно экшен проверяет права роли, чего прямой запрос из браузера не делал.
+    const res = await updateDealStatusAction(draggedDeal.id, newStatus)
 
-    if (error) {
+    if (res?.error) {
       setDeals(prev => prev.map(d => d.id === draggedDeal.id ? { ...d, status: prevStatus } : d))
     }
 

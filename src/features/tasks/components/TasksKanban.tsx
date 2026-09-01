@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react'
 import { CheckSquare, Clock } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { updateTaskStatusAction } from '../actions/tasks.actions'
 import Link from 'next/link'
 import { STAGE_COLORS } from '@/lib/design/stageColors'
 
@@ -61,9 +61,12 @@ export function TasksKanbanBoard({ tasks: initialTasks }: { tasks: any[] }) {
  const prevStatus = draggedTask.status
  setTasks(prev => prev.map(t => t.id === draggedTask.id ? { ...t, status: newStatus } : t))
 
- const supabase = createClient()
- const { error } = await supabase.from('tasks').update({ status: newStatus }).eq('id', draggedTask.id)
- if (error) setTasks(prev => prev.map(t => t.id === draggedTask.id ? { ...t, status: prevStatus } : t))
+ // Через server action, а не браузерный клиент Supabase: тот требует
+ // NEXT_PUBLIC_SUPABASE_* в бандле, и без них перетаскивание молча не
+ // сохранялось — карточка переезжала на экране, а в базу ничего не шло.
+ // Заодно экшен проверяет права роли, чего прямой запрос из браузера не делал.
+ const res = await updateTaskStatusAction(draggedTask.id, newStatus)
+ if (res?.error) setTasks(prev => prev.map(t => t.id === draggedTask.id ? { ...t, status: prevStatus } : t))
 
  setDraggedTask(null)
  isDragging.current = false

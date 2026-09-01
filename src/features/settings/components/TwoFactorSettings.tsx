@@ -3,31 +3,29 @@
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { KeyRound, ShieldCheck, Trash2 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
-
-interface Factor {
- id: string
- friendly_name?: string
- status: string
- created_at?: string
-}
+import {
+ enrollMfaAction,
+ listMfaFactorsAction,
+ unenrollMfaAction,
+ verifyMfaAction,
+ type MfaFactor,
+} from '../actions/mfa.actions'
 
 type Stage = 'idle' | 'enrolling' | 'verifying'
 
 /**
  * Двухфакторная аутентификация (TOTP) поверх Supabase MFA.
  *
- * Вся работа идёт клиентским SDK: enroll/challenge/verify требуют текущую
- * сессию пользователя и не имеют серверного аналога в supabase-js, который
- * можно было бы вызвать из Server Action.
+ * Вся работа идёт через server actions, а не браузерный клиент Supabase:
+ * тот требует NEXT_PUBLIC_SUPABASE_* в бандле, и без них падал при рендере,
+ * роняя всю страницу настроек безопасности (см. mfa.actions.ts).
  *
  * QR подставляем через <img src="data:image/svg+xml,...">, а не
  * dangerouslySetInnerHTML: markup из внешнего сервиса не должен попадать
  * в DOM страницы напрямую, даже если сервис доверенный.
  */
 export function TwoFactorSettings() {
- const supabase = createClient()
- const [factors, setFactors] = useState<Factor[]>([])
+ const [factors, setFactors] = useState<MfaFactor[]>([])
  const [stage, setStage] = useState<Stage>('idle')
  const [loading, setLoading] = useState(true)
  const [busy, setBusy] = useState(false)
@@ -35,14 +33,10 @@ export function TwoFactorSettings() {
  const [code, setCode] = useState('')
 
  const loadFactors = useCallback(async () => {
- const { data, error } = await supabase.auth.mfa.listFactors()
- if (error) {
- setFactors([])
- } else {
- setFactors((data?.totp ?? []) as Factor[])
- }
+ const res = await listMfaFactorsAction()
+ setFactors(res.factors ?? [])
  setLoading(false)
- }, [supabase])
+ }, [])
 
  useEffect(() => {
  void loadFactors()
@@ -50,52 +44,29 @@ export function TwoFactorSettings() {
 
  async function startEnroll() {
  setBusy(true)
- const { data, error } = await supabase.auth.mfa.enroll({
- factorType: 'totp',
- friendlyName: `HousePro ${new Date().toLocaleDateString('ru-RU')}`,
- })
+ const res = await enrollMfaAction()
  setBusy(false)
 
- if (error || !data) {
- toast.error(error?.message ?? 'Не удалось начать подключение')
+ if (res.error || !res.factorId || !res.qr || !res.secret) {
+ toast.error(res.error ?? 'Не удалось начать подключение')
  return
  }
 
- setEnrollment({ id: data.id, qr: data.totp.qr_code, secret: data.totp.secret })
+ setEnrollment({ id: res.factorId, qr: res.qr, secret: res.secret })
  setStage('enrolling')
  }
 
  async function confirmEnroll() {
  if (!enrollment) return
- const cleaned = code.replace(/\D/g, '')
- if (cleaned.length !== 6) {
- toast.error('Код состоит из шести цифр')
- return
- }
 
  setBusy(true)
  setStage('verifying')
-
- const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({
- factorId: enrollment.id,
- })
- if (challengeError || !challenge) {
- setBusy(false)
- setStage('enrolling')
- toast.error(challengeError?.message ?? 'Не удалось запросить подтверждение')
- return
- }
-
- const { error: verifyError } = await supabase.auth.mfa.verify({
- factorId: enrollment.id,
- challengeId: challenge.id,
- code: cleaned,
- })
+ const res = await verifyMfaAction(enrollment.id, code)
  setBusy(false)
 
- if (verifyError) {
+ if (res.error) {
  setStage('enrolling')
- toast.error('Код не подошёл. Проверьте время на телефоне и попробуйте снова.')
+ toast.error(res.error)
  return
  }
 
@@ -109,10 +80,10 @@ export function TwoFactorSettings() {
  async function removeFactor(factorId: string) {
  if (!confirm('Отключить двухфакторную аутентификацию? Вход снова будет защищён только паролем.')) return
  setBusy(true)
- const { error } = await supabase.auth.mfa.unenroll({ factorId })
+ const res = await unenrollMfaAction(factorId)
  setBusy(false)
- if (error) {
- toast.error(error.message)
+ if (res.error) {
+ toast.error(res.error)
  return
  }
  toast.success('Двухфакторная аутентификация отключена')
@@ -122,7 +93,7 @@ export function TwoFactorSettings() {
  function cancelEnroll() {
  // Неподтверждённый фактор остаётся в статусе unverified и мешает повторному
  // подключению — убираем его сразу, а не оставляем мусор в аккаунте.
- if (enrollment) void supabase.auth.mfa.unenroll({ factorId: enrollment.id })
+ if (enrollment) void unenrollMfaAction(enrollment.id)
  setEnrollment(null)
  setCode('')
  setStage('idle')
@@ -150,7 +121,7 @@ export function TwoFactorSettings() {
  {verified.map((factor) => (
  <div key={factor.id} className="hp-block-row">
  <span className="label">
- {factor.friendly_name || 'Приложение-аутентификатор'}
+ {factor.friendlyName || 'Приложение-аутентификатор'}
  </span>
  <span className="value flex items-center gap-3">
  подключено

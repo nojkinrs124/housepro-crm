@@ -96,7 +96,19 @@ export async function updateLeadAction(id: string, formData: FormData) {
   redirect(`/leads/${id}`)
 }
 
-export async function updateLeadStatusAction(id: string, status: string) {
+/**
+ * Общая форма ответа перетаскивания на Kanban-доске: клиенту нужно знать
+ * только, откатывать ли оптимистичное перемещение карточки.
+ */
+export interface StatusUpdateResult {
+  error?: string
+  success?: boolean
+}
+
+export async function updateLeadStatusAction(
+  id: string,
+  status: string
+): Promise<StatusUpdateResult> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
