@@ -21,6 +21,16 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "matcher": "mcp__.*__apply_migration",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-migration.mjs\"",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "PostToolUse": [

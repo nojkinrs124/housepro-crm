@@ -7,6 +7,8 @@
  *   src/**\/*.tsx|ts   → визуальный стандарт «Кабинет» (baseline-ратчет)
  *                        + границы client/server (event handlers, импорт
  *                          клиентских функций в серверные файлы)
+ *                        + правила серверного слоя (дубль имени в *.actions.ts,
+ *                          force-dynamic в GET-роутах с данными организации)
  *   vercel.json        → крон не чаще суток (иначе Vercel молча отбрасывает деплой)
  *
  * Exit code 2 = сообщить модели, что надо исправить.
@@ -57,6 +59,16 @@ process.stdin.on('end', async () => {
 
     const { checkAll } = await import('../../scripts/checks/client-boundary.mjs')
     problems.push(...checkAll())
+
+    const { checkAll: checkServerRules } = await import('../../scripts/checks/server-rules.mjs')
+    problems.push(...checkServerRules([filePath]))
+
+    const { checkFiles: checkAny } = await import('../../scripts/checks/no-any.mjs')
+    for (const v of checkAny([filePath]).violations) {
+      for (const h of v.hits) {
+        problems.push(`${v.file}:${h.line} — ${h.msg}. Взять тип из src/types/database.ts или использовать unknown с сужением\n      ${h.text}`)
+      }
+    }
   }
 
   if (problems.length === 0) process.exit(0)

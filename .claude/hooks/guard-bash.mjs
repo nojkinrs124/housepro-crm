@@ -27,6 +27,13 @@ const SECRET_PATTERNS = [
   { re: /\b(SUPABASE_SERVICE_ROLE_KEY|E2E_TEST_PASSWORD|TELEGRAM_BOT_TOKEN|CRON_SECRET|OPENROUTER_API_KEY)\s*=\s*['"]?\S/, what: 'секрет присваивается прямо в команде' },
 ]
 
+const BANNED_PACKAGES = [
+  { name: '@hello-pangea/dnd', re: '@hello-pangea/dnd', why: 'Kanban в проекте на @dnd-kit — второй drag-and-drop не нужен.' },
+  { name: 'react-beautiful-dnd', re: 'react-beautiful-dnd', why: 'Заброшен и несовместим с React 19. Kanban на @dnd-kit.' },
+  { name: 'axios', re: 'axios', why: 'Везде используется нативный fetch — второй HTTP-клиент только разводит стили запросов.' },
+  { name: 'react-query / @tanstack/react-query', re: '(@tanstack/)?react-query', why: 'Данные тянутся Server Components и Server Actions, клиентский кэш-слой не нужен.' },
+]
+
 function block(msg) {
   console.error(msg)
   process.exit(2)
@@ -68,7 +75,28 @@ process.stdin.on('end', async () => {
     }
   }
 
-  // ── 2. git push без зелёной проверки ───────────────────────────────────
+  // ── 2. Установка зависимостей ──────────────────────────────────────────
+  const isNpmInstall = /(^|[;&|]\s*)npm\s+(install|i|add)\b/.test(command)
+  if (isNpmInstall) {
+    const forbidden = BANNED_PACKAGES.find(p => new RegExp(`(^|\\s)${p.re}(@[\\w.^~-]+)?(\\s|$)`).test(command))
+    if (forbidden) {
+      block(
+        `ЗАБЛОКИРОВАНО: пакет ${forbidden.name} в этом проекте не используется.\n\n` +
+          `${forbidden.why}\n\n` +
+          `Если пакет всё же нужен — сначала обсудить с Русланом, а не ставить по ходу задачи.`
+      )
+    }
+    if (!/--legacy-peer-deps\b/.test(command)) {
+      block(
+        `ЗАБЛОКИРОВАНО: установка без \`--legacy-peer-deps\`.\n\n` +
+          `На React 19 половина зависимостей объявляет несовместимые peer-диапазоны. Без флага\n` +
+          `npm перестраивает дерево молча, а ломается это позже — на шаге build.\n\n` +
+          `Как надо:\n  npm install --legacy-peer-deps${/(install|i|add)\s+\S/.test(command) ? ' <пакет>' : ''}`
+      )
+    }
+  }
+
+  // ── 3. git push без зелёной проверки ───────────────────────────────────
   const isPush = /(^|[;&|]\s*)git\s+(-\S+\s+)*push\b/.test(command)
   if (isPush && !/--dry-run/.test(command)) {
     const { verifyStamp } = await import('../../scripts/checks/stamp.mjs')
@@ -82,8 +110,9 @@ process.stdin.on('end', async () => {
         `ЗАБЛОКИРОВАНО: пуш без зелёного \`npm run check\` (${reason}).\n` +
           (branch ? `Ветка: ${branch}\n` : '') +
           `\nСначала:\n  npm run check\n\n` +
-          `Он гоняет tsc → event handlers → границы client/server → визуальный стандарт → build → тесты ` +
-          `и только при полном успехе разрешает пуш. Красных деплоев на Vercel быть не должно.\n\n` +
+          `Он гоняет tsc → границы client/server → правила серверного слоя → визуальный стандарт → ` +
+          `кроны → build → тесты и только при полном успехе разрешает пуш. ` +
+          `Красных деплоев на Vercel быть не должно.\n\n` +
           `Если проверка уже была зелёной, а код после неё правился — прогнать заново, правки не проверены.`
       )
     }

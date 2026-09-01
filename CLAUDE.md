@@ -5,14 +5,14 @@
 
 ## Стек
 
-Next.js 16.2.6 · React 19 · TypeScript · Tailwind v4 (только через postcss, без конфига
+Next.js 16 · React 19 · TypeScript · Tailwind v4 (только через postcss, без конфига
 классов) · shadcn/ui (`src/components/ui/`) · Supabase (Postgres + Auth + Storage) ·
 @dnd-kit (Kanban) · react-hook-form + zod · docxtemplater + pizzip (DOCX) · sonner ·
-framer-motion · lucide-react · Upstash Redis (rate limit) · Stripe · Sentry · Playwright.
+framer-motion · lucide-react · Upstash Redis (rate limit) · Stripe · Sentry ·
+vitest (юнит) + Playwright (E2E).
 
-**Не добавлять:** `@hello-pangea/dnd`, `react-beautiful-dnd`, `axios`, `react-query` —
-их в проекте нет и они не нужны. Установка зависимостей — только
-`npm install --legacy-peer-deps`.
+Точные версии — в `package.json`, дублировать их сюда не нужно: расходятся быстрее,
+чем обновляются.
 
 ```
 Supabase:  https://zwclvcswvhjeqwxrkbte.supabase.co  (ref zwclvcswvhjeqwxrkbte)
@@ -120,21 +120,26 @@ export async function createThingAction(formData: FormData) {
 }
 ```
 
-Перед добавлением функции в существующий `*.actions.ts` — `grep -n "имяФункции"` по
-файлу: дубль имени валит сборку Turbopack («the name X is defined multiple times»),
-чаще всего на `delete*Action`.
+Дубль имени функции в `*.actions.ts` валит сборку Turbopack («the name X is defined
+multiple times») — ловится хуком на правку, помнить не нужно.
 
 ---
 
 ## TypeScript
 
 ```ts
-const data: any = {}                                  // ❌
-// eslint-disable-next-line @typescript-eslint/no-explicit-any   // ❌
+const data: any = {}                                  // ❌ в новом коде
 import type { Contact, Deal } from '@/types/database' // ✅
 ```
 
-Все типы — в `src/types/database.ts`, новые сущности добавлять туда.
+Все типы — в `src/types/database.ts`, новые сущности добавлять туда. Тип честно
+неизвестен — `unknown` с сужением, а не `any`.
+
+**Про существующие 209 вхождений `any`:** это не разгильдяйство, а следствие
+`export type Database = any` в `src/types/database.ts:340` — из-за него любой запрос
+к Supabase возвращает `any`, и подавления линтера ниже по течению законны. Долг
+закроется задачей #8 из `docs/IMPROVEMENTS.md` (генерация типов). До тех пор действует
+ратчет `check:any`: новое вхождение блокируется хуком, старые не трогаем.
 
 ---
 
@@ -170,15 +175,20 @@ import type { Contact, Deal } from '@/types/database' // ✅
 
 | Хук | Что делает |
 |---|---|
-| `guard-bash` | блокирует `git push` без зелёного `npm run check` на **текущем** коде; блокирует секреты и PAT в командной строке |
+| `guard-bash` | блокирует `git push` без зелёного `npm run check` на **текущем** коде; секреты и PAT в командной строке; `npm install` без `--legacy-peer-deps` и запрещённые пакеты (`axios`, `react-query`, второй drag-and-drop) |
 | `guard-sql` | блокирует DDL через `execute_sql` — только `apply_migration` |
-| `post-edit` | на каждую правку: визуальный стандарт (baseline-ратчет), границы client/server, частота кронов в `vercel.json` |
+| `guard-migration` | блокирует `DROP TABLE` / `TRUNCATE` / `DROP COLUMN` через `apply_migration` — единственный путь к потере боевых данных |
+| `post-edit` | на каждую правку: визуальный стандарт, новые `any`, границы client/server, дубль имени в actions, `force-dynamic` в GET-роутах, частота кронов |
 | `session-start` | ветка, незакоммиченное, статус проверки, открытые пункты бэклога |
 | `stop-readme` | напоминает обновить README, если появился новый модуль |
 
-`npm run check` — 8 шагов: tsc → event handlers → границы client/server →
-функции-пропы через границу → визуальный стандарт → кроны → build → тесты. Отдельно: `npm run check:design`, `check:boundary`,
-`check:cron`. После правок дизайна легаси-файла — `npm run check:design:baseline`.
+`npm run check` гоняет по порядку: tsc → event handlers → границы client/server →
+функции-пропы → правила серверного слоя → `any` → визуальный стандарт → кроны →
+build → тесты. **Шаги не нумеруются** — номера разъезжались по документам, ссылаться
+на шаг по названию.
+
+Отдельно: `check:design`, `check:boundary`, `check:cron`, `check:server`, `check:any`.
+Переснять baseline после чистки легаси — `check:design:baseline`, `check:any:baseline`.
 
 ---
 
@@ -194,18 +204,11 @@ import type { Contact, Deal } from '@/types/database' // ✅
 | Правила actions/components | `src/features/CLAUDE.md` |
 | Что делать дальше, приоритеты | `docs/IMPROVEMENTS.md` — единственный бэклог |
 | Как мы работаем, красные флаги | `docs/WORKFLOW.md` |
+| Что происходило в прошлых сессиях | `docs/JOURNAL.md` (хроника, не правила) |
 | Долгосрочные фазы SaaS | `docs/ROADMAP.md` (статус сверять с кодом) |
 | Интеграции: почта, карты, площадки, подпись | `docs/INTEGRATIONS.md` |
 | История редизайнов, дизайн-долг | `docs/DESIGN_SYSTEM_AUDIT.md` |
 | Что умеет система | `README.md` |
 
----
-
-## Коммуникация с Русланом
-
-- «продолжай», «далее», «делай» = одобрение, работать дальше без уточнений.
-- Архитектурные решения принимать самостоятельно.
-- Только production-ready код, никаких заглушек.
-- На долгих задачах не молчать: длинные команды — в фон, докладывать промежуточный статус.
-- Память утверждает одно, а код другое → **доверять коду**, расхождение зафиксировать
-  и сообщить.
+Как работать с Русланом — в `~/.claude/CLAUDE.md`, он грузится в каждой сессии.
+Здесь не дублировать.

@@ -81,7 +81,7 @@ git push origin main
   отвергает при валидации и **молча отбрасывает весь деплой**. Текст ошибки виден
   только вручную: Vercel → Deployments → «…» → Create Deployment → выбрать ветку.
   Всё, что нужно чаще суток, живёт в GitHub Actions (`channel-heartbeat.yml`,
-  `avito-messenger.yml`). Это же проверяет шаг 5/7 в `npm run check`.
+  `avito-messenger.yml`). Это же проверяет шаг «vercel.json — кроны» в `npm run check`.
 - Прод — **https://housepro24.vercel.app** (не `housepro.vercel.app`, тот занят чужим
   приложением).
 - CI на GitHub гоняет тот же `npm run check` — но «зелёный CI на странице PR» уже

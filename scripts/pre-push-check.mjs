@@ -4,20 +4,26 @@
  *
  * Запускать: node scripts/pre-push-check.mjs   (или npm run check)
  *
- * Останавливает пуш, если что-то из этого не проходит:
- *   1. TypeScript (tsc --noEmit)
- *   2. Event handlers (onClick/onChange/onSubmit/...) в Server Components
- *   3. Импорт обычных функций (не React-компонентов) из файлов с 'use client'
- *      в серверные файлы — та самая ошибка "Attempted to call X() from the
- *      server but X is on the client". tsc и `next build` её НЕ всегда ловят:
- *      на страницах с `export const dynamic = 'force-dynamic'` или с cookies()
- *      Next.js не выполняет тело компонента во время сборки (страница
- *      помечается 'ƒ Dynamic, server-rendered on demand'), поэтому баг
- *      всплывает только в реальном запросе в проде.
- *   4. Функции-пропы из Server Component в Client Component — не сериализуются
- *      в RSC-payload, в проде это «Minified React error #441» на всю страницу.
- *   5. npm run build
- *   6. npm test
+ * Шаги идут в этом порядке и НЕ нумеруются намеренно: номера разъезжались по
+ * четырём документам, стоило добавить один шаг. Ссылаться на шаг по названию.
+ *
+ *   · TypeScript (tsc --noEmit)
+ *   · Event handlers (onClick/onChange/onSubmit/...) в Server Components
+ *   · Границы client/server — импорт обычных функций (не React-компонентов) из
+ *     файлов с 'use client' в серверные файлы, та самая ошибка "Attempted to
+ *     call X() from the server but X is on the client". tsc и `next build` её
+ *     НЕ всегда ловят: на страницах с `export const dynamic = 'force-dynamic'`
+ *     или с cookies() Next.js не выполняет тело компонента во время сборки
+ *     (страница помечается 'ƒ Dynamic'), поэтому баг всплывает только в проде.
+ *   · Функции-пропы из Server Component в Client Component — не сериализуются
+ *     в RSC-payload, в проде это «Minified React error #441» на всю страницу.
+ *   · Правила серверного слоя — дубль имени в *.actions.ts, force-dynamic в
+ *     GET-роутах с данными организации (scripts/checks/server-rules.mjs).
+ *   · any — baseline-ратчет: новые вхождения блокируются, легаси зафиксировано
+ *   · Визуальный стандарт «Кабинет» (baseline-ратчет)
+ *   · vercel.json — кроны не чаще суток
+ *   · npm run build
+ *   · npm test
  *
  * Любой шаг с ошибкой -> exit code 1, сборка/пуш не выполняются.
  */
@@ -62,9 +68,9 @@ function walk(dir, exts, exclude = []) {
 
 const allSourceFiles = walk(SRC, ['.ts', '.tsx'], ['node_modules', '.next', 'tests'])
 
-// ── Шаг 1: TypeScript ───────────────────────────────────────────────────
+// ── TypeScript ───────────────────────────────────────────────────
 
-section('1/8 · TypeScript (tsc --noEmit)')
+section('TypeScript (tsc --noEmit)')
 try {
   execSync('npx tsc --noEmit', { cwd: ROOT, stdio: 'pipe' })
   record('TypeScript: ошибок нет', true)
@@ -72,9 +78,9 @@ try {
   record('TypeScript: есть ошибки', false, e.stdout?.toString() || e.message)
 }
 
-// ── Шаг 2: event handlers в Server Components ───────────────────────────
+// ── event handlers в Server Components ───────────────────────────
 
-section('2/8 · Event handlers в Server Components')
+section('Event handlers в Server Components')
 {
   const eventHandlerRe = /\bon(Click|Change|Submit|Drag|Drop|MouseEnter|MouseLeave|KeyDown|KeyUp|Focus|Blur)\w*\s*=/
   const problems = []
@@ -93,9 +99,9 @@ section('2/8 · Event handlers в Server Components')
   )
 }
 
-// ── Шаг 3: границы client/server (импорт функций из 'use client' файлов) ──
+// ── границы client/server (импорт функций из 'use client' файлов) ──
 
-section('3/8 · Границы client/server (импорт функций из \'use client\' файлов)')
+section('Границы client/server (импорт функций из \'use client\' файлов)')
 {
   // 3.1 Найти все 'use client' файлы и их "функциональные" (не-компонентные) экспорты.
   // Эвристика: имя с маленькой буквы = обычная функция/значение (не React-компонент,
@@ -194,9 +200,9 @@ section('3/8 · Границы client/server (импорт функций из \
   )
 }
 
-// ── Шаг 4: функции-пропы через границу client/server ─────────────────────
+// ── функции-пропы через границу client/server ─────────────────────
 
-section('4/8 · Функции-пропы из Server Component в Client Component')
+section('Функции-пропы из Server Component в Client Component')
 {
   const { checkFunctionProps } = await import('./checks/client-boundary.mjs')
   const violations = checkFunctionProps()
@@ -211,9 +217,38 @@ section('4/8 · Функции-пропы из Server Component в Client Compon
   )
 }
 
-// ── Шаг 5: визуальный стандарт «Кабинет» ─────────────────────────────────
+// ── правила серверного слоя ───────────────────────────────────────
 
-section('5/8 · Визуальный стандарт «Кабинет»')
+section('Правила серверного слоя (actions, API-роуты)')
+{
+  const { checkAll: checkServerRules } = await import('./checks/server-rules.mjs')
+  const problems = checkServerRules()
+  record(
+    problems.length === 0
+      ? 'Дублей имён в actions нет, GET-роуты с данными организации force-dynamic'
+      : `Нарушений правил серверного слоя: ${problems.length}`,
+    problems.length === 0,
+    problems.map(p => `  - ${p}`).join('\n')
+  )
+}
+
+// ── any (baseline-ратчет) ─────────────────────────────────────────
+
+section('any — новых вхождений быть не должно')
+{
+  const { checkFiles: checkAny, allSourceFiles: anyFiles } = await import('./checks/no-any.mjs')
+  const { violations } = checkAny(anyFiles())
+  const lines = violations.flatMap(v => v.hits.map(h => `  - ${v.file}:${h.line} ${h.msg}\n      ${h.text}`))
+  record(
+    violations.length === 0 ? 'Новых вхождений any нет' : `Новых вхождений any: ${lines.length}`,
+    violations.length === 0,
+    lines.join('\n')
+  )
+}
+
+// ── визуальный стандарт «Кабинет» ─────────────────────────────────
+
+section('Визуальный стандарт «Кабинет»')
 {
   const { checkFiles, allSourceFiles } = await import('./checks/design-tokens.mjs')
   const { violations } = checkFiles(allSourceFiles())
@@ -229,9 +264,9 @@ section('5/8 · Визуальный стандарт «Кабинет»')
   )
 }
 
-// ── Шаг 6: vercel.json — частота кронов ──────────────────────────────────
+// ── vercel.json — частота кронов ──────────────────────────────────
 
-section('6/8 · vercel.json — кроны не чаще суток')
+section('vercel.json — кроны не чаще суток')
 {
   const { checkVercelCron } = await import('./checks/vercel-cron.mjs')
   const problems = checkVercelCron()
@@ -242,9 +277,9 @@ section('6/8 · vercel.json — кроны не чаще суток')
   )
 }
 
-// ── Шаг 7: build ─────────────────────────────────────────────────────────
+// ── build ─────────────────────────────────────────────────────────
 
-section('7/8 · npm run build')
+section('npm run build')
 if (!hasErrors) {
   try {
     execSync('npm run build', { cwd: ROOT, stdio: 'pipe' })
@@ -256,9 +291,9 @@ if (!hasErrors) {
   console.log('⏭  Пропущено (есть ошибки на предыдущих шагах)')
 }
 
-// ── Шаг 7: тесты ────────────────────────────────────────────────────────
+// ── тесты ────────────────────────────────────────────────────────
 
-section('8/8 · npm test')
+section('npm test')
 if (!hasErrors) {
   try {
     const out = execSync('npm test', { cwd: ROOT, stdio: 'pipe' }).toString()

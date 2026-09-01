@@ -619,26 +619,20 @@ export interface OrganizationMember {
 
 ---
 
-### 1.7 Удаление legacy таблиц
+### 1.7 Удаление legacy таблиц — ⛔ НЕ ВЫПОЛНЯТЬ
 
-> ⚠️ Сначала проверить: `grep -rn "from('clients')\|from('owners')" src/`
+**Готовый SQL отсюда удалён намеренно.** Таблицы `clients` и `owners` живые: к ним
+обращается код и целый модуль `src/app/(dashboard)/clients/`. `DROP TABLE ... CASCADE`
+здесь уронит прод.
 
-Применить через **Supabase:apply_migration** с именем `drop_legacy_tables`:
+Порядок работ — только такой:
 
-```sql
-DO $$ BEGIN
-  IF EXISTS (SELECT 1 FROM information_schema.tables
-    WHERE table_name = 'clients' AND table_schema = 'public') THEN
-    DROP TABLE clients CASCADE;
-  END IF;
-  IF EXISTS (SELECT 1 FROM information_schema.tables
-    WHERE table_name = 'owners' AND table_schema = 'public') THEN
-    DROP TABLE owners CASCADE;
-  END IF;
-END $$;
-```
+1. мигрировать оставшиеся обращения на `contacts` (задача #17 в `docs/IMPROVEMENTS.md`);
+2. убедиться, что `grep -rn "from('clients')\|from('owners')" src/` пуст;
+3. только после этого писать миграцию на удаление — вручную, а не копированием.
 
-Убрать интерфейсы `Client` и `Owner` из `src/types/database.ts`.
+Попытка удалить таблицу через `apply_migration` блокируется хуком
+`.claude/hooks/guard-migration.mjs`.
 
 ### ✅ Чеклист Phase 1
 

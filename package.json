@@ -16,7 +16,10 @@
     "check:design": "node scripts/checks/design-tokens.mjs",
     "check:design:baseline": "node scripts/checks/design-tokens.mjs --baseline",
     "check:boundary": "node scripts/checks/client-boundary.mjs",
-    "check:cron": "node scripts/checks/vercel-cron.mjs"
+    "check:cron": "node scripts/checks/vercel-cron.mjs",
+    "check:server": "node scripts/checks/server-rules.mjs",
+    "check:any": "node scripts/checks/no-any.mjs",
+    "check:any:baseline": "node scripts/checks/no-any.mjs --baseline"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
