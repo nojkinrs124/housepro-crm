@@ -40,11 +40,15 @@ export async function GET(request: Request) {
   const siteUrl = getSiteUrl()
 
   const [{ data: overduePayments }, { data: tasksDue }, { data: staleLeads }] = await Promise.all([
+    // Реестр начислений — accounting_transactions, а не legacy-таблица payments:
+    // в неё приложение не пишет с переезда бухгалтерии, из-за чего дайджест
+    // рапортовал «всё чисто» при реальных просрочках.
     supabaseAdmin
-      .from('payments')
-      .select('id, amount, due_date, contracts(contract_number)')
+      .from('accounting_transactions')
+      .select('id, amount, due_date, contracts:contract_id(contract_number)')
       .eq('organization_id', orgId)
-      .in('payment_status', ['pending', 'overdue', 'partial'])
+      .eq('type', 'income')
+      .eq('status', 'planned')
       .lte('due_date', today)
       .order('due_date', { ascending: true }),
     supabaseAdmin

@@ -7,9 +7,11 @@ import {
  addPropertyToCollectionAction,
  removePropertyFromCollectionAction,
  deleteCollectionAction,
+ sendCollectionByEmailAction,
 } from '@/features/collections/actions/collections.actions'
 import { DeleteCollectionButton } from '@/features/collections/components/DeleteCollectionButton'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
+import { SendByEmailForm } from '@/components/forms/SendByEmailForm'
 
 export default async function CollectionDetailPage({ params }: { params: Promise<{ id: string }> }) {
  const { id } = await params
@@ -19,7 +21,7 @@ export default async function CollectionDetailPage({ params }: { params: Promise
 
  const { data: raw, error: rawError } = await supabase
  .from('property_collections')
- .select(`*, lead:leads(id, full_name),
+ .select(`*, lead:leads(id, full_name, email),
  items:collection_items(sort_order, agent_note, added_at,
  property:properties(id, title, address, deal_type, price, status))`)
  .eq('id', id)
@@ -97,6 +99,17 @@ export default async function CollectionDetailPage({ params }: { params: Promise
  </a>
  </div>
  )}
+
+ {/* Отправка подборки клиенту. Форма доступна и для приватной подборки:
+ сам action открывает публичный доступ перед отправкой, иначе клиент
+ получил бы ссылку на 404. */}
+ <SendByEmailForm
+ action={sendCollectionByEmailAction.bind(null, id)}
+ defaultEmail={col.lead?.email ?? null}
+ title="Отправить подборку клиенту"
+ hint="Клиент получит ссылку, которая открывается без входа в CRM."
+ submitLabel="Отправить подборку"
+ />
 
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
  {/* Items list */}

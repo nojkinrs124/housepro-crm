@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { UserCircle } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import { ProfileForm } from '@/features/profile/components/ProfileForm'
+import { CalendarSubscription } from '@/features/profile/components/CalendarSubscription'
+import { getSiteUrl } from '@/lib/telegram/site-url'
 import { PageHeader } from '@/components/layout/PageHeader'
 
 export default async function ProfilePage() {
@@ -28,6 +30,8 @@ export default async function ProfilePage() {
       />
 
       <ProfileForm user={profile} />
+
+      <CalendarSubscription initialToken={profile.ical_token ?? null} siteUrl={getSiteUrl()} />
     </div>
   )
 }

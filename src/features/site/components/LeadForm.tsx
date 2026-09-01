@@ -44,6 +44,7 @@ export function LeadForm({
           message: String(data.get('message') ?? ''),
           property_id: propertyId ?? '',
           company: String(data.get('company') ?? ''),
+          consent: data.get('consent') === 'on',
         }),
       })
 
@@ -175,6 +176,20 @@ export function LeadForm({
         </p>
       )}
 
+      {/* Явная галочка вместо «нажимая кнопку, вы соглашаетесь»: по 152-ФЗ
+          согласие должно быть конкретным и подтверждаемым, а факт его получения
+          сохраняется вместе с заявкой (время + версия политики). */}
+      <label className="flex items-start gap-2.5 text-[12px] leading-snug pt-1" style={{ color: 'var(--hp-sub)' }}>
+        <input type="checkbox" name="consent" required className="mt-0.5 shrink-0" />
+        <span>
+          Я согласен(на) на обработку моих персональных данных в соответствии с{' '}
+          <a href="/policy" target="_blank" rel="noopener noreferrer" className="underline">
+            политикой обработки персональных данных
+          </a>
+          .
+        </span>
+      </label>
+
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-1">
         <button
           type="submit"
@@ -185,8 +200,7 @@ export function LeadForm({
           {status === 'sending' ? 'Отправляем…' : submitLabel}
         </button>
         <p className="text-[12px] leading-snug" style={{ color: 'var(--hp-tertiary)' }}>
-          Нажимая кнопку, вы соглашаетесь на обработку контактных данных
-          для ответа на обращение.
+          Мы используем контакты только для ответа на обращение.
         </p>
       </div>
     </form>

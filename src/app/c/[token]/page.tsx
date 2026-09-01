@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { Home, MapPin, Phone } from 'lucide-react'
+import { PropertyMap, type MapPoint } from '@/features/properties/components/PropertyMap'
 
 export default async function PublicCollectionPage({ params }: { params: Promise<{ token: string }> }) {
  const { token } = await params
@@ -10,7 +11,7 @@ export default async function PublicCollectionPage({ params }: { params: Promise
  .from('property_collections')
  .select(`id, title, created_at,
  items:collection_items(sort_order, agent_note,
- property:properties(id, title, address, deal_type, price, area, rooms, floor, total_floors, description))`)
+ property:properties(id, title, address, deal_type, price, area, rooms, floor, total_floors, description, latitude, longitude))`)
  .eq('share_token', token)
  .eq('is_public', true)
  .single()
@@ -26,6 +27,24 @@ export default async function PublicCollectionPage({ params }: { params: Promise
  const DEAL_LABELS: Record<string, string> = {
  sale: 'Продажа', rent: 'Аренда', management: 'Управление'
  }
+
+ // Карта появляется, только если у объектов есть координаты: у старых записей
+ // их нет, и пустая серая плашка вместо карты выглядела бы поломкой.
+ const mapPoints: MapPoint[] = (collection.items ?? [])
+ // eslint-disable-next-line @typescript-eslint/no-explicit-any
+ .map((item: any) => item.property)
+ // eslint-disable-next-line @typescript-eslint/no-explicit-any
+ .filter((p: any) => p?.latitude && p?.longitude)
+ // eslint-disable-next-line @typescript-eslint/no-explicit-any
+ .map((p: any) => ({
+ id: p.id,
+ latitude: Number(p.latitude),
+ longitude: Number(p.longitude),
+ title: p.title,
+ subtitle: [p.address, p.price ? `${Number(p.price).toLocaleString('ru-RU')} ₽` : null]
+ .filter(Boolean)
+ .join(' · '),
+ }))
 
  return (
  <div className="min-h-screen bg-[var(--hp-neutral-tint)]">
@@ -56,6 +75,12 @@ export default async function PublicCollectionPage({ params }: { params: Promise
  {collection.items?.length ?? 0} объектов · {new Date(collection.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}
  </p>
  </div>
+
+ {mapPoints.length > 0 && (
+ <div className="hp-card p-4">
+ <PropertyMap points={mapPoints} height={320} heading="Объекты на карте" />
+ </div>
+ )}
 
  {/* Properties grid */}
  {collection.items?.length === 0 ? (

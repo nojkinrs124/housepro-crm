@@ -9,6 +9,7 @@ import { FileUploadToggle } from '@/features/files/components/FileUploadToggle'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { CommunicationTimeline } from '@/features/communications/components/CommunicationTimeline'
 import { StatStrip } from '@/components/layout/StatStrip'
 import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
 import {
@@ -466,6 +467,8 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
               Создать договор
             </Link>
           </FileUploadToggle>
+
+          <CommunicationTimeline dealId={id} phone={clientContact?.phone ?? legacyClient?.phone ?? null} />
 
           {/* Быстрые действия */}
           <div className="hp-block">

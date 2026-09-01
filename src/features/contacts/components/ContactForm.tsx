@@ -1,8 +1,10 @@
 'use client'
 
-import { useState, useActionState } from 'react'
+import { useState, useActionState, useTransition } from 'react'
 import Link from 'next/link'
 import { AlertCircle, User, Building2 } from 'lucide-react'
+import { DadataSuggestInput } from '@/components/forms/DadataSuggestInput'
+import { findContactByPhoneAction } from '../actions/duplicates.actions'
 
 const inputCls = "w-full h-10 px-4 rounded-[var(--hp-radius)] border border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-ink)] placeholder:text-[var(--hp-tertiary)] text-sm outline-none focus:border-[var(--hp-ink)] transition-colors"
 const selectCls = "w-full h-10 px-4 rounded-[var(--hp-radius)] border border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-ink)] text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer transition-colors"
@@ -10,6 +12,8 @@ const labelCls = "hp-label"
 const cardCls = "bg-[var(--hp-surface)] border border-[var(--hp-border)] rounded-[var(--hp-radius)] p-6 space-y-4"
 
 interface ContactFormDefaults {
+  /** Заполнен при редактировании — нужен, чтобы не считать саму карточку дублем. */
+  id?: string
   full_name?: string
   role?: string
   status?: string
@@ -56,6 +60,11 @@ interface ContactFormProps {
 export function ContactForm({ action, defaults = {}, backHref, submitLabel }: ContactFormProps) {
   const [clientType, setClientType] = useState(defaults.client_type ?? 'individual')
   const [state, formAction, isPending] = useActionState(action, null)
+  // Предупреждение о дубле: проверяем телефон, когда пользователь уходит с поля.
+  // Именно так дубли и заводятся — тот же клиент звонит второй раз, и его
+  // создают заново, не проверив базу.
+  const [phoneMatches, setPhoneMatches] = useState<{ id: string; full_name: string | null }[]>([])
+  const [, startPhoneCheck] = useTransition()
 
   return (
     <form action={formAction} className="space-y-4">
@@ -138,7 +147,35 @@ export function ContactForm({ action, defaults = {}, backHref, submitLabel }: Co
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className={labelCls}>Телефон</label>
-            <input type="tel" name="phone" defaultValue={defaults.phone ?? ''} placeholder="+7 (999) 123-45-67" className={inputCls} />
+            <input
+              type="tel"
+              name="phone"
+              defaultValue={defaults.phone ?? ''}
+              placeholder="+7 (999) 123-45-67"
+              className={inputCls}
+              onBlur={(e) => {
+                const value = e.target.value
+                if (!value.trim()) { setPhoneMatches([]); return }
+                startPhoneCheck(async () => {
+                  const res = await findContactByPhoneAction(value)
+                  setPhoneMatches(res.matches.filter((m) => m.id !== defaults.id))
+                })
+              }}
+            />
+            {phoneMatches.length > 0 && (
+              <p className="text-xs text-[var(--hp-warn)] mt-1">
+                Такой телефон уже есть:{' '}
+                {phoneMatches.slice(0, 3).map((m, i) => (
+                  <span key={m.id}>
+                    {i > 0 && ', '}
+                    <Link href={`/contacts/${m.id}`} className="underline">
+                      {m.full_name || 'без имени'}
+                    </Link>
+                  </span>
+                ))}
+                . Проверьте, не дубль ли это.
+              </p>
+            )}
           </div>
           <div>
             <label className={labelCls}>Email</label>
@@ -211,7 +248,25 @@ export function ContactForm({ action, defaults = {}, backHref, submitLabel }: Co
           <h2 className="font-semibold text-[var(--hp-ink)]">Реквизиты организации</h2>
           <div>
             <label className={labelCls}>Название организации *</label>
-            <input type="text" name="company_name" defaultValue={defaults.company_name ?? ''} placeholder='ООО "Ромашка"' className={inputCls} />
+            {/* Подсказки DaData: по названию или ИНН заполняются КПП, ОГРН, юр. адрес
+                и руководитель — раньше всё это вбивалось руками из выписки, а опечатка
+                в реквизитах всплывала уже в подписанном договоре. */}
+            <DadataSuggestInput
+              name="company_name"
+              kind="party"
+              defaultValue={defaults.company_name ?? ''}
+              placeholder='ООО "Ромашка" или ИНН'
+              className={inputCls}
+              fillFields={{
+                inn: 'inn',
+                kpp: 'kpp',
+                ogrn: 'ogrn',
+                legalAddress: 'legal_address',
+              }}
+              renderHint={(s) =>
+                s.managerName ? `Руководитель по ЕГРЮЛ: ${s.managerName}${s.managerPost ? `, ${s.managerPost}` : ''}` : null
+              }
+            />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -234,7 +289,15 @@ export function ContactForm({ action, defaults = {}, backHref, submitLabel }: Co
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={labelCls}>Банк</label>
-              <input type="text" name="bank_name" defaultValue={defaults.bank_name ?? ''} className={inputCls} />
+              {/* По названию банка или БИК подставляются БИК и корр. счёт. */}
+              <DadataSuggestInput
+                name="bank_name"
+                kind="bank"
+                defaultValue={defaults.bank_name ?? ''}
+                placeholder="Сбербанк или БИК"
+                className={inputCls}
+                fillFields={{ bik: 'bik', correspondentAccount: 'corr_account' }}
+              />
             </div>
             <div>
               <label className={labelCls}>БИК</label>

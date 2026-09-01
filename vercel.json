@@ -1,7 +1,24 @@
 {
   "crons": [
-    { "path": "/api/cron/channel-weekly-summary", "schedule": "0 12 * * 0" },
-    { "path": "/api/cron/generate-recurring-transactions", "schedule": "0 3 * * *" },
-    { "path": "/api/cron/daily-digest", "schedule": "0 6 * * *" }
+    {
+      "path": "/api/cron/channel-weekly-summary",
+      "schedule": "0 12 * * 0"
+    },
+    {
+      "path": "/api/cron/generate-recurring-transactions",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/daily-digest",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/payment-reminders",
+      "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/avito-messenger",
+      "schedule": "*/15 * * * *"
+    }
   ]
 }

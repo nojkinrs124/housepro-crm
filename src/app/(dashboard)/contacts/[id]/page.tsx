@@ -2,10 +2,12 @@ import { createClient } from '@/lib/supabase/server'
 import { ArrowLeft, Phone, Mail, MapPin, Edit, MessageCircle, CheckSquare, TrendingUp, FileText, Plus, Building2 } from 'lucide-react'
 import { DeleteContactButton } from '@/features/contacts/components/DeleteContactButton'
 import { RepresentativesPanel } from '@/features/contacts/components/RepresentativesPanel'
+import { CounterpartyCheckPanel } from '@/features/contacts/components/CounterpartyCheckPanel'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Contact } from '@/types/database'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { CommunicationTimeline } from '@/features/communications/components/CommunicationTimeline'
 
 const roleLabels: Record<string, string> = {
   client: 'Клиент',
@@ -265,6 +267,15 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
             <RepresentativesPanel contactId={id} representatives={representatives} />
           )}
 
+          {/* Проверка по ЕГРЮЛ — только для юрлиц: у физлица проверять нечего. */}
+          {isLegalEntity && (
+            <CounterpartyCheckPanel
+              contactId={id}
+              initialSnapshot={c.counterparty_check ?? null}
+              checkedAt={c.counterparty_checked_at ?? null}
+            />
+          )}
+
           {/* Deals */}
           <div className="bg-[var(--hp-surface)] border border-[var(--hp-border)] rounded-[var(--hp-radius)] p-5">
             <div className="flex items-center justify-between mb-4">
@@ -352,6 +363,9 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
               <span className="value">{new Date(c.created_at).toLocaleDateString('ru-RU')}</span>
             </div>
           </div>
+
+          {/* Лента общения: звонки из АТС, WhatsApp, письма и ручные заметки. */}
+          <CommunicationTimeline contactId={id} phone={c.phone ?? null} />
 
           {c.comment && (
             <div className="hp-block">

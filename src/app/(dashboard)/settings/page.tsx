@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { Settings, Building2, Bell, Shield, Database, ChevronRight, ScrollText, CreditCard, Key, Webhook, Megaphone } from 'lucide-react'
+import { Settings, Building2, Bell, Shield, Database, ChevronRight, ScrollText, CreditCard, Key, Webhook, Megaphone, Mail, Upload, PhoneCall } from 'lucide-react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/layout/PageHeader'
 
@@ -30,6 +30,7 @@ const SETTINGS_GROUPS = [
     items: [
       { icon: Shield, title: 'Безопасность', desc: 'Роли, доступы, пароли', href: '/settings/security' },
       { icon: ScrollText, title: 'Журнал аудита', desc: 'История изменений (только admin)', href: '/settings/audit' },
+      { icon: Upload, title: 'Импорт данных', desc: 'Перенос базы из Excel или CSV', href: '/settings/import' },
     ],
   },
   {
@@ -38,6 +39,9 @@ const SETTINGS_GROUPS = [
       { icon: Key, title: 'API‑ключи', desc: 'Доступ для интеграций', href: '/settings/api' },
       { icon: Webhook, title: 'Вебхуки', desc: 'Уведомления о событиях в реальном времени', href: '/settings/webhooks' },
       { icon: Megaphone, title: 'Авито', desc: 'Публикация объектов через автозагрузку', href: '/settings/avito' },
+      { icon: Mail, title: 'Почта', desc: 'Отправитель и журнал писем клиентам', href: '/settings/email' },
+      { icon: PhoneCall, title: 'Каналы связи', desc: 'Телефония и WhatsApp в карточках клиентов', href: '/settings/channels' },
+      { icon: CreditCard, title: 'Приём платежей', desc: 'Ссылки на оплату для клиентов агентства', href: '/settings/payments' },
     ],
   },
 ]

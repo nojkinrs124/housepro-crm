@@ -45,12 +45,21 @@
 | 💰 **Биллинг** | Тарифы Free/Pro/Enterprise на Stripe, feature gates |
 | 🔌 **API** | Публичный REST API `/api/v1` с ключами и HMAC-подписанными вебхуками |
 | 🛡 **Аудит** | Журнал всех изменений по организации |
+| 📞 **Коммуникации** | Единая лента общения: звонки из АТС, WhatsApp, письма, заметки |
+| ✉️ **Почта** | Договоры, напоминания об оплате, подборки и приглашения на показ — письмом клиенту |
+| 🗓 **Календарь** | Календарь показов и подписка на него в Google/Яндекс/Apple по ссылке |
+| 🧾 **Сверка** | Ссылки на онлайн-оплату (ЮKassa) и импорт банковской выписки 1С |
+| ✍️ **Подпись** | Простая электронная подпись договора по ссылке с кодом из письма |
+| 📥 **Импорт** | Перенос базы контактов, объектов и лидов из Excel/CSV |
+| 🧹 **Дубли** | Поиск и слияние дублей контактов по телефону и почте |
 
 ## 🧱 Технологический стек
 
 - **Frontend:** Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · shadcn/ui
 - **Backend:** Supabase (PostgreSQL + Auth + Storage), Row Level Security на уровне организации
-- **Оплата:** Stripe Billing
+- **Оплата:** Stripe Billing (подписка на CRM) · ЮKassa (платежи клиентов агентства)
+- **Интеграции:** DaData (адреса и реквизиты), Яндекс.Карты, телефония (Манго/UIS/Zadarma),
+  WhatsApp (Wazzup/Green API), Авито-мессенджер, фиды Авито/ЦИАН/Яндекс/Домклик
 - **Документы:** docxtemplater + pizzip (генерация DOCX по шаблонам)
 - **Аналитика/графики:** Recharts
 - **UX:** Framer Motion, sonner (toasts), @dnd-kit (drag-and-drop)
@@ -92,7 +101,15 @@ npm run check
    - `SUPABASE_SERVICE_ROLE_KEY` (только на сервере)
    - `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` (rate limiting)
    - `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` (биллинг)
+   - `RESEND_API_KEY` или `UNISENDER_API_KEY` + `EMAIL_FROM` (почта клиентам)
+   - `DADATA_API_KEY` (подсказки адресов и реквизитов, координаты объектов)
+   - `NEXT_PUBLIC_YANDEX_MAPS_KEY` (карты в подборках и на карточке объекта)
+   - `CRON_SECRET` (задачи по расписанию из `vercel.json`)
 3. Deploy
+
+Подключение телефонии, WhatsApp и приёма платежей делается не через переменные
+окружения, а в интерфейсе — у каждого агентства свои учётные данные.
+Полное руководство по всем интеграциям — [`docs/INTEGRATIONS.md`](./docs/INTEGRATIONS.md).
 
 ## 📁 Структура проекта
 
@@ -111,7 +128,8 @@ supabase/
   functions/            # Edge Functions (в т.ч. Telegram-бот)
 ```
 
-Полное руководство по паттернам и правилам разработки — в [`CLAUDE.md`](./CLAUDE.md).
+Полное руководство по паттернам и правилам разработки — в [`CLAUDE.md`](./CLAUDE.md),
+по подключению внешних сервисов — в [`docs/INTEGRATIONS.md`](./docs/INTEGRATIONS.md).
 
 ## 🧪 Тесты
 

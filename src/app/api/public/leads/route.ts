@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { rateLimit } from '@/lib/rate-limit'
 import { normalizePhone } from '@/lib/utils'
 import { notifyNewLead } from '@/lib/telegram/notify-lead'
+import { consentFields } from '@/lib/consent'
 
 /**
  * Приём заявок с публичного сайта «ХаусПро».
@@ -45,6 +46,12 @@ const LeadRequestSchema = z.object({
    * понял бы, какое поле его выдало, и перестал бы его заполнять.
    */
   company: z.string().max(200).optional().or(z.literal('')),
+  /**
+   * Согласие на обработку ПДн (152-ФЗ). Обязательное: без него заявку
+   * принимать нельзя — именно эта отметка вместе с временем и версией
+   * политики доказывает, что человек согласие давал.
+   */
+  consent: z.literal(true, { message: 'Нужно согласие на обработку персональных данных' }),
 })
 
 function clientIp(request: Request): string {
@@ -151,6 +158,8 @@ export async function POST(request: Request) {
       property_id: resolvedPropertyId,
       source: 'website',
       status: 'new',
+      // Отметка согласия: время + версия политики, с которой согласился человек.
+      ...consentFields('site_form'),
     })
     .select('id')
     .single()

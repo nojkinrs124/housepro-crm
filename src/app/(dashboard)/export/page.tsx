@@ -34,6 +34,28 @@ export default async function ExportPage() {
  icon: '',
  docsUrl: 'https://cian.ru/help/',
  },
+ {
+ name: 'Яндекс.Недвижимость',
+ description: 'XML-фид в формате YRL (с координатами объектов)',
+ url: '/api/export/yandex-realty',
+ iconBg: 'bg-[var(--hp-warn-tint)]',
+ iconColor: 'text-[var(--hp-warn)]',
+ btnBg: 'var(--hp-accent)',
+ btnShadow: 'none',
+ icon: '',
+ docsUrl: 'https://yandex.ru/support/realty/feeds/requirements.html',
+ },
+ {
+ name: 'Домклик',
+ description: 'Тот же формат YRL — у площадки свой постоянный адрес фида',
+ url: '/api/export/domclick',
+ iconBg: 'bg-[var(--hp-neutral-tint)]',
+ iconColor: 'text-[var(--hp-sub)]',
+ btnBg: 'var(--hp-accent)',
+ btnShadow: 'none',
+ icon: '',
+ docsUrl: 'https://domclick.ru/',
+ },
  ]
 
  const checklist = [

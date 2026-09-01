@@ -6,6 +6,7 @@ import { updatePropertyAction } from '@/features/properties/actions/properties.a
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { PropertyPhotosManager } from '@/features/properties/components/PropertyPhotosManager'
+import { DadataSuggestInput } from '@/components/forms/DadataSuggestInput'
 
 export default async function EditPropertyPage({ params }: { params: Promise<{ id: string }> }) {
  const { id } = await params
@@ -52,7 +53,29 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
 
  <div>
  <label className={lbl}>Адрес *</label>
- <input name="address" required defaultValue={p.address ?? ''} className={inp} />
+ <DadataSuggestInput
+ name="address"
+ kind="address"
+ required
+ defaultValue={p.address ?? ''}
+ className={inp}
+ fillFields={{
+ latitude: 'latitude',
+ longitude: 'longitude',
+ fiasId: 'fias_id',
+ metro: 'metro',
+ cityDistrict: 'district',
+ }}
+ renderHint={(s) =>
+ s.latitude && s.longitude ? `Координаты: ${s.latitude}, ${s.longitude}` : null
+ }
+ />
+ {/* Геоданные из подсказки: пользователь их не редактирует, но без них
+ нет карты в подборке и корректного фида на площадки. */}
+ <input type="hidden" name="latitude" defaultValue={p.latitude ?? ''} />
+ <input type="hidden" name="longitude" defaultValue={p.longitude ?? ''} />
+ <input type="hidden" name="fias_id" defaultValue={p.fias_id ?? ''} />
+ <input type="hidden" name="metro" defaultValue={p.metro ?? ''} />
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

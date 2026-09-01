@@ -38,7 +38,13 @@ function extractPropertyFields(formData: FormData) {
     // Infrastructure
     heating_type:      (formData.get('heating_type') as string) || null,
     water_supply_type: (formData.get('water_supply_type') as string) || null,
-    // Coordinates
+    // Геоданные — приходят скрытыми полями из подсказок DaData (см.
+    // DadataSuggestInput на форме объекта). Пустые значения оставляем null:
+    // без интеграции объект по-прежнему заводится вручную одним адресом.
+    latitude:          formData.get('latitude')  ? Number(formData.get('latitude'))  : null,
+    longitude:         formData.get('longitude') ? Number(formData.get('longitude')) : null,
+    fias_id:           (formData.get('fias_id') as string)?.trim() || null,
+    metro:             (formData.get('metro') as string)?.trim() || null,
     district:          (formData.get('district') as string) || null,
     utilities_included:(formData.get('utilities_included') as string) || null,
     // Документ-основание права собственности (напр. "Выписка из ЕГРН №... от ...")

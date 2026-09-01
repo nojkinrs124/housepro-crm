@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
+import { emailTaskAssigned } from '@/lib/email/notify'
 
 const VALID_TASK_STATUSES = ['todo', 'in_progress', 'done', 'cancelled']
 const VALID_TASK_PRIORITIES = ['low', 'medium', 'high']
@@ -47,8 +48,16 @@ export async function createTaskAction(formData: FormData) {
   const permError = await requirePermission(user.id, 'tasks', 'create')
   if (permError) return permError
 
-  const { error } = await supabase.from('tasks').insert(values)
+  const { data: task, error } = await supabase.from('tasks').insert(values).select('id').single()
   if (error) return { error: error.message }
+
+  // Письмо исполнителю — только если задачу назначили не себе (emailTaskAssigned
+  // сам отсеет этот случай по actorId) и почта настроена.
+  await emailTaskAssigned(
+    orgId,
+    { id: task.id, title: values.title, deadline: values.deadline, description: values.description, assigned_to: values.assigned_to },
+    user.id
+  )
 
   revalidatePath('/tasks')
   redirect('/tasks')

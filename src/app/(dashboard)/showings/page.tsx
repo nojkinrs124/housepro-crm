@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, Eye, Calendar, User, Home } from 'lucide-react'
+import { Plus, Eye, Calendar, User, Home, CalendarDays } from 'lucide-react'
 import { ShowingStatusBadge } from '@/features/showings/components/ShowingStatusBadge'
 
 export default async function ShowingsPage() {
@@ -35,13 +35,22 @@ export default async function ShowingsPage() {
  {showings?.length ?? 0} показов
  </p>
  </div>
+ <div className="flex items-center gap-2 flex-wrap shrink-0">
+ <Link
+ href="/showings/calendar"
+ className="flex items-center gap-2 px-4 py-2 border border-[var(--hp-border)] rounded-[var(--hp-radius)] text-sm font-medium text-[var(--hp-ink)] hover:border-[var(--hp-sub)] transition-colors whitespace-nowrap"
+ >
+ <CalendarDays className="w-4 h-4" />
+ Календарь
+ </Link>
  <Link
  href="/showings/new"
- className="flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors"
+ className="flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors whitespace-nowrap"
  >
  <Plus className="w-4 h-4" />
  Новый показ
  </Link>
+ </div>
  </div>
 
  {/* Upcoming */}

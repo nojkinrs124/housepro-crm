@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { SecuritySettingsForm } from '@/features/settings/components/SecuritySettingsForm'
 import { getSecurityInfoAction } from '@/features/settings/actions/security.actions'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { TwoFactorSettings } from '@/features/settings/components/TwoFactorSettings'
 
 export default async function SecurityPage() {
   const supabase = await createClient()
@@ -32,6 +33,8 @@ export default async function SecurityPage() {
         lastSignIn={info.user?.lastSignIn ?? null}
         createdAt={info.user?.createdAt ?? null}
       />
+
+      <TwoFactorSettings />
     </div>
   )
 }

@@ -8,6 +8,7 @@ import { dispatchWebhook } from '@/lib/webhooks'
 import { requirePermission } from '@/lib/permissions'
 import { normalizePhone } from '@/lib/utils'
 import { notifyNewLead } from '@/lib/telegram/notify-lead'
+import { emailLeadAssigned } from '@/lib/email/notify'
 
 const VALID_STATUSES = ['new','contacted','showing','searching','converted','closed','interested','rejected']
 
@@ -64,6 +65,10 @@ export async function createLeadAction(formData: FormData) {
   await notifyNewLead(orgId, {
     id: lead.id, full_name: lead.full_name, phone: lead.phone, source: lead.source,
   })
+
+  // Второй канал: письмо тому, на кого лид назначен. Telegram выше уходит в общий
+  // чат агентства, письмо — персонально ответственному.
+  await emailLeadAssigned(orgId, lead, user.id)
 
   revalidatePath('/leads')
   redirect(`/leads/${lead.id}`)

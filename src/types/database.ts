@@ -1,3 +1,5 @@
+import type { CounterpartySnapshot } from '@/features/contacts/config/counterparty'
+
 export type UserRole = 'admin' | 'manager' | 'agent' | 'accountant'
 
 export type ClientStatus = 'new' | 'in_progress' | 'active' | 'closed' | 'vip' | 'blacklist'
@@ -79,6 +81,16 @@ export interface Contact {
   bik?: string
   // Ответственный риелтор — колонка «Риелтор» в реестре контактов
   manager_id?: string
+  // Снимок последней проверки контрагента в ЕГРЮЛ (см. counterparty.actions.ts)
+  counterparty_check?: CounterpartySnapshot | null
+  counterparty_checked_at?: string | null
+  // Согласие на обработку ПДн (152-ФЗ)
+  consent_pd_at?: string | null
+  consent_pd_version?: string | null
+  consent_source?: string | null
+  consent_revoked_at?: string | null
+  // Ссылка на основную карточку, если этот контакт был слит как дубль
+  merged_into?: string | null
   created_at: string
   updated_at: string
 }

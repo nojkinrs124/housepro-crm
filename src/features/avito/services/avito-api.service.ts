@@ -133,3 +133,168 @@ export async function fetchAvitoAutoloadLastReport(userId: string, accessToken: 
 
   return { found: true, items, raw: body }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Мессенджер Авито
+// ─────────────────────────────────────────────────────────────────────────────
+// В отличие от публикации объявлений (её у API нет — только фид автозагрузки),
+// мессенджер у Авито полноценный: чаты и сообщения читаются, ответ отправляется.
+// Именно отсюда приходит основная часть лидов, и раньше они целиком оставались
+// вне CRM — агент отвечал в приложении Авито, а в системе не оставалось следа.
+//
+// Требует scope messenger:read и messenger:write у приложения Авито.
+
+export interface AvitoChat {
+  id: string
+  /** Идентификатор объявления, по которому пишет клиент. */
+  itemId: string | null
+  itemTitle: string | null
+  itemUrl: string | null
+  /** Имя собеседника, как его показывает Авито. */
+  userName: string | null
+  userId: string | null
+  lastMessageText: string | null
+  lastMessageAt: string | null
+  unreadCount: number
+}
+
+export interface AvitoMessage {
+  id: string
+  chatId: string
+  authorId: string | null
+  /** true — сообщение написали мы. */
+  isOutgoing: boolean
+  text: string | null
+  createdAt: string
+}
+
+function unixToIso(value: unknown): string {
+  const n = Number(value)
+  if (!Number.isFinite(n) || n <= 0) return new Date().toISOString()
+  return new Date(n > 1e12 ? n : n * 1000).toISOString()
+}
+
+/**
+ * Список чатов аккаунта. unreadOnly=true отдаёт только чаты с непрочитанными
+ * сообщениями — для крона это единственное, что нужно опрашивать.
+ */
+export async function fetchAvitoChats(
+  userId: string,
+  accessToken: string,
+  opts?: { unreadOnly?: boolean; limit?: number }
+): Promise<AvitoChat[]> {
+  const params = new URLSearchParams({
+    limit: String(opts?.limit ?? 50),
+    ...(opts?.unreadOnly ? { unread_only: 'true' } : {}),
+  })
+
+  const res = await fetch(`${AVITO_API_BASE}/messenger/v2/accounts/${userId}/chats?${params}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: 'no-store',
+  })
+
+  const body = await res.json().catch(() => null)
+  if (!res.ok) {
+    throw new AvitoApiError(
+      body?.error?.message ?? `Авито вернул ${res.status} на список чатов`,
+      res.status,
+      body
+    )
+  }
+
+  const chats = Array.isArray(body?.chats) ? body.chats : []
+
+  return chats.map((raw: Record<string, unknown>) => {
+    const context = (raw.context ?? {}) as Record<string, unknown>
+    const value = (context.value ?? {}) as Record<string, unknown>
+    const lastMessage = (raw.last_message ?? {}) as Record<string, unknown>
+    const content = (lastMessage.content ?? {}) as Record<string, unknown>
+    // users содержит обе стороны; собеседник — тот, чей id не равен нашему.
+    const users = Array.isArray(raw.users) ? (raw.users as Record<string, unknown>[]) : []
+    const peer = users.find((u) => String(u.id) !== String(userId))
+
+    return {
+      id: String(raw.id ?? ''),
+      itemId: value.id ? String(value.id) : null,
+      itemTitle: value.title ? String(value.title) : null,
+      itemUrl: value.url ? String(value.url) : null,
+      userName: peer?.name ? String(peer.name) : null,
+      userId: peer?.id ? String(peer.id) : null,
+      lastMessageText: content.text ? String(content.text) : null,
+      lastMessageAt: lastMessage.created ? unixToIso(lastMessage.created) : null,
+      unreadCount: Number(raw.unread_count ?? 0),
+    }
+  })
+}
+
+/** Сообщения чата, свежие сверху (как их отдаёт Авито). */
+export async function fetchAvitoMessages(
+  userId: string,
+  accessToken: string,
+  chatId: string,
+  limit = 30
+): Promise<AvitoMessage[]> {
+  const res = await fetch(
+    `${AVITO_API_BASE}/messenger/v3/accounts/${userId}/chats/${chatId}/messages/?limit=${limit}`,
+    { headers: { Authorization: `Bearer ${accessToken}` }, cache: 'no-store' }
+  )
+
+  const body = await res.json().catch(() => null)
+  if (!res.ok) {
+    throw new AvitoApiError(
+      body?.error?.message ?? `Авито вернул ${res.status} на сообщения чата`,
+      res.status,
+      body
+    )
+  }
+
+  const messages = Array.isArray(body?.messages) ? body.messages : Array.isArray(body) ? body : []
+
+  return messages.map((raw: Record<string, unknown>) => {
+    const content = (raw.content ?? {}) as Record<string, unknown>
+    return {
+      id: String(raw.id ?? ''),
+      chatId,
+      authorId: raw.author_id ? String(raw.author_id) : null,
+      isOutgoing: String(raw.author_id ?? '') === String(userId),
+      text: content.text ? String(content.text) : null,
+      createdAt: unixToIso(raw.created),
+    }
+  })
+}
+
+/** Отправляет ответ в чат Авито от имени аккаунта агентства. */
+export async function sendAvitoMessage(
+  userId: string,
+  accessToken: string,
+  chatId: string,
+  text: string
+): Promise<{ id: string | null }> {
+  const res = await fetch(`${AVITO_API_BASE}/messenger/v1/accounts/${userId}/chats/${chatId}/messages`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: { text }, type: 'text' }),
+  })
+
+  const body = await res.json().catch(() => null)
+  if (!res.ok) {
+    throw new AvitoApiError(
+      body?.error?.message ?? `Авито вернул ${res.status} на отправку сообщения`,
+      res.status,
+      body
+    )
+  }
+
+  return { id: body?.id ? String(body.id) : null }
+}
+
+/** Помечает чат прочитанным, чтобы крон не забирал его снова и снова. */
+export async function markAvitoChatRead(userId: string, accessToken: string, chatId: string): Promise<void> {
+  await fetch(`${AVITO_API_BASE}/messenger/v1/accounts/${userId}/chats/${chatId}/read`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}` },
+  }).catch(() => {
+    // Не критично: при сбое чат просто будет обработан ещё раз, а дедупликация
+    // по external_id не даст задвоить сообщения в ленте.
+  })
+}

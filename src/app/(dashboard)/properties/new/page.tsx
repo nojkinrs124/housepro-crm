@@ -4,6 +4,7 @@ import { Home } from 'lucide-react'
 import Link from 'next/link'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { DadataSuggestInput } from '@/components/forms/DadataSuggestInput'
 
 export default async function NewPropertyPage() {
  const supabase = await createClient()
@@ -37,7 +38,29 @@ export default async function NewPropertyPage() {
 
  <div className="space-y-1.5">
  <label className={labelCls}>Адрес <span className="text-destructive">*</span></label>
- <input name="address" required placeholder="г. Москва, ул. Ленина, д. 15, кв. 32" className={inputCls} />
+ <DadataSuggestInput
+ name="address"
+ kind="address"
+ required
+ placeholder="г. Москва, ул. Ленина, д. 15, кв. 32"
+ className={inputCls}
+ fillFields={{
+ latitude: 'latitude',
+ longitude: 'longitude',
+ fiasId: 'fias_id',
+ metro: 'metro',
+ cityDistrict: 'district',
+ }}
+ renderHint={(s) =>
+ s.latitude && s.longitude ? `Координаты: ${s.latitude}, ${s.longitude}` : null
+ }
+ />
+ {/* Геоданные из подсказки: пользователь их не редактирует, но без них
+ нет карты в подборке и корректного фида на площадки. */}
+ <input type="hidden" name="latitude" defaultValue="" />
+ <input type="hidden" name="longitude" defaultValue="" />
+ <input type="hidden" name="fias_id" defaultValue="" />
+ <input type="hidden" name="metro" defaultValue="" />
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

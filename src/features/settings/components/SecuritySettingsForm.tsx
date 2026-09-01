@@ -3,8 +3,8 @@
 import { useState, useTransition, useRef } from 'react'
 import {
  Lock, LogOut, CheckCircle, AlertCircle, Save,
- Loader2, Eye, EyeOff, ShieldCheck, ShieldAlert,
- Clock, Fingerprint, Key
+ Loader2, Eye, EyeOff, ShieldCheck,
+ Clock, Key
 } from 'lucide-react'
 import { changePasswordSecurityAction, signOutAllSessionsAction } from '@/features/settings/actions/security.actions'
 import { useRouter } from 'next/navigation'
@@ -229,23 +229,6 @@ export function SecuritySettingsForm({
  </button>
  </div>
  </form>
- </div>
-
- {/* 2FA — info block */}
- <div className="hp-card p-6 space-y-3">
- <h2 className="font-semibold text-foreground flex items-center gap-2 text-sm">
- <Fingerprint className="w-4 h-4 text-muted-foreground" />
- Двухфакторная аутентификация
- </h2>
- <div className="flex items-start gap-3 p-4 bg-[var(--hp-warn-tint)] border border-[var(--hp-border)]">
- <ShieldAlert className="w-5 h-5 text-[var(--hp-warn)] shrink-0 mt-0.5" />
- <div>
- <p className="text-sm font-medium text-[var(--hp-warn)]">Не настроена</p>
- <p className="text-sm text-[var(--hp-warn)] mt-0.5">
- Двухфакторная аутентификация повышает безопасность аккаунта. Функция будет доступна в следующем обновлении.
- </p>
- </div>
- </div>
  </div>
 
  {/* Sessions / sign out all */}

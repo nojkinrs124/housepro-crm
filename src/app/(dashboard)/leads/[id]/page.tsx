@@ -8,6 +8,7 @@ import { LeadActivityForm } from '@/features/leads/components/LeadActivityForm'
 import { LeadStatusSelect } from '@/features/leads/components/LeadStatusSelect'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { CommunicationTimeline } from '@/features/communications/components/CommunicationTimeline'
 
 const sourceLabels: Record<string, string> = {
  avito: 'Авито', cian: 'ЦИАН', domclick: 'Домклик',
@@ -340,6 +341,8 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
  )}
  </div>
  </div>
+
+ <CommunicationTimeline leadId={id} phone={lead.phone ?? null} />
 
  {/* Быстрые действия */}
  {!isConverted && (

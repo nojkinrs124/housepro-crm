@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { updateEmployeeAction, deactivateEmployeeAction, activateEmployeeAction } from '@/features/users/actions/users.actions'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { EmployeeTargetPanel } from '@/features/users/components/EmployeeTargetPanel'
 
 const roleLabels: Record<string, string> = {
  admin: 'Администратор', manager: 'Менеджер',
@@ -37,10 +38,21 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
  supabase.from('tasks').select('id', { count: 'exact', head: true }).eq('assigned_to', id),
  supabase.from('deals').select('id', { count: 'exact', head: true }).eq('manager_id', id).gte('created_at', monthStart),
  supabase.from('deals').select('id', { count: 'exact', head: true }).eq('manager_id', id).eq('status', 'completed').gte('created_at', monthStart),
- supabase.from('deals').select('commission').eq('manager_id', id).eq('status', 'completed').gte('created_at', monthStart),
+ supabase.from('deals').select('commission, amount').eq('manager_id', id).eq('status', 'completed').gte('created_at', monthStart),
  ])
 
- const totalCommission = (commissionData ?? []).reduce((s: number, d: { commission: number | null }) => s + Number(d.commission ?? 0), 0)
+ const closedDeals = (commissionData ?? []) as { commission: number | null; amount: number | null }[]
+ const totalCommission = closedDeals.reduce((s: number, d) => s + Number(d.commission ?? 0), 0)
+ const totalRevenue = closedDeals.reduce((s: number, d) => s + Number(d.amount ?? 0), 0)
+
+ // План на текущий месяц: ключ — первое число месяца (см. targets.actions.ts).
+ const periodMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`
+ const { data: target } = await supabase
+ .from('employee_targets')
+ .select('deals_target, revenue_target, commission_target, note')
+ .eq('user_id', id)
+ .eq('period_month', `${periodMonth}-01`)
+ .maybeSingle()
  const conversionRate = (monthDeals.count ?? 0) > 0
  ? Math.round(((monthCompleted.count ?? 0) / (monthDeals.count ?? 1)) * 100)
  : 0
@@ -108,6 +120,19 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
  ))}
  </div>
 
+ {/* План и факт — над фактическими KPI: сначала «сколько нужно», потом «сколько есть» */}
+ <EmployeeTargetPanel
+ userId={id}
+ period={periodMonth}
+ target={target ?? null}
+ fact={{
+ deals: monthCompleted.count ?? 0,
+ revenue: totalRevenue,
+ commission: totalCommission,
+ }}
+ canEdit={currentUserProfile?.role === 'admin' || currentUserProfile?.role === 'manager'}
+ />
+
  {/* KPI текущего месяца */}
  <div className="hp-card p-5">
  <h2 className="font-semibold text-foreground mb-4">KPI за текущий месяц</h2>
@@ -157,6 +182,13 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
  <div>
  <label className={lbl}>Телефон</label>
  <input name="phone" type="tel" defaultValue={emp.phone ?? ''} placeholder="+7 (999) 000-00-00" className={inp} />
+ </div>
+ <div>
+ <label className={lbl}>Внутренний номер в АТС</label>
+ <input name="phone_extension" defaultValue={emp.phone_extension ?? ''} placeholder="101" className={inp} />
+ <p className="text-xs text-[var(--hp-sub)] mt-1">
+ Нужен, чтобы звонки из телефонии подписывались этим сотрудником
+ </p>
  </div>
  </div>
  <div>

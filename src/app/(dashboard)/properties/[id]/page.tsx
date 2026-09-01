@@ -13,6 +13,8 @@ import { FilesSection } from '@/features/files/components/FilesSection'
 import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
 import { PageHeader } from '@/components/layout/PageHeader'
 import Image from 'next/image'
+import { PropertyMap } from '@/features/properties/components/PropertyMap'
+import { MetersPanel, type MeterRow } from '@/features/properties/components/MetersPanel'
 
 const typeLabels: Record<string, string> = {
  apartment: 'Квартира', house: 'Дом', commercial: 'Коммерция',
@@ -63,14 +65,25 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
  }
  if (!property) notFound()
 
- const [{ data: contracts }, { data: deals }] = await Promise.all([
+ const [{ data: contracts }, { data: deals }, { data: metersRaw }] = await Promise.all([
  supabase.from('contracts')
  .select('id, contract_number, contract_type, status, amount, created_at')
  .eq('property_id', id).order('created_at', { ascending: false }),
  supabase.from('deals')
  .select('id, deal_type, status, amount, created_at')
  .eq('property_id', id).order('created_at', { ascending: false }).limit(5),
+ // Показания сортируются от свежих: в панели показываются последние четыре.
+ supabase.from('utility_meters')
+ .select('id, kind, title, serial_number, unit, tariff, readings:meter_readings(id, reading_date, value, consumption, amount)')
+ .eq('property_id', id)
+ .eq('is_active', true)
+ .order('created_at', { ascending: true }),
  ])
+
+ const meters: MeterRow[] = ((metersRaw ?? []) as unknown as MeterRow[]).map((meter) => ({
+ ...meter,
+ readings: [...(meter.readings ?? [])].sort((a, b) => b.reading_date.localeCompare(a.reading_date)),
+ }))
 
  // eslint-disable-next-line @typescript-eslint/no-explicit-any
  const p = property as any
@@ -135,7 +148,30 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
  <div className="flex items-center gap-2 px-4 py-3 hp-card">
  <MapPin className="w-4 h-4 text-muted-foreground shrink-0" />
  <span className="text-sm text-foreground">{p.address}</span>
+ {p.metro && <span className="text-sm text-muted-foreground">· м. {p.metro}</span>}
  </div>
+
+ {/* Карта — только если у объекта есть координаты (заполняются подсказками
+ DaData при вводе адреса). */}
+ {p.latitude && p.longitude && (
+ <div className="hp-card p-4">
+ <PropertyMap
+ points={[
+ {
+ id: p.id,
+ latitude: Number(p.latitude),
+ longitude: Number(p.longitude),
+ title: p.title,
+ subtitle: p.address,
+ },
+ ]}
+ height={280}
+ />
+ </div>
+ )}
+
+ {/* Счётчики и показания */}
+ <MetersPanel propertyId={id} meters={meters} />
 
  {/* Фотографии */}
  {(p.photo_urls?.length ?? 0) > 0 && (

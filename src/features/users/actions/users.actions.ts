@@ -77,10 +77,15 @@ export async function updateEmployeeAction(employeeId: string, formData: FormDat
     return { error: 'Неверная роль' }
   }
 
+  // Добавочный номер в АТС: по нему вебхук телефонии понимает, кто из
+  // сотрудников разговаривал (см. /api/telephony/[provider]).
+  const phoneExtension = (formData.get('phone_extension') as string)?.trim() || null
+
   const payload = {
     full_name,
     role: role as UserRole,
     phone,
+    phone_extension: phoneExtension,
   }
 
   const { error } = await supabase

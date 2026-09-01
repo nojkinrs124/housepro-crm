@@ -2,7 +2,10 @@ import { createClient } from '@/lib/supabase/server'
 import { CompleteTransactionButton } from '@/features/accounting/components/CompleteTransactionButton'
 import { DeleteContractTransactionButton } from '@/features/accounting/components/DeleteContractTransactionButton'
 import { AddContractPaymentForm } from '@/features/accounting/components/AddContractPaymentForm'
-import { CreditCard } from 'lucide-react'
+import { CreditCard, FileText } from 'lucide-react'
+import Link from 'next/link'
+import { PaymentScheduleForm } from '@/features/accounting/components/PaymentScheduleForm'
+import { PaymentLinkButton } from '@/features/accounting/components/PaymentLinkButton'
 
 const statusConfig: Record<string, { label: string; className: string }> = {
  planned: { label: 'Ожидает', className: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]' },
@@ -23,14 +26,23 @@ function fmtDate(d?: string | null) {
 export async function PaymentsSection({ contractId }: { contractId: string }) {
  const supabase = await createClient()
 
- const { data: transactions } = await supabase
+ const [{ data: transactions }, { data: contract }] = await Promise.all([
+ supabase
  .from('accounting_transactions')
- .select('id, amount, status, date, due_date, description')
+ .select('id, amount, status, date, due_date, description, schedule_seq, payment_url')
  .eq('contract_id', contractId)
  .eq('type', 'income')
- .order('due_date', { ascending: true, nullsFirst: false })
+ .order('due_date', { ascending: true, nullsFirst: false }),
+ supabase
+ .from('contracts')
+ .select('start_date, end_date, amount, deposit, indexation_percent, indexation_period_months')
+ .eq('id', contractId)
+ .maybeSingle(),
+ ])
 
  const rows = transactions ?? []
+ // eslint-disable-next-line @typescript-eslint/no-explicit-any
+ const scheduledCount = rows.filter((t: any) => t.schedule_seq !== null && t.schedule_seq !== undefined).length
  // eslint-disable-next-line @typescript-eslint/no-explicit-any
  const totalPaid = rows.filter((t: any) => t.status === 'completed').reduce((s: number, t: any) => s + Number(t.amount), 0)
  // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -50,6 +62,19 @@ export async function PaymentsSection({ contractId }: { contractId: string }) {
  </div>
  <AddContractPaymentForm contractId={contractId} />
  </div>
+
+ {/* Разворачивание договора в график: годовая аренда — это 12 одинаковых
+ ручных форм, и любая опечатка в дате всплывала только при разборе просрочек. */}
+ <PaymentScheduleForm
+ contractId={contractId}
+ startDate={contract?.start_date ?? null}
+ endDate={contract?.end_date ?? null}
+ amount={contract?.amount ?? null}
+ deposit={contract?.deposit ?? null}
+ indexationPercent={contract?.indexation_percent ?? null}
+ indexationPeriodMonths={contract?.indexation_period_months ?? null}
+ existingCount={scheduledCount}
+ />
 
  {rows.length > 0 && (
  <div className="grid grid-cols-2 gap-3">
@@ -90,6 +115,14 @@ export async function PaymentsSection({ contractId }: { contractId: string }) {
  {t.description && <p className="text-xs text-muted-foreground truncate">{t.description}</p>}
  </div>
  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+ <Link
+ href={`/accounting/invoice/${t.id}`}
+ title="Счёт на оплату"
+ className="p-1.5 text-[var(--hp-sub)] hover:text-[var(--hp-ink)] hover:bg-[var(--hp-neutral-tint)] transition-colors"
+ >
+ <FileText className="w-4 h-4" />
+ </Link>
+ <PaymentLinkButton transactionId={t.id} status={t.status} existingUrl={t.payment_url} />
  <CompleteTransactionButton transactionId={t.id} status={t.status} />
  <DeleteContractTransactionButton transactionId={t.id} />
  </div>

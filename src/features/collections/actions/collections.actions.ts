@@ -5,6 +5,9 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
+import { isValidEmail } from '@/lib/email/provider'
+import { sendCollectionSharedEmail } from '@/lib/email/send'
+import { getSiteUrl } from '@/lib/telegram/site-url'
 
 export async function createCollectionAction(formData: FormData) {
   const supabase = await createClient()
@@ -104,4 +107,84 @@ export async function deleteCollectionAction(id: string) {
 
   revalidatePath('/collections')
   redirect('/collections')
+}
+
+/**
+ * Отправляет клиенту ссылку на подборку письмом.
+ *
+ * Побочный эффект намеренный: подборка автоматически становится публичной —
+ * иначе получатель откроет ссылку и упрётся в 404, что выглядит как поломка,
+ * а не как настройка приватности.
+ */
+export async function sendCollectionByEmailAction(collectionId: string, formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Не авторизован' }
+
+  const orgId = await requireOrgId().catch(() => null)
+  if (!orgId) return { error: 'Организация не найдена' }
+
+  const permError = await requirePermission(user.id, 'collections', 'update')
+  if (permError) return permError
+
+  const { data, error } = await supabase
+    .from('property_collections')
+    .select(`id, title, share_token, is_public,
+             lead:leads(email, full_name),
+             items:collection_items(property_id)`)
+    .eq('id', collectionId)
+    .single()
+
+  if (error || !data) return { error: 'Подборка не найдена' }
+
+  const collection = data as unknown as {
+    id: string
+    title: string
+    share_token: string
+    is_public: boolean
+    lead: { email: string | null; full_name: string | null } | null
+    items: { property_id: string }[] | null
+  }
+
+  const explicit = (formData.get('email') as string)?.trim()
+  const to = explicit || collection.lead?.email || ''
+  if (!isValidEmail(to)) {
+    return { error: 'Укажите корректный email получателя' }
+  }
+
+  const itemsCount = collection.items?.length ?? 0
+  if (itemsCount === 0) return { error: 'В подборке нет объектов — добавьте хотя бы один' }
+
+  if (!collection.is_public) {
+    const { error: pubError } = await supabase
+      .from('property_collections')
+      .update({ is_public: true })
+      .eq('id', collectionId)
+    if (pubError) return { error: `Не удалось открыть доступ к подборке: ${pubError.message}` }
+  }
+
+  const { data: profile } = await supabase
+    .from('users')
+    .select('full_name')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  const result = await sendCollectionSharedEmail({
+    orgId,
+    to,
+    collectionId,
+    collectionTitle: collection.title,
+    shareUrl: `${getSiteUrl()}/c/${collection.share_token}`,
+    itemsCount,
+    agentName: profile?.full_name ?? null,
+    comment: (formData.get('comment') as string)?.trim() || null,
+  })
+
+  if (!result.ok) return { error: result.error ?? 'Не удалось отправить письмо' }
+  if (result.skipped) {
+    return { error: 'Почта не настроена: задайте RESEND_API_KEY или UNISENDER_API_KEY в окружении' }
+  }
+
+  revalidatePath(`/collections/${collectionId}`)
+  return { success: true, message: `Подборка отправлена на ${to}` }
 }

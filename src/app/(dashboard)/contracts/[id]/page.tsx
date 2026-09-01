@@ -8,6 +8,13 @@ import { notFound } from 'next/navigation'
 import { PaymentsSection } from '@/features/payments/components/PaymentsSection'
 import { CONTRACT_TYPE_LABELS, getContractTypeConfig } from '@/features/contracts/config/contract-types'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { SendByEmailForm } from '@/components/forms/SendByEmailForm'
+import { sendContractByEmailAction } from '@/features/contracts/actions/send-email.actions'
+import {
+ ContractSigningPanel,
+ type SignatureSummary,
+} from '@/features/contracts/components/ContractSigningPanel'
+import { getSiteUrl } from '@/lib/telegram/site-url'
 
 const contractTypeLabels = CONTRACT_TYPE_LABELS
 
@@ -42,7 +49,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
  .select(`*,
  client:clients(full_name, phone),
  owner_contact:contacts!contracts_owner_contact_id_fkey(id, full_name, phone),
- client_contact:contacts!contracts_client_contact_id_fkey(id, full_name, phone),
+ client_contact:contacts!contracts_client_contact_id_fkey(id, full_name, phone, email),
  property:properties(id, title, address),
  manager:users(full_name),
  deal:deals(id, deal_type, status, amount)
@@ -100,7 +107,16 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
 
  // Поддержка старого и нового формата
  const ownerContact = contract.owner_contact as { id?: string; full_name?: string; phone?: string } | null
- const clientContact = contract.client_contact as { id?: string; full_name?: string; phone?: string } | null
+ const clientContact = contract.client_contact as { id?: string; full_name?: string; phone?: string; email?: string } | null
+
+ // История подписаний договора: одна ссылка на подписанта, их может быть несколько
+ // (переотправка после правок, второй подписант со стороны юрлица).
+ const { data: signaturesRaw } = await supabase
+ .from('contract_signatures')
+ .select('id, status, signer_email, signer_name, signed_at, created_at, expires_at, sign_token')
+ .eq('contract_id', id)
+ .order('created_at', { ascending: false })
+ const signatures = (signaturesRaw ?? []) as SignatureSummary[]
  const legacyClient = contract.client as { full_name?: string; phone?: string } | null
 
  const client = clientContact ?? legacyClient
@@ -136,6 +152,28 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
  </>
  }
  />
+
+ {/* Подписание простой ЭП — тоже только при готовом файле. */}
+ {contract.generated_docx_url && (
+ <ContractSigningPanel
+ contractId={id}
+ defaultEmail={clientContact?.email ?? null}
+ signatures={signatures}
+ siteUrl={getSiteUrl()}
+ />
+ )}
+
+ {/* Отправка договора клиенту письмом — только когда файл уже сформирован:
+ без вложения письмо бессмысленно, а кнопка-обманка хуже её отсутствия. */}
+ {contract.generated_docx_url && (
+ <SendByEmailForm
+ action={sendContractByEmailAction.bind(null, id)}
+ defaultEmail={clientContact?.email ?? null}
+ title="Отправить договор клиенту"
+ hint="Письмо уйдёт с вложенным DOCX последней версии."
+ submitLabel="Отправить договор"
+ />
+ )}
 
  <div className="grid lg:grid-cols-3 gap-6">
  <div className="lg:col-span-2 space-y-4">

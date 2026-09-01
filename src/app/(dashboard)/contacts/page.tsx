@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { Users, Plus } from 'lucide-react'
+import { Users, Plus, CopyCheck } from 'lucide-react'
 import Link from 'next/link'
 import type { Contact } from '@/types/database'
 import { ContactsViewSwitcher } from '@/features/contacts/components/ContactsViewSwitcher'
@@ -18,9 +18,11 @@ export default async function ContactsPage() {
     supabase
       .from('contacts')
       .select('id, full_name, company_name, client_type, phone, email, role, status, source, created_at, updated_at')
+      // Слитые дубли остаются в базе ради старых ссылок, но в реестре им не место.
+      .is('merged_into', null)
       .order('created_at', { ascending: false }),
     // Объект и риелтор в реестре берутся из последней сделки контакта: у самой
-    // таблицы contacts такой связи нет (properties.owner_id смотрит в legacy-owners).
+    // таблицы contacts такой связи нет.
     supabase
       .from('deals')
       .select(`
@@ -82,10 +84,19 @@ export default async function ContactsPage() {
         title="Контакты"
         subtitle={`${total} ${total === 1 ? 'контакт' : 'контактов'} в базе`}
         actions={
-          <Link href="/contacts/new" className={buttonVariants({ size: 'lg' })}>
-            <Plus style={{ width: 16, height: 16 }} />
-            Добавить контакт
-          </Link>
+          <>
+            <Link
+              href="/contacts/duplicates"
+              className="flex items-center gap-2 px-4 py-2 border border-[var(--hp-border)] rounded-[var(--hp-radius)] text-sm font-medium text-[var(--hp-ink)] hover:border-[var(--hp-sub)] transition-colors whitespace-nowrap"
+            >
+              <CopyCheck style={{ width: 16, height: 16 }} />
+              Дубли
+            </Link>
+            <Link href="/contacts/new" className={buttonVariants({ size: 'lg' })}>
+              <Plus style={{ width: 16, height: 16 }} />
+              Добавить контакт
+            </Link>
+          </>
         }
       />
 

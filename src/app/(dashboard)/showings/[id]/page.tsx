@@ -7,6 +7,8 @@ import { ShowingResultForm } from '@/features/showings/components/ShowingResultF
 import { DeleteShowingButton } from '@/features/showings/components/DeleteShowingButton'
 import { deleteShowingAction, updateShowingStatusAction } from '@/features/showings/actions/showings.actions'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
+import { SendByEmailForm } from '@/components/forms/SendByEmailForm'
+import { sendShowingInviteAction } from '@/features/showings/actions/notify.actions'
 
 export default async function ShowingDetailPage({ params }: { params: Promise<{ id: string }> }) {
  const { id } = await params
@@ -20,6 +22,7 @@ export default async function ShowingDetailPage({ params }: { params: Promise<{ 
  *,
  property:properties(id, title, address, deal_type, price),
  lead:leads(id, full_name, phone, email),
+ contact:contacts(id, full_name, phone, email),
  agent:users!showings_agent_id_fkey(id, full_name, phone)
  `)
  .eq('id', id)
@@ -65,6 +68,19 @@ export default async function ShowingDetailPage({ params }: { params: Promise<{ 
  </ServerActionForm>
  )}
  </div>
+
+ {/* Приглашение клиенту: письмо с вложением .ics, чтобы показ попал
+ к нему в календарь и напомнил о себе сам. */}
+ {showing.status === 'planned' && (
+ <SendByEmailForm
+ action={sendShowingInviteAction.bind(null, id)}
+ defaultEmail={showing.contact?.email ?? showing.lead?.email ?? null}
+ title="Отправить приглашение клиенту"
+ hint="В письме — время, адрес, контакты агента и файл для календаря."
+ submitLabel="Отправить приглашение"
+ withComment={false}
+ />
+ )}
 
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
  {/* Main */}

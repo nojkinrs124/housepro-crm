@@ -7,8 +7,7 @@ import { DeleteTransactionButton } from '@/features/accounting/components/Delete
 import {
  TrendingUp, TrendingDown, DollarSign, Clock,
  Plus, ArrowDownCircle, ArrowUpCircle, Pencil,
- RefreshCw, Tag,
-} from 'lucide-react'
+ RefreshCw, Tag, Landmark } from 'lucide-react'
 import Link from 'next/link'
 import type { AccountingTransaction } from '@/types/database'
 import { PageHeader } from '@/components/layout/PageHeader'
@@ -127,6 +126,13 @@ export default async function AccountingPage({
  actions={
  <div className="flex items-center gap-2 flex-wrap">
  <ExportCsvButton transactions={transactions} />
+ <Link
+ href="/accounting/bank-import"
+ className="flex items-center gap-2 px-4 py-2.5 hp-card text-sm font-semibold text-[var(--hp-ink)] hover:bg-[var(--hp-neutral-tint)] transition-all"
+ >
+ <Landmark className="w-4 h-4" />
+ Сверка с банком
+ </Link>
  <Link
  href="/accounting/recurring"
  className="flex items-center gap-2 px-4 py-2.5 hp-card text-sm font-semibold text-[var(--hp-ink)] hover:bg-[var(--hp-neutral-tint)] transition-all"
