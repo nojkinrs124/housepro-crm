@@ -3,8 +3,8 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  Building2, LayoutDashboard, Users, Home, FileText, BookOpen,
-  CheckSquare, Settings, LogOut, ChevronLeft, ChevronRight,
+  LayoutDashboard, Users, Home, FileText, BookOpen,
+  CheckSquare, Settings, LogOut, PanelLeftClose, PanelLeftOpen,
   Zap, TrendingUp, UserCog, Download, BarChart2, X, Menu,
   Eye, FolderOpen,
 } from 'lucide-react'
@@ -50,10 +50,13 @@ function SidebarContent({
   user,
   collapsed,
   onNavClick,
+  onToggleCollapse,
 }: {
   user: User | null
   collapsed: boolean
   onNavClick?: () => void
+  /** Есть только у десктопного сайдбара — мобильному drawer сворачивать нечего. */
+  onToggleCollapse?: () => void
 }) {
   const pathname = usePathname()
   let lastSection: string | null = 'start'
@@ -61,7 +64,10 @@ function SidebarContent({
 
   return (
     <>
-      <nav className="flex-1 py-3 px-3 overflow-y-auto overflow-x-hidden relative">
+      {/* hp-scroll-hidden — сам список скроллится (колесом/трекпадом), если не
+          помещается, но полоса скролла нигде не рисуется: на части систем она
+          рисуется толстой и заметной и визуально спорит с компактным меню. */}
+      <nav className="flex-1 py-1.5 px-3 overflow-y-auto overflow-x-hidden relative hp-scroll-hidden">
         <div className="space-y-0.5">
           {navigation.map((item) => {
             const Icon = item.icon
@@ -72,7 +78,7 @@ function SidebarContent({
             return (
               <div key={item.href}>
                 {showSection && (
-                  <div className="px-3 pt-4 pb-1.5">
+                  <div className="px-3 pt-2 pb-0.5">
                     <span className="text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--hp-tertiary)]">
                       {item.section}
                     </span>
@@ -92,8 +98,8 @@ function SidebarContent({
                   }}
                   onMouseLeave={() => setHoveredItem(null)}
                   className={cn(
-                    'relative flex items-center gap-3 rounded-[var(--hp-radius)] text-sm font-medium transition-colors duration-150 group',
-                    collapsed ? 'px-2.5 py-2.5 justify-center' : 'px-3 py-2.5',
+                    'relative flex items-center gap-3 rounded-[var(--hp-radius)] text-sm font-medium transition-colors duration-150 group focus:outline-none focus-visible:bg-[var(--hp-neutral-tint)]',
+                    collapsed ? 'px-2.5 py-1 justify-center' : 'px-3 py-1',
                     isActive
                       ? 'text-[var(--hp-ink)]'
                       : 'text-[var(--hp-sub)] hover:text-[var(--hp-ink)] hover:bg-[var(--hp-neutral-tint)]'
@@ -136,25 +142,30 @@ function SidebarContent({
         </span>
       )}
 
-      {/* User section */}
-      <div className="mx-3 mb-3 rounded-[var(--hp-radius)] overflow-hidden border border-[var(--hp-border)]">
+      {/* User section — плоско, без рамки-бокса: во всём сайдбаре нет ни одной
+          обводки вокруг пункта, только hover-заливка и hairline-разделители
+          между секциями, поэтому и здесь разделитель один — верхняя граница,
+          а не отдельная коробка на весь блок. Отступы ссылки (px-3) те же,
+          что и у пунктов меню (nav px-3 + Link px-3) — аватар встаёт точно
+          под иконками, а не правее них. */}
+      <div className="border-t border-[var(--hp-border)] shrink-0">
         {!collapsed ? (
-          <div className="p-3 space-y-2">
+          <div className="px-3 py-2 space-y-0.5">
             <Link
               href="/settings/profile"
               onClick={onNavClick}
-              className="flex items-center gap-3 p-2.5 rounded-[var(--hp-radius)] transition-colors duration-150 group hover:bg-[var(--hp-neutral-tint)]"
+              className="flex items-center gap-3 px-3 py-1.5 rounded-[var(--hp-radius)] transition-colors duration-150 group hover:bg-[var(--hp-neutral-tint)] focus:outline-none focus-visible:bg-[var(--hp-neutral-tint)]"
             >
               {user?.avatar_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={user.avatar_url}
                   alt={user.full_name || 'User'}
-                  className="w-9 h-9 rounded-[var(--hp-radius)] object-cover shrink-0 border border-[var(--hp-border)]"
+                  className="w-8 h-8 rounded-[var(--hp-radius)] object-cover shrink-0 border border-[var(--hp-border)]"
                 />
               ) : (
                 <div
-                  className="w-9 h-9 rounded-[var(--hp-radius)] flex items-center justify-center shrink-0 text-white text-sm font-bold"
+                  className="w-8 h-8 rounded-[var(--hp-radius)] flex items-center justify-center shrink-0 text-white text-sm font-bold"
                   style={{ background: 'var(--hp-accent)' }}
                 >
                   {user?.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
@@ -172,17 +183,31 @@ function SidebarContent({
             <form action={logout}>
               <button
                 type="submit"
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm rounded-[var(--hp-radius)] transition-colors duration-150 font-medium text-[var(--hp-sub)] hover:text-[var(--hp-danger)] hover:bg-[var(--hp-danger-tint)]"
+                className="w-full flex items-center gap-3 px-3 py-1.5 text-sm rounded-[var(--hp-radius)] transition-colors duration-150 font-medium text-[var(--hp-sub)] hover:text-[var(--hp-danger)] hover:bg-[var(--hp-danger-tint)] focus:outline-none focus-visible:bg-[var(--hp-danger-tint)] focus-visible:text-[var(--hp-danger)]"
               >
-                <LogOut style={{ width: 15, height: 15 }} />
+                <LogOut style={{ width: 15, height: 15 }} className="shrink-0" />
                 <span>Выйти</span>
               </button>
             </form>
+            {/* Свернуть меню — обычная плоская строка в общем ряду с профилем
+                и выходом, а не отдельная плавающая кнопка на границе сайдбара:
+                так она не спорит ни с шапкой (там логотип), ни со списком
+                меню (там скролл). Иконка предметная (панель), не шеврон. */}
+            {onToggleCollapse && (
+              <button
+                type="button"
+                onClick={onToggleCollapse}
+                className="w-full flex items-center gap-3 px-3 py-1.5 text-sm rounded-[var(--hp-radius)] transition-colors duration-150 font-medium text-[var(--hp-sub)] hover:text-[var(--hp-ink)] hover:bg-[var(--hp-neutral-tint)] focus:outline-none focus-visible:bg-[var(--hp-neutral-tint)] focus-visible:text-[var(--hp-ink)]"
+              >
+                <PanelLeftClose style={{ width: 15, height: 15 }} className="shrink-0" />
+                <span>Свернуть меню</span>
+              </button>
+            )}
           </div>
         ) : (
-          <div className="py-2 px-2">
+          <div className="py-2 px-2 space-y-1.5">
             <div
-              className="w-8 h-8 rounded-[var(--hp-radius)] flex items-center justify-center mx-auto text-white text-xs font-bold mb-2"
+              className="w-8 h-8 rounded-[var(--hp-radius)] flex items-center justify-center mx-auto text-white text-xs font-bold"
               style={{ background: 'var(--hp-accent)' }}
             >
               {user?.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
@@ -191,11 +216,21 @@ function SidebarContent({
               <button
                 type="submit"
                 title="Выйти"
-                className="w-full flex items-center justify-center p-2 rounded-[var(--hp-radius)] transition-colors duration-150 text-[var(--hp-sub)] hover:text-[var(--hp-danger)] hover:bg-[var(--hp-danger-tint)]"
+                className="w-full flex items-center justify-center p-1.5 rounded-[var(--hp-radius)] transition-colors duration-150 text-[var(--hp-sub)] hover:text-[var(--hp-danger)] hover:bg-[var(--hp-danger-tint)] focus:outline-none focus-visible:bg-[var(--hp-danger-tint)] focus-visible:text-[var(--hp-danger)]"
               >
                 <LogOut style={{ width: 16, height: 16 }} />
               </button>
             </form>
+            {onToggleCollapse && (
+              <button
+                type="button"
+                onClick={onToggleCollapse}
+                title="Развернуть меню"
+                className="w-full flex items-center justify-center p-1.5 rounded-[var(--hp-radius)] transition-colors duration-150 text-[var(--hp-sub)] hover:text-[var(--hp-ink)] hover:bg-[var(--hp-neutral-tint)] focus:outline-none focus-visible:bg-[var(--hp-neutral-tint)] focus-visible:text-[var(--hp-ink)]"
+              >
+                <PanelLeftOpen style={{ width: 16, height: 16 }} />
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -239,23 +274,15 @@ function MobileDrawer({
           transform: open ? 'translateX(0)' : 'translateX(-100%)',
         }}
       >
-        <div className="h-[72px] flex items-center justify-between px-5 border-b border-[var(--hp-border)] shrink-0">
-          <div className="flex items-center gap-3">
-            <div
-              className="w-9 h-9 rounded-[var(--hp-radius)] flex items-center justify-center shrink-0"
-              style={{ background: 'var(--hp-accent)' }}
+        <div className="h-[68px] flex items-center justify-between px-5 border-b border-[var(--hp-border)] shrink-0">
+          <div>
+            <span
+              className="font-bold text-[var(--hp-ink)] text-[18px] leading-tight block tracking-tight"
+              style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}
             >
-              <Building2 style={{ width: 18, height: 18 }} className="text-white" />
-            </div>
-            <div>
-              <span
-                className="font-bold text-[var(--hp-ink)] text-[17px] leading-tight block tracking-tight"
-                style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}
-              >
-                HousePro
-              </span>
-              <span className="text-[10px] text-[var(--hp-tertiary)] font-semibold tracking-widest uppercase leading-tight">CRM</span>
-            </div>
+              ХаусПро
+            </span>
+            <span className="text-[10px] text-[var(--hp-tertiary)] font-semibold tracking-widest uppercase leading-tight">CRM</span>
           </div>
           <button
             onClick={onClose}
@@ -330,41 +357,41 @@ export function Sidebar({ user }: { user: User | null }) {
         collapsed ? 'w-[72px]' : 'w-[260px]'
       )}
     >
-      {/* Logo area */}
+      {/* Logo area — высота ровно как у Header (68px), иначе граница под этим
+          блоком и граница под шапкой справа не совпадают по одной линии и
+          дают «ступеньку» ровно на стыке сайдбара и основного окна. */}
       <div className={cn(
-        'h-[72px] flex items-center border-b border-[var(--hp-border)] shrink-0',
+        'h-[68px] flex items-center border-b border-[var(--hp-border)] shrink-0',
         collapsed ? 'px-4 justify-center' : 'px-5',
       )}>
-        <div className="flex items-center gap-3 min-w-0">
+        {collapsed ? (
+          // Свёрнутая ширина (72px) слишком узкая для текста — здесь остаётся
+          // компактный монограмма-квадрат вместо иконки здания: буква имени,
+          // а не сторонний глиф, тот же принцип «только название».
           <div
-            className="w-9 h-9 rounded-[var(--hp-radius)] flex items-center justify-center shrink-0"
-            style={{ background: 'var(--hp-accent)' }}
+            className="w-8 h-8 rounded-[var(--hp-radius)] flex items-center justify-center shrink-0 text-white text-sm font-bold"
+            style={{ background: 'var(--hp-accent)', fontFamily: "'Source Serif 4', Georgia, serif" }}
           >
-            <Building2 className="text-white" style={{ width: 18, height: 18 }} />
+            Х
           </div>
-          {!collapsed && (
-            <div className="min-w-0">
-              <span
-                className="font-bold text-[var(--hp-ink)] text-[17px] leading-tight block tracking-tight"
-                style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}
-              >
-                HousePro
-              </span>
-              <span className="text-[10px] text-[var(--hp-tertiary)] font-semibold tracking-widest uppercase leading-tight">CRM</span>
-            </div>
-          )}
-        </div>
+        ) : (
+          <div className="min-w-0">
+            <span
+              className="font-bold text-[var(--hp-ink)] text-[18px] leading-tight block tracking-tight"
+              style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}
+            >
+              ХаусПро
+            </span>
+            <span className="text-[10px] text-[var(--hp-tertiary)] font-semibold tracking-widest uppercase leading-tight">CRM</span>
+          </div>
+        )}
       </div>
 
-      <SidebarContent user={user} collapsed={collapsed} />
-
-      {/* Collapse toggle */}
-      <button
-        onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-3.5 top-[88px] w-7 h-7 flex items-center justify-center rounded-[var(--hp-radius)] text-[var(--hp-sub)] hover:text-[var(--hp-ink)] transition-colors z-10 bg-[var(--hp-surface)] border border-[var(--hp-border)]"
-      >
-        {collapsed ? <ChevronRight style={{ width: 13, height: 13 }} /> : <ChevronLeft style={{ width: 13, height: 13 }} />}
-      </button>
+      {/* Сворачивание — обычная строка в подвале сайдбара (см. SidebarContent),
+          не отдельная плавающая кнопка на границе: раньше она стояла то на
+          скролле списка меню, то в шапке рядом с логотипом — в обоих случаях
+          выглядела чужеродно, единственный «бокс» на весь плоский сайдбар. */}
+      <SidebarContent user={user} collapsed={collapsed} onToggleCollapse={() => setCollapsed(!collapsed)} />
     </aside>
   )
 }

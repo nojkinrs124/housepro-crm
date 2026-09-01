@@ -163,10 +163,20 @@ input[type="week"] {
 }
 input[type="date"]::-webkit-date-and-time-value { text-align: left; min-width: 0; }
 input[type="date"]::-webkit-calendar-picker-indicator { margin-left: 4px; }
+/* Тонкий скролл везде — и WebKit-псевдоэлементы, и стандартное свойство
+   для Firefox/движков, которые ::-webkit-scrollbar не читают (иначе на части
+   систем вместо этого рисуется толстый непрозрачный системный скролл). */
+* { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--hp-sub) 35%, transparent) transparent; }
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(92,102,89,0.3); }
-::-webkit-scrollbar-thumb:hover { background: rgba(92,102,89,0.5); }
+::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--hp-sub) 30%, transparent); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--hp-sub) 50%, transparent); }
+
+/* Полностью скрытый скролл — для узких списков (меню сайдбара), где сама
+   полоса прокрутки визуально спорит с компактным содержимым. Прокрутка
+   колесом/трекпадом/свайпом продолжает работать, просто без видимого трека. */
+.hp-scroll-hidden { scrollbar-width: none; -ms-overflow-style: none; }
+.hp-scroll-hidden::-webkit-scrollbar { display: none; width: 0; height: 0; }
 
 /* ── Базовая карточка ── */
 .hp-card {
