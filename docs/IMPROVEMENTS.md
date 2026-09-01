@@ -451,7 +451,7 @@ const nextConfig: NextConfig = {
 
 | # | Проблема | Приоритет | Сложность | Влияние |
 |---|---|---|---|---|
-| 1 | Нет middleware — маршруты открыты | 🔴 P0 | Низкая | Безопасность |
+| 1 | ~~Нет middleware — маршруты открыты~~ | ✅ Done | Низкая | Безопасность |
 | 2 | ~~Нет Zod-валидации в actions~~ | ✅ Done | Средняя | Безопасность + DX |
 | 3 | ~~Search uses legacy clients~~ | ✅ Done | Низкая | Данные |
 | 4 | ~~Нет loading/error страниц~~ | ✅ Done | Низкая | UX |
@@ -463,7 +463,32 @@ const nextConfig: NextConfig = {
 | 10 | ~~Нет GIN-индексов для поиска~~ | ✅ Done | Средняя | Производительность |
 | 11 | ~~Нет env-валидации~~ | ✅ Done | Низкая | DX |
 | 12 | ~~Analytics page монолит~~ | ✅ Done | Средняя | Maintainability |
-| 13 | Нет тестов | 🔵 P3 | Высокая | Надёжность |
-| 14 | Нет rate limiting | 🔵 P3 | Средняя | Безопасность |
-| 15 | Нет мониторинга (Sentry) | 🔵 P3 | Низкая | Observability |
-| 16 | next/image без remotePatterns | 🔵 P3 | Низкая | Конфигурация |
+| 13 | ~~Нет тестов~~ — Vitest, 15 файлов | ✅ Done | Высокая | Надёжность |
+| 14 | ~~Нет rate limiting~~ — Upstash Redis | ✅ Done | Средняя | Безопасность |
+| 15 | ~~Нет мониторинга (Sentry)~~ | ✅ Done | Низкая | Observability |
+| 16 | ~~next/image без remotePatterns~~ | ✅ Done | Низкая | Конфигурация |
+| 17 | Legacy `clients`/`owners` ещё используются | 🟠 P1 | Средняя | Данные |
+| 18 | Три источника приоритетов расходились | ✅ Done | Низкая | Процесс |
+
+> **Сверено с кодом 02.09.2026.** Пункты 1, 13–16 были помечены открытыми, хотя давно
+> сделаны: `middleware.ts` есть в корне, тесты гоняются в `npm run check`, Upstash
+> подключён, Sentry в зависимостях, `remotePatterns` в `next.config.ts`.
+> **Этот файл — единственный источник приоритетов.** `docs/ROADMAP.md` — только
+> долгосрочные фазы, `docs/WORKFLOW.md` — только процесс; своих списков «что делать
+> дальше» они больше не держат.
+
+### #17 — Legacy `clients` / `owners`
+
+Таблицы объявлены legacy, но живые. Прежде чем их удалять (`ROADMAP.md`, Phase 1.7 —
+готовый `DROP TABLE ... CASCADE` **выполнять нельзя**), мигрировать на `contacts`:
+
+- `src/app/(dashboard)/contracts/page.tsx:56`
+- `src/app/(dashboard)/employees/[id]/page.tsx:35`
+- `src/features/clients/actions/clients.actions.ts:19`
+- `src/app/(dashboard)/clients/` — модуль целиком
+
+### #8 — Ручные типы вместо генерации (открыто)
+
+`src/types/database.ts:340` — всё ещё `export type Database = any`, файла
+`src/types/supabase.ts` нет, скрипта `db:types` нет. Генерировать через MCP
+`generate_typescript_types` (CLI `npx supabase gen types` ходит на заблокированный хост).

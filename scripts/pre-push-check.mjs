@@ -62,7 +62,7 @@ const allSourceFiles = walk(SRC, ['.ts', '.tsx'], ['node_modules', '.next', 'tes
 
 // ── Шаг 1: TypeScript ───────────────────────────────────────────────────
 
-section('1/5 · TypeScript (tsc --noEmit)')
+section('1/7 · TypeScript (tsc --noEmit)')
 try {
   execSync('npx tsc --noEmit', { cwd: ROOT, stdio: 'pipe' })
   record('TypeScript: ошибок нет', true)
@@ -72,7 +72,7 @@ try {
 
 // ── Шаг 2: event handlers в Server Components ───────────────────────────
 
-section('2/5 · Event handlers в Server Components')
+section('2/7 · Event handlers в Server Components')
 {
   const eventHandlerRe = /\bon(Click|Change|Submit|Drag|Drop|MouseEnter|MouseLeave|KeyDown|KeyUp|Focus|Blur)\w*\s*=/
   const problems = []
@@ -93,7 +93,7 @@ section('2/5 · Event handlers в Server Components')
 
 // ── Шаг 3: границы client/server (импорт функций из 'use client' файлов) ──
 
-section('3/5 · Границы client/server (импорт функций из \'use client\' файлов)')
+section('3/7 · Границы client/server (импорт функций из \'use client\' файлов)')
 {
   // 3.1 Найти все 'use client' файлы и их "функциональные" (не-компонентные) экспорты.
   // Эвристика: имя с маленькой буквы = обычная функция/значение (не React-компонент,
@@ -192,9 +192,40 @@ section('3/5 · Границы client/server (импорт функций из \
   )
 }
 
-// ── Шаг 4: build ─────────────────────────────────────────────────────────
+// ── Шаг 4: визуальный стандарт «Кабинет» ─────────────────────────────────
 
-section('4/5 · npm run build')
+section('4/7 · Визуальный стандарт «Кабинет»')
+{
+  const { checkFiles, allSourceFiles } = await import('./checks/design-tokens.mjs')
+  const { violations } = checkFiles(allSourceFiles())
+  const lines = violations.flatMap(v =>
+    v.hits.map(h => `  - ${v.file}:${h.line} [${h.rule}] ${h.msg}\n      ${h.text}`)
+  )
+  record(
+    violations.length === 0
+      ? 'Новых нарушений визуального стандарта нет'
+      : `Новых нарушений визуального стандарта: ${lines.length}`,
+    violations.length === 0,
+    lines.join('\n')
+  )
+}
+
+// ── Шаг 5: vercel.json — частота кронов ──────────────────────────────────
+
+section('5/7 · vercel.json — кроны не чаще суток')
+{
+  const { checkVercelCron } = await import('./checks/vercel-cron.mjs')
+  const problems = checkVercelCron()
+  record(
+    problems.length === 0 ? 'Кроны в vercel.json корректны' : 'Крон чаще суток — Vercel молча отбросит деплой',
+    problems.length === 0,
+    problems.map(p => `  - ${p}`).join('\n')
+  )
+}
+
+// ── Шаг 6: build ─────────────────────────────────────────────────────────
+
+section('6/7 · npm run build')
 if (!hasErrors) {
   try {
     execSync('npm run build', { cwd: ROOT, stdio: 'pipe' })
@@ -206,9 +237,9 @@ if (!hasErrors) {
   console.log('⏭  Пропущено (есть ошибки на предыдущих шагах)')
 }
 
-// ── Шаг 5: тесты ────────────────────────────────────────────────────────
+// ── Шаг 7: тесты ────────────────────────────────────────────────────────
 
-section('5/5 · npm test')
+section('7/7 · npm test')
 if (!hasErrors) {
   try {
     const out = execSync('npm test', { cwd: ROOT, stdio: 'pipe' }).toString()
@@ -229,6 +260,10 @@ if (hasErrors) {
   console.log('\n🚫 Есть ошибки — пуш выполнять НЕЛЬЗЯ, пока всё не исправлено.')
   process.exit(1)
 } else {
-  console.log('\n✅ Всё чисто — можно пушить.')
+  // Отпечаток кода — hook .claude/hooks/guard-bash.mjs пропустит `git push`
+  // только если проверка гонялась именно на этих файлах.
+  const { writeStamp } = await import('./checks/stamp.mjs')
+  const { at } = writeStamp()
+  console.log(`\n✅ Всё чисто — можно пушить. (отпечаток проверки записан ${at})`)
   process.exit(0)
 }
