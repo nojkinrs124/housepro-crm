@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from 'react'
 import { Phone, MessageCircle, UserCheck } from 'lucide-react'
+import { toast } from 'sonner'
 import { updateLeadStatusAction } from '../actions/leads.actions'
 import { convertLeadToClient } from '@/features/leads/actions/leads.actions'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
@@ -64,8 +65,10 @@ export function LeadsKanban({ leads: initialLeads }: { leads: any[] }) {
  const res = await updateLeadStatusAction(draggedLead.id, newStatus)
 
  if (res?.error) {
- // Rollback
+ // Rollback + видимая причина: молчаливый откат карточки читается как «лагает»,
+ // а не как отказ сервера.
  setLeads(prev => prev.map(l => l.id === draggedLead.id ? { ...l, status: draggedLead.status } : l))
+ toast.error(res.error)
  }
 
  setDraggedLead(null)

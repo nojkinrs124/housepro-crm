@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { toast } from 'sonner'
 import { updateLeadStatusAction } from '@/features/leads/actions/leads.actions'
 import { LEAD_STATUSES } from '@/features/leads/config/lead-statuses'
 
@@ -18,9 +19,20 @@ export function LeadStatusSelect({ leadId, currentStatus }: { leadId: string; cu
 
  async function handleChange(newStatus: string) {
  if (newStatus === status) return
+ const previous = status
  setLoading(true)
  setStatus(newStatus)
- await updateLeadStatusAction(leadId, newStatus)
+
+ const res = await updateLeadStatusAction(leadId, newStatus)
+
+ // Откат: без него отказ сервера был не виден вообще — плашка показывала новый
+ // статус до перезагрузки страницы, а в базе оставался старый (так молча
+ // терялись «Заинтересован» и «Отказ», запрещённые CHECK-ограничением).
+ if (res?.error) {
+ setStatus(previous)
+ toast.error(res.error)
+ }
+
  setLoading(false)
  }
 

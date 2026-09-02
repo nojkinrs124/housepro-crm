@@ -28,7 +28,9 @@ export default async function GenerateContractPage({
  .eq('id', id)
  .single()
 
- if (contractError && contractError.code !== 'PGRST116') {
+ // PGRST116 — записи нет; 22P02 — id из URL вообще не UUID (так /contracts/new/generate
+ // ронял рендер целиком вместо честной 404). Оба случая для страницы одинаковы.
+ if (contractError && !['PGRST116', '22P02'].includes(contractError.code)) {
  throw new Error(`Не удалось загрузить договор: ${contractError.message}`)
  }
  if (!contract) notFound()

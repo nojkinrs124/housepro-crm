@@ -28,13 +28,18 @@ test('карточки договора, генерации и сделки ре
   await login(page)
 
   await page.goto('/contracts')
-  const contractHref = await page.locator('a[href^="/contracts/"]').first().getAttribute('href')
+  // :not([href$="/new"]) — иначе первой в разметке идёт кнопка «Создать» и тест
+  // уходил на /contracts/new вместо карточки договора, ради которой написан.
+  const contractHref = await page.locator('a[href^="/contracts/"]:not([href$="/new"])').first().getAttribute('href')
   expect(contractHref, 'в списке нет ни одного договора').toBeTruthy()
   await openAndCheck(page, contractHref!)
   await openAndCheck(page, `${contractHref}/generate`)
 
   await page.goto('/deals')
-  const dealHref = await page.locator('a[href^="/deals/"]').first().getAttribute('href')
+  // Сделки по умолчанию открываются канбаном, а его карточки — не ссылки (переход
+  // через window.location), поэтому ссылку на конкретную сделку даёт только реестр.
+  await page.getByRole('button', { name: 'Реестр' }).click()
+  const dealHref = await page.locator('a[href^="/deals/"]:not([href$="/new"])').first().getAttribute('href')
   expect(dealHref, 'в списке нет ни одной сделки').toBeTruthy()
   await openAndCheck(page, dealHref!)
 })
