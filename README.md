@@ -131,6 +131,9 @@ supabase/
   functions/            # Edge Functions (в т.ч. Telegram-бот)
 ```
 
+Как работать в системе (для сотрудников агентства) — справочник по разделам в
+[`docs/handbook/`](./docs/handbook/README.md).
+
 Полное руководство по паттернам и правилам разработки — в [`CLAUDE.md`](./CLAUDE.md),
 по подключению внешних сервисов — в [`docs/INTEGRATIONS.md`](./docs/INTEGRATIONS.md).
 
