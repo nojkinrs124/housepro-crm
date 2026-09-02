@@ -6,8 +6,8 @@ export default function NewEmployeePage() {
  return (
  <div className="max-w-2xl mx-auto space-y-6">
  <PageHeader
- title="Добавить сотрудника"
- subtitle="Создание нового пользователя в системе"
+ title="Пригласить сотрудника"
+ subtitle="На указанный email придёт ссылка для входа и создания пароля"
  backHref="/employees"
  backLabel="Вернуться к сотрудникам"
  />

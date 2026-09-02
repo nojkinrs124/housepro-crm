@@ -31,9 +31,11 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
  // Статистика + KPI
  const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
 
- const [{ data: clientStats }, { data: dealStats }, { data: contractStats }, { data: taskStats },
+ // count: 'exact' + head: true возвращает число в `count`, а `data` при этом ВСЕГДА null.
+ // Раньше здесь бралось `data`, и все четыре счётчика на карточке показывали 0.
+ const [{ count: clientsCount }, { count: dealsCount }, { count: contractsCount }, { count: tasksCount },
  monthDeals, monthCompleted, { data: commissionData }] = await Promise.all([
- supabase.from('clients').select('id', { count: 'exact', head: true }).eq('manager_id', id),
+ supabase.from('contacts').select('id', { count: 'exact', head: true }).eq('manager_id', id),
  supabase.from('deals').select('id', { count: 'exact', head: true }).eq('manager_id', id),
  supabase.from('contracts').select('id', { count: 'exact', head: true }).eq('manager_id', id),
  supabase.from('tasks').select('id', { count: 'exact', head: true }).eq('assigned_to', id),
@@ -108,10 +110,10 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
  {/* Общая статистика */}
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
  {[
- { label: 'Клиентов', value: clientStats?.length ?? 0, sub: 'всего' },
- { label: 'Сделок', value: dealStats?.length ?? 0, sub: 'всего' },
- { label: 'Договоров', value: contractStats?.length ?? 0, sub: 'всего' },
- { label: 'Задач', value: taskStats?.length ?? 0, sub: 'назначено' },
+ { label: 'Контактов', value: clientsCount ?? 0, sub: 'всего' },
+ { label: 'Сделок', value: dealsCount ?? 0, sub: 'всего' },
+ { label: 'Договоров', value: contractsCount ?? 0, sub: 'всего' },
+ { label: 'Задач', value: tasksCount ?? 0, sub: 'назначено' },
  ].map(s => (
  <div key={s.label} className="hp-card p-4 text-center">
  <p className="text-2xl font-bold text-foreground">{s.value}</p>

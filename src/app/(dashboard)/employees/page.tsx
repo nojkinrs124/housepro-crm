@@ -48,7 +48,7 @@ export default async function EmployeesPage() {
  actions={
  <Link href="/employees/new" className={buttonVariants({ size: 'lg' })}>
  <Plus style={{ width: 16, height: 16 }} />
- Добавить
+ Пригласить
  </Link>
  }
  />
@@ -84,12 +84,12 @@ export default async function EmployeesPage() {
  <Users style={{ width: 24, height: 24, color: 'var(--hp-accent)' }} />
  </div>
  <p className="text-foreground font-bold text-base">Сотрудников ещё нет</p>
- <p className="text-muted-foreground text-sm mt-1">Добавьте первого сотрудника</p>
+ <p className="text-muted-foreground text-sm mt-1">Пригласите первого сотрудника по email</p>
  <Link href="/employees/new"
  className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 text-white text-sm font-bold transition-all"
  style={{ background: 'var(--hp-accent)', }}>
  <Plus style={{ width: 16, height: 16 }} />
- Добавить
+ Пригласить
  </Link>
  </div>
  ) : (

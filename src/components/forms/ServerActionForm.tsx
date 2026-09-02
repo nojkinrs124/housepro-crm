@@ -1,9 +1,9 @@
 'use client'
 
 import { useActionState } from 'react'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, CheckCircle2 } from 'lucide-react'
 
-type ActionResult = { error?: string; success?: boolean; fields?: Record<string, string[] | undefined> } | void | undefined
+type ActionResult = { error?: string; success?: boolean; message?: string; fields?: Record<string, string[] | undefined> } | void | undefined
 
 interface ServerActionFormProps extends Omit<React.FormHTMLAttributes<HTMLFormElement>, 'action' | 'children'> {
  /**
@@ -19,8 +19,12 @@ interface ServerActionFormProps extends Omit<React.FormHTMLAttributes<HTMLFormEl
 
 /**
  * Замена для form-action.ts: вместо простого приведения типов
- * оборачивает Server Action в useActionState и показывает ошибку
- * пользователю (баннер сверху формы), а не проглатывает её молча.
+ * оборачивает Server Action в useActionState и показывает результат
+ * пользователю баннером сверху формы, а не проглатывает его молча:
+ * { error } — красный, { success, message } — зелёный.
+ *
+ * Успех с сообщением нужен там, где после действия не происходит redirect —
+ * например приглашение сотрудника: письмо ушло, но страница остаётся.
  */
 export function ServerActionForm({ action, children, ...rest }: ServerActionFormProps) {
  const wrapped = async (_prevState: ActionResult, formData: FormData): Promise<ActionResult> => {
@@ -30,6 +34,12 @@ export function ServerActionForm({ action, children, ...rest }: ServerActionForm
 
  return (
  <form action={formAction} {...rest}>
+ {state?.success && state.message && (
+ <div className="flex items-center gap-2 border border-[var(--hp-border)] bg-[var(--hp-good-tint)] px-4 py-3 text-sm text-[var(--hp-good)] mb-4">
+ <CheckCircle2 className="w-4 h-4 shrink-0" />
+ {state.message}
+ </div>
+ )}
  {state?.error && (
  <div className="flex items-center gap-2 border border-[var(--hp-border)] bg-[var(--hp-danger-tint)] px-4 py-3 text-sm text-[var(--hp-danger)] mb-4">
  <AlertCircle className="w-4 h-4 shrink-0" />

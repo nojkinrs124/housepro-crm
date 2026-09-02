@@ -81,7 +81,7 @@ export async function uploadFileAction(formData: FormData) {
     return { error: `Ошибка записи: ${dbError.message}` }
   }
 
-  if (clientId) revalidatePath(`/clients/${clientId}`)
+  if (clientId) revalidatePath(`/contacts/${clientId}`)
   if (propertyId) revalidatePath(`/properties/${propertyId}`)
   if (contractId) revalidatePath(`/contracts/${contractId}`)
   if (dealId) revalidatePath(`/deals/${dealId}`)
@@ -121,7 +121,7 @@ export async function deleteFileAction(fileId: string) {
   const { error } = await supabase.from('files').delete().eq('id', fileId)
   if (error) return { error: error.message }
 
-  if (file.client_id) revalidatePath(`/clients/${file.client_id}`)
+  if (file.client_id) revalidatePath(`/contacts/${file.client_id}`)
   if (file.property_id) revalidatePath(`/properties/${file.property_id}`)
   if (file.contract_id) revalidatePath(`/contracts/${file.contract_id}`)
   if (file.deal_id) revalidatePath(`/deals/${file.deal_id}`)

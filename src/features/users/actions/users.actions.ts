@@ -6,51 +6,79 @@ import type { UserRole } from '@/types/database'
 import { requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
 import { normalizePhone } from '@/lib/utils'
+import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { rateLimitCreate } from '@/lib/rate-limit'
+import { getSiteUrl } from '@/lib/telegram/site-url'
+import { writeAuditLog } from '@/lib/audit'
 
 const VALID_ROLES: UserRole[] = ['admin', 'manager', 'agent', 'accountant']
 
 export async function createEmployeeAction(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return { error: 'Не авторизован' }
-  }
+  if (!user) return { error: 'Не авторизован' }
 
   const orgId = await requireOrgId().catch(() => null)
   if (!orgId) return { error: 'Организация не найдена' }
 
-  // Check admin role
   const permError = await requirePermission(user.id, 'employees', 'create')
   if (permError) return permError
 
-  const email = (formData.get('email') as string)?.trim()
+  const rl = await rateLimitCreate(user.id, 'employee_invite')
+  if (!rl.success) return { error: 'Слишком много приглашений подряд. Подождите минуту.' }
+
+  const email = (formData.get('email') as string)?.trim().toLowerCase()
   const full_name = (formData.get('full_name') as string)?.trim()
   const role = formData.get('role') as string
+  const phone = normalizePhone(formData.get('phone') as string)
 
-  if (!email || !full_name || !role) {
-    return { error: 'Заполните все обязательные поля' }
-  }
+  if (!email || !full_name || !role) return { error: 'Заполните все обязательные поля' }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { error: 'Некорректный email' }
+  if (!VALID_ROLES.includes(role as UserRole)) return { error: 'Неверная роль' }
 
-  if (!VALID_ROLES.includes(role as UserRole)) {
-    return { error: 'Неверная роль' }
-  }
+  // public.users.id — внешний ключ на auth.users(id) без DEFAULT: строку сотрудника
+  // физически нельзя создать раньше учётной записи. Поэтому не insert, а приглашение:
+  // Supabase заводит auth-пользователя и шлёт письмо со ссылкой, триггер
+  // on_auth_user_created создаёт строку в public.users (id, email, full_name).
+  const admin = getSupabaseAdmin()
+  const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
+    data: { full_name },
+    redirectTo: `${getSiteUrl()}/auth/callback?next=/reset-password`,
+  })
 
-  // public.users.id — внешний ключ на auth.users(id), без DEFAULT. Строку сотрудника
-  // физически нельзя создать раньше учётной записи, поэтому вставка ниже падала
-  // всегда: пользователь видел сырую ошибку Postgres про NOT NULL. Сгенерированные
-  // типы схемы это показали — с `Database = any` ошибка была не видна ни tsc, ни билду.
-  //
-  // Правильный путь — приглашение через Supabase Admin API (inviteUserByEmail) с
-  // service-role ключом: сначала заводится auth-пользователь, триггер handle_new_user
-  // создаёт строку в public.users, дальше ей проставляются роль и организация.
-  // Это отдельная задача, заведена в docs/IMPROVEMENTS.md.
-  return {
-    error:
-      'Добавление сотрудника вручную недоступно: сначала нужно пригласить его по email, ' +
-      'чтобы создалась учётная запись. Приглашения ещё не подключены — заведите ' +
-      'пользователя через панель Supabase, он появится в списке автоматически.',
+  if (inviteError) {
+    const already = /already been registered|already exists/i.test(inviteError.message)
+    return { error: already ? 'Пользователь с таким email уже зарегистрирован' : inviteError.message }
   }
+  if (!invited?.user) return { error: 'Supabase не вернул созданного пользователя' }
+
+  const newUserId = invited.user.id
+
+  // Триггер проставляет только id/email/full_name — роль, телефон и организацию
+  // дописываем сами. upsert, а не update: если триггер по какой-то причине не
+  // отработал, строка всё равно появится.
+  const { error: profileError } = await admin.from('users').upsert(
+    { id: newUserId, email, full_name, role, phone, organization_id: orgId, is_active: true },
+    { onConflict: 'id' }
+  )
+  if (profileError) return { error: `Приглашение отправлено, но профиль не заполнен: ${profileError.message}` }
+
+  // Ключевое: RLS определяет организацию через get_user_org_id(), а она читает
+  // organization_members. Без этой строки сотрудник войдёт и не увидит ничего.
+  const { error: memberError } = await admin.from('organization_members').upsert(
+    { organization_id: orgId, user_id: newUserId, role, is_active: true },
+    { onConflict: 'organization_id,user_id' }
+  )
+  if (memberError) return { error: `Приглашение отправлено, но доступ к организации не выдан: ${memberError.message}` }
+
+  await writeAuditLog({
+    userId: user.id, orgId,
+    action: 'create', entityType: 'employee',
+    entityId: newUserId, entityLabel: full_name,
+  })
+
+  revalidatePath('/employees')
+  return { success: true, message: `Приглашение отправлено на ${email}` }
 }
 
 export async function updateEmployeeAction(employeeId: string, formData: FormData) {

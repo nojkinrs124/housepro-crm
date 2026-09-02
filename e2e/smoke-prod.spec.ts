@@ -51,7 +51,18 @@ async function visitAll(page: import('@playwright/test').Page, routes: string[])
     page.on('console', onConsole)
 
     try {
-      const response = await page.goto(route, { waitUntil: 'domcontentloaded' })
+      // Маршруты-редиректы (например /payments/new → /accounting/transactions/new)
+      // оставляют навигацию доигрывать, и следующий goto прилетает ей в бок:
+      // Chromium отвечает net::ERR_ABORTED. Это гонка обхода, а не поломка страницы,
+      // поэтому одна повторная попытка — именно на ERR_ABORTED, остальные ошибки
+      // пробрасываем как есть.
+      let response
+      try {
+        response = await page.goto(route, { waitUntil: 'domcontentloaded' })
+      } catch (e) {
+        if (!/ERR_ABORTED/.test((e as Error).message)) throw e
+        response = await page.goto(route, { waitUntil: 'domcontentloaded' })
+      }
       const status = response?.status() ?? 0
       if (status >= 500) failures.push(`${route} → HTTP ${status}`)
 

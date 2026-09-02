@@ -16,7 +16,7 @@ const GROUPS: { key: keyof SearchResults; label: string; Icon: React.ElementType
 ]
 
 const QUICK_LINKS = [
- { label: 'Новый клиент', href: '/clients/new', Icon: Users, color: 'text-[var(--hp-info)]' },
+ { label: 'Новый клиент', href: '/contacts/new', Icon: Users, color: 'text-[var(--hp-info)]' },
  { label: 'Новый объект', href: '/properties/new', Icon: Home, color: 'text-[var(--hp-good)]' },
  { label: 'Новый договор', href: '/contracts/new', Icon: FileText, color: 'text-[var(--hp-sub)]' },
  { label: 'Новая задача', href: '/tasks/new', Icon: CheckSquare, color: 'text-[var(--hp-warn)]' },

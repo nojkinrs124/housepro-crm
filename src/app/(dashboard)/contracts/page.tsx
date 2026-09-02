@@ -48,19 +48,10 @@ export default async function ContractsPage({
  : Promise.resolve({ data: [] }),
  ])
 
- const legacyClientIds = (contracts ?? [])
- .filter(c => !c.client_contact_id && c.client_id)
- .map(c => c.client_id)
- .filter((id): id is string => !!id && !contactIds.includes(id))
-
- const { data: legacyClientsData } = legacyClientIds.length > 0
- ? await supabase.from('clients').select('id, full_name').in('id', legacyClientIds)
- : { data: [] }
-
- const clientMap = Object.fromEntries([
- ...(contactsData ?? []).map(c => [c.id, c]),
- ...(legacyClientsData ?? []).map(c => [c.id, c]),
- ])
+ // Запасной путь через legacy-таблицу clients убран 02.09.2026: договоров со
+ // ссылкой client_id без client_contact_id в базе нет ни одного, а сама таблица
+ // содержит одну запись, которая уже есть в contacts. Имена берутся из contacts.
+ const clientMap = Object.fromEntries((contactsData ?? []).map(c => [c.id, c]))
  const propertyMap = Object.fromEntries((propertiesData ?? []).map(p => [p.id, p]))
 
  const statusKeys = Object.keys(statusConfig)
