@@ -4,6 +4,7 @@ type Resource =
   | 'contacts' | 'deals' | 'leads' | 'properties'
   | 'contracts' | 'payments' | 'employees' | 'accounting'
   | 'analytics' | 'settings' | 'tasks' | 'showings' | 'collections' | 'files'
+  | 'knowledge'
 
 type Action = 'read' | 'create' | 'update' | 'delete' | 'export'
 
@@ -37,6 +38,7 @@ const PERMISSIONS: Record<UserRole, Partial<Record<Resource, Action[]>>> = {
     showings:   ['read', 'create', 'update', 'delete'],
     collections:['read', 'create', 'update', 'delete'],
     files:      ['read', 'create', 'update', 'delete'],
+    knowledge:  ['read', 'create', 'update', 'delete'],
   },
   manager: {
     contacts:   ['read', 'create', 'update'],
@@ -53,6 +55,7 @@ const PERMISSIONS: Record<UserRole, Partial<Record<Resource, Action[]>>> = {
     showings:   ['read', 'create', 'update', 'delete'],
     collections:['read', 'create', 'update', 'delete'],
     files:      ['read', 'create', 'update', 'delete'],
+    knowledge:  ['read', 'create', 'update'],
   },
   agent: {
     contacts:   ['read', 'create', 'update'],
@@ -64,6 +67,7 @@ const PERMISSIONS: Record<UserRole, Partial<Record<Resource, Action[]>>> = {
     showings:   ['read', 'create', 'update'],
     collections:['read', 'create', 'update'],
     files:      ['read', 'create'],
+    knowledge:  ['read'],
   },
   accountant: {
     accounting: ['read', 'create', 'update', 'export'],
@@ -72,6 +76,7 @@ const PERMISSIONS: Record<UserRole, Partial<Record<Resource, Action[]>>> = {
     payments:   ['read', 'create', 'update'],
     analytics:  ['read'],
     files:      ['read'],
+    knowledge:  ['read'],
   },
 }
 

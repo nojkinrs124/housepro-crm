@@ -2202,6 +2202,59 @@ export type Database = {
           },
         ]
       }
+      knowledge_articles: {
+        Row: {
+          body: string
+          category: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_published: boolean
+          organization_id: string
+          slug: string
+          sort_order: number
+          summary: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_published?: boolean
+          organization_id: string
+          slug: string
+          sort_order?: number
+          summary?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_published?: boolean
+          organization_id?: string
+          slug?: string
+          sort_order?: number
+          summary?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_articles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_activities: {
         Row: {
           content: string | null

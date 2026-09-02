@@ -23,6 +23,7 @@ const DASHBOARD_ROUTES = [
   '/employees', '/employees/new',
   '/calendar',
   '/management',
+  '/knowledge',
   '/payments/new',
   '/search',
   '/showings', '/showings/new',

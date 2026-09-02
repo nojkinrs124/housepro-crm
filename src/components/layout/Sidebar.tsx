@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Users, Home, FileText, BookOpen,
   CheckSquare, Settings, LogOut, PanelLeftClose, PanelLeftOpen,
   Zap, TrendingUp, UserCog, BarChart2, X, Menu,
-  Eye, FolderOpen, CalendarDays, Building2,
+  Eye, FolderOpen, CalendarDays, Building2, Library,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
@@ -28,7 +28,8 @@ const navigation = [
   { name: 'Задачи',      href: '/tasks',         icon: CheckSquare,     section: null },
   { name: 'Бухгалтерия', href: '/accounting',    icon: BookOpen,        section: null },
   { name: 'Аналитика',   href: '/analytics',     icon: BarChart2,       section: null },
-  { name: 'Сотрудники',  href: '/employees',     icon: UserCog,         section: 'Система' },
+  { name: 'База знаний', href: '/knowledge',     icon: Library,         section: 'Система' },
+  { name: 'Сотрудники',  href: '/employees',     icon: UserCog,         section: null },
   { name: 'Настройки',   href: '/settings',      icon: Settings,        section: null },
 ]
 
