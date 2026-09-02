@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useActionState } from 'react'
 import { createTransactionAction, updateTransactionAction } from '../actions/accounting.actions'
-import type { AccountingTransaction, AccountingCategory, Contract, Deal, User, Contact } from '@/types/database'
+import type { AccountingTransaction, AccountingCategory, Contract, Deal, User, Contact, Property } from '@/types/database'
 import { ArrowDownCircle, ArrowUpCircle, Wallet, Tag, Link2, CircleAlert } from 'lucide-react'
 
 interface Props {
@@ -14,6 +14,11 @@ interface Props {
  deals: Pick<Deal, 'id' | 'deal_type'>[]
  employees: Pick<User, 'id' | 'full_name'>[]
  contacts: Pick<Contact, 'id' | 'full_name' | 'company_name' | 'client_type'>[]
+ properties: Pick<Property, 'id' | 'title' | 'address'>[]
+ /** Предвыбранный объект — со страницы объекта в управлении */
+ defaultPropertyId?: string
+ /** Предвыбранный договор — например «начислить аренду» из карточки управления */
+ defaultContractId?: string
 }
 
 type State = { error?: string; fields?: Record<string, string[]> } | null
@@ -36,7 +41,7 @@ function contactLabel(c: Pick<Contact, 'full_name' | 'company_name' | 'client_ty
  return c.client_type === 'legal_entity' && c.company_name ? c.company_name : c.full_name
 }
 
-export function TransactionForm({ transaction, categories, contracts, deals, employees, contacts }: Props) {
+export function TransactionForm({ transaction, categories, contracts, deals, employees, contacts, properties, defaultPropertyId, defaultContractId }: Props) {
  const isEdit = Boolean(transaction)
  const action = transaction
  ? updateTransactionAction.bind(null, transaction.id)
@@ -223,13 +228,29 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
  {/* Links */}
  <div className={cardCls} style={cardShadow}>
  {sectionTitle(<Link2 className="w-4 h-4" />, 'Привязки')}
- <p className="text-xs text-muted-foreground -mt-2 mb-4">Необязательно — свяжите операцию с договором, сделкой, контактом или сотрудником</p>
+ <p className="text-xs text-muted-foreground -mt-2 mb-4">Необязательно — свяжите операцию с объектом, договором, сделкой, контактом или сотрудником</p>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+ <div className="space-y-1.5">
+ <label className="block text-sm font-semibold text-foreground">Объект</label>
+ <select
+ name="property_id"
+ defaultValue={transaction?.property_id ?? defaultPropertyId ?? ''}
+ className={selectCls}
+ >
+ <option value="">— по договору —</option>
+ {properties.map(p => (
+ <option key={p.id} value={p.id}>{p.title || p.address || p.id.slice(0, 8)}</option>
+ ))}
+ </select>
+ <p className="text-xs text-muted-foreground">
+ Пусто — объект возьмётся из договора. Нужен разделу «Управление»: по нему считается доходность объекта.
+ </p>
+ </div>
  <div className="space-y-1.5">
  <label className="block text-sm font-semibold text-foreground">Договор</label>
  <select
  name="contract_id"
- defaultValue={transaction?.contract_id ?? ''}
+ defaultValue={transaction?.contract_id ?? defaultContractId ?? ''}
  className={selectCls}
  >
  <option value="">— не привязан —</option>

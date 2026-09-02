@@ -187,6 +187,23 @@ const payload: Update<'showings'> = { … }    // вместо Record<string, un
 
 ---
 
+## Версия
+
+Версия CRM живёт в `package.json` и показывается в футере настроек (плюс SHA
+сборки на Vercel) — единственный источник, руками в разметку не вписывать:
+`import { APP_VERSION } from '@/lib/version'`.
+
+Поднимать при каждом изменении кода, тем же коммитом:
+
+```bash
+npm run version:patch   # исправление поведения
+npm run version:minor   # новая возможность
+npm run version:major   # ломающее изменение
+```
+
+Пуш с правками в `src/` или `supabase/migrations/` без поднятой версии
+блокирует хук `guard-bash` — помнить не нужно.
+
 ## Что проверяется автоматически
 
 Эти правила больше не нужно держать в голове — они не дадут себя нарушить
@@ -194,7 +211,7 @@ const payload: Update<'showings'> = { … }    // вместо Record<string, un
 
 | Хук | Что делает |
 |---|---|
-| `guard-bash` | блокирует `git push` без зелёного `npm run check` на **текущем** коде; секреты и PAT в командной строке; `npm install` без `--legacy-peer-deps` и запрещённые пакеты (`axios`, `react-query`, второй drag-and-drop) |
+| `guard-bash` | блокирует `git push` без зелёного `npm run check` на **текущем** коде; пуш с правками кода без поднятой версии в `package.json`; секреты и PAT в командной строке; `npm install` без `--legacy-peer-deps` и запрещённые пакеты (`axios`, `react-query`, второй drag-and-drop) |
 | `guard-sql` | блокирует DDL через `execute_sql` — только `apply_migration` |
 | `guard-migration` | блокирует `DROP TABLE` / `TRUNCATE` / `DROP COLUMN` через `apply_migration` — единственный путь к потере боевых данных |
 | `post-edit` | на каждую правку: визуальный стандарт, новые `any`, границы client/server, дубль имени в actions, `force-dynamic` в GET-роутах, частота кронов |

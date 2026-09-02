@@ -20,7 +20,10 @@ export default async function NewContractPage({
 }: {
   // contact_id — универсальный параметр, роль определяется автоматически.
   // client_id/owner_id оставлены для обратной совместимости со старыми ссылками.
-  searchParams: Promise<{ client_id?: string; owner_id?: string; contact_id?: string; property_id?: string; deal_id?: string }>
+  searchParams: Promise<{
+    client_id?: string; owner_id?: string; contact_id?: string
+    property_id?: string; deal_id?: string; type?: string
+  }>
 }) {
   const params = await searchParams
   const { owners, clients, properties, representativesByContact, baseContracts, companyProfiles, defaultCompanyProfileId, deals } =
@@ -102,7 +105,7 @@ export default async function NewContractPage({
         submitLabel="Создать договор"
         mode="create"
         defaults={{
-          contract_type: dealDefaults.contract_type,
+          contract_type: dealDefaults.contract_type ?? params.type,
           owner_contact_id: dealDefaults.owner_contact_id ?? contactOwnerId,
           client_contact_id: dealDefaults.client_contact_id ?? contactClientId,
           owner_representative_id: dealDefaults.owner_representative_id,

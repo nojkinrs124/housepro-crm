@@ -1,6 +1,6 @@
 {
   "name": "housepro-crm",
-  "version": "0.1.0",
+  "version": "1.1.0",
   "private": true,
   "license": "MIT",
   "scripts": {
@@ -20,7 +20,10 @@
     "check:server": "node scripts/checks/server-rules.mjs",
     "check:any": "node scripts/checks/no-any.mjs",
     "check:any:baseline": "node scripts/checks/no-any.mjs --baseline",
-    "db:types": "npx supabase gen types typescript --project-id zwclvcswvhjeqwxrkbte > src/types/supabase.ts"
+    "db:types": "npx supabase gen types typescript --project-id zwclvcswvhjeqwxrkbte > src/types/supabase.ts.tmp && mv src/types/supabase.ts.tmp src/types/supabase.ts || (rm -f src/types/supabase.ts.tmp && echo 'gen types упал — supabase login или SUPABASE_ACCESS_TOKEN; src/types/supabase.ts не тронут' && exit 1)",
+    "version:patch": "npm version patch --no-git-tag-version",
+    "version:minor": "npm version minor --no-git-tag-version",
+    "version:major": "npm version major --no-git-tag-version"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

@@ -6,7 +6,16 @@ import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { DadataSuggestInput } from '@/components/forms/DadataSuggestInput'
 
-export default async function NewPropertyPage() {
+export default async function NewPropertyPage({
+ searchParams,
+}: {
+ searchParams: Promise<{ deal_type?: string }>
+}) {
+ // Раздел «Управление» приводит сюда со ссылкой ?deal_type=management —
+ // иначе объект пришлось бы вручную переключать после создания.
+ const { deal_type: dealTypeParam } = await searchParams
+ const dealTypes = ['rent', 'sale', 'management', 'subrent']
+ const defaultDealType = dealTypes.includes(dealTypeParam ?? '') ? dealTypeParam! : 'rent'
  const supabase = await createClient()
  const { data: owners } = await supabase.from('contacts').select('id, full_name').in('role', ['owner', 'both']).order('full_name')
 
@@ -75,7 +84,7 @@ export default async function NewPropertyPage() {
  </div>
  <div className="space-y-1.5">
  <label className={labelCls}>Тип сделки</label>
- <select name="deal_type" defaultValue="rent" className={selectCls}>
+ <select name="deal_type" defaultValue={defaultDealType} className={selectCls}>
  <option value="rent">Аренда</option>
  <option value="sale">Продажа</option>
  <option value="management">Управление</option>

@@ -5,8 +5,8 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, Users, Home, FileText, BookOpen,
   CheckSquare, Settings, LogOut, PanelLeftClose, PanelLeftOpen,
-  Zap, TrendingUp, UserCog, Download, BarChart2, X, Menu,
-  Eye, FolderOpen,
+  Zap, TrendingUp, UserCog, BarChart2, X, Menu,
+  Eye, FolderOpen, CalendarDays, Building2,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
@@ -20,14 +20,15 @@ const navigation = [
   { name: 'Сделки',      href: '/deals',         icon: TrendingUp,      section: null },
   { name: 'Контакты',    href: '/contacts',      icon: Users,           section: null },
   { name: 'Объекты',     href: '/properties',    icon: Home,            section: 'База' },
+  { name: 'Управление',  href: '/management',    icon: Building2,       section: null },
   { name: 'Показы',      href: '/showings',      icon: Eye,             section: null },
   { name: 'Подборки',    href: '/collections',   icon: FolderOpen,      section: null },
   { name: 'Договоры',    href: '/contracts',     icon: FileText,        section: null },
-  { name: 'Задачи',      href: '/tasks',         icon: CheckSquare,     section: 'Управление' },
+  { name: 'Календарь',   href: '/calendar',      icon: CalendarDays,    section: 'Управление' },
+  { name: 'Задачи',      href: '/tasks',         icon: CheckSquare,     section: null },
   { name: 'Бухгалтерия', href: '/accounting',    icon: BookOpen,        section: null },
   { name: 'Аналитика',   href: '/analytics',     icon: BarChart2,       section: null },
-  { name: 'Экспорт',     href: '/export',        icon: Download,        section: 'Система' },
-  { name: 'Сотрудники',  href: '/employees',     icon: UserCog,         section: null },
+  { name: 'Сотрудники',  href: '/employees',     icon: UserCog,         section: 'Система' },
   { name: 'Настройки',   href: '/settings',      icon: Settings,        section: null },
 ]
 

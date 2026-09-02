@@ -375,6 +375,7 @@ export interface AccountingTransaction {
   deal_id?: string
   contact_id?: string
   employee_id?: string
+  property_id?: string
   recurring_rule_id?: string
   legacy_payment_id?: string
   created_at: string
@@ -382,6 +383,7 @@ export interface AccountingTransaction {
   // Relations
   category?: AccountingCategory
   contract?: { id: string; contract_number?: string; contract_type?: string }
+  property?: { id: string; title?: string; address?: string }
   deal?: { id: string; deal_type?: string }
   contact?: { id: string; full_name: string }
   employee?: User

@@ -22,6 +22,32 @@ function parseAmount(raw: unknown): number | null {
   return isNaN(n) || n <= 0 ? null : n
 }
 
+type Client = Awaited<ReturnType<typeof createClient>>
+
+/**
+ * Объект операции: явно выбранный в форме, иначе — объект её договора.
+ *
+ * Раздел «Управление» считает доходность по property_id, а до появления этой
+ * колонки объект у платежа доставался только через договор — расходы без
+ * договора (коммуналка, ремонт) не относились ни к какому объекту.
+ */
+async function resolvePropertyId(
+  supabase: Client,
+  propertyId: string | null,
+  contractId: string | null,
+): Promise<{ property_id?: string }> {
+  if (propertyId) return { property_id: propertyId }
+  if (!contractId) return {}
+
+  const { data } = await supabase
+    .from('contracts')
+    .select('property_id')
+    .eq('id', contractId)
+    .maybeSingle()
+
+  return data?.property_id ? { property_id: data.property_id } : {}
+}
+
 // ─── Stats ────────────────────────────────────────────────────────────────────
 
 export async function getAccountingStats(): Promise<AccountingStats> {
@@ -167,6 +193,7 @@ export async function createTransactionAction(_prevState: unknown, formData: For
   const dealId     = formData.get('deal_id') as string | null
   const contactId  = formData.get('contact_id') as string | null
   const employeeId = formData.get('employee_id') as string | null
+  const propertyId = formData.get('property_id') as string | null
 
   if (!type || !['income', 'expense'].includes(type)) return { error: 'Тип транзакции обязателен' }
   if (!amount) return { error: 'Укажите корректную сумму (больше 0)' }
@@ -190,6 +217,9 @@ export async function createTransactionAction(_prevState: unknown, formData: For
     ...(dealId      && { deal_id:         dealId }),
     ...(contactId   && { contact_id:      contactId }),
     ...(employeeId  && { employee_id:     employeeId }),
+    // Объект берём из формы, а если не выбран — наследуем от договора:
+    // доходность объекта в управлении считается именно по этой колонке.
+    ...(await resolvePropertyId(supabase, propertyId, contractId)),
   }
 
   const { data, error } = await supabase
@@ -286,6 +316,7 @@ export async function updateTransactionAction(id: string, _prevState: unknown, f
   const dealId     = formData.get('deal_id') as string | null
   const contactId  = formData.get('contact_id') as string | null
   const employeeId = formData.get('employee_id') as string | null
+  const propertyId = formData.get('property_id') as string | null
 
   const permError = await requirePermission(user.id, 'accounting', 'update')
   if (permError) return permError
@@ -300,6 +331,8 @@ export async function updateTransactionAction(id: string, _prevState: unknown, f
     deal_id:        dealId      || null,
     contact_id:     contactId   || null,
     employee_id:    employeeId  || null,
+    property_id:    null,
+    ...(await resolvePropertyId(supabase, propertyId, contractId)),
   }
 
   const { error } = await supabase

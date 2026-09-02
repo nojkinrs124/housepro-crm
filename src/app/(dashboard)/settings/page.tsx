@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
-import { Settings, Building2, Bell, Shield, Database, ChevronRight, ScrollText, CreditCard, Key, Webhook, Megaphone, Mail, Upload, PhoneCall, Signature } from 'lucide-react'
+import { Settings, Building2, Bell, Shield, Database, ChevronRight, ScrollText, CreditCard, Key, Webhook, Megaphone, Mail, Upload, Download, PhoneCall, Signature } from 'lucide-react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { APP_VERSION, BUILD_SHA } from '@/lib/version'
 
 const roleLabels: Record<string, string> = {
   admin: 'Администратор',
@@ -31,6 +32,7 @@ const SETTINGS_GROUPS = [
       { icon: Shield, title: 'Безопасность', desc: 'Роли, доступы, пароли', href: '/settings/security' },
       { icon: ScrollText, title: 'Журнал аудита', desc: 'История изменений (только admin)', href: '/settings/audit' },
       { icon: Upload, title: 'Импорт данных', desc: 'Перенос базы из Excel или CSV', href: '/settings/import' },
+      { icon: Download, title: 'Экспорт объектов', desc: 'XML-фиды для площадок и CSV для 1С', href: '/settings/export' },
     ],
   },
   {
@@ -116,7 +118,7 @@ export default async function SettingsPage() {
       ))}
 
       <p className="text-xs text-muted-foreground text-center py-1">
-        ХаусПро CRM v1.0.0 · Powered by Next.js + Supabase
+        ХаусПро CRM v{APP_VERSION}{BUILD_SHA ? ` · сборка ${BUILD_SHA}` : ''} · Powered by Next.js + Supabase
       </p>
     </div>
   )

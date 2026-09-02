@@ -21,7 +21,8 @@ const DASHBOARD_ROUTES = [
   '/analytics',
   '/collections', '/collections/new',
   '/employees', '/employees/new',
-  '/export',
+  '/calendar',
+  '/management',
   '/payments/new',
   '/search',
   '/showings', '/showings/new',
@@ -30,6 +31,7 @@ const DASHBOARD_ROUTES = [
   '/settings/billing', '/settings/company', '/settings/company/new',
   '/settings/general', '/settings/notifications', '/settings/profile',
   '/settings/security', '/settings/templates', '/settings/webhooks',
+  '/settings/export',
 ]
 
 const ERROR_MARKERS = [

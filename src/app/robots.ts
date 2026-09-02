@@ -35,7 +35,7 @@ export default function robots(): MetadataRoute.Robots {
           '/showings',
           '/collections',
           '/search',
-          '/export',
+          '/calendar',
           '/c/',
           '/r/',
         ],

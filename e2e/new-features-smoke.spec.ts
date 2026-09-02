@@ -76,7 +76,7 @@ test.describe('Новые разделы CRM', () => {
     { path: '/settings/channels', label: 'Каналы связи', expect: /Каналы связи/ },
     { path: '/settings/payments', label: 'Приём платежей', expect: /Приём платежей/ },
     { path: '/contacts/duplicates', label: 'Дубли контактов', expect: /Дубли контактов/ },
-    { path: '/showings/calendar', label: 'Календарь показов', expect: /Календарь показов/ },
+    { path: '/calendar', label: 'Календарь', expect: /^Календарь$/ },
     { path: '/accounting/bank-import', label: 'Сверка с банком', expect: /Сверка с банком/ },
   ]
 

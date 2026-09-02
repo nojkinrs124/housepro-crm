@@ -53,7 +53,7 @@ export default async function ShowingsPage() {
         subtitle={`${showings.length} показов`}
         actions={
           <>
-            <Link href="/showings/calendar" className={buttonVariants({ variant: 'secondary', size: 'sm' })}>
+            <Link href="/calendar?kind=showing" className={buttonVariants({ variant: 'secondary', size: 'sm' })}>
               <CalendarDays style={{ width: 16, height: 16 }} />
               Календарь
             </Link>

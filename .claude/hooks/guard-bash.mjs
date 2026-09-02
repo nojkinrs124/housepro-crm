@@ -1,12 +1,16 @@
 #!/usr/bin/env node
 /**
- * PreToolUse hook на Bash. Два запрета:
+ * PreToolUse hook на Bash. Три запрета:
  *
  *   1. `git push` без зелёного `npm run check` на текущем коде.
  *      Раньше это было правилом капслоком в CLAUDE.md (в двух местах),
  *      в docs/WORKFLOW.md и в памяти — то есть соблюдалось по настроению.
  *
- *   2. Секреты в командной строке: PAT в URL репозитория, service role key,
+ *   2. Пуш с правками кода без поднятой версии в package.json — иначе по
+ *      интерфейсу не понять, что именно задеплоено (в футере годами висела
+ *      зашитая руками «v1.0.0» при "version": "0.1.0" в package.json).
+ *
+ *   3. Секреты в командной строке: PAT в URL репозитория, service role key,
  *      боевые ключи Stripe/Resend, пароли E2E. Токен из `git remote set-url
  *      https://TOKEN@github.com/...` оседает в `git remote -v`, в истории
  *      шелла и в логах.
@@ -17,6 +21,7 @@
  */
 
 import { execFileSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 
 const SECRET_PATTERNS = [
   { re: /https:\/\/[^\s/@]+@github\.com/i, what: 'PAT в URL репозитория' },
@@ -116,7 +121,43 @@ process.stdin.on('end', async () => {
           `Если проверка уже была зелёной, а код после неё правился — прогнать заново, правки не проверены.`
       )
     }
+
+    const staleVersion = versionBumpMissing()
+    if (staleVersion) {
+      block(
+        `ЗАБЛОКИРОВАНО: в пуше есть правки кода, а версия осталась ${staleVersion}.\n\n` +
+          `Поднять по semver и закоммитить package.json вместе с изменениями:\n` +
+          `  npm run version:patch   # исправление поведения\n` +
+          `  npm run version:minor   # новая возможность\n` +
+          `  npm run version:major   # ломающее изменение\n\n` +
+          `Версия видна в футере настроек — по ней понимают, что именно раскатано в проде.`
+      )
+    }
   }
 
   process.exit(0)
 })
+
+/**
+ * Версия должна расти вместе с кодом. Сравниваем с той, что уже лежит в
+ * origin/main: правки только в документации или тестах бампа не требуют.
+ */
+function versionBumpMissing() {
+  try {
+    const changed = execFileSync('git', ['diff', '--name-only', 'origin/main...HEAD'], { encoding: 'utf8' })
+      .split('\n')
+      .filter(Boolean)
+
+    const touchesCode = changed.some(f => f.startsWith('src/') || f.startsWith('supabase/migrations/'))
+    if (!touchesCode) return null
+
+    const remote = JSON.parse(execFileSync('git', ['show', 'origin/main:package.json'], { encoding: 'utf8' }))
+    const local = JSON.parse(readFileSync('package.json', 'utf8'))
+    if (remote.version !== local.version) return null
+
+    return local.version
+  } catch {
+    // Нет origin/main, первый пуш, отвязанная ветка — не мешаем работать
+    return null
+  }
+}
