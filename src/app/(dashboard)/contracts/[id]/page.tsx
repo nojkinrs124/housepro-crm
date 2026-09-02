@@ -39,8 +39,18 @@ const statusLabels: Record<string, string> = {
 }
 
 
-export default async function ContractPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ContractPage({
+ params,
+ searchParams,
+}: {
+ params: Promise<{ id: string }>
+ searchParams: Promise<{ created?: string }>
+}) {
  const { id } = await params
+ // Мастер оформления сделки перечисляет в этом параметре, что он создал:
+ // договор, начисления, задачу, статус объекта — иначе результат цепочки
+ // виден только по разным разделам.
+ const { created } = await searchParams
  const supabase = await createClient()
 
  // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -168,6 +178,16 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
  }
  />
 
+
+ {created && (
+ <div className="hp-block">
+ <div className="hp-block-header">Сделка оформлена</div>
+ <div className="hp-block-item">
+ <span className="mt-0.5 w-1.5 h-1.5 rounded-full shrink-0 bg-[var(--hp-good)]" />
+ <span className="flex-1 min-w-0 text-[var(--hp-ink)]">Создано: {created}</span>
+ </div>
+ </div>
+ )}
 
  <ReadinessPanel issues={issues} />
 

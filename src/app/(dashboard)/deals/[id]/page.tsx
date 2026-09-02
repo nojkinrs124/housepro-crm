@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import {
-  Edit, Home, Plus, FileText, Paperclip, CheckSquare, ExternalLink,
+  Edit, Home, Plus, FileText, Paperclip, CheckSquare, ExternalLink, Zap,
 } from 'lucide-react'
 import { DeleteDealButton } from '@/features/deals/components/DeleteDealButton'
 import { DealComments } from '@/features/deals/components/DealComments'
@@ -224,6 +224,19 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
         }
         actions={
           <>
+            {/* Оформление — цепочка договор → начисления → задача → статус
+                объекта одним подтверждением. Скрыто только у отменённой сделки:
+                по завершённой договор нередко оформляют задним числом, а этап
+                автоматика назад всё равно не двигает. */}
+            {deal.status !== 'cancelled' && (
+              <Link
+                href={`/deals/${id}/complete`}
+                className="flex items-center gap-2 px-4 py-2 rounded-[var(--hp-radius)] text-sm font-semibold text-white bg-[var(--hp-accent)] hover:bg-[var(--hp-accent-hover)] transition-colors whitespace-nowrap"
+              >
+                <Zap className="w-4 h-4" />
+                Оформить
+              </Link>
+            )}
             <Link
               href={`/deals/${id}/edit`}
               className="flex items-center gap-2 px-4 py-2 border border-[var(--hp-border)] rounded-[var(--hp-radius)] text-sm font-semibold text-[var(--hp-ink)] hover:border-[var(--hp-sub)] transition-colors whitespace-nowrap"
