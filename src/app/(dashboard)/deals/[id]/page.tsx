@@ -113,7 +113,6 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
       .from('deals')
       .select(`
         *,
-        client:clients(full_name, phone),
         property:properties(id, title, address, property_type, area, land_area, cadastral_number, encumbrances, price),
         manager:users(full_name),
         owner_contact:contacts!deals_owner_contact_id_fkey(id, full_name, company_name, client_type, phone, status),
@@ -167,7 +166,6 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
 
   const ownerContact  = deal.owner_contact as PartyContact | null
   const clientContact = deal.client_contact as PartyContact | null
-  const legacyClient  = deal.client as { full_name?: string; phone?: string } | null
   const property      = deal.property as {
     id?: string; title?: string; address?: string; property_type?: string
     area?: number; land_area?: number; cadastral_number?: string; encumbrances?: string
@@ -417,8 +415,6 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
             <Party
               role={isSale ? 'Покупатель' : 'Арендатор'}
               contact={clientContact}
-              fallbackName={legacyClient?.full_name}
-              fallbackPhone={legacyClient?.phone}
             />
             {manager?.full_name && (
               <div className="hp-block-item">
@@ -468,7 +464,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
             </Link>
           </FileUploadToggle>
 
-          <CommunicationTimeline dealId={id} phone={clientContact?.phone ?? legacyClient?.phone ?? null} />
+          <CommunicationTimeline dealId={id} phone={clientContact?.phone ?? null} />
 
           {/* Быстрые действия */}
           <div className="hp-block">

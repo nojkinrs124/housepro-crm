@@ -51,7 +51,6 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
  const { data: rawContract, error: contractError } = await supabase
  .from('contracts')
  .select(`*,
- client:clients(full_name, phone),
  owner_contact:contacts!contracts_owner_contact_id_fkey(id, full_name, phone),
  client_contact:contacts!contracts_client_contact_id_fkey(id, full_name, phone, email),
  property:properties(id, title, address),
@@ -136,9 +135,8 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
  .eq('kind', 'signing')
  .maybeSingle()
  const podpislonEnabled = signingIntegration?.provider === 'podpislon' && signingIntegration.is_active
- const legacyClient = contract.client as { full_name?: string; phone?: string } | null
 
- const client = clientContact ?? legacyClient
+ const client = clientContact
  const owner = ownerContact
  const property = contract.property as { id?: string; title?: string; address?: string } | null
  const manager = contract.manager as { full_name?: string } | null

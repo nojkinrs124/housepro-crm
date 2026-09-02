@@ -59,11 +59,10 @@ export function DealsListView({ deals }: { deals: any[] }) {
             {rows.map(deal => {
               const ownerContact  = deal.owner_contact  as { full_name?: string; company_name?: string } | null
               const clientContact = deal.client_contact as { full_name?: string; company_name?: string } | null
-              const legacyClient  = deal.client as { full_name?: string } | null
               const property = deal.property as { title?: string; address?: string } | null
 
               const ownerName  = ownerContact?.company_name || ownerContact?.full_name
-              const clientName = clientContact?.company_name || clientContact?.full_name || legacyClient?.full_name
+              const clientName = clientContact?.company_name || clientContact?.full_name
               const propLabel  = property?.address ?? property?.title
 
               return (

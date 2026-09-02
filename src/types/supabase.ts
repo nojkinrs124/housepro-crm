@@ -970,59 +970,6 @@ export type Database = {
           },
         ]
       }
-      clients: {
-        Row: {
-          birth_date: string | null
-          comment: string | null
-          created_at: string | null
-          full_name: string
-          id: string
-          manager_id: string | null
-          passport: string | null
-          phone: string | null
-          source: string | null
-          status: string
-          telegram: string | null
-          whatsapp: string | null
-        }
-        Insert: {
-          birth_date?: string | null
-          comment?: string | null
-          created_at?: string | null
-          full_name: string
-          id?: string
-          manager_id?: string | null
-          passport?: string | null
-          phone?: string | null
-          source?: string | null
-          status?: string
-          telegram?: string | null
-          whatsapp?: string | null
-        }
-        Update: {
-          birth_date?: string | null
-          comment?: string | null
-          created_at?: string | null
-          full_name?: string
-          id?: string
-          manager_id?: string | null
-          passport?: string | null
-          phone?: string | null
-          source?: string | null
-          status?: string
-          telegram?: string | null
-          whatsapp?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "clients_manager_id_fkey"
-            columns: ["manager_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       collection_items: {
         Row: {
           added_at: string | null
@@ -1760,13 +1707,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "contracts_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "contracts_client_representative_id_fkey"
             columns: ["client_representative_id"]
             isOneToOne: false
@@ -1806,13 +1746,6 @@ export type Database = {
             columns: ["owner_contact_id"]
             isOneToOne: false
             referencedRelation: "contacts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "contracts_owner_id_fkey"
-            columns: ["owner_id"]
-            isOneToOne: false
-            referencedRelation: "owners"
             referencedColumns: ["id"]
           },
           {
@@ -1980,13 +1913,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "deals_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "deals_client_representative_id_fkey"
             columns: ["client_representative_id"]
             isOneToOne: false
@@ -2019,13 +1945,6 @@ export type Database = {
             columns: ["owner_contact_id"]
             isOneToOne: false
             referencedRelation: "contacts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "deals_owner_id_fkey"
-            columns: ["owner_id"]
-            isOneToOne: false
-            referencedRelation: "owners"
             referencedColumns: ["id"]
           },
           {
@@ -2236,13 +2155,6 @@ export type Database = {
           uploaded_by?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "files_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "files_contract_id_fkey"
             columns: ["contract_id"]
@@ -2683,33 +2595,6 @@ export type Database = {
           subscription_status?: string | null
           trial_ends_at?: string | null
           updated_at?: string | null
-        }
-        Relationships: []
-      }
-      owners: {
-        Row: {
-          comment: string | null
-          created_at: string | null
-          full_name: string
-          id: string
-          passport: string | null
-          phone: string | null
-        }
-        Insert: {
-          comment?: string | null
-          created_at?: string | null
-          full_name: string
-          id?: string
-          passport?: string | null
-          phone?: string | null
-        }
-        Update: {
-          comment?: string | null
-          created_at?: string | null
-          full_name?: string
-          id?: string
-          passport?: string | null
-          phone?: string | null
         }
         Relationships: []
       }
@@ -3166,13 +3051,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "tasks_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "tasks_contract_id_fkey"
             columns: ["contract_id"]
             isOneToOne: false
@@ -3205,13 +3083,6 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tasks_owner_id_fkey"
-            columns: ["owner_id"]
-            isOneToOne: false
-            referencedRelation: "owners"
             referencedColumns: ["id"]
           },
           {

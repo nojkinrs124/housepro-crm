@@ -21,7 +21,7 @@ export default async function GenerateContractPage({
  .from('contracts')
  .select(`
  *,
- client:clients(full_name, phone, passport),
+ client:contacts!contracts_client_contact_id_fkey(full_name, phone, passport_series, passport_number),
  property:properties(title, address, area, rooms, floor),
  manager:users(full_name)
  `)
@@ -39,7 +39,9 @@ export default async function GenerateContractPage({
  .eq('contract_id', id)
  .order('version', { ascending: false })
 
- const client = contract.client as Record<string, string> | null
+ // Раньше здесь встраивалась legacy-таблица clients: связь contracts.client_id.
+ // Она удалена 02.09.2026, клиент берётся из contacts по client_contact_id.
+ const client = contract.client as Record<string, string | null> | null
  const property = contract.property as Record<string, string | number> | null
  const manager = contract.manager as { full_name?: string } | null
 
@@ -47,7 +49,8 @@ export default async function GenerateContractPage({
  { label: 'Тип договора', value: contractTypeLabels[contract.contract_type], ok: true },
  { label: 'Клиент', value: client?.full_name, ok: !!client?.full_name },
  { label: 'Телефон', value: client?.phone, ok: !!client?.phone },
- { label: 'Паспорт', value: client?.passport, ok: !!client?.passport, warn: true },
+ { label: 'Паспорт', value: [client?.passport_series, client?.passport_number].filter(Boolean).join(' ') || undefined,
+ ok: !!(client?.passport_series && client?.passport_number), warn: true },
  { label: 'Объект', value: (property?.title as string) || (property?.address as string), ok: !!property },
  { label: 'Адрес', value: property?.address as string, ok: !!property?.address },
  { label: 'Сумма', value: contract.amount ? `${Number(contract.amount).toLocaleString('ru-RU')} ₽` : null, ok: !!contract.amount },

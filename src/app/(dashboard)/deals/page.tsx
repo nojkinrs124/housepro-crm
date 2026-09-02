@@ -14,7 +14,6 @@ export default async function DealsPage() {
     .from('deals')
     .select(`
       *,
-      client:clients(full_name, phone),
       property:properties(title, address),
       owner_contact:contacts!deals_owner_contact_id_fkey(full_name, company_name, phone),
       client_contact:contacts!deals_client_contact_id_fkey(full_name, company_name, phone)
