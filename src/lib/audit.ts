@@ -30,6 +30,30 @@ export async function writeAuditLog(params: AuditParams): Promise<void> {
   }
 }
 
+/**
+ * Пакетная запись журнала — для групповых действий над выделенными строками.
+ * Пишет по строке на каждую запись (иначе история отдельного договора теряет
+ * массовую правку), но одним запросом вместо N.
+ */
+export async function writeAuditLogBatch(entries: AuditParams[]): Promise<void> {
+  if (entries.length === 0) return
+  try {
+    const supabase = await createClient()
+    await supabase.from('audit_logs').insert(entries.map(e => ({
+      organization_id: e.orgId,
+      user_id:         e.userId,
+      action:          e.action,
+      entity_type:     e.entityType,
+      entity_id:       e.entityId,
+      entity_label:    e.entityLabel,
+      changes:         e.changes ? toJson(e.changes) : null,
+    })))
+  } catch (e) {
+    // Аудит не должен ломать основной флоу
+    console.error('[audit] batch error:', e)
+  }
+}
+
 interface AuditParamsServiceRole extends Omit<AuditParams, 'userId'> {
   // API-key запросы (бот и т.п.) не имеют cookie-сессии/user_id — пишем без него,
   // но помечаем источник действия в changes/entityLabel на стороне вызывающего кода.

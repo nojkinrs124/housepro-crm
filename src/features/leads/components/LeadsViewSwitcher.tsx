@@ -1,202 +1,76 @@
 'use client'
 
-import React, { useMemo } from 'react'
-import { LayoutGrid, List, Search, X, ChevronDown } from 'lucide-react'
+import { LayoutGrid, List } from 'lucide-react'
 import { LeadsKanban } from './LeadsKanban'
-import { LeadsListView } from './LeadsListView'
-import { motion, AnimatePresence } from 'framer-motion'
+import { LeadsListView, LEAD_SOURCE_LABELS, type LeadRow } from './LeadsListView'
+import { RegistryToolbar } from '@/components/layout/RegistryToolbar'
+import { BulkBar } from '@/features/registry/components/BulkBar'
+import { useRegistryFilters } from '@/hooks/useRegistryFilters'
+import { useSelection } from '@/hooks/useSelection'
 import { usePersistedState } from '@/hooks/usePersistedFilters'
 import { LEAD_STATUSES } from '@/features/leads/config/lead-statuses'
+import { DEAL_TYPE_LABELS } from '@/features/deals/config/deal-stages'
 
 type ViewMode = 'kanban' | 'list'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function LeadsViewSwitcher({ leads }: { leads: any[] }) {
- const [view, setView] = usePersistedState<ViewMode>('leads:view', 'kanban')
- const [search, setSearch] = usePersistedState<string>('leads:search', '')
- const [statusFilter, setStatusFilter] = usePersistedState<string>('leads:status', 'all')
- const [typeFilter, setTypeFilter] = usePersistedState<string>('leads:type', 'all')
- const [statusOpen, setStatusOpen] = React.useState(false)
- const [typeOpen, setTypeOpen] = React.useState(false)
+const STATUS_OPTIONS = [
+  { value: 'all', label: 'Статус: все' },
+  ...LEAD_STATUSES.map(s => ({ value: s.value, label: s.label })),
+]
 
- const statusOptions = [
- { value: 'all', label: 'Все статусы' },
- ...LEAD_STATUSES.map(s => ({ value: s.value, label: s.label })),
- ]
+const TYPE_OPTIONS = [
+  { value: 'all', label: 'Тип: все' },
+  ...Object.entries(DEAL_TYPE_LABELS).map(([value, label]) => ({ value, label })),
+]
 
- const typeOptions = [
- { value: 'all', label: 'Все типы' },
- { value: 'rent', label: 'Аренда' },
- { value: 'sale', label: 'Продажа' },
- { value: 'management', label: 'Управление' },
- { value: 'commercial', label: 'Коммерция' },
- { value: 'subrent', label: 'Субаренда' },
- ]
+const SOURCE_OPTIONS = [
+  { value: 'all', label: 'Источник: все' },
+  ...Object.entries(LEAD_SOURCE_LABELS).map(([value, label]) => ({ value, label })),
+]
 
- const filteredLeads = useMemo(() => {
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- return leads.filter((l: any) => {
- if (statusFilter !== 'all' && l.status !== statusFilter) return false
- if (typeFilter !== 'all' && l.deal_type !== typeFilter) return false
- if (search.trim()) {
- const q = search.toLowerCase()
- const name = (l.full_name || '').toLowerCase()
- const phone = (l.phone || '').toLowerCase()
- if (!name.includes(q) && !phone.includes(q)) return false
- }
- return true
- })
- }, [leads, statusFilter, typeFilter, search])
+const VIEWS = [
+  { value: 'kanban', label: 'Канбан', icon: LayoutGrid },
+  { value: 'list',   label: 'Список', icon: List },
+]
 
- const hasFilters = statusFilter !== 'all' || typeFilter !== 'all' || search.trim() !== ''
+export function LeadsViewSwitcher({ leads }: { leads: LeadRow[] }) {
+  const [view, setView] = usePersistedState<ViewMode>('leads:view', 'kanban')
 
- const clearFilters = () => {
- setSearch('')
- setStatusFilter('all')
- setTypeFilter('all')
- }
+  const { search, setSearch, filtered, toolbarFilters, reset } = useRegistryFilters(leads, {
+    storageKey: 'leads',
+    haystack: l => [l.full_name, l.phone].filter(Boolean).join(' '),
+    filters: [
+      { key: 'status', options: STATUS_OPTIONS, field: l => l.status },
+      { key: 'type',   options: TYPE_OPTIONS,   field: l => l.deal_type },
+      { key: 'source', options: SOURCE_OPTIONS, field: l => l.source },
+    ],
+  })
 
- const currentStatus = statusOptions.find(o => o.value === statusFilter)
- const currentType = typeOptions.find(o => o.value === typeFilter)
+  const selection = useSelection(filtered)
 
- return (
- <div className="space-y-4">
- <div className="flex flex-wrap items-center gap-3">
- {/* Search */}
- <div className="relative flex-1 min-w-[200px] max-w-xs">
- <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--hp-tertiary)] pointer-events-none" />
- <input
- type="text"
- value={search}
- onChange={(e) => setSearch(e.target.value)}
- placeholder="Поиск по лидам..."
- className="w-full pl-9 pr-4 py-2.5 hp-card text-sm focus:outline-none focus:border-[var(--hp-border)] focus:ring-2 focus:ring-green-100 placeholder:text-[var(--hp-tertiary)] transition-all"
- />
- {search && (
- <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2">
- <X className="w-3.5 h-3.5 text-[var(--hp-tertiary)] hover:text-[var(--hp-sub)]" />
- </button>
- )}
- </div>
+  return (
+    <div className="space-y-4">
+      <RegistryToolbar
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Поиск: имя, телефон"
+        filters={toolbarFilters}
+        views={VIEWS}
+        view={view}
+        onViewChange={v => setView(v as ViewMode)}
+        onReset={reset}
+        foundLabel={<>Найдено: <span className="font-semibold text-[var(--hp-ink)]">{filtered.length}</span> из {leads.length}</>}
+      />
 
- {/* Status filter */}
- <div className="relative">
- <button
- onClick={() => { setStatusOpen(p => !p); setTypeOpen(false) }}
- className={`flex items-center gap-2 px-3.5 py-2.5 bg-[var(--hp-surface)] border text-sm font-medium transition-all ${statusFilter !== 'all' ? 'border-[var(--hp-border)] text-[var(--hp-good)] bg-[var(--hp-good-tint)]' : 'border-[var(--hp-border)] text-[var(--hp-sub)] hover:border-[var(--hp-sub)]'}`}
- >
- {currentStatus?.label}
- <ChevronDown className={`w-3.5 h-3.5 transition-transform ${statusOpen ? 'rotate-180' : ''}`} />
- </button>
- <AnimatePresence>
- {statusOpen && (
- <motion.div
- initial={{ opacity: 0, y: -6, scale: 0.97 }}
- animate={{ opacity: 1, y: 0, scale: 1 }}
- exit={{ opacity: 0, y: -6, scale: 0.97 }}
- transition={{ duration: 0.15 }}
- className="absolute top-full mt-1.5 left-0 z-50 hp-card py-1 min-w-[180px]"
- >
- {statusOptions.map(opt => (
- <button
- key={opt.value}
- onClick={() => { setStatusFilter(opt.value); setStatusOpen(false) }}
- className={`w-full text-left px-3.5 py-2 text-sm hover:bg-[var(--hp-neutral-tint)] transition-colors ${statusFilter === opt.value ? 'text-[var(--hp-good)] font-semibold' : 'text-[var(--hp-ink)]'}`}
- >
- {opt.label}
- </button>
- ))}
- </motion.div>
- )}
- </AnimatePresence>
- </div>
+      {/* Групповые действия — только в списке: на канбане строк с чекбоксами нет */}
+      {view === 'list' && <BulkBar registry="leads" selection={selection} />}
 
- {/* Type filter */}
- <div className="relative">
- <button
- onClick={() => { setTypeOpen(p => !p); setStatusOpen(false) }}
- className={`flex items-center gap-2 px-3.5 py-2.5 bg-[var(--hp-surface)] border text-sm font-medium transition-all ${typeFilter !== 'all' ? 'border-[var(--hp-border)] text-[var(--hp-good)] bg-[var(--hp-good-tint)]' : 'border-[var(--hp-border)] text-[var(--hp-sub)] hover:border-[var(--hp-sub)]'}`}
- >
- {currentType?.label}
- <ChevronDown className={`w-3.5 h-3.5 transition-transform ${typeOpen ? 'rotate-180' : ''}`} />
- </button>
- <AnimatePresence>
- {typeOpen && (
- <motion.div
- initial={{ opacity: 0, y: -6, scale: 0.97 }}
- animate={{ opacity: 1, y: 0, scale: 1 }}
- exit={{ opacity: 0, y: -6, scale: 0.97 }}
- transition={{ duration: 0.15 }}
- className="absolute top-full mt-1.5 left-0 z-50 hp-card py-1 min-w-[160px]"
- >
- {typeOptions.map(opt => (
- <button
- key={opt.value}
- onClick={() => { setTypeFilter(opt.value); setTypeOpen(false) }}
- className={`w-full text-left px-3.5 py-2 text-sm hover:bg-[var(--hp-neutral-tint)] transition-colors ${typeFilter === opt.value ? 'text-[var(--hp-good)] font-semibold' : 'text-[var(--hp-ink)]'}`}
- >
- {opt.label}
- </button>
- ))}
- </motion.div>
- )}
- </AnimatePresence>
- </div>
-
- {hasFilters && (
- <motion.button
- initial={{ opacity: 0, scale: 0.9 }}
- animate={{ opacity: 1, scale: 1 }}
- exit={{ opacity: 0, scale: 0.9 }}
- onClick={clearFilters}
- className="flex items-center gap-1.5 px-3 py-2.5 text-sm text-[var(--hp-sub)] hover:text-[var(--hp-ink)] transition-colors"
- >
- <X className="w-3.5 h-3.5" />
- Сбросить
- </motion.button>
- )}
-
- <div className="flex-1" />
-
- <div className="flex items-center gap-1 hp-card p-1">
- <button
- onClick={() => setView('kanban')}
- className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-all ${view === 'kanban' ? 'bg-[var(--hp-accent)] text-white' : 'text-[var(--hp-sub)] hover:text-[var(--hp-ink)]'}`}
- >
- <LayoutGrid className="w-4 h-4" />
- <span className="hidden sm:inline">Канбан</span>
- </button>
- <button
- onClick={() => setView('list')}
- className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-all ${view === 'list' ? 'bg-[var(--hp-accent)] text-white' : 'text-[var(--hp-sub)] hover:text-[var(--hp-ink)]'}`}
- >
- <List className="w-4 h-4" />
- <span className="hidden sm:inline">Список</span>
- </button>
- </div>
- </div>
-
- {hasFilters && (
- <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-[var(--hp-sub)]">
- Найдено: <span className="font-semibold text-foreground">{filteredLeads.length}</span> из {leads.length}
- </motion.p>
- )}
-
- <AnimatePresence mode="wait">
- <motion.div
- key={view}
- initial={{ opacity: 0, y: 8 }}
- animate={{ opacity: 1, y: 0 }}
- exit={{ opacity: 0, y: -8 }}
- transition={{ duration: 0.18 }}
- >
- {view === 'kanban' ? (
- <LeadsKanban leads={filteredLeads} />
- ) : (
- <LeadsListView leads={filteredLeads} />
- )}
- </motion.div>
- </AnimatePresence>
- </div>
- )
+      {/* Без AnimatePresence: mode="wait" ждал exit уходящего вида и при
+          переключении с канбана на реестр новый вид не монтировался вовсе —
+          таблица не появлялась ни через секунду, ни через шесть. */}
+      {view === 'kanban'
+        ? <LeadsKanban leads={filtered} />
+        : <LeadsListView leads={filtered} selection={selection} />}
+    </div>
+  )
 }

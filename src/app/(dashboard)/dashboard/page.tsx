@@ -397,12 +397,13 @@ export default async function DashboardPage() {
  </p>
  <div className="space-y-1.5">
  {upcomingDeadlines!.map(t => (
- <div key={t.id} className="flex items-center justify-between text-xs">
+ <Link key={t.id} href={`/tasks/${t.id}`}
+ className="flex items-center justify-between text-xs hover:bg-background transition-colors">
  <span className="text-[var(--hp-ink)] truncate max-w-32 font-medium">{t.title}</span>
  <span className="text-[var(--hp-tertiary)] shrink-0 ml-2 font-medium">
  {t.deadline ? formatDate(t.deadline, { day: 'numeric', month: 'short' }) : ''}
  </span>
- </div>
+ </Link>
  ))}
  </div>
  </div>

@@ -1,157 +1,84 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, Eye, Calendar, User, Home, CalendarDays } from 'lucide-react'
-import { ShowingStatusBadge } from '@/features/showings/components/ShowingStatusBadge'
+import { Plus, Eye, CalendarDays } from 'lucide-react'
+import { PageHeader } from '@/components/layout/PageHeader'
+import { buttonVariants } from '@/components/ui/button'
+import { ShowingsView, type ShowingRow } from '@/features/showings/components/ShowingsView'
 
 export default async function ShowingsPage() {
- const supabase = await createClient()
- const { data: { user } } = await supabase.auth.getUser()
- if (!user) redirect('/login')
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
- const { data: showings } = await supabase
- .from('showings')
- .select(`
- id, scheduled_at, status, result, duration_min,
- property:properties(id, title, address),
- lead:leads(id, full_name),
- agent:users!showings_agent_id_fkey(full_name)
- `)
- .order('scheduled_at', { ascending: false })
- .limit(100)
+  // Имя агента берётся вторым запросом, а не встроенным join: showings.agent_id
+  // ссылается на auth.users, и PostgREST такую связь не находит — с хинтом
+  // users!showings_agent_id_fkey весь запрос падал с PGRST200, а страница молча
+  // показывала «Показов пока нет» при непустой таблице.
+  const { data } = await supabase
+    .from('showings')
+    .select(`
+      id, scheduled_at, status, result, duration_min, agent_id,
+      property:properties(id, title, address),
+      lead:leads(id, full_name)
+    `)
+    .order('scheduled_at', { ascending: false })
+    .limit(500)
 
- const groups = {
- planned: showings?.filter(s => s.status === 'planned') ?? [],
- completed: showings?.filter(s => s.status === 'completed') ?? [],
- other: showings?.filter(s => !['planned','completed'].includes(s.status)) ?? [],
- }
+  const agentIds = [...new Set((data ?? []).map(s => s.agent_id).filter((v): v is string => !!v))]
+  const { data: agents } = agentIds.length > 0
+    ? await supabase.from('users').select('id, full_name').in('id', agentIds)
+    : { data: [] }
+  const agentMap = Object.fromEntries((agents ?? []).map(a => [a.id, a.full_name]))
 
- return (
- <div className="space-y-6">
- <div className="flex items-center justify-between">
- <div>
- <h1 className="text-2xl font-bold text-foreground">Показы</h1>
- <p className="text-sm text-muted-foreground mt-0.5">
- {showings?.length ?? 0} показов
- </p>
- </div>
- <div className="flex items-center gap-2 flex-wrap shrink-0">
- <Link
- href="/showings/calendar"
- className="flex items-center gap-2 px-4 py-2 border border-[var(--hp-border)] rounded-[var(--hp-radius)] text-sm font-medium text-[var(--hp-ink)] hover:border-[var(--hp-sub)] transition-colors whitespace-nowrap"
- >
- <CalendarDays className="w-4 h-4" />
- Календарь
- </Link>
- <Link
- href="/showings/new"
- className="flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors whitespace-nowrap"
- >
- <Plus className="w-4 h-4" />
- Новый показ
- </Link>
- </div>
- </div>
+  const showings: ShowingRow[] = (data ?? []).map(s => {
+    const property = s.property as { id: string; title: string | null; address: string | null } | null
+    const lead = s.lead as { full_name: string | null } | null
+    return {
+      id: s.id,
+      scheduledAt: s.scheduled_at,
+      status: s.status,
+      durationMin: s.duration_min,
+      propertyId: property?.id ?? null,
+      propertyLabel: property?.title ?? property?.address ?? null,
+      leadName: lead?.full_name ?? null,
+      agentName: (s.agent_id ? agentMap[s.agent_id] : null) ?? null,
+    }
+  })
 
- {/* Upcoming */}
- {groups.planned.length > 0 && (
- <section>
- <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
- Предстоящие ({groups.planned.length})
- </h2>
- <div className="space-y-2">
- {groups.planned.map(s => <ShowingRow key={s.id} showing={s} />)}
- </div>
- </section>
- )}
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Показы"
+        subtitle={`${showings.length} показов`}
+        actions={
+          <>
+            <Link href="/showings/calendar" className={buttonVariants({ variant: 'secondary', size: 'sm' })}>
+              <CalendarDays style={{ width: 16, height: 16 }} />
+              Календарь
+            </Link>
+            <Link href="/showings/new" className={buttonVariants({ size: 'sm' })}>
+              <Plus style={{ width: 16, height: 16 }} />
+              Новый показ
+            </Link>
+          </>
+        }
+      />
 
- {/* Completed */}
- {groups.completed.length > 0 && (
- <section>
- <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
- Проведённые ({groups.completed.length})
- </h2>
- <div className="space-y-2">
- {groups.completed.map(s => <ShowingRow key={s.id} showing={s} />)}
- </div>
- </section>
- )}
-
- {/* Other */}
- {groups.other.length > 0 && (
- <section>
- <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
- Остальные ({groups.other.length})
- </h2>
- <div className="space-y-2">
- {groups.other.map(s => <ShowingRow key={s.id} showing={s} />)}
- </div>
- </section>
- )}
-
- {(!showings || showings.length === 0) && (
- <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
- <Eye className="w-12 h-12 mb-4 opacity-20" />
- <p className="font-medium">Показов пока нет</p>
- <p className="text-sm mt-1">Запланируйте первый показ объекта</p>
- </div>
- )}
- </div>
- )
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function ShowingRow({ showing }: { showing: any }) {
- return (
- <Link
- href={`/showings/${showing.id}`}
- className="flex items-center justify-between gap-4 px-5 py-3.5 hp-card transition-all group"
- >
- <div className="flex items-start gap-3 min-w-0">
- <div className="w-8 h-8 bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
- <Eye className="w-4 h-4 text-primary" />
- </div>
- <div className="min-w-0">
- <div className="font-medium text-foreground truncate">
- {showing.property?.title ?? 'Объект не указан'}
- </div>
- <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5 text-xs text-muted-foreground">
- {showing.property?.address && (
- <span className="flex items-center gap-1">
- <Home className="w-3 h-3" />
- {showing.property.address}
- </span>
- )}
- {showing.lead?.full_name && (
- <span className="flex items-center gap-1">
- <User className="w-3 h-3" />
- {showing.lead.full_name}
- </span>
- )}
- {showing.agent?.full_name && (
- <span>Агент: {showing.agent.full_name}</span>
- )}
- </div>
- </div>
- </div>
-
- <div className="flex items-center gap-3 flex-shrink-0">
- <div className="text-right">
- <div className="text-sm font-medium text-foreground flex items-center gap-1">
- <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
- {new Date(showing.scheduled_at).toLocaleDateString('ru-RU', {
- day: '2-digit', month: '2-digit',
- })}
- </div>
- <div className="text-xs text-muted-foreground">
- {new Date(showing.scheduled_at).toLocaleTimeString('ru-RU', {
- hour: '2-digit', minute: '2-digit',
- })}
- {showing.duration_min && ` · ${showing.duration_min} мин`}
- </div>
- </div>
- <ShowingStatusBadge status={showing.status} />
- </div>
- </Link>
- )
+      {showings.length === 0 ? (
+        <div className="hp-card hp-empty">
+          <div className="w-12 h-12 rounded-[var(--hp-radius)] bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)] flex items-center justify-center mx-auto mb-3">
+            <Eye style={{ width: 20, height: 20 }} className="text-[var(--hp-tertiary)]" />
+          </div>
+          <p className="text-[var(--hp-ink)] font-semibold">Показов пока нет</p>
+          <Link href="/showings/new" className="hp-btn-primary mt-5">
+            <Plus style={{ width: 16, height: 16 }} />
+            Запланировать показ
+          </Link>
+        </div>
+      ) : (
+        <ShowingsView showings={showings} />
+      )}
+    </div>
+  )
 }

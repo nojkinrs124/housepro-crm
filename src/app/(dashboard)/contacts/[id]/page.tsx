@@ -318,7 +318,8 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
             ) : (
               <div className="space-y-2">
                 {tasks.map(task => (
-                  <div key={task.id} className="flex items-center justify-between p-3 rounded-[var(--hp-radius)] bg-muted/30">
+                  <Link key={task.id} href={`/tasks/${task.id}`}
+                    className="flex items-center justify-between p-3 rounded-[var(--hp-radius)] bg-muted/30 hover:bg-accent/50 transition">
                     <div>
                       <p className="text-sm font-medium text-foreground">{task.title}</p>
                       <p className="text-xs text-muted-foreground">{taskStatusLabels[task.status] ?? task.status}</p>
@@ -326,7 +327,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
                     {task.deadline && (
                       <p className="text-xs text-muted-foreground">{new Date(task.deadline).toLocaleDateString('ru-RU')}</p>
                     )}
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}

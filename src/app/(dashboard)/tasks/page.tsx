@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { Plus, CheckSquare, AlertCircle, Clock, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
-import { TasksKanbanBoard } from '@/features/tasks/components/TasksKanban'
+import { TasksView, type TaskRow } from '@/features/tasks/components/TasksView'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { buttonVariants } from '@/components/ui/button'
 
@@ -11,6 +11,15 @@ export default async function TasksPage() {
  .from('tasks')
  .select('*, assignee:users!tasks_assigned_to_fkey(full_name)')
  .order('created_at', { ascending: false })
+
+ const rows: TaskRow[] = (tasks ?? []).map(t => ({
+ id: t.id,
+ title: t.title,
+ status: t.status,
+ priority: t.priority,
+ deadline: t.deadline,
+ assigneeName: (t.assignee as { full_name: string | null } | null)?.full_name ?? null,
+ }))
 
  const total = tasks?.length ?? 0
  const active = (tasks ?? []).filter(t => !['done', 'cancelled'].includes(t.status)).length
@@ -71,7 +80,7 @@ export default async function TasksPage() {
  </Link>
  </div>
  ) : (
- <TasksKanbanBoard tasks={tasks ?? []} />
+ <TasksView tasks={rows} />
  )}
  </div>
  )

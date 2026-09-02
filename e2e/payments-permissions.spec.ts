@@ -24,7 +24,9 @@ test.describe('Платежи и бухгалтерия — после прав�
 
   test('отметить платёж оплаченным и удалить — из карточки договора (PaymentsSection на accounting_transactions)', async ({ page }) => {
     await page.goto('/contracts')
-    const firstContract = page.getByRole('link', { name: 'Открыть' }).first()
+    // Ссылки «Открыть» в реестре больше нет: с переходом всех списков на общий
+    // реестр строка кликабельна целиком, а из ссылок в ней остались номер и DOCX.
+    const firstContract = page.locator('table tbody tr').first()
     await firstContract.click()
     await expect(page).toHaveURL(/\/contracts\/[^/?]+$/)
     await expect(page.locator('text=Недостаточно прав')).toHaveCount(0)

@@ -141,10 +141,11 @@ export default async function SearchPage({
  </div>
  <div className="divide-y divide-border">
  {tasks!.map(t => (
- <div key={t.id} className="flex items-center justify-between px-5 py-3">
+ <Link key={t.id} href={`/tasks/${t.id}`}
+ className="flex items-center justify-between px-5 py-3 hover:bg-accent/40 transition">
  <p className="text-sm font-medium text-foreground">{t.title}</p>
  <span className="text-xs text-muted-foreground">{t.status}</span>
- </div>
+ </Link>
  ))}
  </div>
  </div>

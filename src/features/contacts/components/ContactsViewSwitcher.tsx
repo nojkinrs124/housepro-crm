@@ -1,11 +1,12 @@
 'use client'
 
-import { useMemo } from 'react'
 import { LayoutGrid, List } from 'lucide-react'
 import { ContactCard } from '@/app/(dashboard)/contacts/ContactCard'
 import { ContactsRegistry, type ContactMeta } from './ContactsRegistry'
 import { RegistryToolbar } from '@/components/layout/RegistryToolbar'
-import { motion, AnimatePresence } from 'framer-motion'
+import { BulkBar } from '@/features/registry/components/BulkBar'
+import { useRegistryFilters } from '@/hooks/useRegistryFilters'
+import { useSelection } from '@/hooks/useSelection'
 import type { Contact } from '@/types/database'
 import { usePersistedState } from '@/hooks/usePersistedFilters'
 
@@ -40,24 +41,18 @@ export function ContactsViewSwitcher({
   meta?: Record<string, ContactMeta>
 }) {
   // Реестр — вид по умолчанию: в нём видно семь атрибутов сразу, карточки нужны реже.
-  const [view, setView]                 = usePersistedState<ViewMode>('contacts:view', 'list')
-  const [search, setSearch]             = usePersistedState<string>('contacts:search', '')
-  const [roleFilter, setRoleFilter]     = usePersistedState<string>('contacts:role', 'all')
-  const [statusFilter, setStatusFilter] = usePersistedState<string>('contacts:status', 'all')
+  const [view, setView] = usePersistedState<ViewMode>('contacts:view', 'list')
 
-  const filteredContacts = useMemo(() => {
-    return contacts.filter((c: Contact) => {
-      if (roleFilter !== 'all' && c.role !== roleFilter) return false
-      if (statusFilter !== 'all' && c.status !== statusFilter) return false
-      if (search.trim()) {
-        const q = search.toLowerCase()
-        const haystack = [c.full_name, c.company_name, c.phone, c.email]
-          .filter(Boolean).join(' ').toLowerCase()
-        if (!haystack.includes(q)) return false
-      }
-      return true
-    })
-  }, [contacts, roleFilter, statusFilter, search])
+  const { search, setSearch, filtered: filteredContacts, toolbarFilters, reset } = useRegistryFilters(contacts, {
+    storageKey: 'contacts',
+    haystack: c => [c.full_name, c.company_name, c.phone, c.email].filter(Boolean).join(' '),
+    filters: [
+      { key: 'role',   options: ROLE_OPTIONS,   field: c => c.role },
+      { key: 'status', options: STATUS_OPTIONS, field: c => c.status },
+    ],
+  })
+
+  const selection = useSelection(filteredContacts)
 
   return (
     <div className="space-y-4">
@@ -65,44 +60,37 @@ export function ContactsViewSwitcher({
         search={search}
         onSearchChange={setSearch}
         searchPlaceholder="Поиск: имя, телефон, email"
-        filters={[
-          { key: 'role',   value: roleFilter,   onChange: setRoleFilter,   options: ROLE_OPTIONS },
-          { key: 'status', value: statusFilter, onChange: setStatusFilter, options: STATUS_OPTIONS },
-        ]}
+        filters={toolbarFilters}
         views={VIEWS}
         view={view}
         onViewChange={v => setView(v as ViewMode)}
-        onReset={() => { setSearch(''); setRoleFilter('all'); setStatusFilter('all') }}
+        onReset={reset}
         foundLabel={
           <>Найдено: <span className="font-semibold text-[var(--hp-ink)]">{filteredContacts.length}</span> из {contacts.length}</>
         }
       />
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={view}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.18 }}
-        >
-          {view === 'cards' ? (
-            filteredContacts.length === 0 ? (
-              <div className="hp-card hp-empty">
-                <p className="text-[var(--hp-sub)] text-sm">Нет контактов по выбранным фильтрам</p>
-              </div>
-            ) : (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {filteredContacts.map((contact, idx) => (
-                  <ContactCard key={contact.id} contact={contact} idx={idx} />
-                ))}
-              </div>
-            )
-          ) : (
-            <ContactsRegistry contacts={filteredContacts} meta={meta} />
-          )}
-        </motion.div>
-      </AnimatePresence>
+      {/* Групповые действия — только в реестре: у карточек нет чекбоксов */}
+      {view === 'list' && <BulkBar registry="contacts" selection={selection} />}
+
+      {/* Без AnimatePresence: mode="wait" ждал exit уходящего вида и при
+          переключении с канбана на реестр новый вид не монтировался вовсе —
+          таблица не появлялась ни через секунду, ни через шесть. */}
+      {view === 'cards' ? (
+        filteredContacts.length === 0 ? (
+          <div className="hp-card hp-empty">
+            <p className="text-[var(--hp-sub)] text-sm">Нет контактов по выбранным фильтрам</p>
+          </div>
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filteredContacts.map((contact, idx) => (
+              <ContactCard key={contact.id} contact={contact} idx={idx} />
+            ))}
+          </div>
+        )
+      ) : (
+        <ContactsRegistry contacts={filteredContacts} meta={meta} selection={selection} />
+      )}
     </div>
   )
 }

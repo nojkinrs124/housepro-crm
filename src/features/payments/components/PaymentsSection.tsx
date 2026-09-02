@@ -101,7 +101,7 @@ export async function PaymentsSection({ contractId }: { contractId: string }) {
 
  return (
  <div key={t.id} className="flex items-center gap-3 p-3 hover:bg-accent/40 transition-colors group">
- <div className="flex-1 min-w-0">
+ <Link href={`/accounting/transactions/${t.id}`} className="flex-1 min-w-0">
  <div className="flex items-center gap-2">
  <p className="text-sm font-semibold text-foreground">{fmt(Number(t.amount))}</p>
  <span className={`text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-medium ${sc.className}`}>
@@ -113,7 +113,7 @@ export async function PaymentsSection({ contractId }: { contractId: string }) {
  {t.status === 'completed' ? ` · оплачен ${fmtDate(t.date)}` : ''}
  </p>
  {t.description && <p className="text-xs text-muted-foreground truncate">{t.description}</p>}
- </div>
+ </Link>
  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
  <Link
  href={`/accounting/invoice/${t.id}`}

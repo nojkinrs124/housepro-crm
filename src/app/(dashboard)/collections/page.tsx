@@ -1,79 +1,65 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, FolderOpen, Globe, Lock } from 'lucide-react'
+import { Plus, FolderOpen } from 'lucide-react'
+import { PageHeader } from '@/components/layout/PageHeader'
+import { buttonVariants } from '@/components/ui/button'
+import { CollectionsView, type CollectionRow } from '@/features/collections/components/CollectionsView'
 
 export default async function CollectionsPage() {
- const supabase = await createClient()
- const { data: { user } } = await supabase.auth.getUser()
- if (!user) redirect('/login')
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
- const { data: collections } = await supabase
- .from('property_collections')
- .select(`id, title, is_public, share_token, created_at,
- lead:leads(id, full_name),
- items:collection_items(count)`)
- .order('created_at', { ascending: false })
+  const { data } = await supabase
+    .from('property_collections')
+    .select(`id, title, is_public, share_token, created_at,
+             lead:leads(id, full_name),
+             items:collection_items(count)`)
+    .order('created_at', { ascending: false })
+    .limit(500)
 
- return (
- <div className="space-y-6">
- <div className="flex items-center justify-between">
- <div>
- <h1 className="text-2xl font-bold">Подборки объектов</h1>
- <p className="text-sm text-muted-foreground mt-0.5">
- Персональные подборки для клиентов с публичными ссылками
- </p>
- </div>
- <Link
- href="/collections/new"
- className="flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors"
- >
- <Plus className="w-4 h-4" />
- Новая подборка
- </Link>
- </div>
+  const collections: CollectionRow[] = (data ?? []).map(c => {
+    const lead = c.lead as { id: string; full_name: string | null } | null
+    const items = c.items as { count: number }[] | null
+    return {
+      id: c.id,
+      title: c.title,
+      isPublic: !!c.is_public,
+      itemsCount: items?.[0]?.count ?? 0,
+      leadId: lead?.id ?? null,
+      leadName: lead?.full_name ?? null,
+      createdAt: c.created_at,
+    }
+  })
 
- {(!collections || collections.length === 0) ? (
- <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
- <FolderOpen className="w-12 h-12 mb-4 opacity-20" />
- <p className="font-medium">Подборок пока нет</p>
- <p className="text-sm mt-1">Создайте первую подборку объектов для клиента</p>
- </div>
- ) : (
- <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
- {(collections as unknown as Array<{
- id: string; title: string; is_public: boolean; share_token: string; created_at: string
- lead: { id: string; full_name: string } | null
- items: { count: number }[]
- }>).map(col => (
- <Link
- key={col.id}
- href={`/collections/${col.id}`}
- className="flex flex-col gap-3 p-5 hp-card transition-all"
- >
- <div className="flex items-start justify-between gap-2">
- <div className="w-9 h-9 bg-primary/10 flex items-center justify-center flex-shrink-0">
- <FolderOpen className="w-4 h-4 text-primary" />
- </div>
- <span className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-medium ${
- col.is_public ? 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]' : 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]'
- }`}>
- {col.is_public ? <><Globe className="w-3 h-3" />Публичная</> : <><Lock className="w-3 h-3" />Приватная</>}
- </span>
- </div>
- <div>
- <div className="font-semibold text-foreground">{col.title}</div>
- {col.lead && (
- <div className="text-sm text-muted-foreground mt-0.5">Для: {col.lead.full_name}</div>
- )}
- </div>
- <div className="text-xs text-muted-foreground">
- {col.items?.[0]?.count ?? 0} объектов · {new Date(col.created_at).toLocaleDateString('ru-RU')}
- </div>
- </Link>
- ))}
- </div>
- )}
- </div>
- )
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Подборки объектов"
+        subtitle="Персональные подборки для клиентов с публичными ссылками"
+        actions={
+          <Link href="/collections/new" className={buttonVariants({ size: 'sm' })}>
+            <Plus style={{ width: 16, height: 16 }} />
+            Новая подборка
+          </Link>
+        }
+      />
+
+      {collections.length === 0 ? (
+        <div className="hp-card hp-empty">
+          <div className="w-12 h-12 rounded-[var(--hp-radius)] bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)] flex items-center justify-center mx-auto mb-3">
+            <FolderOpen style={{ width: 20, height: 20 }} className="text-[var(--hp-tertiary)]" />
+          </div>
+          <p className="text-[var(--hp-ink)] font-semibold">Подборок пока нет</p>
+          <Link href="/collections/new" className="hp-btn-primary mt-5">
+            <Plus style={{ width: 16, height: 16 }} />
+            Создать подборку
+          </Link>
+        </div>
+      ) : (
+        <CollectionsView collections={collections} />
+      )}
+    </div>
+  )
 }
