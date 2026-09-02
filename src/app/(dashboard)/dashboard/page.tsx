@@ -7,6 +7,7 @@ import {
 import Link from 'next/link'
 import { DashboardKpiCards } from '@/features/dashboard/components/DashboardKpiCards'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { formatDate } from '@/lib/utils'
 
 export default async function DashboardPage() {
  const supabase = await createClient()
@@ -66,7 +67,7 @@ export default async function DashboardPage() {
  .filter(p => p.payment_status === 'paid')
  .reduce((s, p) => s + Number(p.amount ?? 0), 0)
  const pendingThisMonth = (paymentStats ?? [])
- .filter(p => ['pending', 'partial'].includes(p.payment_status))
+ .filter(p => ['pending', 'partial'].includes(p.payment_status ?? ''))
  .reduce((s, p) => s + Number(p.amount ?? 0), 0)
 
  // bg через color-mix(...,var(--hp-surface)) вместо голой rgba(...,0.12): на тёмной
@@ -213,7 +214,7 @@ export default async function DashboardPage() {
  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
  <p className="text-xs font-bold text-foreground">{(p.contract as any)?.contract_number ?? 'Без договора'}</p>
  <p className="text-xs text-muted-foreground mt-0.5">
- {p.due_date ? new Date(p.due_date).toLocaleDateString('ru-RU') : '—'}
+ {p.due_date ? formatDate(p.due_date) : '—'}
  </p>
  </div>
  <p className="text-sm font-bold text-[var(--hp-danger)]">{Number(p.amount).toLocaleString('ru-RU')} ₽</p>
@@ -296,8 +297,8 @@ export default async function DashboardPage() {
  <p className="text-xs text-muted-foreground">{roleLabels[c.role] ?? c.role}</p>
  </div>
  </div>
- <span className={`text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold shrink-0 ${contactStatusColors[c.status] ?? 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]'}`}>
- {contactStatusLabels[c.status] ?? c.status}
+ <span className={`text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold shrink-0 ${contactStatusColors[c.status ?? ''] ?? 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]'}`}>
+ {contactStatusLabels[c.status ?? ''] ?? c.status}
  </span>
  </Link>
  ))}
@@ -331,7 +332,7 @@ export default async function DashboardPage() {
  className="flex items-center justify-between p-2.5 hover:bg-background transition-colors group">
  <div className="min-w-0">
  <p className="text-sm font-semibold text-foreground group-hover:text-[var(--hp-accent)] transition-colors">{dealTypeLabels[d.deal_type] ?? d.deal_type}</p>
- <p className="text-xs text-muted-foreground truncate">{clientName ?? new Date(d.created_at).toLocaleDateString('ru-RU')}</p>
+ <p className="text-xs text-muted-foreground truncate">{clientName ?? formatDate(d.created_at)}</p>
  </div>
  <div className="shrink-0 text-right">
  <span className={`text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold block ${dealStatusColors[d.status] ?? 'bg-[var(--hp-neutral-tint)]'}`}>
@@ -384,7 +385,7 @@ export default async function DashboardPage() {
  {task.deadline && (
  <div className={`flex items-center gap-1 mt-1.5 text-xs font-semibold ${isOverdue ? 'text-[var(--hp-danger)]' : 'text-muted-foreground'}`}>
  <Clock style={{ width: 11, height: 11 }} />
- {new Date(task.deadline).toLocaleDateString('ru-RU')}
+ {formatDate(task.deadline)}
  </div>
  )}
  </div>
@@ -405,7 +406,7 @@ export default async function DashboardPage() {
  <div key={t.id} className="flex items-center justify-between text-xs">
  <span className="text-[var(--hp-ink)] truncate max-w-32 font-medium">{t.title}</span>
  <span className="text-[var(--hp-tertiary)] shrink-0 ml-2 font-medium">
- {t.deadline ? new Date(t.deadline).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }) : ''}
+ {t.deadline ? formatDate(t.deadline, { day: 'numeric', month: 'short' }) : ''}
  </span>
  </div>
  ))}

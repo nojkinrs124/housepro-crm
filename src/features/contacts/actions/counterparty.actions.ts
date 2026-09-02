@@ -11,6 +11,7 @@ import {
   describeCounterpartyStatus,
   type CounterpartySnapshot,
 } from '@/features/contacts/config/counterparty'
+import { toJson } from '@/lib/json'
 
 export interface CounterpartyCheckResult {
   error?: string
@@ -101,7 +102,7 @@ export async function checkCounterpartyAction(contactId: string): Promise<Counte
   const { error: saveError } = await supabase
     .from('contacts')
     .update({
-      counterparty_check: snapshot,
+      counterparty_check: toJson(snapshot),
       counterparty_checked_at: snapshot.checkedAt,
     })
     .eq('id', contactId)

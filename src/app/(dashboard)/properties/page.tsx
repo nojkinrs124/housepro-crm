@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { buttonVariants } from '@/components/ui/button'
 import { PropertyAvitoQuickToggle } from '@/features/avito/components/PropertyAvitoQuickToggle'
 import { PropertySiteQuickToggle } from '@/features/properties/components/PropertySiteQuickToggle'
+import { toAvitoStatus } from '@/features/avito/config/status'
 
 const typeLabels: Record<string, string> = {
  apartment: 'Квартира', house: 'Дом', commercial: 'Коммерция',
@@ -305,7 +306,7 @@ export default async function PropertiesPage({
  <PropertyAvitoQuickToggle
  propertyId={property.id}
  isPublished={!!property.avito_publish}
- status={property.avito_status}
+ status={toAvitoStatus(property.avito_status)}
  eligible={property.status === 'available'}
  />
  <PropertySiteQuickToggle
@@ -401,7 +402,7 @@ export default async function PropertiesPage({
  <PropertyAvitoQuickToggle
  propertyId={property.id}
  isPublished={!!property.avito_publish}
- status={property.avito_status}
+ status={toAvitoStatus(property.avito_status)}
  eligible={property.status === 'available'}
  />
  <PropertySiteQuickToggle

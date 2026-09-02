@@ -27,8 +27,10 @@ const DEAL_SOURCES = [
   { value: 'phone', label: 'Звонок' }, { value: 'other', label: 'Другое' },
 ]
 
-interface ContactOption { id: string; full_name: string; phone?: string; role: string; client_type?: string }
-interface PropertyOption { id: string; title: string; address?: string }
+// `| null` вместо `?:` — колонки в базе nullable, страницы отдают ровно то,
+// что вернул запрос, без подмены null на undefined.
+interface ContactOption { id: string; full_name: string; phone?: string | null; role: string; client_type?: string | null }
+interface PropertyOption { id: string; title: string; address?: string | null }
 
 export function DealFormBody({
   deal,

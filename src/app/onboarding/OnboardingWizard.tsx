@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, Building2, User, Home, UserPlus, FileText, ChevronRight, Loader2 } from 'lucide-react'
+import { LEGAL_FORM_OPTIONS } from '@/features/settings/config/legal-forms'
 
 interface Props {
  orgId: string
@@ -61,7 +62,7 @@ export function OnboardingWizard({ orgId, orgName: initialName, userId, employee
  const res = await fetch('/api/onboarding/step2', {
  method: 'POST',
  headers: { 'Content-Type': 'application/json' },
- body: JSON.stringify({ orgId, company_type: companyType, inn: companyInn }),
+ body: JSON.stringify({ orgId, legal_form: companyType, inn: companyInn }),
  })
  if (!res.ok) { const d = await res.json(); setError(d.error); setLoading(false); return }
  }
@@ -173,10 +174,9 @@ export function OnboardingWizard({ orgId, orgName: initialName, userId, employee
  <label className="block text-sm font-medium mb-1.5">Форма собственности</label>
  <select value={companyType} onChange={e => setCompanyType(e.target.value)}
  className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] bg-[var(--hp-surface)] outline-none focus:border-[var(--hp-ink)]">
- <option value="ip">ИП</option>
- <option value="ooo">ООО</option>
- <option value="ao">АО</option>
- <option value="physical">Физическое лицо</option>
+ {LEGAL_FORM_OPTIONS.map(o => (
+ <option key={o.value} value={o.value}>{o.label}</option>
+ ))}
  </select>
  </div>
  <div>

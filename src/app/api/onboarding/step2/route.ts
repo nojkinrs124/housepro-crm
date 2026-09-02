@@ -12,13 +12,17 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { orgId, company_type, inn } = await request.json()
+  const { orgId, legal_form, inn } = await request.json()
 
-  await supabase.from('company_settings')
+  // Колонка называется legal_form. Раньше сюда слали company_type, которой в
+  // company_settings нет: PostgREST отклонял upsert, ошибку никто не проверял —
+  // шаг мастера молча не сохранял ничего.
+  const { error } = await supabase.from('company_settings')
     .upsert(
-      { company_type, inn: inn?.trim() || null, organization_id: orgId, is_default: true },
+      { legal_form, inn: inn?.trim() || null, organization_id: orgId, is_default: true },
       { onConflict: 'organization_id', ignoreDuplicates: false }
     )
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
   return NextResponse.json({ success: true })
 }

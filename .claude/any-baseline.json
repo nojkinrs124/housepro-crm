@@ -48,6 +48,5 @@
   "src/features/settings/components/CompanyProfileForm.tsx": 2,
   "src/features/tasks/components/TasksKanban.tsx": 7,
   "src/lib/deal-automation.ts": 2,
-  "src/tests/unit/deal-automation.test.ts": 10,
-  "src/types/database.ts": 1
+  "src/tests/unit/deal-automation.test.ts": 10
 }

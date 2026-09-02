@@ -7,6 +7,20 @@ type Resource =
 
 type Action = 'read' | 'create' | 'update' | 'delete' | 'export'
 
+const ROLES: UserRole[] = ['admin', 'manager', 'agent', 'accountant']
+
+/**
+ * Сужает `users.role` из базы до UserRole.
+ *
+ * В схеме это обычный text (NOT NULL DEFAULT 'agent') без CHECK — сгенерированные
+ * типы честно отдают string. Неизвестное значение считаем 'agent': это и дефолт
+ * колонки, и самая ограниченная роль в PERMISSIONS, так что при испорченных данных
+ * пользователь получит меньше прав, а не больше.
+ */
+export function toUserRole(value: string | null | undefined): UserRole {
+  return ROLES.includes(value as UserRole) ? (value as UserRole) : 'agent'
+}
+
 const PERMISSIONS: Record<UserRole, Partial<Record<Resource, Action[]>>> = {
   admin: {
     contacts:   ['read', 'create', 'update', 'delete', 'export'],

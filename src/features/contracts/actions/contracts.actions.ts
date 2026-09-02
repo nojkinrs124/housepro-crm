@@ -18,6 +18,7 @@ import { writeAuditLog } from '@/lib/audit'
 import { requirePermission } from '@/lib/permissions'
 import { dispatchWebhook } from '@/lib/webhooks'
 import { advanceDealStage } from '@/lib/deal-automation'
+import { toJson } from '@/lib/json'
 
 // Схема contract_type_data по каждому типу договора (см. config/contract-types.ts).
 const CONTRACT_TYPE_DATA_SCHEMAS: Record<string, z.ZodTypeAny> = {
@@ -75,7 +76,7 @@ export async function createContractAction(_prevState: any, formData: FormData) 
     .from('contracts')
     .insert({
       ...parsed.data,
-      contract_type_data: contractTypeData,
+      contract_type_data: toJson(contractTypeData),
       status: 'draft',
       manager_id: user.id,
       organization_id: orgId,
@@ -133,20 +134,23 @@ export async function updateContractAction(id: string, _prevState: any, formData
 
     const nextVersion = versions?.[0]?.version ? versions[0].version + 1 : 1
 
-    await supabase.from('contract_versions').insert({
-      contract_id:     id,
-      organization_id: orgId,
-      version:         nextVersion,
-      version_data:    current,
-      created_by:      user.id,
+    // organization_id в contract_versions нет — изоляция идёт через contract_id.
+    // Раньше он тут передавался, PostgREST отклонял вставку, а ошибку никто не
+    // смотрел: история версий при редактировании не сохранялась вообще.
+    const { error: versionError } = await supabase.from('contract_versions').insert({
+      contract_id:  id,
+      version:      nextVersion,
+      version_data: current,
+      created_by:   user.id,
     })
+    if (versionError) return { error: `Не удалось сохранить версию: ${versionError.message}` }
   }
 
   const contractTypeData = parseContractTypeData(parsed.data.contract_type, formData)
 
   const { error } = await supabase
     .from('contracts')
-    .update({ ...parsed.data, contract_type_data: contractTypeData })
+    .update({ ...parsed.data, contract_type_data: toJson(contractTypeData) })
     .eq('id', id)
   if (error) return { error: error.message }
 
@@ -241,12 +245,13 @@ export async function restoreContractVersionAction(contractId: string, versionId
       .limit(1)
 
     const nextVersion = versions?.[0]?.version ? versions[0].version + 1 : 1
-    await supabase.from('contract_versions').insert({
-      contract_id: contractId, organization_id: orgId,
+    const { error: versionError } = await supabase.from('contract_versions').insert({
+      contract_id: contractId,
       version: nextVersion, version_data: current,
       created_by: user.id,
       note: `Автосохранение перед восстановлением версии ${version.version}`,
     })
+    if (versionError) return { error: `Не удалось сохранить версию: ${versionError.message}` }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

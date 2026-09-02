@@ -4,6 +4,7 @@ import { CheckSquare } from 'lucide-react'
 import Link from 'next/link'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { formatDate } from '@/lib/utils'
 
 export default async function NewTaskPage({
  searchParams,
@@ -101,7 +102,7 @@ export default async function NewTaskPage({
  className="w-full h-9 px-3 border border-input bg-background text-foreground text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer">
  <option value="">— не выбрано —</option>
  {(deals ?? []).map(d => (
- <option key={d.id} value={d.id}>Сделка {new Date(d.created_at).toLocaleDateString('ru-RU')}</option>
+ <option key={d.id} value={d.id}>Сделка {formatDate(d.created_at)}</option>
  ))}
  </select>
  </div>

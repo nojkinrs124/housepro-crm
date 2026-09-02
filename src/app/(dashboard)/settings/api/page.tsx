@@ -66,7 +66,7 @@ export default async function ApiSettingsPage() {
  name={k.name}
  keyPrefix={k.key_prefix}
  scopes={k.scopes ?? []}
- isActive={k.is_active}
+ isActive={k.is_active ?? true}
  lastUsedAt={k.last_used_at}
  createdAt={k.created_at}
  />

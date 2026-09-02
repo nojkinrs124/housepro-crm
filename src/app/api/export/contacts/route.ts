@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { formatDate } from '@/lib/utils'
 
 // КРИТИЧНО: этот роут отдаёт данные, специфичные для конкретной организации/пользователя
 // (RLS или ручная фильтрация по organization_id). Next.js по умолчанию может закэшировать
@@ -39,7 +40,7 @@ export async function GET() {
     c.kpp ?? '',
     c.ogrn ?? '',
     ROLE_LABELS[c.role] ?? c.role,
-    new Date(c.created_at).toLocaleDateString('ru-RU'),
+    formatDate(c.created_at),
   ])
 
   const csv = BOM + [csvHeaders, ...rows].map(r => r.map(csvEscape).join(';')).join('\n')

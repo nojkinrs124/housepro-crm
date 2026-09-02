@@ -27,7 +27,6 @@ export async function createEmployeeAction(formData: FormData) {
   const email = (formData.get('email') as string)?.trim()
   const full_name = (formData.get('full_name') as string)?.trim()
   const role = formData.get('role') as string
-  const phone = normalizePhone(formData.get('phone') as string)
 
   if (!email || !full_name || !role) {
     return { error: 'Заполните все обязательные поля' }
@@ -37,20 +36,21 @@ export async function createEmployeeAction(formData: FormData) {
     return { error: 'Неверная роль' }
   }
 
-  const payload = {
-    email,
-    full_name,
-    role: role as UserRole,
-    phone,
-    is_active: true,
-    organization_id: orgId,
+  // public.users.id — внешний ключ на auth.users(id), без DEFAULT. Строку сотрудника
+  // физически нельзя создать раньше учётной записи, поэтому вставка ниже падала
+  // всегда: пользователь видел сырую ошибку Postgres про NOT NULL. Сгенерированные
+  // типы схемы это показали — с `Database = any` ошибка была не видна ни tsc, ни билду.
+  //
+  // Правильный путь — приглашение через Supabase Admin API (inviteUserByEmail) с
+  // service-role ключом: сначала заводится auth-пользователь, триггер handle_new_user
+  // создаёт строку в public.users, дальше ей проставляются роль и организация.
+  // Это отдельная задача, заведена в docs/IMPROVEMENTS.md.
+  return {
+    error:
+      'Добавление сотрудника вручную недоступно: сначала нужно пригласить его по email, ' +
+      'чтобы создалась учётная запись. Приглашения ещё не подключены — заведите ' +
+      'пользователя через панель Supabase, он появится в списке автоматически.',
   }
-
-  const { error } = await supabase.from('users').insert(payload)
-  if (error) return { error: error.message }
-
-  revalidatePath('/employees')
-  return { success: true }
 }
 
 export async function updateEmployeeAction(employeeId: string, formData: FormData) {

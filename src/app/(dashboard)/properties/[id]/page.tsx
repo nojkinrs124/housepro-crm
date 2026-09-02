@@ -15,6 +15,8 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import Image from 'next/image'
 import { PropertyMap } from '@/features/properties/components/PropertyMap'
 import { MetersPanel, type MeterRow } from '@/features/properties/components/MetersPanel'
+import { formatDate } from '@/lib/utils'
+import { toAvitoStatus } from '@/features/avito/config/status'
 
 const typeLabels: Record<string, string> = {
  apartment: 'Квартира', house: 'Дом', commercial: 'Коммерция',
@@ -312,7 +314,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
  </div>
  <div className="text-right">
  {c.amount && <p className="text-sm font-semibold text-foreground">{Number(c.amount).toLocaleString('ru-RU')} ₽</p>}
- <p className="text-xs text-muted-foreground">{new Date(c.created_at).toLocaleDateString('ru-RU')}</p>
+ <p className="text-xs text-muted-foreground">{formatDate(c.created_at)}</p>
  </div>
  </Link>
  ))}
@@ -333,7 +335,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
  <p className="text-sm font-medium text-foreground">{dealLabels[d.deal_type] ?? d.deal_type}</p>
  <div className="text-right">
  {d.amount && <p className="text-sm font-semibold">{Number(d.amount).toLocaleString('ru-RU')} ₽</p>}
- <p className="text-xs text-muted-foreground">{new Date(d.created_at).toLocaleDateString('ru-RU')}</p>
+ <p className="text-xs text-muted-foreground">{formatDate(d.created_at)}</p>
  </div>
  </Link>
  ))}
@@ -351,8 +353,8 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
  <h2 className="font-semibold text-foreground mb-4">Информация</h2>
  <div className="space-y-0">
  <Row label="Менеджер" value={manager?.full_name ?? '—'} />
- <Row label="Добавлен" value={new Date(p.created_at).toLocaleDateString('ru-RU')} />
- {p.updated_at && <Row label="Обновлён" value={new Date(p.updated_at).toLocaleDateString('ru-RU')} />}
+ <Row label="Добавлен" value={formatDate(p.created_at)} />
+ {p.updated_at && <Row label="Обновлён" value={formatDate(p.updated_at)} />}
  {p.district && <Row label="Район" value={p.district} />}
  </div>
  </div>
@@ -361,7 +363,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
  <AvitoPublishToggle
  propertyId={id}
  isPublished={!!p.avito_publish}
- status={p.avito_status}
+ status={toAvitoStatus(p.avito_status)}
  error={p.avito_error}
  syncedAt={p.avito_synced_at}
  eligible={p.status === 'available'}

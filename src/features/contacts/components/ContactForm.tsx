@@ -14,15 +14,15 @@ const cardCls = "bg-[var(--hp-surface)] border border-[var(--hp-border)] rounded
 interface ContactFormDefaults {
   /** Заполнен при редактировании — нужен, чтобы не считать саму карточку дублем. */
   id?: string
-  full_name?: string
-  role?: string
-  status?: string
+  full_name?: string | null
+  role?: string | null
+  status?: string | null
   birth_date?: string | null
   phone?: string | null
   email?: string | null
   telegram?: string | null
   whatsapp?: string | null
-  client_type?: string
+  client_type?: string | null
   passport_series?: string | null
   passport_number?: string | null
   passport_issued_date?: string | null

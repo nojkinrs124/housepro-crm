@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Bell, CheckCheck } from 'lucide-react'
 import { markAllNotificationsReadAction, markNotificationReadAction } from './notifications.actions'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { formatDate } from '@/lib/utils'
 
 const typeColors: Record<string, string> = {
  overdue_payment: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]',
@@ -82,7 +83,7 @@ export default async function NotificationsPage() {
  <p className={`text-sm text-foreground ${!n.is_read ? 'font-semibold' : 'font-medium'}`}>{n.title}</p>
  {n.body && <p className="text-xs text-muted-foreground mt-0.5">{n.body}</p>}
  <p className="text-xs text-[var(--hp-tertiary)] mt-1">
- {new Date(n.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
+ {formatDate(n.created_at, { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
  </p>
  </div>
  {!n.is_read && (

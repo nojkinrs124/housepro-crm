@@ -12,7 +12,7 @@ interface Props {
  scopes: string[]
  isActive: boolean
  lastUsedAt: string | null
- createdAt: string
+ createdAt: string | null
 }
 
 export function ApiKeyRow({ id, name, keyPrefix, scopes, isActive, lastUsedAt, createdAt }: Props) {

@@ -2,10 +2,9 @@
  * Ратчет по `any`.
  *
  * Правило «никакого any» стояло в CLAUDE.md как жёсткий запрет, а в коде на
- * 02.09.2026 было 93 вхождения `: any` / `as any` и 108 подавлений линтера в
- * 51 файле. И это не разгильдяйство: `src/types/database.ts` объявляет
- * `export type Database = any`, поэтому КАЖДЫЙ запрос к Supabase возвращает
- * any, и подавления ниже по течению законны.
+ * 02.09.2026 было 209 вхождений `: any` / `as any` / подавлений линтера в 51
+ * файле — следствие заглушки `export type Database = any`, из-за которой каждый
+ * запрос к Supabase возвращал any.
  *
  * Правило, нарушенное сотню раз, обесценивает и все соседние правила. Поэтому
  * запрет здесь не абсолютный, а ратчетный, как у визуального стандарта:
@@ -14,8 +13,8 @@
  *   · убрали any из файла          → baseline автоматически опускается, назад
  *                                    дороги нет.
  *
- * Долг закроется целиком, когда будет сделана задача #8 из docs/IMPROVEMENTS.md
- * (генерация типов Supabase вместо `Database = any`).
+ * Заглушки больше нет (задача #8 закрыта, типы генерируются в src/types/supabase.ts),
+ * но 208 написанных ранее приведений сами не исчезли — снимаются попутно, задача #21.
  *
  * CLI: node scripts/checks/no-any.mjs            — проверить
  *      node scripts/checks/no-any.mjs --baseline — переснять baseline
@@ -97,7 +96,7 @@ export function allSourceFiles() {
 }
 
 // ── CLI ──────────────────────────────────────────────────────────────────
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const args = process.argv.slice(2)
 
   if (args.includes('--baseline')) {
@@ -131,7 +130,7 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   }
   console.error(
     'Типы брать из src/types/database.ts. Если тип честно неизвестен — `unknown` с сужением,\n' +
-      'а не any. Долг по any закроется задачей #8 из docs/IMPROVEMENTS.md (генерация типов Supabase).'
+      'а не any. Оставшиеся приведения — хвост задачи #8, снимаются попутно (задача #21).'
   )
   process.exit(1)
 }

@@ -119,3 +119,14 @@ export function normalizePhone(phone: string | null | undefined): string | null 
 
   return `+${digits}`
 }
+
+/**
+ * Type guard для списков идентификаторов.
+ *
+ * `.filter(Boolean)` не сужает `(string | null)[]` до `string[]` — TypeScript не
+ * знает, что Boolean отбрасывает null, и результат нельзя передать в `.in()`.
+ * Появилось после перехода на сгенерированные типы схемы: раньше всё было any.
+ */
+export function isId(value: string | null | undefined): value is string {
+  return typeof value === 'string' && value !== ''
+}

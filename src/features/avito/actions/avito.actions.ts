@@ -13,6 +13,7 @@ import {
   fetchAvitoAutoloadLastReport,
   AvitoApiError,
 } from '@/features/avito/services/avito-api.service'
+import type { Insert } from '@/types/database'
 
 async function requireAdmin() {
   const supabase = await createClient()
@@ -109,7 +110,7 @@ export async function saveAvitoSettingsAction(_prevState: unknown, formData: For
     .eq('organization_id', orgId)
     .maybeSingle()
 
-  const payload: Record<string, unknown> = {
+  const payload: Insert<'avito_settings'> = {
     organization_id: orgId,
     client_id: clientId,
     avito_user_id: avitoUserId,

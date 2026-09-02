@@ -3,6 +3,7 @@ import { FileUpload } from './FileUpload'
 import { FileDeleteButton } from './FileDeleteButton'
 import { FileText, Image, FileIcon, Download } from 'lucide-react'
 import type { FileRecord } from '@/types/database'
+import { formatDate } from '@/lib/utils'
 
 interface FilesSectionProps {
  clientId?: string
@@ -22,11 +23,6 @@ function formatSize(url?: string) {
  return null // size not stored; omit
 }
 
-function formatDate(dateStr: string) {
- return new Date(dateStr).toLocaleDateString('ru-RU', {
- day: '2-digit', month: '2-digit', year: 'numeric',
- })
-}
 
 function formatType(type?: string) {
  if (!type) return 'Файл'

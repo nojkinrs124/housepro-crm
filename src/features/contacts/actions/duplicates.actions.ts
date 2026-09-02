@@ -26,6 +26,27 @@ const CONTACT_REFERENCES: { table: string; column: string }[] = [
   { table: 'properties', column: 'owner_id' },
 ]
 
+/**
+ * Доступ к таблице, имя которой известно только в рантайме (см. CONTACT_REFERENCES).
+ *
+ * Сгенерированные типы схемы требуют литерал имени таблицы и колонки, а здесь и то,
+ * и другое приходит из массива связей. Вместо приведения в каждом месте вызова —
+ * одно здесь, с явным описанием тех двух операций, которые реально используются.
+ * Форма ответа известна: массив объектов `{ [column]: uuid | null }`.
+ */
+type RefQuery = {
+  select(columns: string): {
+    in(column: string, values: string[]): PromiseLike<{ data: Record<string, string | null>[] | null }>
+  }
+  update(values: Record<string, string>): {
+    in(column: string, values: string[]): PromiseLike<{ error: { message: string } | null }>
+  }
+}
+
+function refTable(supabase: Awaited<ReturnType<typeof createClient>>, table: string): RefQuery {
+  return supabase.from(table as never) as unknown as RefQuery
+}
+
 /** Поля, которые переносим из дубля в основную карточку, если там пусто. */
 const MERGEABLE_FIELDS = [
   'phone', 'email', 'telegram', 'whatsapp', 'birth_date', 'notes', 'source',
@@ -72,10 +93,8 @@ async function countLinks(
 
   await Promise.all(
     CONTACT_REFERENCES.map(async ({ table, column }) => {
-      const { data } = await supabase.from(table).select(column).in(column, ids)
-      // PostgREST-типы для динамического имени колонки не выводятся — приводим
-      // через unknown, форма ответа известна: массив объектов { [column]: uuid }.
-      for (const row of (data ?? []) as unknown as Record<string, string | null>[]) {
+      const { data } = await refTable(supabase, table).select(column).in(column, ids)
+      for (const row of data ?? []) {
         const value = row[column]
         if (value) counts.set(value, (counts.get(value) ?? 0) + 1)
       }
@@ -228,8 +247,7 @@ export async function mergeContactsAction(
   // 2. Перепривязываем связи.
   const relinkErrors: string[] = []
   for (const { table, column } of CONTACT_REFERENCES) {
-    const { error } = await supabase
-      .from(table)
+    const { error } = await refTable(supabase, table)
       .update({ [column]: primaryId })
       .in(column, ids)
     if (error) relinkErrors.push(`${table}.${column}: ${error.message}`)

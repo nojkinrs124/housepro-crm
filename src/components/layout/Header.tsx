@@ -3,13 +3,13 @@
 import { Search, Plus, ChevronDown, Sparkles, User as UserIcon, Home, TrendingUp, FileText, CheckSquare } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
-import type { User } from '@/types/database'
+import type { UserBadge } from '@/types/database'
 import { NotificationBell } from '@/components/layout/NotificationBell'
 
 // Профиль и выход живут внизу сайдбара — в шапке «Кабинета» только поиск,
 // уведомления и «Создать», как в макете. Проп user оставлен в сигнатуре:
 // layout передаёт его, и шапке он ещё понадобится для персональных подсказок.
-export function Header({ unreadCount = 0 }: { user?: User | null; unreadCount?: number }) {
+export function Header({ unreadCount = 0 }: { user?: UserBadge | null; unreadCount?: number }) {
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
   const [query, setQuery] = useState('')

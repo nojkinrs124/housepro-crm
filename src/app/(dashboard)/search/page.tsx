@@ -3,6 +3,7 @@ import { Search, User, Home, TrendingUp, FileText, CheckSquare } from 'lucide-re
 import Link from 'next/link'
 import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { formatDate } from '@/lib/utils'
 
 export default async function SearchPage({
  searchParams,
@@ -162,7 +163,7 @@ export default async function SearchPage({
  <Link key={d.id} href={`/deals/${d.id}`}
  className="flex items-center justify-between px-5 py-3 hover:bg-accent/40 transition">
  <p className="text-sm font-medium text-foreground">
- {dealTypeLabels[d.deal_type] ?? d.deal_type} · {new Date(d.created_at).toLocaleDateString('ru-RU')}
+ {dealTypeLabels[d.deal_type] ?? d.deal_type} · {formatDate(d.created_at)}
  </p>
  {d.amount && (
  <span className="text-sm font-semibold text-foreground">{Number(d.amount).toLocaleString('ru-RU')} ₽</span>

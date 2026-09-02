@@ -11,6 +11,7 @@ import type {
   AccountingTransactionType,
   AccountingPaymentMethod,
   AccountingStats,
+  Update,
 } from '@/types/database'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -289,7 +290,7 @@ export async function updateTransactionAction(id: string, _prevState: unknown, f
   const permError = await requirePermission(user.id, 'accounting', 'update')
   if (permError) return permError
 
-  const payload: Record<string, unknown> = {
+  const payload: Update<'accounting_transactions'> = {
     amount, date, status,
     category_id:    categoryId  || null,
     description:    description || null,

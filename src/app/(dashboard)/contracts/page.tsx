@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { buttonVariants } from '@/components/ui/button'
+import { formatDate, isId } from '@/lib/utils'
 
 const contractTypeLabels = CONTRACT_TYPE_LABELS
 const statusConfig: Record<string, { label: string; cls: string; dot: string }> = {
@@ -33,10 +34,10 @@ export default async function ContractsPage({
  const { data: contracts, error } = await query.limit(50)
 
  const contactIds = [...new Set([
- ...(contracts?.map(c => c.client_contact_id).filter(Boolean) ?? []),
- ...(contracts?.map(c => c.client_id).filter(Boolean) ?? []),
+ ...(contracts?.map(c => c.client_contact_id).filter(isId) ?? []),
+ ...(contracts?.map(c => c.client_id).filter(isId) ?? []),
  ])]
- const propertyIds = [...new Set(contracts?.map(c => c.property_id).filter(Boolean) ?? [])]
+ const propertyIds = [...new Set(contracts?.map(c => c.property_id).filter(isId) ?? [])]
 
  const [{ data: contactsData }, { data: propertiesData }] = await Promise.all([
  contactIds.length > 0
@@ -171,7 +172,7 @@ export default async function ContractsPage({
  </span>
  </td>
  <td className="px-4 py-4 text-sm text-muted-foreground">
- {new Date(contract.created_at).toLocaleDateString('ru-RU')}
+ {formatDate(contract.created_at)}
  </td>
  <td className="px-4 py-4">
  <div className="flex items-center gap-3">

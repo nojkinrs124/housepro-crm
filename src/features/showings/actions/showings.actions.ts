@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
+import type { Update } from '@/types/database'
 
 const VALID_STATUSES = ['planned', 'completed', 'cancelled', 'no_show']
 
@@ -52,7 +53,7 @@ export async function updateShowingStatusAction(id: string, status: string, form
   const permError = await requirePermission(user.id, 'showings', 'update')
   if (permError) return permError
 
-  const updates: Record<string, unknown> = {
+  const updates: Update<'showings'> = {
     status,
     updated_at: new Date().toISOString(),
   }

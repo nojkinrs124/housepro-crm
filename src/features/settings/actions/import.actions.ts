@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import type { Insert } from '@/types/database'
 import { revalidatePath } from 'next/cache'
 import { requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
@@ -22,6 +23,30 @@ const PREVIEW_ROWS = 8
 const INSERT_CHUNK = 200
 
 const VALID_ENTITIES: ImportEntity[] = ['contacts', 'properties', 'leads']
+
+/**
+ * Вставка партии импорта в одну из трёх таблиц.
+ *
+ * Таблица выбирается в рантайме, а строки собираются из пользовательского CSV по
+ * маппингу колонок — сопоставить это со схемой на этапе компиляции нельзя. Поэтому
+ * приведение здесь есть, но оно ограничено: switch раскрывает union в конкретную
+ * таблицу, и каждая ветка приводит к её собственному Insert, а не к общему any.
+ * Состав полей проверяется в рантайме через IMPORT_FIELDS и parseImportRow.
+ */
+async function insertImportChunk(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  entity: ImportEntity,
+  chunk: Record<string, unknown>[]
+) {
+  switch (entity) {
+    case 'contacts':
+      return supabase.from('contacts').insert(chunk as unknown as Insert<'contacts'>[])
+    case 'leads':
+      return supabase.from('leads').insert(chunk as unknown as Insert<'leads'>[])
+    case 'properties':
+      return supabase.from('properties').insert(chunk as unknown as Insert<'properties'>[])
+  }
+}
 
 export interface ParseFileResult {
   error?: string
@@ -157,7 +182,9 @@ export async function runImportAction(
       .limit(10_000)
 
     for (const record of existing ?? []) {
-      const value = (record as Record<string, string | null>)[column]
+      // column выбирается в рантайме, поэтому PostgREST-типы выводят здесь
+      // SelectQueryError — прогоняем через unknown, как и для вставки выше.
+      const value = (record as unknown as Record<string, string | null>)[column]
       if (value) existingKeys.add(value.trim().toLowerCase())
     }
   }
@@ -203,7 +230,7 @@ export async function runImportAction(
   let inserted = 0
   for (let i = 0; i < payload.length; i += INSERT_CHUNK) {
     const chunk = payload.slice(i, i + INSERT_CHUNK)
-    const { error } = await supabase.from(entity).insert(chunk)
+    const { error } = await insertImportChunk(supabase, entity, chunk)
     if (error) {
       failed.push({ line: i + 1, reason: error.message })
       // Не прерываем: остальные партии могут пройти, а частичный импорт

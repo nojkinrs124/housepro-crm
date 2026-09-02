@@ -47,7 +47,7 @@ export default async function WebhooksSettingsPage() {
  </div>
  ) : (
  webhooks.map(w => (
- <WebhookRow key={w.id} id={w.id} url={w.url} events={w.events ?? []} isActive={w.is_active} />
+ <WebhookRow key={w.id} id={w.id} url={w.url} events={w.events ?? []} isActive={w.is_active ?? true} />
  ))
  )}
  </div>

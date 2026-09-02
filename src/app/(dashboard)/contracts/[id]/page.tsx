@@ -89,7 +89,7 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
  baseContract = data
  }
 
- let company: { name?: string } | null = null
+ let company: { name: string | null } | null = null
  if (contract.company_profile_id) {
  const { data } = await supabase.from('company_settings').select('name').eq('id', contract.company_profile_id).maybeSingle()
  company = data

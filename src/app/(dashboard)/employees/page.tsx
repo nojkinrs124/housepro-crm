@@ -3,6 +3,7 @@ import { Users, Shield, UserCheck, User, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { buttonVariants } from '@/components/ui/button'
+import { formatDate } from '@/lib/utils'
 
 const roleLabels: Record<string, string> = {
  admin: 'Администратор', manager: 'Менеджер',
@@ -143,7 +144,7 @@ export default async function EmployeesPage() {
  </div>
  <div className="text-center">
  <p className="text-xs text-[var(--hp-tertiary)] font-medium">
- с {new Date(emp.created_at).toLocaleDateString('ru-RU', { month: 'short', year: 'numeric' })}
+ с {formatDate(emp.created_at, { month: 'short', year: 'numeric' })}
  </p>
  </div>
  </div>

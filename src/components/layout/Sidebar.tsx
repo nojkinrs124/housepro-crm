@@ -12,7 +12,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { logout } from '@/features/auth/actions/auth.actions'
-import type { User } from '@/types/database'
+import type { UserBadge } from '@/types/database'
 
 const navigation = [
   { name: 'Дашборд',     href: '/dashboard',    icon: LayoutDashboard, section: null },
@@ -52,7 +52,7 @@ function SidebarContent({
   onNavClick,
   onToggleCollapse,
 }: {
-  user: User | null
+  user: UserBadge | null
   collapsed: boolean
   onNavClick?: () => void
   /** Есть только у десктопного сайдбара — мобильному drawer сворачивать нечего. */
@@ -243,7 +243,7 @@ function MobileDrawer({
   open,
   onClose,
 }: {
-  user: User | null
+  user: UserBadge | null
   open: boolean
   onClose: () => void
 }) {
@@ -298,7 +298,7 @@ function MobileDrawer({
   )
 }
 
-export function MobileBottomNav({ user }: { user: User | null }) {
+export function MobileBottomNav({ user }: { user: UserBadge | null }) {
   const pathname = usePathname()
   const [drawerOpen, setDrawerOpen] = useState(false)
 
@@ -347,7 +347,7 @@ export function MobileBottomNav({ user }: { user: User | null }) {
   )
 }
 
-export function Sidebar({ user }: { user: User | null }) {
+export function Sidebar({ user }: { user: UserBadge | null }) {
   const [collapsed, setCollapsed] = useState(false)
 
   return (

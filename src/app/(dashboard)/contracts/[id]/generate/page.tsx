@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { GenerateButton } from './GenerateButton'
 import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { formatDate } from '@/lib/utils'
 
 const contractTypeLabels = CONTRACT_TYPE_LABELS
 
@@ -141,11 +142,10 @@ export default async function GenerateContractPage({
  <div>
  <p className="text-sm font-medium text-foreground">Версия {v.version}</p>
  <p className="text-xs text-muted-foreground">
- {new Date(v.created_at).toLocaleDateString('ru-RU', {
- day: '2-digit', month: 'long', year: 'numeric',
- })} {new Date(v.created_at).toLocaleTimeString('ru-RU', {
- hour: '2-digit', minute: '2-digit',
- })}
+ {formatDate(v.created_at, { day: '2-digit', month: 'long', year: 'numeric' })}
+ {v.created_at
+ ? new Date(v.created_at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+ : ''}
  </p>
  </div>
  </div>

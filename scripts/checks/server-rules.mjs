@@ -83,7 +83,7 @@ export function checkAll(files) {
 }
 
 // ── CLI ──────────────────────────────────────────────────────────────────
-if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const problems = checkAll()
   if (problems.length === 0) {
     console.log('✅ Правила серверного слоя соблюдены')

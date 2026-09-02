@@ -5,6 +5,7 @@ import { ProfileForm } from '@/features/profile/components/ProfileForm'
 import { CalendarSubscription } from '@/features/profile/components/CalendarSubscription'
 import { getSiteUrl } from '@/lib/telegram/site-url'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { toUserRole } from '@/lib/permissions'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -29,7 +30,7 @@ export default async function ProfilePage() {
         icon={<UserCircle className="text-[var(--hp-accent)]" style={{ width: 20, height: 20 }} />}
       />
 
-      <ProfileForm user={profile} />
+      <ProfileForm user={{ ...profile, role: toUserRole(profile.role) }} />
 
       <CalendarSubscription initialToken={profile.ical_token ?? null} siteUrl={getSiteUrl()} />
     </div>

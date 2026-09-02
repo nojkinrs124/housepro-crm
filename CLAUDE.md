@@ -132,14 +132,27 @@ const data: any = {}                                  // ❌ в новом ко�
 import type { Contact, Deal } from '@/types/database' // ✅
 ```
 
-Все типы — в `src/types/database.ts`, новые сущности добавлять туда. Тип честно
-неизвестен — `unknown` с сужением, а не `any`.
+Схема БД — **сгенерирована**, `src/types/supabase.ts` руками не править.
+Перегенерация после каждой миграции обязательна — порядок в skill
+`housepro-migration` (из сессии — MCP `generate_typescript_types`, с машины —
+`npm run db:types`). В `src/types/database.ts` живут доменные union'ы и хелперы
+поверх схемы:
 
-**Про существующие 209 вхождений `any`:** это не разгильдяйство, а следствие
-`export type Database = any` в `src/types/database.ts:340` — из-за него любой запрос
-к Supabase возвращает `any`, и подавления линтера ниже по течению законны. Долг
-закроется задачей #8 из `docs/IMPROVEMENTS.md` (генерация типов). До тех пор действует
-ратчет `check:any`: новое вхождение блокируется хуком, старые не трогаем.
+```ts
+import type { Row, Insert, Update } from '@/types/database'
+const deal: Row<'deals'> = …                 // строка таблицы
+const payload: Update<'showings'> = { … }    // вместо Record<string, unknown>
+```
+
+Тип честно неизвестен — `unknown` с сужением, а не `any`.
+
+**Про 208 оставшихся `any`:** это хвост от старой заглушки `Database = any`; теперь
+под ними лежит точный тип, и они не нужны. Снимаем попутно — тронул файл, убрал оттуда
+`any`, переснял `npm run check:any:baseline`. Ратчет `check:any` не даёт числу расти
+(задача #21 в `docs/IMPROVEMENTS.md`).
+
+**ESLint в проекте сейчас не работает** — `typescript-eslint` не поддерживает TS 7
+(задача #20). На `npm run check` это не влияет, но и не рассчитывать на него.
 
 ---
 

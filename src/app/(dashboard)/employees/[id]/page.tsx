@@ -6,6 +6,7 @@ import { updateEmployeeAction, deactivateEmployeeAction, activateEmployeeAction 
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { EmployeeTargetPanel } from '@/features/users/components/EmployeeTargetPanel'
+import { formatDate } from '@/lib/utils'
 
 const roleLabels: Record<string, string> = {
  admin: 'Администратор', manager: 'Менеджер',
@@ -98,7 +99,7 @@ export default async function EmployeePage({ params }: { params: Promise<{ id: s
  )}
  </span>
  <span className="block mt-1">
- В системе с {new Date(emp.created_at).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })}
+ В системе с {formatDate(emp.created_at, { month: 'long', year: 'numeric' })}
  </span>
  </>
  }

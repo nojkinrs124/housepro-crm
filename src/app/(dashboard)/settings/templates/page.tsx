@@ -5,6 +5,7 @@ import { deleteTemplateAction } from './templates.actions'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { formatDate } from '@/lib/utils'
 
 const typeLabels: Record<string, string> = { ...CONTRACT_TYPE_LABELS, other: 'Другое' }
 
@@ -52,7 +53,7 @@ export default async function TemplatesPage() {
  <div className="flex-1 min-w-0">
  <p className="font-semibold text-foreground text-sm truncate">{t.name}</p>
  <p className="text-xs text-muted-foreground mt-0.5">
- {typeLabels[t.template_type] ?? t.template_type} · {new Date(t.created_at).toLocaleDateString('ru-RU')}
+ {typeLabels[t.template_type] ?? t.template_type} · {formatDate(t.created_at)}
  </p>
  </div>
  <div className="flex items-center gap-2 shrink-0">

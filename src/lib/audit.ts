@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { toJson } from '@/lib/json'
 
 interface AuditParams {
   userId:      string
@@ -21,7 +22,7 @@ export async function writeAuditLog(params: AuditParams): Promise<void> {
       entity_type:     params.entityType,
       entity_id:       params.entityId,
       entity_label:    params.entityLabel,
-      changes:         params.changes ?? null,
+      changes:         params.changes ? toJson(params.changes) : null,
     })
   } catch (e) {
     // Аудит не должен ломать основной флоу

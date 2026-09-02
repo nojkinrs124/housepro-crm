@@ -26,16 +26,18 @@ export type TaskStatus = 'todo' | 'in_progress' | 'done' | 'cancelled'
 
 export type TaskPriority = 'low' | 'medium' | 'high'
 
-export interface User {
-  id: string
-  email: string
-  full_name: string
-  role: UserRole
-  phone?: string
-  avatar_url?: string
-  is_active: boolean
-  created_at: string
-}
+/**
+ * Сотрудник. Форма берётся из схемы — раньше здесь были 8 полей из 13, и половина
+ * значилась обязательной, хотя колонка nullable.
+ * `role` в базе просто text, приложение сужает его до UserRole.
+ */
+export type User = Omit<Row<'users'>, 'role'> & { role: UserRole }
+
+/**
+ * Минимум для «шапки» интерфейса — сайдбар, хедер, мобильная навигация.
+ * Страницы тянут эти поля частичным select'ом, полная строка им не нужна.
+ */
+export type UserBadge = Pick<Row<'users'>, 'id' | 'full_name' | 'avatar_url' | 'role'>
 
 export type ContactRole = 'client' | 'owner' | 'both'
 export type ContactStatus = 'new' | 'active' | 'vip' | 'inactive'
@@ -239,18 +241,8 @@ export interface Contract {
   manager?: User
 }
 
-export interface FileRecord {
-  id: string
-  file_name?: string
-  file_url?: string
-  file_type?: string
-  contract_id?: string
-  client_id?: string
-  property_id?: string
-  deal_id?: string
-  uploaded_by?: string
-  created_at: string
-}
+/** Загруженный файл. Все поля кроме id в базе nullable — так и есть в схеме. */
+export type FileRecord = Row<'files'>
 
 export interface Task {
   id: string
@@ -335,9 +327,24 @@ export interface CompanySettings {
   updated_at: string
 }
 
-// Supabase Database type (simplified)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type Database = any
+// Схема БД — генерируется из живой базы, править руками нечего.
+// Перегенерировать после миграции: npm run db:types
+export type { Database, Json } from './supabase'
+
+type Tables = import('./supabase').Database['public']['Tables']
+
+/** Строка таблицы прямо из схемы: Row<'deals'>, Row<'showings'>. */
+export type Row<T extends keyof Tables> = Tables[T]['Row']
+
+/** Payload для .insert() — обязательные колонки обязательны, остальные нет. */
+export type Insert<T extends keyof Tables> = Tables[T]['Insert']
+
+/**
+ * Payload для .update() — все поля необязательны.
+ * Использовать вместо `Record<string, unknown>`: тот отключает проверку имён
+ * колонок, и опечатка вроде `company_type` вместо `legal_form` доходит до прода.
+ */
+export type Update<T extends keyof Tables> = Tables[T]['Update']
 
 export type PaymentStatus = 'pending' | 'paid' | 'partial' | 'overdue' | 'cancelled'
 export type PaymentType = 'rent' | 'deposit' | 'commission' | 'penalty' | 'other'
