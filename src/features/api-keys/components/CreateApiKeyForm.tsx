@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import { QuickCreateModal } from '@/components/ui/QuickCreateModal'
 import { useRouter } from 'next/navigation'
-import { Key, Copy, Check, AlertTriangle, Plus, X } from 'lucide-react'
+import { Copy, Check, AlertTriangle, Plus } from 'lucide-react'
 import { createApiKeyAction } from '../actions/api-keys.actions'
 
 export function CreateApiKeyForm() {
@@ -53,13 +54,12 @@ export function CreateApiKeyForm() {
  }
 
  return (
- <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4" onClick={close}>
- <div className="bg-[var(--hp-surface)] p-6 max-w-md w-full" onClick={e => e.stopPropagation()}>
+ <QuickCreateModal title={newKey ? 'Сохраните ключ' : 'Новый API-ключ'} onClose={close}>
  {newKey ? (
  <div className="space-y-4">
  <div className="flex items-center gap-2 text-[var(--hp-warn)]">
  <AlertTriangle className="w-5 h-5" />
- <h2 className="font-semibold">Сохраните ключ сейчас</h2>
+ <p className="font-semibold">Ключ показывается один раз</p>
  </div>
  <p className="text-sm text-muted-foreground">
  Этот ключ показывается только один раз. После закрытия окна его нельзя будет посмотреть снова.
@@ -83,16 +83,6 @@ export function CreateApiKeyForm() {
  </div>
  ) : (
  <form onSubmit={handleSubmit} className="space-y-4">
- <div className="flex items-center justify-between">
- <div className="flex items-center gap-2">
- <Key className="w-4 h-4 text-primary" />
- <h2 className="font-semibold">Новый API ключ</h2>
- </div>
- <button type="button" onClick={close} className="text-muted-foreground hover:text-foreground">
- <X className="w-4 h-4" />
- </button>
- </div>
-
  <div>
  <label className="block text-sm font-medium mb-1.5">Название</label>
  <input
@@ -129,7 +119,6 @@ export function CreateApiKeyForm() {
  </button>
  </form>
  )}
- </div>
- </div>
+ </QuickCreateModal>
  )
 }

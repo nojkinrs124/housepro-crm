@@ -4,6 +4,7 @@ import {
   ResponsiveContainer, ComposedChart, Bar, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 } from 'recharts'
+import { CHART, CHART_AXIS_TICK, CHART_GRID_STROKE, CHART_TOOLTIP_STYLE, CHART_TOOLTIP_LABEL_STYLE } from '@/lib/design/chartColors'
 
 interface DataPoint {
   month: string
@@ -34,16 +35,16 @@ export function PnLChart({ data }: Props) {
   return (
     <ResponsiveContainer width="100%" height={260}>
       <ComposedChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#EAEEE2" vertical={false} />
+        <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_STROKE} vertical={false} />
         <XAxis
           dataKey="month"
-          tick={{ fontSize: 11, fill: '#8A9382' }}
+          tick={CHART_AXIS_TICK}
           axisLine={false}
           tickLine={false}
         />
         <YAxis
           tickFormatter={fmt}
-          tick={{ fontSize: 11, fill: '#8A9382' }}
+          tick={CHART_AXIS_TICK}
           axisLine={false}
           tickLine={false}
           width={44}
@@ -53,12 +54,8 @@ export function PnLChart({ data }: Props) {
             (Number(value) ?? 0).toLocaleString('ru-RU') + ' ₽',
             name === 'income' ? 'Доход' : name === 'expense' ? 'Расход' : 'Прибыль',
           ]}
-          contentStyle={{
-            borderRadius: 12,
-            border: '1px solid #DFE4D6',
-            fontSize: 12,
-          }}
-          labelStyle={{ fontWeight: 600, color: '#232A24', marginBottom: 4 }}
+          contentStyle={CHART_TOOLTIP_STYLE}
+          labelStyle={CHART_TOOLTIP_LABEL_STYLE}
         />
         <Legend
           formatter={(v) => v === 'income' ? 'Доход' : v === 'expense' ? 'Расход' : 'Прибыль'}
@@ -67,13 +64,13 @@ export function PnLChart({ data }: Props) {
           wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
         />
         <Bar dataKey="income"  fill="var(--hp-accent)" radius={[4,4,0,0]} barSize={18} />
-        <Bar dataKey="expense" fill="#C2705A" radius={[4,4,0,0]} barSize={18} />
+        <Bar dataKey="expense" fill={CHART.danger} radius={[4,4,0,0]} barSize={18} />
         <Line
           type="monotone"
           dataKey="profit"
-          stroke="#5C6659"
+          stroke={CHART.sub}
           strokeWidth={2}
-          dot={{ r: 3, fill: '#5C6659' }}
+          dot={{ r: 3, fill: CHART.sub }}
           activeDot={{ r: 5 }}
         />
       </ComposedChart>

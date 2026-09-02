@@ -3,14 +3,15 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { requireOrgId } from '@/lib/org'
+import { getSessionContext, requireOrgId } from '@/lib/org'
 import { dispatchWebhook } from '@/lib/webhooks'
 import { requirePermission } from '@/lib/permissions'
 import { normalizePhone } from '@/lib/utils'
 import { notifyNewLead } from '@/lib/telegram/notify-lead'
-import { emailLeadAssigned } from '@/lib/email/notify'
+import { emailLeadAssigned } from '@/lib/email/send'
+import { LEAD_STATUS_VALUES } from '@/features/leads/config/lead-statuses'
 
-const VALID_STATUSES = ['new','contacted','showing','searching','converted','closed','interested','rejected']
+const VALID_STATUSES = LEAD_STATUS_VALUES
 
 function extractLeadFields(formData: FormData, userId?: string) {
   return {
@@ -130,12 +131,9 @@ export async function updateLeadStatusAction(
 }
 
 export async function addLeadActivityAction(formData: FormData) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Не авторизован' }
-
-  const orgId = await requireOrgId().catch(() => null)
-  if (!orgId) return { error: 'Организация не найдена' }
+  const ctx = await getSessionContext()
+  if (!ctx.ok) return { error: ctx.error }
+  const { supabase, user, orgId } = ctx
 
   const lead_id = formData.get('lead_id') as string
   const type    = formData.get('type') as string
@@ -167,12 +165,9 @@ export async function addLeadActivityAction(formData: FormData) {
 }
 
 export async function convertLeadToClient(id: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Не авторизован' }
-
-  const orgId = await requireOrgId().catch(() => null)
-  if (!orgId) return { error: 'Организация не найдена' }
+  const ctx = await getSessionContext()
+  if (!ctx.ok) return { error: ctx.error }
+  const { supabase, user, orgId } = ctx
 
   const { data: lead } = await supabase.from('leads').select('*').eq('id', id).single()
   if (!lead) return { error: 'Лид не найден' }

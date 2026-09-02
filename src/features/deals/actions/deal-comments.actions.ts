@@ -2,16 +2,13 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { requireOrgId } from '@/lib/org'
+import { getSessionContext } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
 
 export async function addDealCommentAction(dealId: string, formData: FormData) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Не авторизован' }
-
-  const orgId = await requireOrgId().catch(() => null)
-  if (!orgId) return { error: 'Организация не найдена' }
+  const ctx = await getSessionContext()
+  if (!ctx.ok) return { error: ctx.error }
+  const { supabase, user, orgId } = ctx
 
   const body = (formData.get('body') as string)?.trim()
   if (!body) return { error: 'Комментарий не может быть пустым' }

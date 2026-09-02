@@ -56,14 +56,14 @@
 
 ## 🧱 Технологический стек
 
-- **Frontend:** Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · shadcn/ui
+- **Frontend:** Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4 (свои компоненты, без библиотеки UI)
 - **Backend:** Supabase (PostgreSQL + Auth + Storage), Row Level Security на уровне организации
 - **Оплата:** Stripe Billing (подписка на CRM) · ЮKassa (платежи клиентов агентства)
 - **Интеграции:** DaData (адреса и реквизиты), Яндекс.Карты, телефония (Манго/UIS/Zadarma),
   WhatsApp (Wazzup/Green API), Авито-мессенджер, фиды Авито/ЦИАН/Яндекс/Домклик
 - **Документы:** docxtemplater + pizzip (генерация DOCX по шаблонам)
 - **Аналитика/графики:** Recharts
-- **UX:** Framer Motion, sonner (toasts), @dnd-kit (drag-and-drop)
+- **UX:** Framer Motion, sonner (toasts), нативный HTML5 drag-and-drop (Kanban), нативный `<dialog>` (модалки)
 - **Качество:** Vitest, Sentry, GitHub Actions CI
 - **Деплой:** Vercel
 

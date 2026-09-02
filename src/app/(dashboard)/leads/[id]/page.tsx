@@ -9,6 +9,7 @@ import { LeadStatusSelect } from '@/features/leads/components/LeadStatusSelect'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { CommunicationTimeline } from '@/features/communications/components/CommunicationTimeline'
+import { LEAD_STATUS_BADGE, LEAD_STATUS_LABELS } from '@/features/leads/config/lead-statuses'
 
 const sourceLabels: Record<string, string> = {
  avito: 'Авито', cian: 'ЦИАН', domclick: 'Домклик',
@@ -33,21 +34,8 @@ const activityLabels: Record<string, string> = {
  showing: 'Показ', note: 'Заметка', email: 'Email',
 }
 
-const statusColors: Record<string, string> = {
- new: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]',
- contacted: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]',
- showing: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]',
- searching: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]',
- converted: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]',
- closed: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]',
- interested:'bg-[var(--hp-info-tint)] text-[var(--hp-info)]',
- rejected: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]',
-}
-const statusLabels: Record<string, string> = {
- new: 'Новый', contacted: 'Связались', showing: 'Показ',
- searching: 'Подбор', converted: 'Конвертирован',
- closed: 'Закрыт', interested: 'Заинтересован', rejected: 'Отказ',
-}
+const statusColors = LEAD_STATUS_BADGE
+const statusLabels = LEAD_STATUS_LABELS
 
 export default async function LeadPage({ params }: { params: Promise<{ id: string }> }) {
  const { id } = await params

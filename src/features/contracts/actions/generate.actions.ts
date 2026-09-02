@@ -1,7 +1,6 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createClient } from '@/lib/supabase/server'
 import { createClient as createServiceRoleClient } from '@supabase/supabase-js'
 import {
   buildContractVariables,
@@ -9,17 +8,14 @@ import {
   uploadContractFile,
 } from '../services/document.service'
 import { CONTRACT_TYPE_MAP } from '../config/contract-types'
-import { requireOrgId } from '@/lib/org'
+import { getSessionContext, requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
 import { advanceDealStage } from '@/lib/deal-automation'
 
 export async function generateContractDocx(contractId: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Не авторизован' }
-
-  const orgId = await requireOrgId().catch(() => null)
-  if (!orgId) return { error: 'Организация не найдена' }
+  const ctx = await getSessionContext()
+  if (!ctx.ok) return { error: ctx.error }
+  const { supabase, user, orgId } = ctx
 
   const permError = await requirePermission(user.id, 'contracts', 'update')
   if (permError) return permError

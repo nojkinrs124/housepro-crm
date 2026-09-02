@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
-import { emailTaskAssigned } from '@/lib/email/notify'
+import { emailTaskAssigned } from '@/lib/email/send'
 
 const VALID_TASK_STATUSES = ['todo', 'in_progress', 'done', 'cancelled']
 const VALID_TASK_PRIORITIES = ['low', 'medium', 'high']

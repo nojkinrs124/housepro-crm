@@ -3,19 +3,13 @@
 import React from 'react'
 import Link from 'next/link'
 import { Phone, MessageCircle, ExternalLink, User } from 'lucide-react'
+import { DEAL_TYPE_LABELS as dealTypeLabels } from '@/features/deals/config/deal-stages'
+import { LEAD_STATUS_BADGE, LEAD_STATUS_LABELS } from '@/features/leads/config/lead-statuses'
 
-const statusLabels: Record<string, string> = {
- new: 'Новый',
- in_work: 'В работе',
- converted: 'Конвертирован',
- rejected: 'Отказ',
-}
-const statusColors: Record<string, string> = {
- new: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)] border-[var(--hp-border)]',
- in_work: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)] border-[var(--hp-border)]',
- converted: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)] border-[var(--hp-border)]',
- rejected: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)] border-[var(--hp-border)]',
-}
+const statusLabels = LEAD_STATUS_LABELS
+const statusColors: Record<string, string> = Object.fromEntries(
+ Object.entries(LEAD_STATUS_BADGE).map(([k, v]) => [k, `${v} border-[var(--hp-border)]`])
+)
 const sourceLabels: Record<string, string> = {
  avito: 'Авито',
  cian: 'Циан',
@@ -24,13 +18,6 @@ const sourceLabels: Record<string, string> = {
  instagram: 'Instagram',
  phone: 'Телефон',
  other: 'Другое',
-}
-const dealTypeLabels: Record<string, string> = {
- rent: 'Аренда',
- sale: 'Продажа',
- management: 'Управление',
- commercial: 'Коммерция',
- subrent: 'Субаренда',
 }
 const dealTypeColors: Record<string, string> = {
  rent: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]',

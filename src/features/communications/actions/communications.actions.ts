@@ -3,7 +3,7 @@
 import { randomBytes } from 'crypto'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { requireOrgId } from '@/lib/org'
+import { getSessionContext, requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
 import { rateLimitMutation } from '@/lib/rate-limit'
 import { normalizePhone } from '@/lib/utils'
@@ -146,12 +146,9 @@ export async function saveChannelIntegrationAction(
   _prevState: unknown,
   formData: FormData
 ): Promise<ChannelActionResult> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Не авторизован' }
-
-  const orgId = await requireOrgId().catch(() => null)
-  if (!orgId) return { error: 'Организация не найдена' }
+  const ctx = await getSessionContext()
+  if (!ctx.ok) return { error: ctx.error }
+  const { supabase, user, orgId } = ctx
 
   const permError = await requirePermission(user.id, 'settings', 'update')
   if (permError) return permError
@@ -215,12 +212,9 @@ export interface ChannelActionResult {
 export async function regenerateWebhookSecretAction(
   kind: IntegrationKind
 ): Promise<ChannelActionResult> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Не авторизован' }
-
-  const orgId = await requireOrgId().catch(() => null)
-  if (!orgId) return { error: 'Организация не найдена' }
+  const ctx = await getSessionContext()
+  if (!ctx.ok) return { error: ctx.error }
+  const { supabase, user, orgId } = ctx
 
   const permError = await requirePermission(user.id, 'settings', 'update')
   if (permError) return permError

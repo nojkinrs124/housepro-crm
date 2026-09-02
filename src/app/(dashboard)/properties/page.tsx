@@ -6,14 +6,8 @@ import { buttonVariants } from '@/components/ui/button'
 import { PropertyAvitoQuickToggle } from '@/features/avito/components/PropertyAvitoQuickToggle'
 import { PropertySiteQuickToggle } from '@/features/properties/components/PropertySiteQuickToggle'
 import { toAvitoStatus } from '@/features/avito/config/status'
+import { PROPERTY_TYPE_LABELS as typeLabels, PROPERTY_DEAL_LABELS as dealLabels } from '@/features/properties/config/property-labels'
 
-const typeLabels: Record<string, string> = {
- apartment: 'Квартира', house: 'Дом', commercial: 'Коммерция',
- office: 'Офис', warehouse: 'Склад', land: 'Участок',
-}
-const dealLabels: Record<string, string> = {
- rent: 'Аренда', sale: 'Продажа', management: 'Управление', subrent: 'Субаренда',
-}
 const statusConfig: Record<string, { label: string; dot: string; badge: string }> = {
  available: { label: 'Свободен', dot: 'var(--hp-accent)', badge: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]' },
  reserved: { label: 'Забронирован', dot: '#7A6B3F', badge: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]' },

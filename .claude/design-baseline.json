@@ -1,5 +1,4 @@
 {
-  "src/app/(dashboard)/analytics/page.tsx": 6,
   "src/app/(dashboard)/contracts/[id]/generate/GenerateButton.tsx": 1,
   "src/app/(dashboard)/contracts/page.tsx": 1,
   "src/app/(dashboard)/dashboard/page.tsx": 12,
@@ -10,14 +9,11 @@
   "src/app/(dashboard)/tasks/[id]/page.tsx": 6,
   "src/app/global-error.tsx": 1,
   "src/components/layout/Header.tsx": 1,
-  "src/components/search/GlobalSearch.tsx": 5,
+  "src/components/search/GlobalSearch.tsx": 4,
   "src/features/accounting/actions/accounting.actions.ts": 1,
   "src/features/accounting/actions/categories.actions.ts": 2,
   "src/features/accounting/components/AddContractPaymentForm.tsx": 1,
-  "src/features/accounting/components/CategoryPieChart.tsx": 1,
-  "src/features/accounting/components/PnLChart.tsx": 8,
   "src/features/accounting/components/TransactionForm.tsx": 3,
-  "src/features/analytics/components/AnalyticsCharts.tsx": 23,
   "src/features/api-keys/components/ApiKeyRow.tsx": 1,
   "src/features/api-keys/components/CreateApiKeyForm.tsx": 1,
   "src/features/avito/components/AvitoFeedPanel.tsx": 3,
@@ -29,7 +25,6 @@
   "src/features/webhooks/components/CreateWebhookForm.tsx": 1,
   "src/features/webhooks/components/WebhookRow.tsx": 1,
   "src/lib/design/chartColors.ts": 13,
-  "src/lib/email/send.ts": 1,
   "src/lib/email/templates.ts": 8,
   "src/lib/telegram/charts.ts": 4
 }

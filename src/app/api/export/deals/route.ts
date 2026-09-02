@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { DEAL_TYPE_LABELS, DEAL_STATUS_LABELS as STATUS_LABELS } from '@/features/deals/config/deal-stages'
 
 // КРИТИЧНО: этот роут отдаёт данные, специфичные для конкретной организации/пользователя
 // (RLS или ручная фильтрация по organization_id). Next.js по умолчанию может закэшировать
@@ -16,13 +17,6 @@ function csvEscape(value: unknown): string {
   return s
 }
 
-const DEAL_TYPE_LABELS: Record<string, string> = {
-  rent: 'Аренда', sale: 'Продажа', management: 'Управление', commercial: 'Коммерция', subrent: 'Субаренда',
-}
-const STATUS_LABELS: Record<string, string> = {
-  new: 'Новая', showing: 'Показ', negotiation: 'Переговоры', contract: 'Договор',
-  payment: 'Оплата', completed: 'Завершена', cancelled: 'Отменена',
-}
 
 export async function GET() {
   const supabase = await createClient()

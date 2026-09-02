@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { UserRole } from '@/types/database'
-import { requireOrgId } from '@/lib/org'
+import { getSessionContext } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
 import { normalizePhone } from '@/lib/utils'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
@@ -14,12 +14,9 @@ import { writeAuditLog } from '@/lib/audit'
 const VALID_ROLES: UserRole[] = ['admin', 'manager', 'agent', 'accountant']
 
 export async function createEmployeeAction(formData: FormData) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Не авторизован' }
-
-  const orgId = await requireOrgId().catch(() => null)
-  if (!orgId) return { error: 'Организация не найдена' }
+  const ctx = await getSessionContext()
+  if (!ctx.ok) return { error: ctx.error }
+  const { supabase, user, orgId } = ctx
 
   const permError = await requirePermission(user.id, 'employees', 'create')
   if (permError) return permError

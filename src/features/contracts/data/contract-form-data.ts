@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { DEAL_TYPE_LABELS as dealTypeLabels } from '@/features/deals/config/deal-stages'
 
 // currentDealId — сделка, уже привязанная к редактируемому договору. Список сделок
 // по умолчанию скрывает завершённые/отменённые (чтобы не создавать новые договоры под
@@ -72,9 +73,6 @@ export async function getContractFormData(excludeContractId?: string, currentDea
   }))
   const defaultCompanyProfileId = companyProfiles.find((p) => p.isDefault)?.id ?? companyProfiles[0]?.id ?? ''
 
-  const dealTypeLabels: Record<string, string> = {
-    rent: 'Аренда', sale: 'Продажа', management: 'Управление', commercial: 'Коммерция', subrent: 'Субаренда',
-  }
   const deals = (rawDeals ?? []).map((d) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const property = d.property as any

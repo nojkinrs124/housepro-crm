@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import { QuickCreateModal } from '@/components/ui/QuickCreateModal'
 import { useRouter } from 'next/navigation'
-import { Webhook, Copy, Check, AlertTriangle, Plus, X } from 'lucide-react'
+import { Copy, Check, AlertTriangle, Plus } from 'lucide-react'
 import { createWebhookAction } from '../actions/webhooks.actions'
 
 const EVENTS = [
@@ -60,13 +61,12 @@ export function CreateWebhookForm() {
  }
 
  return (
- <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4" onClick={close}>
- <div className="bg-[var(--hp-surface)] p-6 max-w-md w-full" onClick={e => e.stopPropagation()}>
+ <QuickCreateModal title={newSecret ? 'Сохраните secret' : 'Новый вебхук'} onClose={close}>
  {newSecret ? (
  <div className="space-y-4">
  <div className="flex items-center gap-2 text-[var(--hp-warn)]">
  <AlertTriangle className="w-5 h-5" />
- <h2 className="font-semibold">Сохраните secret сейчас</h2>
+ <p className="font-semibold">Secret показывается один раз</p>
  </div>
  <p className="text-sm text-muted-foreground">
  Используйте этот secret для проверки подписи HMAC-SHA256 в заголовке <code className="text-xs">X-HousePro-Signature</code>.
@@ -90,16 +90,6 @@ export function CreateWebhookForm() {
  </div>
  ) : (
  <form onSubmit={handleSubmit} className="space-y-4">
- <div className="flex items-center justify-between">
- <div className="flex items-center gap-2">
- <Webhook className="w-4 h-4 text-primary" />
- <h2 className="font-semibold">Новый вебхук</h2>
- </div>
- <button type="button" onClick={close} className="text-muted-foreground hover:text-foreground">
- <X className="w-4 h-4" />
- </button>
- </div>
-
  <div>
  <label className="block text-sm font-medium mb-1.5">URL эндпоинта</label>
  <input
@@ -138,7 +128,6 @@ export function CreateWebhookForm() {
  </button>
  </form>
  )}
- </div>
- </div>
+ </QuickCreateModal>
  )
 }

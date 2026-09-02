@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { requireOrgId } from '@/lib/org'
+import { getSessionContext, requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
 import { isValidEmail } from '@/lib/email/provider'
 import { sendCollectionSharedEmail } from '@/lib/email/send'
@@ -117,12 +117,9 @@ export async function deleteCollectionAction(id: string) {
  * а не как настройка приватности.
  */
 export async function sendCollectionByEmailAction(collectionId: string, formData: FormData) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Не авторизован' }
-
-  const orgId = await requireOrgId().catch(() => null)
-  if (!orgId) return { error: 'Организация не найдена' }
+  const ctx = await getSessionContext()
+  if (!ctx.ok) return { error: ctx.error }
+  const { supabase, user, orgId } = ctx
 
   const permError = await requirePermission(user.id, 'collections', 'update')
   if (permError) return permError

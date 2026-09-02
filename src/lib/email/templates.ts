@@ -92,13 +92,6 @@ export function p(text: string): string {
   return `<p style="margin:0 0 12px;">${escapeHtml(text)}</p>`
 }
 
-/** Маркированный список. */
-export function ul(items: string[]): string {
-  if (items.length === 0) return ''
-  const li = items.map((i) => `<li style="margin:0 0 6px;">${escapeHtml(i)}</li>`).join('')
-  return `<ul style="margin:0 0 12px;padding-left:20px;">${li}</ul>`
-}
-
 /** Plain-text версия: обязательна, без неё письмо чаще уезжает в спам. */
 export function toPlainText(html: string): string {
   return html
@@ -112,16 +105,4 @@ export function toPlainText(html: string): string {
     .replace(/&quot;/g, '"')
     .replace(/\n{3,}/g, '\n\n')
     .trim()
-}
-
-export function formatMoney(amount: number | string | null | undefined): string {
-  const n = Number(amount ?? 0)
-  return `${n.toLocaleString('ru-RU')} ₽`
-}
-
-export function formatDate(value: string | Date | null | undefined): string {
-  if (!value) return '—'
-  const d = typeof value === 'string' ? new Date(value) : value
-  if (Number.isNaN(d.getTime())) return String(value)
-  return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }

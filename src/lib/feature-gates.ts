@@ -39,27 +39,3 @@ export const PLAN_PRICES: Record<Plan, { monthly: number; annual: number }> = {
   pro:        { monthly: 2990,  annual: 24990 },
   enterprise: { monthly: 9990,  annual: 89990 },
 }
-
-/**
- * Проверяет, не превышен ли лимит плана.
- * Возвращает { allowed: false, message } если превышен.
- */
-export function checkLimit(
-  plan: string,
-  resource: 'max_users' | 'max_properties' | 'max_contracts',
-  currentCount: number
-): { allowed: boolean; message?: string } {
-  const gate = getFeatureGate(plan)
-  const limit = gate[resource]
-
-  if (currentCount >= limit) {
-    const label = resource === 'max_users' ? 'пользователей'
-      : resource === 'max_properties' ? 'объектов' : 'договоров'
-    return {
-      allowed: false,
-      message: `Достигнут лимит плана: ${limit} ${label}. Обновите тариф для продолжения.`,
-    }
-  }
-
-  return { allowed: true }
-}

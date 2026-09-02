@@ -46,3 +46,28 @@ export async function requireOrgId(): Promise<string> {
   if (!orgId) throw new Error('Organization not found')
   return orgId
 }
+
+/**
+ * Клиент + пользователь + организация одним вызовом — связка, которая раньше
+ * была скопирована в начало каждого экшена шестью строками.
+ *
+ * Ошибку возвращает, а не бросает: Server Action отдаёт её форме как есть,
+ * а redirect на /login (где он нужен) остаётся решением вызывающего.
+ */
+type Client = Awaited<ReturnType<typeof createClient>>
+type User = NonNullable<Awaited<ReturnType<Client['auth']['getUser']>>['data']['user']>
+
+export type SessionContext =
+  | { ok: false; error: string }
+  | { ok: true; supabase: Client; user: User; orgId: string }
+
+export async function getSessionContext(): Promise<SessionContext> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'Не авторизован' }
+
+  const orgId = await getOrgId()
+  if (!orgId) return { ok: false, error: 'Организация не найдена' }
+
+  return { ok: true, supabase, user, orgId }
+}

@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { Home, MapPin, Phone } from 'lucide-react'
 import { PropertyMap, type MapPoint } from '@/features/properties/components/PropertyMap'
+import { DEAL_TYPE_LABELS as DEAL_LABELS } from '@/features/deals/config/deal-stages'
 
 export default async function PublicCollectionPage({ params }: { params: Promise<{ token: string }> }) {
  const { token } = await params
@@ -23,10 +24,6 @@ export default async function PublicCollectionPage({ params }: { params: Promise
 
  // eslint-disable-next-line @typescript-eslint/no-explicit-any
  const collection = col as any
-
- const DEAL_LABELS: Record<string, string> = {
- sale: 'Продажа', rent: 'Аренда', management: 'Управление'
- }
 
  // Карта появляется, только если у объектов есть координаты: у старых записей
  // их нет, и пустая серая плашка вместо карты выглядела бы поломкой.

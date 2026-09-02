@@ -19,6 +19,7 @@ import {
  type PodpislonSignature,
 } from '@/features/contracts/components/PodpislonSigningPanel'
 import { getSiteUrl } from '@/lib/telegram/site-url'
+import { DEAL_TYPE_LABELS as dealTypeLabels, DEAL_STATUS_LABELS as dealStageLabels } from '@/features/deals/config/deal-stages'
 
 const contractTypeLabels = CONTRACT_TYPE_LABELS
 
@@ -35,13 +36,6 @@ const statusLabels: Record<string, string> = {
  completed: 'Завершён', cancelled: 'Отменён',
 }
 
-const dealTypeLabels: Record<string, string> = {
- rent: 'Аренда', sale: 'Продажа', management: 'Управление', commercial: 'Коммерция', subrent: 'Субаренда',
-}
-const dealStageLabels: Record<string, string> = {
- new: 'Новая', showing: 'Показы', negotiation: 'Переговоры',
- contract: 'Договор', payment: 'Оплата', completed: 'Завершена', cancelled: 'Отменена',
-}
 
 export default async function ContractPage({ params }: { params: Promise<{ id: string }> }) {
  const { id } = await params

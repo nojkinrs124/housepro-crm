@@ -6,6 +6,7 @@ import { LeadsKanban } from './LeadsKanban'
 import { LeadsListView } from './LeadsListView'
 import { motion, AnimatePresence } from 'framer-motion'
 import { usePersistedState } from '@/hooks/usePersistedFilters'
+import { LEAD_STATUSES } from '@/features/leads/config/lead-statuses'
 
 type ViewMode = 'kanban' | 'list'
 
@@ -20,10 +21,7 @@ export function LeadsViewSwitcher({ leads }: { leads: any[] }) {
 
  const statusOptions = [
  { value: 'all', label: 'Все статусы' },
- { value: 'new', label: 'Новые' },
- { value: 'in_work', label: 'В работе' },
- { value: 'converted', label: 'Конвертированные' },
- { value: 'rejected', label: 'Отказ' },
+ ...LEAD_STATUSES.map(s => ({ value: s.value, label: s.label })),
  ]
 
  const typeOptions = [

@@ -22,7 +22,9 @@ export function formatDate(
   opts: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: 'numeric' }
 ): string {
   if (!date) return '—'
-  return new Date(date).toLocaleDateString('ru-RU', opts)
+  const d = date instanceof Date ? date : new Date(date)
+  if (Number.isNaN(d.getTime())) return String(date)
+  return d.toLocaleDateString('ru-RU', opts)
 }
 
 /**

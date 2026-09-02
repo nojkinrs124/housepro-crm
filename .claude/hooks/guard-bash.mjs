@@ -28,8 +28,8 @@ const SECRET_PATTERNS = [
 ]
 
 const BANNED_PACKAGES = [
-  { name: '@hello-pangea/dnd', re: '@hello-pangea/dnd', why: 'Kanban в проекте на @dnd-kit — второй drag-and-drop не нужен.' },
-  { name: 'react-beautiful-dnd', re: 'react-beautiful-dnd', why: 'Заброшен и несовместим с React 19. Kanban на @dnd-kit.' },
+  { name: '@hello-pangea/dnd', re: '@hello-pangea/dnd', why: 'Kanban на нативном HTML5 drag-and-drop — библиотека перетаскивания не нужна.' },
+  { name: 'react-beautiful-dnd', re: 'react-beautiful-dnd', why: 'Заброшен и несовместим с React 19. Kanban на нативном HTML5 drag-and-drop.' },
   { name: 'axios', re: 'axios', why: 'Везде используется нативный fetch — второй HTTP-клиент только разводит стили запросов.' },
   { name: 'react-query / @tanstack/react-query', re: '(@tanstack/)?react-query', why: 'Данные тянутся Server Components и Server Actions, клиентский кэш-слой не нужен.' },
 ]

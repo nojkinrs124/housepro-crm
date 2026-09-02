@@ -77,10 +77,3 @@ export function createSupabaseMock(overrides: {
 
   return { supabase, queryBuilder }
 }
-
-/**
- * Мок неавторизованного пользователя
- */
-export function createUnauthorizedMock() {
-  return createSupabaseMock({ user: null })
-}

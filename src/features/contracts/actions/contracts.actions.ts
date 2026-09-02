@@ -13,7 +13,7 @@ import {
   PropertyManagementDataSchema,
   SubleaseDataSchema,
 } from '@/lib/schemas'
-import { requireOrgId } from '@/lib/org'
+import { getSessionContext, requireOrgId } from '@/lib/org'
 import { writeAuditLog } from '@/lib/audit'
 import { requirePermission } from '@/lib/permissions'
 import { dispatchWebhook } from '@/lib/webhooks'
@@ -213,12 +213,9 @@ export async function updateContractStatusAction(id: string, status: string) {
 }
 
 export async function restoreContractVersionAction(contractId: string, versionId: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Не авторизован' }
-
-  const orgId = await requireOrgId().catch(() => null)
-  if (!orgId) return { error: 'Организация не найдена' }
+  const ctx = await getSessionContext()
+  if (!ctx.ok) return { error: ctx.error }
+  const { supabase, user, orgId } = ctx
 
   const { data: version } = await supabase
     .from('contract_versions')

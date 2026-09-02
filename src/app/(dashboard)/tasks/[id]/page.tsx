@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { TaskStatusSelect } from '@/features/tasks/components/TaskStatusSelect'
 import { TaskDeleteButton } from '@/features/tasks/components/TaskDeleteButton'
+import { formatDate } from '@/lib/utils'
 
 const PRIORITY_LABELS: Record<string, { label: string; color: string; bg: string }> = {
  low: { label: 'Низкий', color: 'text-[var(--hp-good)]', bg: 'bg-[var(--hp-good-tint)] border-[var(--hp-border)]' },
@@ -21,15 +22,8 @@ const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }
  cancelled: { label: 'Отменена', color: 'text-[var(--hp-sub)]', bg: 'bg-[var(--hp-neutral-tint)] border-[var(--hp-border)]' },
 }
 
-function formatDate(dt: string | null | undefined) {
- if (!dt) return '—'
- return new Date(dt).toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-}
-
-function formatDateShort(dt: string | null | undefined) {
- if (!dt) return '—'
- return new Date(dt).toLocaleDateString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric' })
-}
+const LONG_DATE = { day: '2-digit', month: 'long', year: 'numeric' } as const
+const LONG_DATE_TIME = { ...LONG_DATE, hour: '2-digit', minute: '2-digit' } as const
 
 export default async function TaskDetailPage({ params }: { params: Promise<{ id: string }> }) {
  const { id } = await params
@@ -88,7 +82,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
  <div className="flex-1 min-w-0">
  <h1 className="text-xl font-bold text-foreground leading-snug">{task.title}</h1>
  <p className="text-sm text-muted-foreground mt-1">
- Создана {formatDateShort(task.created_at)}
+ Создана {formatDate(task.created_at, LONG_DATE)}
  {(task.creator as { full_name?: string } | null)?.full_name ? ` · ${(task.creator as { full_name: string }).full_name}` : ''}
  </p>
  </div>
@@ -233,7 +227,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
  <div>
  <p className="text-xs text-muted-foreground">Дедлайн</p>
  <p className={`text-sm font-semibold ${isOverdue ? 'text-[var(--hp-danger)]' : 'text-foreground'}`}>
- {formatDate(deadline)}
+ {formatDate(deadline, LONG_DATE_TIME)}
  </p>
  </div>
  </div>
@@ -242,7 +236,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
  <Calendar style={{ width: 15, height: 15, color: '#5C6659', flexShrink: 0 }} />
  <div>
  <p className="text-xs text-muted-foreground">Создана</p>
- <p className="text-sm font-medium text-foreground">{formatDateShort(task.created_at)}</p>
+ <p className="text-sm font-medium text-foreground">{formatDate(task.created_at, LONG_DATE)}</p>
  </div>
  </div>
  </div>

@@ -6,15 +6,15 @@ import { updateLeadStatusAction } from '../actions/leads.actions'
 import { convertLeadToClient } from '@/features/leads/actions/leads.actions'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { STAGE_COLORS } from '@/lib/design/stageColors'
+import { LEAD_STATUSES, LEAD_STATUSES_TERMINAL } from '@/features/leads/config/lead-statuses'
 
-const columns = [
- { status: 'new', label: 'Новые', ...STAGE_COLORS.blue },
- { status: 'contacted', label: 'Связались', ...STAGE_COLORS.yellow },
- { status: 'showing', label: 'Показ', ...STAGE_COLORS.orange },
- { status: 'searching', label: 'Подбор', ...STAGE_COLORS.purple },
- { status: 'converted', label: 'Клиенты', ...STAGE_COLORS.green },
- { status: 'closed', label: 'Закрыты', ...STAGE_COLORS.gray },
-]
+// Колонка на каждый статус: лид, для которого колонки нет, не «уезжает вниз»,
+// а пропадает с доски совсем — так до 02.09.2026 терялись interested и rejected.
+const columns = LEAD_STATUSES.map(s => ({
+ status: s.value,
+ label: s.board,
+ ...STAGE_COLORS[s.stage],
+}))
 
 const sourceLabels: Record<string, string> = {
  avito: 'Авито', cian: 'ЦИАН', whatsapp: 'WhatsApp',
@@ -187,7 +187,7 @@ export function LeadsKanban({ leads: initialLeads }: { leads: any[] }) {
  </p>
 
  {/* Convert button */}
- {col.status !== 'converted' && col.status !== 'closed' && (
+ {!LEAD_STATUSES_TERMINAL.includes(col.status) && (
  <ServerActionForm action={convertLeadToClient.bind(null, lead.id)}
  onClick={e => e.stopPropagation()}>
  <button type="submit"

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { requireOrgId } from '@/lib/org'
+import { getSessionContext, requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
 import { rateLimitMutation } from '@/lib/rate-limit'
 import { writeAuditLog } from '@/lib/audit'
@@ -235,12 +235,9 @@ export async function sendContractToPodpislonAction(
 
 /** Подтягивает статус подписания из сервиса — кнопка «Обновить» в карточке. */
 export async function refreshPodpislonStatusAction(signatureId: string): Promise<PodpislonActionResult> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Не авторизован' }
-
-  const orgId = await requireOrgId().catch(() => null)
-  if (!orgId) return { error: 'Организация не найдена' }
+  const ctx = await getSessionContext()
+  if (!ctx.ok) return { error: ctx.error }
+  const { supabase, user, orgId } = ctx
 
   const settings = await getPodpislonSettings(orgId)
   if (!settings) return { error: 'Подпислон не подключён' }
@@ -310,12 +307,9 @@ export async function resendPodpislonLinkAction(signatureId: string): Promise<Po
 
 /** Проверка ключа на странице настроек: показываем, чью компанию видит сервис. */
 export async function checkPodpislonKeyAction(): Promise<PodpislonActionResult> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Не авторизован' }
-
-  const orgId = await requireOrgId().catch(() => null)
-  if (!orgId) return { error: 'Организация не найдена' }
+  const ctx = await getSessionContext()
+  if (!ctx.ok) return { error: ctx.error }
+  const { supabase, user, orgId } = ctx
 
   const permError = await requirePermission(user.id, 'settings', 'read')
   if (permError) return { error: permError.error }

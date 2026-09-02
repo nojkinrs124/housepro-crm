@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { LeadsViewSwitcher } from '@/features/leads/components/LeadsViewSwitcher'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { buttonVariants } from '@/components/ui/button'
+import { LEAD_STATUSES_IN_WORK } from '@/features/leads/config/lead-statuses'
 
 export default async function LeadsPage() {
  const supabase = await createClient()
@@ -14,7 +15,7 @@ export default async function LeadsPage() {
 
  const total = leads?.length ?? 0
  const newCount = (leads ?? []).filter(l => l.status === 'new').length
- const inWork = (leads ?? []).filter(l => l.status === 'in_work').length
+ const inWork = (leads ?? []).filter(l => LEAD_STATUSES_IN_WORK.includes(l.status)).length
  const converted = (leads ?? []).filter(l => l.status === 'converted').length
 
  return (

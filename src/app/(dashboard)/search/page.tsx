@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { formatDate } from '@/lib/utils'
+import { DEAL_TYPE_LABELS as dealTypeLabels } from '@/features/deals/config/deal-stages'
 
 export default async function SearchPage({
  searchParams,
@@ -45,7 +46,6 @@ export default async function SearchPage({
  const total = (contacts?.length ?? 0) + (properties?.length ?? 0) + (deals?.length ?? 0) + (contracts?.length ?? 0) + (tasks?.length ?? 0)
 
  const roleLabels: Record<string, string> = { client: 'Клиент', owner: 'Собственник', both: 'Кл. + Собств.' }
- const dealTypeLabels: Record<string, string> = { rent: 'Аренда', sale: 'Продажа', management: 'Управление', commercial: 'Коммерция', subrent: 'Субаренда' }
 
  return (
  <div className="max-w-3xl mx-auto space-y-6">

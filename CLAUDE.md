@@ -6,10 +6,14 @@
 ## Стек
 
 Next.js 16 · React 19 · TypeScript · Tailwind v4 (только через postcss, без конфига
-классов) · shadcn/ui (`src/components/ui/`) · Supabase (Postgres + Auth + Storage) ·
-@dnd-kit (Kanban) · react-hook-form + zod · docxtemplater + pizzip (DOCX) · sonner ·
+классов) · Supabase (Postgres + Auth + Storage) · react-hook-form + zod ·
+docxtemplater + pizzip (DOCX) · pdf-lib (PDF) · recharts (графики) · sonner ·
 framer-motion · lucide-react · Upstash Redis (rate limit) · Stripe · Sentry ·
 vitest (юнит) + Playwright (E2E).
+
+Библиотеки компонентов в проекте нет: `src/components/ui/` — два своих файла,
+Radix и shadcn удалены (не использовались). Kanban — на нативном HTML5
+drag-and-drop (`onDragStart`/`onDrop`), без @dnd-kit.
 
 Точные версии — в `package.json`, дублировать их сюда не нужно: расходятся быстрее,
 чем обновляются.
@@ -83,8 +87,10 @@ const supabase = createClient()            // ← без await
 `company_name/inn/kpp/ogrn/legal_address/…` и представители в
 `contact_representatives`), `leads`, `deals`, `properties`, `contracts`, `payments`,
 `tasks`, `showings`, `property_collections`, `organizations` + `organization_members`.
-`clients` и `owners` — legacy: для новых фич не использовать, но и **не удалять** —
-они ещё живые (см. `docs/IMPROVEMENTS.md`).
+`clients` и `owners` — больше нет: код отвязан, таблицы удалены 02.09.2026
+(`list_tables` их не показывает). Остались только пустые колонки-ссылки
+`client_id`/`owner_id` в `tasks`/`deals` — вычистить при случае, задача #24
+в `docs/IMPROVEMENTS.md`.
 
 Мультиарендность: каждая запись несёт `organization_id`, изоляция в RLS через
 `get_user_org_id()`.

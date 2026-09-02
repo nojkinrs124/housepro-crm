@@ -38,6 +38,7 @@ export function GlobalSearch() {
  const [selectedIndex, setSelectedIndex] = useState(0)
  const [isPending, startTransition] = useTransition()
  const inputRef = useRef<HTMLInputElement>(null)
+ const dialogRef = useRef<HTMLDialogElement>(null)
  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
  const router = useRouter()
 
@@ -56,14 +57,18 @@ export function GlobalSearch() {
  e.preventDefault()
  setOpen(prev => !prev)
  }
- if (e.key === 'Escape') close()
+ // Esc закрывает сам <dialog> — событие close вызывает close() ниже.
  }
  document.addEventListener('keydown', onKey)
  return () => document.removeEventListener('keydown', onKey)
  }, [close])
 
+ // showModal() ставит фокус-трап и делает остальную страницу inert;
+ // Esc и возврат фокуса на кнопку поиска — тоже поведение браузера.
  useEffect(() => {
- if (open) setTimeout(() => inputRef.current?.focus(), 50)
+ if (!open) return
+ dialogRef.current?.showModal()
+ inputRef.current?.focus()
  }, [open])
 
  // ── Search ────────────────────────────────────────────────────────────────
@@ -124,15 +129,15 @@ export function GlobalSearch() {
  let runningIndex = 0
 
  return (
- <div
- className="fixed inset-0 z-50 flex items-start justify-center pt-[10vh] px-4"
- onClick={(e) => { if (e.target === e.currentTarget) close() }}
+ <dialog
+ ref={dialogRef}
+ onClose={close}
+ // hidden open:flex — до showModal() элемент уже в DOM, а `flex` перебил бы
+ // браузерный display:none и мелькнул бы полноэкранным блоком.
+ className="hidden open:flex m-0 w-full h-full max-w-none max-h-none bg-transparent items-start justify-center pt-[10vh] px-4 backdrop:bg-black/40 backdrop:backdrop-blur-sm"
+ onClick={(e) => { if (e.target === dialogRef.current) close() }}
  >
- {/* Backdrop */}
- <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={close} />
-
- {/* Modal */}
- <div className="relative w-full max-w-xl hp-card shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+ <div className="relative w-full max-w-xl hp-card overflow-hidden animate-in fade-in zoom-in-95 duration-150">
 
  {/* Search input */}
  <div className="flex items-center gap-3 px-4 py-3.5 border-b border-border">
@@ -263,6 +268,6 @@ export function GlobalSearch() {
  </span>
  </div>
  </div>
- </div>
+ </dialog>
  )
 }

@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { DashboardKpiCards } from '@/features/dashboard/components/DashboardKpiCards'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { formatDate } from '@/lib/utils'
+import { DEAL_TYPE_LABELS as dealTypeLabels, DEAL_STATUS_LABELS as dealStatusLabels } from '@/features/deals/config/deal-stages'
 
 export default async function DashboardPage() {
  const supabase = await createClient()
@@ -88,18 +89,11 @@ export default async function DashboardPage() {
  const maxDeals = Math.max(...Object.values(dealCounts), 1)
 
  const roleLabels: Record<string, string> = { client: 'Клиент', owner: 'Собственник', both: 'Кл.+Собств.' }
- const dealTypeLabels: Record<string, string> = {
- rent: 'Аренда', sale: 'Продажа', management: 'Управление', commercial: 'Коммерция', subrent: 'Субаренда',
- }
  const dealStatusColors: Record<string, string> = {
  new: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]', showing: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]',
  negotiation: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]', contract: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]',
  payment: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]', completed: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]',
  cancelled: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]',
- }
- const dealStatusLabels: Record<string, string> = {
- new: 'Новая', showing: 'Показ', negotiation: 'Переговоры',
- contract: 'Договор', payment: 'Оплата', completed: 'Завершена', cancelled: 'Отменена',
  }
  const priorityColors: Record<string, { bg: string; text: string; dot: string }> = {
  low: { bg: 'bg-[var(--hp-neutral-tint)]', text: 'text-[var(--hp-sub)]', dot: 'bg-[var(--hp-tertiary)]' },

@@ -17,24 +17,14 @@ import { PropertyMap } from '@/features/properties/components/PropertyMap'
 import { MetersPanel, type MeterRow } from '@/features/properties/components/MetersPanel'
 import { formatDate } from '@/lib/utils'
 import { toAvitoStatus } from '@/features/avito/config/status'
+import { PROPERTY_TYPE_LABELS as typeLabels, PROPERTY_DEAL_LABELS as dealLabels, PROPERTY_STATUS_LABELS } from '@/features/properties/config/property-labels'
 
-const typeLabels: Record<string, string> = {
- apartment: 'Квартира', house: 'Дом', commercial: 'Коммерция',
- office: 'Офис', warehouse: 'Склад', land: 'Участок',
-}
-const dealLabels: Record<string, string> = {
- rent: 'Аренда', sale: 'Продажа', management: 'Управление', subrent: 'Субаренда',
-}
 const statusColors: Record<string, string> = {
  available: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]',
  reserved: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]',
  rented: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]',
  sold: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]',
  inactive: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]',
-}
-const statusLabels: Record<string, string> = {
- available: 'Свободен', reserved: 'Забронирован',
- rented: 'Сдан', sold: 'Продан', inactive: 'Неактивен',
 }
 const houseTypeLabels: Record<string, string> = {
  panel: 'Панельный', brick: 'Кирпичный', monolith: 'Монолит',
@@ -126,7 +116,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
  {dealLabels[p.deal_type] ?? p.deal_type}
  </span>
  <span className={`text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-medium ${statusColors[p.status] ?? 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]'}`}>
- {statusLabels[p.status] ?? p.status}
+ {PROPERTY_STATUS_LABELS[p.status]?.label ?? p.status}
  </span>
  </span>
  }

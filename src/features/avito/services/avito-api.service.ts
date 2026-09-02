@@ -58,30 +58,6 @@ export async function fetchAvitoAccessToken(clientId: string, clientSecret: stri
   return { accessToken: body.access_token as string, expiresInSeconds: Number(body.expires_in ?? 86400) }
 }
 
-export interface AvitoItemStatus {
-  status?: string
-  url?: string
-  startTime?: string
-  finishTime?: string
-}
-
-/** Статус конкретного (уже опубликованного) объявления по его числовому id в Авито. */
-export async function fetchAvitoItemStatus(userId: string, accessToken: string, avitoItemId: string): Promise<AvitoItemStatus | null> {
-  const res = await fetch(`${AVITO_API_BASE}/core/v1/accounts/${userId}/items/${avitoItemId}/`, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-    cache: 'no-store',
-  })
-  if (!res.ok) return null
-  const body = await res.json().catch(() => null)
-  if (!body) return null
-  return {
-    status: body.status,
-    url: body.url,
-    startTime: body.start_time,
-    finishTime: body.finish_time,
-  }
-}
-
 export interface AvitoAutoloadReportItem {
   /** Наш внутренний id объекта — то же значение, что мы отдаём в <Id> в фиде. */
   adId?: string
@@ -261,31 +237,6 @@ export async function fetchAvitoMessages(
       createdAt: unixToIso(raw.created),
     }
   })
-}
-
-/** Отправляет ответ в чат Авито от имени аккаунта агентства. */
-export async function sendAvitoMessage(
-  userId: string,
-  accessToken: string,
-  chatId: string,
-  text: string
-): Promise<{ id: string | null }> {
-  const res = await fetch(`${AVITO_API_BASE}/messenger/v1/accounts/${userId}/chats/${chatId}/messages`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message: { text }, type: 'text' }),
-  })
-
-  const body = await res.json().catch(() => null)
-  if (!res.ok) {
-    throw new AvitoApiError(
-      body?.error?.message ?? `Авито вернул ${res.status} на отправку сообщения`,
-      res.status,
-      body
-    )
-  }
-
-  return { id: body?.id ? String(body.id) : null }
 }
 
 /** Помечает чат прочитанным, чтобы крон не забирал его снова и снова. */

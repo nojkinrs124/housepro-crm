@@ -2,17 +2,13 @@
 
 import { useState } from 'react'
 import { updateLeadStatusAction } from '@/features/leads/actions/leads.actions'
+import { LEAD_STATUSES } from '@/features/leads/config/lead-statuses'
 
-const statuses = [
- { value: 'new', label: 'Новый', color: 'border-[var(--hp-border)] bg-[var(--hp-info-tint)] text-[var(--hp-info)]' },
- { value: 'contacted', label: 'Связались', color: 'border-[var(--hp-border)] bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]' },
- { value: 'showing', label: 'Показ', color: 'border-[var(--hp-border)] bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]' },
- { value: 'searching', label: 'Подбор', color: 'border-[var(--hp-border)] bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]' },
- { value: 'interested', label: 'Заинтересован', color: 'border-[var(--hp-border)] bg-[var(--hp-info-tint)] text-[var(--hp-info)]' },
- { value: 'converted', label: 'Конвертирован', color: 'border-[var(--hp-border)] bg-[var(--hp-good-tint)] text-[var(--hp-good)]' },
- { value: 'closed', label: 'Закрыт', color: 'border-[var(--hp-border)] bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]' },
- { value: 'rejected', label: 'Отказ', color: 'border-[var(--hp-border)] bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]' },
-]
+const statuses = LEAD_STATUSES.map(s => ({
+ value: s.value,
+ label: s.label,
+ color: `border-[var(--hp-border)] ${s.badge}`,
+}))
 
 export function LeadStatusSelect({ leadId, currentStatus }: { leadId: string; currentStatus: string }) {
  const [status, setStatus] = useState(currentStatus)

@@ -8,6 +8,7 @@ import { notFound } from 'next/navigation'
 import type { Contact } from '@/types/database'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { CommunicationTimeline } from '@/features/communications/components/CommunicationTimeline'
+import { DEAL_TYPE_LABELS as dealTypeLabels, DEAL_STATUS_LABELS as dealStatusLabels } from '@/features/deals/config/deal-stages'
 
 const roleLabels: Record<string, string> = {
   client: 'Клиент',
@@ -26,11 +27,6 @@ const sourceLabels: Record<string, string> = {
   avito: 'Avito', cian: 'ЦИАН', domclick: 'Домклик',
   instagram: 'Instagram', vk: 'VK', telegram: 'Telegram',
   whatsapp: 'WhatsApp', phone: 'Звонок', referral: 'Рекомендация', other: 'Другое',
-}
-
-const dealStatusLabels: Record<string, string> = {
-  new: 'Новая', showing: 'Показ', negotiation: 'Переговоры',
-  contract: 'Договор', payment: 'Оплата', completed: 'Завершена', cancelled: 'Отменена',
 }
 
 const taskStatusLabels: Record<string, string> = {
@@ -62,10 +58,6 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
   const representatives = (rawReps ?? []) as any[]
   const isLegalEntity = c.client_type === 'legal_entity'
   const statusInfo = statusLabels[c.status] ?? statusLabels.new
-
-  const dealTypeLabels: Record<string, string> = {
-    rent: 'Аренда', sale: 'Продажа', management: 'Управление', commercial: 'Коммерция', subrent: 'Субаренда',
-  }
 
   const hasPassport = c.passport_series || c.passport_number || c.passport_issued_by
   const hasAddress  = c.country || c.city || c.street

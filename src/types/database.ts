@@ -97,18 +97,6 @@ export interface Contact {
   updated_at: string
 }
 
-export interface ContactRepresentative {
-  id: string
-  contact_id: string
-  full_name: string
-  position?: string
-  phone?: string
-  email?: string
-  basis_type: 'charter' | 'power_of_attorney' | 'other'
-  basis_details?: string
-  is_primary?: boolean
-  created_at: string
-}
 
 export interface Client {
   id: string
@@ -265,26 +253,7 @@ export interface Task {
   payment_id?: string
 }
 
-export interface Log {
-  id: string
-  user_id?: string
-  action: string
-  entity_type?: string
-  entity_id?: string
-  old_data?: Record<string, unknown>
-  new_data?: Record<string, unknown>
-  created_at: string
-  user?: User
-}
 
-export interface DocumentTemplate {
-  id: string
-  name: string
-  template_type: ContractType
-  file_url: string
-  created_by?: string
-  created_at: string
-}
 
 export interface Deal {
   id: string
@@ -314,18 +283,6 @@ export interface Deal {
   updated_at?: string
 }
 
-export interface CompanySettings {
-  id: string
-  name?: string
-  inn?: string
-  ogrn?: string
-  address?: string
-  phone?: string
-  email?: string
-  logo_url?: string
-  created_at: string
-  updated_at: string
-}
 
 // Схема БД — генерируется из живой базы, править руками нечего.
 // Перегенерировать после миграции: npm run db:types

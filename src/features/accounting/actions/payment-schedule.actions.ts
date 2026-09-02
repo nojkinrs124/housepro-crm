@@ -180,26 +180,3 @@ export async function generatePaymentScheduleAction(
     message: `Создано ${items.length} начислений на ${scheduleTotal(items).toLocaleString('ru-RU')} ₽`,
   }
 }
-
-/** Удаляет только неоплаченные строки сгенерированного графика. */
-export async function clearPaymentScheduleAction(contractId: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: 'Не авторизован' }
-
-  const permError = await requirePermission(user.id, 'accounting', 'delete')
-  if (permError) return permError
-
-  const { error } = await supabase
-    .from('accounting_transactions')
-    .delete()
-    .eq('contract_id', contractId)
-    .eq('status', 'planned')
-    .not('schedule_seq', 'is', null)
-
-  if (error) return { error: error.message }
-
-  revalidatePath(`/contracts/${contractId}`)
-  revalidatePath('/accounting')
-  return { success: true }
-}
