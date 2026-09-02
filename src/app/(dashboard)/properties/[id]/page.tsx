@@ -5,12 +5,12 @@ import { SitePublishToggle } from '@/features/properties/components/SitePublishT
 import {
  ArrowLeft, Home, MapPin, DollarSign, Ruler, Edit,
  Layers, Calendar, Wifi, Droplets, Flame, Car,
- CheckCircle, XCircle, TrendingUp, FileText, Plus
+ CheckCircle, XCircle, TrendingUp, FileText, Plus, User
 } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { FilesSection } from '@/features/files/components/FilesSection'
-import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
+import { CONTRACT_TYPE_LABELS, isActiveRentContract } from '@/features/contracts/config/contract-types'
 import { PageHeader } from '@/components/layout/PageHeader'
 import Image from 'next/image'
 import { PropertyMap } from '@/features/properties/components/PropertyMap'
@@ -18,6 +18,8 @@ import { MetersPanel, type MeterRow } from '@/features/properties/components/Met
 import { formatDate } from '@/lib/utils'
 import { toAvitoStatus } from '@/features/avito/config/status'
 import { PROPERTY_TYPE_LABELS as typeLabels, PROPERTY_DEAL_LABELS as dealLabels, PROPERTY_STATUS_LABELS } from '@/features/properties/config/property-labels'
+import { ReadinessPanel } from '@/components/layout/ReadinessPanel'
+import { checkProperty } from '@/lib/readiness'
 
 const statusColors: Record<string, string> = {
  available: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]',
@@ -48,7 +50,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
  // eslint-disable-next-line @typescript-eslint/no-explicit-any
  const { data: property, error: propertyError } = await supabase
  .from('properties')
- .select('*, manager:users(full_name)')
+ .select('*, manager:users(full_name), owner:contacts!owner_id(id, full_name, phone, email)')
  .eq('id', id)
  .single()
 
@@ -59,7 +61,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
  const [{ data: contracts }, { data: deals }, { data: metersRaw }] = await Promise.all([
  supabase.from('contracts')
- .select('id, contract_number, contract_type, status, amount, created_at')
+ .select('id, contract_number, contract_type, status, amount, created_at, end_date')
  .eq('property_id', id).order('created_at', { ascending: false }),
  supabase.from('deals')
  .select('id, deal_type, status, amount, created_at')
@@ -80,6 +82,12 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
  // eslint-disable-next-line @typescript-eslint/no-explicit-any
  const p = property as any
  const manager = p.manager as { full_name?: string } | null
+ const owner = p.owner as { id: string; full_name: string; phone?: string | null; email?: string | null } | null
+
+ // Договор аренды и статус объекта расходятся чаще всего: статус переставить
+ // забывают, и сданный объект продолжает висеть в рекламе.
+ const hasActiveRentContract = (contracts ?? []).some(c => isActiveRentContract(c))
+ const issues = checkProperty(p, { hasActiveRentContract })
 
  const Bool = ({ val, label }: { val: boolean | null; label: string }) => (
  <div className="flex items-center justify-between py-1.5">
@@ -142,6 +150,27 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
  <span className="text-sm text-foreground">{p.address}</span>
  {p.metro && <span className="text-sm text-muted-foreground">· м. {p.metro}</span>}
  </div>
+
+ {/* Собственник и что не доедет из-за пустых полей — до всего остального:
+ объект без собственника не попадает в отчёт, а без координат — на площадки. */}
+ <div className="hp-block">
+ <div className="hp-block-header">Собственник</div>
+ {owner ? (
+ <Link href={`/contacts/${owner.id}`} className="hp-block-item">
+ <User className="w-4 h-4 shrink-0 text-[var(--hp-sub)]" />
+ <span className="flex-1 min-w-0 truncate text-[var(--hp-ink)] font-semibold">{owner.full_name}</span>
+ {owner.phone && <span className="shrink-0 text-[12px] text-[var(--hp-sub)]">{owner.phone}</span>}
+ </Link>
+ ) : (
+ <Link href={`/properties/${id}/edit`} className="hp-block-item">
+ <User className="w-4 h-4 shrink-0 text-[var(--hp-tertiary)]" />
+ <span className="flex-1 min-w-0 text-[var(--hp-tertiary)]">Не указан — объект не попадёт в отчёт собственнику</span>
+ <span className="shrink-0 text-[12px] font-medium text-[var(--hp-accent)]">Указать</span>
+ </Link>
+ )}
+ </div>
+
+ <ReadinessPanel issues={issues} />
 
  {/* Карта — только если у объекта есть координаты (заполняются подсказками
  DaData при вводе адреса). */}

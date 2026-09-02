@@ -9,6 +9,7 @@
  *                          клиентских функций в серверные файлы)
  *                        + правила серверного слоя (дубль имени в *.actions.ts,
  *                          force-dynamic в GET-роутах с данными организации)
+ *                        + поля форм, которые обработчик не читает
  *   vercel.json        → крон не чаще суток (иначе Vercel молча отбрасывает деплой)
  *
  * Exit code 2 = сообщить модели, что надо исправить.
@@ -62,6 +63,11 @@ process.stdin.on('end', async () => {
 
     const { checkAll: checkServerRules } = await import('../../scripts/checks/server-rules.mjs')
     problems.push(...checkServerRules([filePath]))
+
+    // Поля форм проверяются целиком: поле живёт в одном файле, обработчик —
+    // в другом, и правка любого из них может разорвать пару.
+    const { checkFormFields } = await import('../../scripts/checks/form-fields.mjs')
+    problems.push(...checkFormFields())
 
     const { checkFiles: checkAny } = await import('../../scripts/checks/no-any.mjs')
     for (const v of checkAny([filePath]).violations) {

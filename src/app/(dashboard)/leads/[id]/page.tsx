@@ -8,6 +8,8 @@ import { LeadActivityForm } from '@/features/leads/components/LeadActivityForm'
 import { LeadStatusSelect } from '@/features/leads/components/LeadStatusSelect'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { ReadinessPanel } from '@/components/layout/ReadinessPanel'
+import { checkLead } from '@/lib/readiness'
 import { CommunicationTimeline } from '@/features/communications/components/CommunicationTimeline'
 import { LEAD_STATUS_BADGE, LEAD_STATUS_LABELS } from '@/features/leads/config/lead-statuses'
 
@@ -63,6 +65,8 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
  const activities = (rawActivities ?? []) as any[]
  const assignee = lead.assignee as { full_name?: string } | null
 
+ const issues = checkLead(lead)
+
  const isConverted = lead.status === 'converted' || lead.status === 'closed'
  const isOverdue = lead.next_contact_at && new Date(lead.next_contact_at) < new Date() && !isConverted
 
@@ -115,6 +119,9 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
  </>
  }
  />
+
+
+ <ReadinessPanel issues={issues} />
 
  <div className="grid lg:grid-cols-3 gap-6">
  <div className="lg:col-span-2 space-y-4">

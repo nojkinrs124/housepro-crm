@@ -1,18 +1,13 @@
 import type { createClient } from '@/lib/supabase/server'
 import type { ManagementRow } from '@/features/management/components/ManagementView'
+import { RENT_CONTRACT_TYPES } from '@/features/contracts/config/contract-types'
 
 type Client = Awaited<ReturnType<typeof createClient>>
 
 /** За сколько дней до конца договора он считается истекающим. */
 const EXPIRING_DAYS = 30
 
-/**
- * Типы договоров, по которым объект кому-то сдан. Именно они приводят в
- * управление арендатора: в договоре аренды сторона «клиент» —
- * client_contact_id — это и есть наниматель, а объект тот же (property_id).
- * Отдельной связи «объект в управлении → арендатор» заводить не нужно.
- */
-const RENT_CONTRACT_TYPES = ['rent_apartment', 'rent_commercial', 'sublease']
+
 
 function startOfMonth(now: Date): string {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString().slice(0, 10)

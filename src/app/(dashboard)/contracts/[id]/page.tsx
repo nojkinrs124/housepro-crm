@@ -8,6 +8,8 @@ import { notFound } from 'next/navigation'
 import { PaymentsSection } from '@/features/payments/components/PaymentsSection'
 import { CONTRACT_TYPE_LABELS, getContractTypeConfig } from '@/features/contracts/config/contract-types'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { ReadinessPanel } from '@/components/layout/ReadinessPanel'
+import { checkContract } from '@/lib/readiness'
 import { SendByEmailForm } from '@/components/forms/SendByEmailForm'
 import { sendContractByEmailAction } from '@/features/contracts/actions/send-email.actions'
 import {
@@ -136,6 +138,8 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
  const manager = contract.manager as { full_name?: string } | null
  const deal = contract.deal as { id?: string; deal_type?: string; status?: string; amount?: number } | null
 
+ const issues = checkContract(contract)
+
  return (
  <div className="max-w-4xl mx-auto space-y-6">
  <PageHeader
@@ -163,6 +167,9 @@ export default async function ContractPage({ params }: { params: Promise<{ id: s
  </>
  }
  />
+
+
+ <ReadinessPanel issues={issues} />
 
  {/* Подписание простой ЭП — тоже только при готовом файле. */}
  {contract.generated_docx_url && (

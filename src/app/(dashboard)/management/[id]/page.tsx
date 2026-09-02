@@ -5,6 +5,9 @@ import {
   Plus, FileText, Gauge, CheckSquare, Wallet, ArrowUpRight, KeyRound, Phone, CalendarClock, Receipt,
 } from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { ReadinessPanel } from '@/components/layout/ReadinessPanel'
+import { isActiveRentContract } from '@/features/contracts/config/contract-types'
+import { checkProperty } from '@/lib/readiness'
 import { StatStrip } from '@/components/layout/StatStrip'
 import { buttonVariants } from '@/components/ui/button'
 import { MetersPanel, type MeterRow } from '@/features/properties/components/MetersPanel'
@@ -77,6 +80,11 @@ export default async function ManagementDetailPage({ params }: { params: Promise
   }))
 
   const mgmtContract = (contracts ?? []).find(c => c.contract_type === 'property_management') ?? null
+
+  // Что не доедет до отчёта собственнику, если поле осталось пустым.
+  const issues = checkProperty(property, {
+    hasActiveRentContract: (contracts ?? []).some(c => isActiveRentContract(c)),
+  })
 
   // Арендатор берётся из договора аренды на этот же объект: в нём сторона
   // «клиент» (client_contact_id) — наниматель. Отдельной связи «управление →
@@ -153,6 +161,9 @@ export default async function ManagementDetailPage({ params }: { params: Promise
           </>
         }
       />
+
+
+      <ReadinessPanel issues={issues} />
 
       <StatStrip
         items={[

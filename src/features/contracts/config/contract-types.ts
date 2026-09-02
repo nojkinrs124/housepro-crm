@@ -211,3 +211,24 @@ export function getContractTypeConfig(value: string | null | undefined): Contrac
   if (!value) return undefined
   return CONTRACT_TYPE_MAP[value]
 }
+
+/**
+ * Типы договоров, по которым объект кому-то сдан. Именно они приводят в
+ * управление арендатора: в договоре аренды сторона «клиент» —
+ * client_contact_id — это и есть наниматель, а объект тот же (property_id).
+ */
+export const RENT_CONTRACT_TYPES = ['rent_apartment', 'rent_commercial', 'sublease']
+
+/**
+ * Действующая аренда: договор не отменён и ещё не закончился. Бессрочный
+ * (без end_date) считается действующим — так же, как в разделе «Управление».
+ */
+export function isActiveRentContract(
+  c: { contract_type?: string | null; status?: string | null; end_date?: string | null },
+  todayStr: string = new Date().toISOString().slice(0, 10)
+): boolean {
+  if (!RENT_CONTRACT_TYPES.includes(c.contract_type ?? '')) return false
+  if (c.status === 'cancelled') return false
+  if (c.end_date && c.end_date < todayStr) return false
+  return true
+}

@@ -13,6 +13,10 @@ function extractPropertyFields(formData: FormData) {
     property_type:     (formData.get('property_type') as string) || 'apartment',
     deal_type:         (formData.get('deal_type') as string) || 'rent',
     status:            (formData.get('status') as string) || 'available',
+    // Собственник объекта. Поле формы называется owner_contact_id — оно ведёт
+    // в contacts, а колонка исторически осталась owner_id (FK переставлен на
+    // contacts миграцией 20260901_contact_dedupe_and_owner_fk).
+    owner_id:          (formData.get('owner_contact_id') as string)?.trim() || null,
     description:       (formData.get('description') as string)?.trim() || null,
     // Financials
     price:             formData.get('price')         ? Number(formData.get('price'))         : null,

@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Link from 'next/link'
 import { AlertCircle } from 'lucide-react'
 import { createContactQuickAction } from '../actions/contacts.actions'
+import { findContactByPhoneAction } from '../actions/duplicates.actions'
 import type { PartyContact } from './PartyContactSelect'
 
 const input = 'w-full h-10 px-4 border border-input bg-background text-foreground text-sm outline-none focus:border-[var(--hp-ink)] transition-all'
@@ -20,6 +22,11 @@ export function QuickCreateContactForm({
  const [phone, setPhone] = useState('')
  const [error, setError] = useState<string | null>(null)
  const [pending, startTransition] = useTransition()
+ // Быстрое создание — самый короткий путь к дублю: имя набирают на слух,
+ // карточка того же человека уже есть. Ищем по телефону и предупреждаем,
+ // но не запрещаем: муж и жена на одном номере — законный случай.
+ const [phoneMatches, setPhoneMatches] = useState<{ id: string; full_name: string }[]>([])
+ const [, startPhoneCheck] = useTransition()
 
  const submit = () => {
  if (!fullName.trim()) {
@@ -70,9 +77,31 @@ export function QuickCreateContactForm({
  <input
  value={phone}
  onChange={(e) => setPhone(e.target.value)}
+ onBlur={(e) => {
+ const value = e.target.value
+ if (!value.trim()) { setPhoneMatches([]); return }
+ startPhoneCheck(async () => {
+ const res = await findContactByPhoneAction(value)
+ setPhoneMatches(res.matches)
+ })
+ }}
  placeholder="+7 900 000-00-00"
  className={input}
  />
+ {phoneMatches.length > 0 && (
+ <p className="text-xs text-[var(--hp-warn)]">
+ Такой телефон уже есть:{' '}
+ {phoneMatches.slice(0, 3).map((m, i) => (
+ <span key={m.id}>
+ {i > 0 && ', '}
+ <Link href={`/contacts/${m.id}`} target="_blank" className="underline">
+ {m.full_name || 'без имени'}
+ </Link>
+ </span>
+ ))}
+ . Проверьте, не дубль ли это.
+ </p>
+ )}
  </div>
 
  <p className="text-xs text-muted-foreground">

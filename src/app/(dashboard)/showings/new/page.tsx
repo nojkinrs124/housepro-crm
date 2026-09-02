@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { createShowingAction } from '@/features/showings/actions/showings.actions'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
+import { PropertySelectField } from '@/features/properties/components/PropertySelectField'
 
 export default async function NewShowingPage() {
  const supabase = await createClient()
@@ -30,18 +31,7 @@ export default async function NewShowingPage() {
 
  <ServerActionForm action={createShowingAction} className="hp-card p-6 space-y-5">
  {/* Property */}
- <div>
- <label className="block text-sm font-medium text-foreground mb-1.5">Объект</label>
- <select
- name="property_id"
- className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] bg-[var(--hp-surface)] outline-none focus:border-[var(--hp-ink)]"
- >
- <option value="">— Выбрать объект —</option>
- {properties?.map(p => (
- <option key={p.id} value={p.id}>{p.title}{p.address ? ` · ${p.address}` : ''}</option>
- ))}
- </select>
- </div>
+ <PropertySelectField properties={properties ?? []} />
 
  {/* Lead */}
  <div>

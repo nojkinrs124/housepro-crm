@@ -307,3 +307,26 @@ export async function findContactByPhoneAction(phone: string) {
   const matches = (data ?? []).filter((c) => normalizePhone(c.phone) === normalized)
   return { matches }
 }
+
+/**
+ * Ищет лидов с тем же телефоном. Повторное обращение того же человека —
+ * обычное дело, и заводить на него второй лид не нужно: правильнее открыть
+ * существующий и дописать активность.
+ */
+export async function findLeadsByPhoneAction(phone: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { matches: [] }
+
+  const normalized = normalizePhone(phone)
+  if (!normalized) return { matches: [] }
+
+  const { data } = await supabase
+    .from('leads')
+    .select('id, full_name, status, phone')
+    .order('created_at', { ascending: false })
+    .limit(200)
+
+  const matches = (data ?? []).filter(l => normalizePhone(l.phone) === normalized)
+  return { matches }
+}

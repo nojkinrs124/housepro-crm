@@ -19,6 +19,8 @@
  *     в RSC-payload, в проде это «Minified React error #441» на всю страницу.
  *   · Правила серверного слоя — дубль имени в *.actions.ts, force-dynamic в
  *     GET-роутах с данными организации (scripts/checks/server-rules.mjs).
+ *   · поля форм, которые обработчик не читает — значение молча теряется
+ *     (scripts/checks/form-fields.mjs).
  *   · any — baseline-ратчет: новые вхождения блокируются, легаси зафиксировано
  *   · Визуальный стандарт «Кабинет» (baseline-ратчет)
  *   · vercel.json — кроны не чаще суток
@@ -227,6 +229,21 @@ section('Правила серверного слоя (actions, API-роуты)'
     problems.length === 0
       ? 'Дублей имён в actions нет, GET-роуты с данными организации force-dynamic'
       : `Нарушений правил серверного слоя: ${problems.length}`,
+    problems.length === 0,
+    problems.map(p => `  - ${p}`).join('\n')
+  )
+}
+
+// ── поля форм доходят до обработчика ──────────────────────────────
+
+section('Поля форм — обработчик читает всё, что форма шлёт')
+{
+  const { checkFormFields } = await import('./checks/form-fields.mjs')
+  const problems = checkFormFields()
+  record(
+    problems.length === 0
+      ? 'Все поля форм доходят до обработчика'
+      : `Полей формы, которые теряются: ${problems.length}`,
     problems.length === 0,
     problems.map(p => `  - ${p}`).join('\n')
   )

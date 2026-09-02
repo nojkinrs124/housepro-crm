@@ -4,6 +4,8 @@ import { CheckSquare } from 'lucide-react'
 import Link from 'next/link'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { ContactSelectField } from '@/features/contacts/components/ContactSelectField'
+import { PropertySelectField } from '@/features/properties/components/PropertySelectField'
 import { formatDate } from '@/lib/utils'
 
 export default async function NewTaskPage({
@@ -86,16 +88,14 @@ export default async function NewTaskPage({
  <div className="hp-card p-6 space-y-4">
  <h2 className="font-semibold text-foreground">Привязать к</h2>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- <div className="space-y-1.5">
- <label className="text-sm text-muted-foreground">Контакт</label>
- <select name="client_id" defaultValue={params.client_id ?? ''}
- className="w-full h-9 px-3 border border-input bg-background text-foreground text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer">
- <option value="">— не выбрано —</option>
- {(clients ?? []).map(c => (
- <option key={c.id} value={c.id}>{c.full_name}</option>
- ))}
- </select>
- </div>
+ <ContactSelectField
+ contacts={clients ?? []}
+ defaultContactId={params.client_id ?? ''}
+ name="client_id"
+ label="Контакт"
+ role="both"
+ placeholder="— не выбрано —"
+ />
  <div className="space-y-1.5">
  <label className="text-sm text-muted-foreground">Сделка</label>
  <select name="deal_id" defaultValue={params.deal_id ?? ''}
@@ -106,16 +106,7 @@ export default async function NewTaskPage({
  ))}
  </select>
  </div>
- <div className="space-y-1.5">
- <label className="text-sm text-muted-foreground">Объект</label>
- <select name="property_id" defaultValue={params.property_id ?? ''}
- className="w-full h-9 px-3 border border-input bg-background text-foreground text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer">
- <option value="">— не выбрано —</option>
- {(properties ?? []).map(p => (
- <option key={p.id} value={p.id}>{p.title}</option>
- ))}
- </select>
- </div>
+ <PropertySelectField properties={properties ?? []} defaultPropertyId={params.property_id ?? ''} />
  <div className="space-y-1.5">
  <label className="text-sm text-muted-foreground">Договор</label>
  <select name="contract_id" defaultValue={params.contract_id ?? ''}

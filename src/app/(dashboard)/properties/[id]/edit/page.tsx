@@ -7,13 +7,16 @@ import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { PropertyPhotosManager } from '@/features/properties/components/PropertyPhotosManager'
 import { DadataSuggestInput } from '@/components/forms/DadataSuggestInput'
+import { ContactSelectField } from '@/features/contacts/components/ContactSelectField'
 
 export default async function EditPropertyPage({ params }: { params: Promise<{ id: string }> }) {
  const { id } = await params
  const supabase = await createClient()
 
- const { data: rawProperty } = await supabase
- .from('properties').select('*').eq('id', id).single()
+ const [{ data: rawProperty }, { data: owners }] = await Promise.all([
+ supabase.from('properties').select('*').eq('id', id).single(),
+ supabase.from('contacts').select('id, full_name, phone').in('role', ['owner', 'both']).order('full_name'),
+ ])
 
  if (!rawProperty) notFound()
 
@@ -108,6 +111,11 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
  </select>
  </div>
  </div>
+
+ {/* Собственник объекта: без него в «Управлении» и в отчёте будет прочерк,
+ а договор подписывать не с кем. Ставится в любой момент, в том числе
+ задним числом — объект часто заводят раньше, чем оформлен собственник. */}
+ <ContactSelectField contacts={owners ?? []} defaultContactId={p.owner_id ?? ''} />
  </div>
 
  {/* Параметры */}

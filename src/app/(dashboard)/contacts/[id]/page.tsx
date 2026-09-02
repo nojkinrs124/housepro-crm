@@ -7,6 +7,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Contact } from '@/types/database'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { ReadinessPanel } from '@/components/layout/ReadinessPanel'
+import { checkContact } from '@/lib/readiness'
 import { CommunicationTimeline } from '@/features/communications/components/CommunicationTimeline'
 import { DEAL_TYPE_LABELS as dealTypeLabels, DEAL_STATUS_LABELS as dealStatusLabels } from '@/features/deals/config/deal-stages'
 
@@ -59,6 +61,8 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
   const isLegalEntity = c.client_type === 'legal_entity'
   const statusInfo = statusLabels[c.status] ?? statusLabels.new
 
+  const issues = checkContact(c)
+
   const hasPassport = c.passport_series || c.passport_number || c.passport_issued_by
   const hasAddress  = c.country || c.city || c.street
 
@@ -98,6 +102,9 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
           </>
         }
       />
+
+
+      <ReadinessPanel issues={issues} />
 
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { DadataSuggestInput } from '@/components/forms/DadataSuggestInput'
+import { ContactSelectField } from '@/features/contacts/components/ContactSelectField'
 
 export default async function NewPropertyPage({
  searchParams,
@@ -17,7 +18,7 @@ export default async function NewPropertyPage({
  const dealTypes = ['rent', 'sale', 'management', 'subrent']
  const defaultDealType = dealTypes.includes(dealTypeParam ?? '') ? dealTypeParam! : 'rent'
  const supabase = await createClient()
- const { data: owners } = await supabase.from('contacts').select('id, full_name').in('role', ['owner', 'both']).order('full_name')
+ const { data: owners } = await supabase.from('contacts').select('id, full_name, phone').in('role', ['owner', 'both']).order('full_name')
 
  const inputCls ="w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all"
  const selectCls ="w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer"
@@ -91,15 +92,7 @@ export default async function NewPropertyPage({
  <option value="subrent">Субаренда</option>
  </select>
  </div>
- <div className="space-y-1.5">
- <label className={labelCls}>Собственник</label>
- <select name="owner_contact_id" className={selectCls}>
- <option value="">— выберите —</option>
- {(owners ?? []).map(o => (
- <option key={o.id} value={o.id}>{o.full_name}</option>
- ))}
- </select>
- </div>
+ <ContactSelectField contacts={owners ?? []} />
  </div>
  </div>
 

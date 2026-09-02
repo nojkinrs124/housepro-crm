@@ -4,6 +4,7 @@ import { Zap } from 'lucide-react'
 import Link from 'next/link'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { PhoneDuplicateField } from '@/features/contacts/components/PhoneDuplicateField'
 
 const sourceOptions = [
  { value: 'avito', label: 'Авито' },
@@ -67,7 +68,7 @@ export default async function NewLeadPage() {
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <div>
  <label className={lbl}>Телефон</label>
- <input name="phone" type="tel" placeholder="+7 (999) 999-99-99" className={inp} />
+ <PhoneDuplicateField placeholder="+7 (999) 999-99-99" className={inp} />
  </div>
  <div>
  <label className={lbl}>Email</label>

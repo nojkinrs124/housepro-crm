@@ -4,6 +4,8 @@ import { DeleteTransactionButton } from '@/features/accounting/components/Delete
 import { ArrowLeft, ArrowDownCircle, ArrowUpCircle, Pencil } from 'lucide-react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { ReadinessPanel } from '@/components/layout/ReadinessPanel'
+import { checkTransaction } from '@/lib/readiness'
 
 const STATUS_CFG: Record<string, { label: string; cls: string }> = {
  completed: { label: 'Выполнено', cls: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)] border border-[var(--hp-border)]' },
@@ -31,7 +33,7 @@ export default async function TransactionDetailPage({
  .from('accounting_transactions')
  .select(`
  id, type, amount, date, description, status, payment_method, due_date,
- created_at, legacy_payment_id,
+ created_at, legacy_payment_id, property_id, category_id,
  category:accounting_categories(id, name, color),
  contract:contracts(id, contract_number, contract_type),
  deal:deals(id, deal_type),
@@ -47,6 +49,8 @@ export default async function TransactionDetailPage({
  if (!raw) notFound()
  // eslint-disable-next-line @typescript-eslint/no-explicit-any
  const t = raw as any
+
+ const issues = checkTransaction(t)
 
  const isIncome = t.type === 'income'
  const sc = STATUS_CFG[t.status] ?? STATUS_CFG.completed
@@ -78,6 +82,9 @@ export default async function TransactionDetailPage({
  </>
  }
  />
+
+
+ <ReadinessPanel issues={issues} />
 
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
  {/* Main info */}
