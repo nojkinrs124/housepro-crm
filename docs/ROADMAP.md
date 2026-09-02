@@ -10,7 +10,7 @@
 >
 > | Пункт | Реальность |
 > |---|---|
-> | 0.1 Генерация типов Supabase | ❌ не сделано — в `src/types/database.ts` всё ещё `export type Database = any`, `src/types/supabase.ts` нет, скрипта `db:types` нет |
+> | 0.1 Генерация типов Supabase | ✅ сделано 02.09.2026 — `src/types/supabase.ts` (53 таблицы), `npm run db:types`, хелперы `Row`/`Insert`/`Update` |
 > | 0.2 `middleware.ts` | ✅ есть в корне (`PUBLIC_PREFIXES`, `/` — публичный сайт) |
 > | 0.3 Upstash Redis | ✅ подключён; **код отличается от текста ниже** — в `src/lib/rate-limit.ts` есть fallback на in-memory для локали и CI, «полная замена файла» из инструкции этот fallback уберёт |
 > | 0.4 GitHub Actions CI | ✅ `.github/workflows/ci.yml` + ещё 4 workflow |
@@ -21,7 +21,7 @@
 > | 3.2 Подборки | ✅ `/collections` + публичные страницы |
 > | 3.3 Email | ⚠️ реализовано иначе — не `src/lib/email.ts`, а провайдеры с автовыбором (см. `docs/INTEGRATIONS.md`) |
 > | 4.1 Stripe | ✅ `src/lib/feature-gates.ts`, `/api/stripe`, `/api/billing` |
-> | 4.2 Onboarding | ⚠️ есть `/api/onboarding`, страницы-визарда нет |
+> | 4.2 Onboarding | ✅ визард есть — `src/app/onboarding/page.tsx` + `OnboardingWizard.tsx`, 5 шагов (запись в таблице отставала) |
 > | 4.3 PWA | ✅ `public/manifest.json` |
 > | 5.1 Public API | ✅ `src/lib/api-auth.ts`, `/api/v1` |
 > | 5.2 Webhooks | ✅ `src/lib/webhooks.ts` |
@@ -71,9 +71,14 @@
 
 Исправляем критические production-баги без архитектурных изменений.
 
-### 0.1 Генерация реальных Supabase типов
+### 0.1 Генерация реальных Supabase типов — ✅ СДЕЛАНО 02.09.2026
 
-**Проблема:** `export type Database = any` в `src/types/database.ts` — убивает всю типобезопасность.
+> Инструкция ниже оставлена как история. Заглушки `Database = any` больше нет,
+> файл `src/types/supabase.ts` существует, скрипт `npm run db:types` добавлен.
+> **Не выполнять заново** — перегенерация после миграции описана в skill
+> `housepro-migration`.
+
+**Проблема (была):** `export type Database = any` в `src/types/database.ts` — убивает всю типобезопасность.
 
 ```bash
 # Установить CLI

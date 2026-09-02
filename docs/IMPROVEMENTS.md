@@ -560,8 +560,7 @@ const nextConfig: NextConfig = {
 - `src/features/clients/actions/clients.actions.ts:19`
 - `src/app/(dashboard)/clients/` — модуль целиком
 
-### #8 — Ручные типы вместо генерации (открыто)
+### #8 — Ручные типы вместо генерации — ✅ закрыто 02.09.2026
 
-`src/types/database.ts:340` — всё ещё `export type Database = any`, файла
-`src/types/supabase.ts` нет, скрипта `db:types` нет. Генерировать через MCP
-`generate_typescript_types` (CLI `npx supabase gen types` ходит на заблокированный хост).
+`src/types/supabase.ts` генерируется из схемы (53 таблицы), `Database = any` убран.
+Подробности и что это вскрыло — в разделе 8 выше. Хвост из 208 приведений — задача 21.
