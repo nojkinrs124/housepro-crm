@@ -10,25 +10,24 @@ import {
 } from '@/features/deals/services/deal-completion'
 
 describe('contractTypeForDeal', () => {
-  it('аренда жилья и аренда коммерции — разные договоры', () => {
-    expect(contractTypeForDeal('rent', 'apartment')).toBe('rent_apartment')
-    expect(contractTypeForDeal('rent', 'office')).toBe('rent_commercial')
+  it('аренда жилья и аренда коммерции — разные договоры одного направления', () => {
+    expect(contractTypeForDeal('rent_agent', 'apartment')).toBe('rent_apartment')
+    expect(contractTypeForDeal('rent_agent', 'office')).toBe('rent_commercial')
   })
 
-  it('продажа, управление и субаренда берутся по типу сделки', () => {
+  it('продажа и управление берутся по направлению работы', () => {
     expect(contractTypeForDeal('sale', 'apartment')).toBe('sale')
     expect(contractTypeForDeal('management', 'apartment')).toBe('property_management')
-    expect(contractTypeForDeal('subrent', 'apartment')).toBe('sublease')
   })
 
-  it('неизвестный тип не роняет оформление', () => {
+  it('неизвестное направление не роняет оформление', () => {
     expect(contractTypeForDeal(null)).toBe('rent_apartment')
   })
 })
 
 describe('propertyStatusAfterDeal', () => {
   it('аренда делает объект сданным, продажа — проданным', () => {
-    expect(propertyStatusAfterDeal('rent')).toBe('rented')
+    expect(propertyStatusAfterDeal('rent_agent')).toBe('rented')
     expect(propertyStatusAfterDeal('sale')).toBe('sold')
   })
 
@@ -91,12 +90,16 @@ describe('defaultTaskDeadline', () => {
 describe('buildCompletionPlan', () => {
   it('аренда квартиры: договор, график, задача и статус объекта', () => {
     const plan = buildCompletionPlan({
-      dealType: 'rent',
+      dealType: 'rent_agent',
       propertyType: 'apartment',
       amount: 50000,
       seqInYear: 7,
       today: '2026-09-03',
+      planChargeType: 'deal_percent',
+      planRate: 25,
+      isFirstDealWithOwner: false,
     })
+    expect(plan.commission.amount).toBe(12500)
     expect(plan).toMatchObject({
       contractType: 'rent_apartment',
       contractNumber: 'АР-2026-007',
@@ -124,7 +127,7 @@ describe('buildCompletionPlan', () => {
 
   it('без суммы график заранее не включается', () => {
     const plan = buildCompletionPlan({
-      dealType: 'rent',
+      dealType: 'rent_agent',
       propertyType: 'apartment',
       amount: null,
       seqInYear: 1,

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Phone } from 'lucide-react'
-import { DEAL_TYPE_LABELS as dealTypeLabels } from '@/features/deals/config/deal-stages'
+import { PROPERTY_PURPOSE_LABELS as dealTypeLabels } from '@/features/properties/config/purpose'
 import { LEAD_STATUS_BADGE, LEAD_STATUS_LABELS } from '@/features/leads/config/lead-statuses'
 import { RegistryTable, type RegistryColumn } from '@/features/registry/components/RegistryTable'
 import type { Selection } from '@/hooks/useSelection'

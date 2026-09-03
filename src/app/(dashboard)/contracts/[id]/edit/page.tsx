@@ -43,6 +43,7 @@ export default async function EditContractPage({ params }: { params: Promise<{ i
         properties={properties}
         baseContracts={baseContracts}
         companyProfiles={companyProfiles}
+        plans={formData.plans}
         deals={deals}
         backHref={`/contracts/${id}`}
         submitLabel="Сохранить изменения"
@@ -64,6 +65,10 @@ export default async function EditContractPage({ params }: { params: Promise<{ i
           notes:             c.notes,
           status:            c.status,
           contract_type_data: c.contract_type_data ?? undefined,
+          plan_id:            c.plan_id ?? undefined,
+          settlement_scheme:  c.settlement_scheme ?? undefined,
+          owner_fixed_amount: c.owner_fixed_amount,
+          owner_payout_day:   c.owner_payout_day,
         }}
       />
     </div>

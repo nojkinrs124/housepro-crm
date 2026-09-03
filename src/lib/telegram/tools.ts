@@ -6,6 +6,8 @@
 // перехватывает их до вызова dispatchTool() и заводит запись в bot_pending_actions,
 // ждёт подтверждения "да" от пользователя в Telegram.
 
+import { ALL_STAGE_VALUES, DIRECTION_VALUES } from '@/features/directions/config/directions'
+
 export const MUTATING_TOOLS = [
   'add_transaction',
   'update_deal_status',
@@ -58,11 +60,15 @@ export const TOOL_DEFINITIONS = [
     type: 'function',
     function: {
       name: 'get_deals',
-      description: 'Получить список сделок с фильтрами по статусу, типу и дате.',
+      description: 'Получить список сделок с фильтрами по стадии, направлению и дате.',
       parameters: {
         type: 'object',
         properties: {
-          status: { type: 'string', enum: ['new', 'showing', 'negotiation', 'contract', 'payment', 'completed', 'cancelled'] },
+          // Список стадий берётся из конфига направлений: своя копия здесь
+          // осталась на старых шести стадиях, и модель предлагала бы
+          // `negotiation`, которого больше нет ни в одной воронке.
+          status: { type: 'string', enum: ALL_STAGE_VALUES },
+          deal_type: { type: 'string', enum: DIRECTION_VALUES, description: 'Направление работы' },
           limit: { type: 'number', description: 'Максимум записей, по умолчанию 20' },
         },
       },
@@ -72,12 +78,14 @@ export const TOOL_DEFINITIONS = [
     type: 'function',
     function: {
       name: 'update_deal_status',
-      description: 'Изменить статус сделки. МУТИРУЮЩЕЕ действие — требует подтверждения пользователя.',
+      description: 'Изменить стадию сделки. Стадия должна относиться к направлению сделки: у аренды, управления, продажи и подбора разные воронки. МУТИРУЮЩЕЕ действие — требует подтверждения пользователя.',
       parameters: {
         type: 'object',
         properties: {
           deal_id: { type: 'string', description: 'UUID сделки' },
-          status: { type: 'string', enum: ['new', 'showing', 'negotiation', 'contract', 'payment', 'completed', 'cancelled'] },
+          // Стадия должна принадлежать направлению сделки — это проверяет
+          // обработчик, здесь только общий список допустимых значений.
+          status: { type: 'string', enum: ALL_STAGE_VALUES },
         },
         required: ['deal_id', 'status'],
       },

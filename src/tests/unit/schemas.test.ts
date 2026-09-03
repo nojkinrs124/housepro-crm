@@ -124,22 +124,34 @@ describe('RepresentativeSchema', () => {
 
 describe('DealSchema', () => {
   const valid = {
-    deal_type: 'rent',
+    deal_type: 'rent_agent',
   }
 
-  it('принимает валидный тип сделки', () => {
+  it('принимает валидное направление работы', () => {
     expect(DealSchema.safeParse(valid).success).toBe(true)
   })
 
-  it('отклоняет неверный тип сделки', () => {
+  it('отклоняет неизвестное направление', () => {
     const r = DealSchema.safeParse({ deal_type: 'unknown' })
     expect(r.success).toBe(false)
   })
 
-  it('принимает все допустимые типы', () => {
-    for (const t of ['rent', 'sale', 'management', 'commercial', 'subrent']) {
+  it('принимает все четыре направления', () => {
+    for (const t of ['rent_agent', 'management', 'sale', 'tenant_search']) {
       expect(DealSchema.safeParse({ deal_type: t }).success).toBe(true)
     }
+  })
+
+  it('отклоняет типы сделок, которых больше нет', () => {
+    // «commercial» стал типом объекта, «subrent» — схемой расчёта в управлении.
+    for (const t of ['rent', 'commercial', 'subrent']) {
+      expect(DealSchema.safeParse({ deal_type: t }).success).toBe(false)
+    }
+  })
+
+  it('принимает стадию из любой воронки и отклоняет чужую', () => {
+    expect(DealSchema.safeParse({ ...valid, status: 'registration' }).success).toBe(true)
+    expect(DealSchema.safeParse({ ...valid, status: 'negotiation' }).success).toBe(false)
   })
 
   it('принимает отрицательную сумму — отклоняет', () => {

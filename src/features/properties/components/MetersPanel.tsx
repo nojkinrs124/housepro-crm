@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { Gauge, Plus, X } from 'lucide-react'
 import { addMeterReadingAction, createMeterAction, deactivateMeterAction } from '../actions/meters.actions'
+import { METER_KIND_LABELS, METER_KIND_UNITS } from '@/features/meters/config/meter-kinds'
 
 export interface MeterReadingRow {
  id: string
@@ -11,6 +12,8 @@ export interface MeterReadingRow {
  value: number
  consumption: number | null
  amount: number | null
+ /** Кто внёс: менеджер снял сам или арендатор прислал из кабинета. */
+ source?: string | null
 }
 
 export interface MeterRow {
@@ -23,23 +26,10 @@ export interface MeterRow {
  readings: MeterReadingRow[]
 }
 
-const KIND_LABELS: Record<string, string> = {
- electricity: 'Электричество',
- cold_water: 'Холодная вода',
- hot_water: 'Горячая вода',
- gas: 'Газ',
- heating: 'Отопление',
- other: 'Прочее',
-}
-
-const DEFAULT_UNITS: Record<string, string> = {
- electricity: 'кВт·ч',
- cold_water: 'м³',
- hot_water: 'м³',
- gas: 'м³',
- heating: 'Гкал',
- other: 'ед.',
-}
+// Словари видов приборов — из общего справочника. Своя копия здесь разошлась бы
+// с проверкой на сервере и с сообщениями при закрытии акта приёма.
+const KIND_LABELS = METER_KIND_LABELS
+const DEFAULT_UNITS = METER_KIND_UNITS
 
 function fmtDate(iso: string): string {
  return new Date(`${iso}T00:00:00Z`).toLocaleDateString('ru-RU', { timeZone: 'UTC' })
@@ -72,6 +62,9 @@ export function MetersPanel({ propertyId, meters }: { propertyId: string; meters
  const res = await addMeterReadingAction(meterId, propertyId, formData)
  if (res.error) { toast.error(res.error); return }
  toast.success(res.message ?? 'Показание сохранено')
+ // Аномалии показываются отдельными предупреждениями: пропущенный месяц
+ // уже не восстановить, а скачок расхода может быть утечкой.
+ for (const w of res.warnings ?? []) toast.warning(w)
  setReadingFor(null)
  })
  }

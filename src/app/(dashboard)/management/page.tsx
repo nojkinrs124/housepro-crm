@@ -32,7 +32,7 @@ export default async function ManagementPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Управление"
+        title="Объекты в управлении"
         subtitle={`${rows.length} объектов в доверительном управлении`}
         actions={
           <Link href="/properties/new?deal_type=management" className={buttonVariants({ size: 'sm' })}>

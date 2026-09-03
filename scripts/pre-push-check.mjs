@@ -281,6 +281,21 @@ section('Визуальный стандарт «Кабинет»')
   )
 }
 
+// ── словарь стадий против CHECK в базе ────────────────────────────
+
+section('Словарь стадий и направлений')
+{
+  const { checkStageDictionary } = await import('./checks/stage-dictionary.mjs')
+  const problems = checkStageDictionary()
+  record(
+    problems.length === 0
+      ? 'Стадии и направления совпадают с CHECK в миграциях'
+      : 'Словарь стадий разъехался с базой — смена стадии упадёт PATCH 400',
+    problems.length === 0,
+    problems.map(p => `  - ${p}`).join('\n')
+  )
+}
+
 // ── vercel.json — частота кронов ──────────────────────────────────
 
 section('vercel.json — кроны не чаще суток')

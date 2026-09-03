@@ -14,23 +14,38 @@ import { cn } from '@/lib/utils'
 import { logout } from '@/features/auth/actions/auth.actions'
 import type { UserBadge } from '@/types/database'
 
+/**
+ * Разделы сгруппированы по тому, ЧТО в них делают, а не по тому, какая это
+ * сущность в базе.
+ *
+ * До 03.09.2026 раздел «Управление» лежал внутри секции с тем же названием, а
+ * календарь и задачи считались частью управления, хотя нужны во всех четырёх
+ * направлениях. Теперь: «Продажи» — ведение сделок, «База» — то, чем торгуем и
+ * чем оформляем, «Обслуживание» — непрерывная работа по объектам в управлении,
+ * «Деньги» — учёт и цифры.
+ */
 const navigation = [
-  { name: 'Дашборд',     href: '/dashboard',    icon: LayoutDashboard, section: null },
-  { name: 'Лиды',        href: '/leads',         icon: Zap,             section: 'Продажи' },
-  { name: 'Сделки',      href: '/deals',         icon: TrendingUp,      section: null },
-  { name: 'Контакты',    href: '/contacts',      icon: Users,           section: null },
-  { name: 'Объекты',     href: '/properties',    icon: Home,            section: 'База' },
-  { name: 'Управление',  href: '/management',    icon: Building2,       section: null },
-  { name: 'Показы',      href: '/showings',      icon: Eye,             section: null },
-  { name: 'Подборки',    href: '/collections',   icon: FolderOpen,      section: null },
-  { name: 'Договоры',    href: '/contracts',     icon: FileText,        section: null },
-  { name: 'Календарь',   href: '/calendar',      icon: CalendarDays,    section: 'Управление' },
-  { name: 'Задачи',      href: '/tasks',         icon: CheckSquare,     section: null },
-  { name: 'Бухгалтерия', href: '/accounting',    icon: BookOpen,        section: null },
-  { name: 'Аналитика',   href: '/analytics',     icon: BarChart2,       section: null },
-  { name: 'База знаний', href: '/knowledge',     icon: Library,         section: 'Система' },
-  { name: 'Сотрудники',  href: '/employees',     icon: UserCog,         section: null },
-  { name: 'Настройки',   href: '/settings',      icon: Settings,        section: null },
+  { name: 'Дашборд',              href: '/dashboard',    icon: LayoutDashboard, section: null },
+
+  { name: 'Лиды',                 href: '/leads',        icon: Zap,             section: 'Продажи' },
+  { name: 'Сделки',               href: '/deals',        icon: TrendingUp,      section: null },
+  { name: 'Контакты',             href: '/contacts',     icon: Users,           section: null },
+
+  { name: 'Объекты',              href: '/properties',   icon: Home,            section: 'База' },
+  { name: 'Показы',               href: '/showings',     icon: Eye,             section: null },
+  { name: 'Подборки',             href: '/collections',  icon: FolderOpen,      section: null },
+  { name: 'Договоры',             href: '/contracts',    icon: FileText,        section: null },
+
+  { name: 'Объекты в управлении', href: '/management',   icon: Building2,       section: 'Обслуживание' },
+  { name: 'Календарь',            href: '/calendar',     icon: CalendarDays,    section: null },
+  { name: 'Задачи',               href: '/tasks',        icon: CheckSquare,     section: null },
+
+  { name: 'Бухгалтерия',          href: '/accounting',   icon: BookOpen,        section: 'Деньги' },
+  { name: 'Аналитика',            href: '/analytics',    icon: BarChart2,       section: null },
+
+  { name: 'База знаний',          href: '/knowledge',    icon: Library,         section: 'Система' },
+  { name: 'Сотрудники',           href: '/employees',    icon: UserCog,         section: null },
+  { name: 'Настройки',            href: '/settings',     icon: Settings,        section: null },
 ]
 
 const roleLabels: Record<string, string> = {

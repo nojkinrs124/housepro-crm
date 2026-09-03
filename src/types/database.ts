@@ -6,7 +6,62 @@ export type ClientStatus = 'new' | 'in_progress' | 'active' | 'closed' | 'vip' |
 
 export type PropertyType = 'apartment' | 'house' | 'commercial' | 'office' | 'warehouse' | 'land'
 
-export type DealType = 'rent' | 'sale' | 'management' | 'subrent' | 'commercial'
+/**
+ * Направление работы — то, что лежит в `deals.deal_type`.
+ *
+ * Не путать с `PropertyPurpose` ниже: у объекта и лида колонка называется так же,
+ * но означает другое — назначение объекта, а не процесс агентства. До 03.09.2026
+ * оба смысла обслуживал один словарь `DEAL_TYPE_LABELS`, из-за чего в каталоге
+ * сайта и в реестре лидов показывались названия воронок.
+ */
+export type Direction = 'rent_agent' | 'management' | 'sale' | 'tenant_search'
+
+/** @deprecated Читать как `Direction`. Оставлено, чтобы не переписывать импорты разом. */
+export type DealType = Direction
+
+/** Назначение объекта — `properties.deal_type` и `leads.deal_type`. */
+export type PropertyPurpose = 'rent' | 'sale' | 'management' | 'subrent'
+
+/**
+ * Стадия работы — `deals.status`. Объединение стадий всех направлений: коды
+ * переиспользуются там, где это один и тот же шаг, поэтому принадлежность стадии
+ * всегда проверяется парой (направление, стадия), а не одним значением.
+ */
+export type DealStage =
+  | 'sourcing' | 'inquiry'
+  | 'meeting' | 'valuation'
+  | 'agency_contract' | 'mgmt_contract' | 'search_contract'
+  | 'handover' | 'docs_check'
+  | 'preparation' | 'searching'
+  | 'showings' | 'collection_sent' | 'viewings'
+  | 'tenant_check' | 'preliminary'
+  | 'move_in' | 'main_contract' | 'rent_contract'
+  | 'registration'
+  | 'in_service' | 'completed' | 'cancelled'
+
+/** Схема расчёта с собственником при управлении — `contracts.settlement_scheme`. */
+export type SettlementScheme = 'percent' | 'fixed'
+
+/** Способ начисления вознаграждения — `service_plans.charge_type`. */
+export type ChargeType = 'deal_percent' | 'monthly_percent' | 'owner_fixed' | 'flat_fee' | 'negotiated'
+
+/** Состояние объекта в управлении — `management_engagements.status`. */
+export type EngagementStatus = 'onboarding' | 'active' | 'paused' | 'ended'
+
+/** За чей счёт расход — `accounting_transactions.borne_by`. */
+export type ExpenseBearer = 'agency' | 'owner'
+
+/** Источник показания счётчика — `meter_readings.source`. */
+export type ReadingSource = 'manager' | 'tenant'
+
+/** Статус заявки на бытовую услугу — `service_requests.status`. */
+export type ServiceRequestStatus = 'new' | 'accepted' | 'in_progress' | 'done' | 'rejected'
+
+/** Роль внешнего пользователя в личном кабинете — `portal_access.role`. */
+export type PortalRole = 'owner' | 'tenant'
+
+/** Отметки чек-листов стадий — `deals.stage_progress`: код стадии → закрытые пункты. */
+export type StageProgress = Record<string, string[]>
 
 export type PropertyStatus = 'available' | 'reserved' | 'rented' | 'sold' | 'inactive'
 
@@ -127,7 +182,7 @@ export interface Property {
   id: string
   title: string
   property_type: PropertyType
-  deal_type: DealType
+  deal_type: PropertyPurpose
   address: string
   district?: string
   price?: number

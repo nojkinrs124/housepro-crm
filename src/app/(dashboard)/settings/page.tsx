@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { Settings, Building2, Bell, Shield, Database, ChevronRight, ScrollText, CreditCard, Key, Webhook, Megaphone, Mail, Upload, Download, PhoneCall, Signature } from 'lucide-react'
+import { Settings, Building2, Bell, Shield, Database, ChevronRight, ScrollText, CreditCard, Key, Webhook, Megaphone, Mail, Upload, Download, PhoneCall, Signature, HandCoins } from 'lucide-react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { APP_VERSION, BUILD_SHA } from '@/lib/version'
@@ -20,8 +20,9 @@ const SETTINGS_GROUPS = [
     title: 'Рабочее пространство',
     items: [
       { icon: Building2, title: 'Компания', desc: 'Название, логотип, реквизиты', href: '/settings/company' },
+      { icon: HandCoins, title: 'Тарифы агентства', desc: 'Условия работы с собственниками и клиентами', href: '/settings/plans' },
       { icon: Settings, title: 'Общие настройки', desc: 'Язык, валюта, временная зона', href: '/settings/general' },
-      { icon: CreditCard, title: 'Тарифы и оплата', desc: 'Управление подпиской и тарифом', href: '/settings/billing' },
+      { icon: CreditCard, title: 'Подписка на CRM', desc: 'Оплата самой системы ХаусПро', href: '/settings/billing' },
       { icon: Bell, title: 'Уведомления', desc: 'Email и push-уведомления', href: '/settings/notifications' },
       { icon: Database, title: 'Шаблоны документов', desc: 'DOCX шаблоны договоров', href: '/settings/templates' },
     ],

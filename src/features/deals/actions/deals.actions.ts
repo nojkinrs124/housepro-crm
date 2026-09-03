@@ -9,8 +9,12 @@ import { requireOrgId } from '@/lib/org'
 import { writeAuditLog } from '@/lib/audit'
 import { dispatchWebhook } from '@/lib/webhooks'
 import { requirePermission } from '@/lib/permissions'
+import { collectDealFacts, canMoveStage } from '@/features/directions/services/transitions'
+import { stageLabel, stagesOf } from '@/features/directions/config/directions'
 
-const VALID_DEAL_STATUSES = ['new', 'showing', 'negotiation', 'contract', 'payment', 'completed', 'cancelled']
+// Список допустимых стадий больше не хранится здесь: он зависит от направления
+// работы и живёт в src/features/directions/config/directions.ts. Здесь только
+// проверка перехода — она же объясняет отказ.
 
 export async function createDealAction(formData: FormData) {
   const supabase = await createClient()
@@ -32,9 +36,13 @@ export async function createDealAction(formData: FormData) {
   const permError = await requirePermission(user.id, 'deals', 'create')
   if (permError) return permError
 
+  // Первая стадия зависит от направления: в подборе для арендатора это
+  // «Обращение», в остальных — «Поиск и контакт».
+  const firstStage = stagesOf(parsed.data.deal_type)[0]?.value ?? 'sourcing'
+
   const { data: deal, error } = await supabase.from('deals').insert({
     ...parsed.data,
-    status: 'new',
+    status: firstStage,
     manager_id: user.id,
     organization_id: orgId,
   }).select('id').single()
@@ -72,12 +80,17 @@ export async function updateDealStatusAction(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
 
-  if (!VALID_DEAL_STATUSES.includes(status)) {
-    return { error: `Недопустимый статус сделки: ${status}` }
-  }
-
   const permError = await requirePermission(user.id, 'deals', 'update')
   if (permError) return permError
+
+  // Проверка идёт по данным сделки, а не по списку допустимых значений: стадия
+  // должна принадлежать направлению, обязательные пункты текущей стадии должны
+  // быть закрыты, а предусловия целевой — выполнены. Отказ называет причину.
+  const facts = await collectDealFacts(supabase, id)
+  if (!facts) return { error: 'Сделка не найдена' }
+
+  const verdict = canMoveStage(facts, status)
+  if (!verdict.allowed) return { error: verdict.reason }
 
   const { error } = await supabase
     .from('deals')
@@ -86,7 +99,17 @@ export async function updateDealStatusAction(
 
   if (error) return { error: error.message }
 
+  await writeAuditLog({
+    userId: user.id,
+    orgId: await requireOrgId().catch(() => ''),
+    action: 'update',
+    entityType: 'deal',
+    entityId: id,
+    entityLabel: `Стадия: ${stageLabel(facts.deal_type, status)}`,
+  })
+
   revalidatePath('/deals')
+  revalidatePath(`/deals/${id}`)
   revalidatePath('/analytics', 'page')
   return { success: true }
 }

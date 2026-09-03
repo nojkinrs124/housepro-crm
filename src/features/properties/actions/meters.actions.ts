@@ -5,15 +5,23 @@ import { revalidatePath } from 'next/cache'
 import { requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
 import { rateLimitMutation } from '@/lib/rate-limit'
+import { computeConsumption, computeAmount, detectAnomalies } from '@/features/meters/services/anomalies'
+import { METER_KINDS } from '@/features/meters/config/meter-kinds'
 
 export interface MeterResult {
   error?: string
   success?: boolean
   message?: string
+  /**
+   * Аномалии показания: пропущенный месяц, скачок расхода. Записи не мешают —
+   * данные настоящие, — но должны быть сказаны вслух, а не утонуть в истории.
+   */
+  warnings?: string[]
 }
 
-const METER_KINDS = ['electricity', 'cold_water', 'hot_water', 'gas', 'heating', 'other'] as const
-type MeterKind = (typeof METER_KINDS)[number]
+// Виды приборов — из общего справочника: тот же список нужен интерфейсу
+// и проверке полноты акта приёма.
+const METER_KIND_VALUES = METER_KINDS.map(k => k.value) as readonly string[]
 
 function parseNumber(raw: FormDataEntryValue | null): number | null {
   if (raw === null) return null
@@ -39,8 +47,8 @@ export async function createMeterAction(propertyId: string, formData: FormData):
   const permError = await requirePermission(user.id, 'properties', 'update')
   if (permError) return { error: permError.error }
 
-  const kind = (formData.get('kind') as MeterKind) ?? 'electricity'
-  if (!METER_KINDS.includes(kind)) return { error: 'Неизвестный тип счётчика' }
+  const kind = String(formData.get('kind') ?? 'electricity')
+  if (!METER_KIND_VALUES.includes(kind)) return { error: 'Неизвестный тип счётчика' }
 
   const { error } = await supabase.from('utility_meters').insert({
     organization_id: orgId,
@@ -86,28 +94,48 @@ export async function addMeterReadingAction(
 
   const readingDate = (formData.get('reading_date') as string) || new Date().toISOString().slice(0, 10)
 
-  const [{ data: meter }, { data: previous }] = await Promise.all([
+  // Показание из будущего снять нельзя. Раньше не проверялось, и дата с опечаткой
+  // в году ломала расчёт расхода: следующее реальное показание оказывалось
+  // «меньше предыдущего» и отклонялось.
+  if (readingDate > new Date().toISOString().slice(0, 10)) {
+    return { error: 'Дата показания в будущем — снять его ещё нельзя' }
+  }
+
+  // Кто внёс: менеджер снял сам или арендатор прислал из личного кабинета.
+  // Данные, за которые отвечает агентство, и данные от жильца — разного веса.
+  const source = (formData.get('source') as string) === 'tenant' ? 'tenant' : 'manager'
+
+  // История нужна и для расхода, и для поиска аномалий — забираем разом,
+  // а не двумя запросами.
+  const [{ data: meter }, { data: history }] = await Promise.all([
     supabase.from('utility_meters').select('id, tariff, unit').eq('id', meterId).maybeSingle(),
     supabase
       .from('meter_readings')
       .select('value, reading_date')
       .eq('meter_id', meterId)
       .order('reading_date', { ascending: false })
-      .limit(1)
-      .maybeSingle(),
+      .limit(12),
   ])
+
+  const readings = (history ?? []).map(r => ({ reading_date: r.reading_date, value: Number(r.value) }))
+  const earlier = readings.filter(r => r.reading_date <= readingDate)
+  const previous = earlier[0] ?? null
 
   if (!meter) return { error: 'Счётчик не найден' }
 
-  if (previous && value < Number(previous.value)) {
+  if (previous && value < previous.value) {
     return {
       error: `Показание меньше предыдущего (${previous.value}). Проверьте цифру или заведите новый счётчик, если прибор менялся.`,
     }
   }
 
-  const consumption = previous ? value - Number(previous.value) : null
-  const tariff = meter.tariff === null || meter.tariff === undefined ? null : Number(meter.tariff)
-  const amount = consumption !== null && tariff !== null ? Math.round(consumption * tariff * 100) / 100 : null
+  const consumption = computeConsumption(previous?.value ?? null, value)
+  const amount = computeAmount(consumption, meter.tariff)
+
+  // Аномалии записи не мешают: данные настоящие, разбираться с ними человеку.
+  // Пропущенный месяц уже не восстановить, а скачок может быть утечкой —
+  // и то и другое должно быть сказано вслух, а не утонуть в истории.
+  const anomalies = detectAnomalies({ reading_date: readingDate, value }, earlier)
 
   const { error } = await supabase.from('meter_readings').insert({
     organization_id: orgId,
@@ -116,6 +144,7 @@ export async function addMeterReadingAction(
     value,
     consumption,
     amount,
+    source,
     note: (formData.get('note') as string)?.trim() || null,
     created_by: user.id,
   })
@@ -123,12 +152,16 @@ export async function addMeterReadingAction(
   if (error) return { error: error.message }
 
   revalidatePath(`/properties/${propertyId}`)
+  // Счётчики показываются и на карточке объекта в управлении, и там же
+  // проверяется полнота акта приёма.
+  revalidatePath(`/management/${propertyId}`)
   return {
     success: true,
     message:
       consumption !== null
         ? `Расход ${consumption} ${meter.unit}${amount !== null ? ` на ${amount.toLocaleString('ru-RU')} ₽` : ''}`
         : 'Первое показание сохранено — расход посчитается со следующего',
+    warnings: anomalies.map(a => a.message),
   }
 }
 

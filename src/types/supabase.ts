@@ -1,7 +1,3 @@
-// СГЕНЕРИРОВАННЫЙ ФАЙЛ — не править руками.
-// Перегенерировать: npm run db:types
-// Источник: проект Supabase zwclvcswvhjeqwxrkbte, схема public.
-
 export type Json =
   | string
   | number
@@ -20,6 +16,7 @@ export type Database = {
     Tables: {
       accounting_categories: {
         Row: {
+          code: string | null
           color: string
           created_at: string | null
           created_by: string | null
@@ -32,6 +29,7 @@ export type Database = {
           type: string
         }
         Insert: {
+          code?: string | null
           color?: string
           created_at?: string | null
           created_by?: string | null
@@ -44,6 +42,7 @@ export type Database = {
           type: string
         }
         Update: {
+          code?: string | null
           color?: string
           created_at?: string | null
           created_by?: string | null
@@ -148,6 +147,7 @@ export type Database = {
         Row: {
           amount: number
           bank_document_number: string | null
+          borne_by: string | null
           category_id: string | null
           contact_id: string | null
           contract_id: string | null
@@ -158,6 +158,7 @@ export type Database = {
           description: string | null
           due_date: string | null
           employee_id: string | null
+          engagement_id: string | null
           id: string
           legacy_payment_id: string | null
           organization_id: string
@@ -179,6 +180,7 @@ export type Database = {
         Insert: {
           amount: number
           bank_document_number?: string | null
+          borne_by?: string | null
           category_id?: string | null
           contact_id?: string | null
           contract_id?: string | null
@@ -189,6 +191,7 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           employee_id?: string | null
+          engagement_id?: string | null
           id?: string
           legacy_payment_id?: string | null
           organization_id: string
@@ -210,6 +213,7 @@ export type Database = {
         Update: {
           amount?: number
           bank_document_number?: string | null
+          borne_by?: string | null
           category_id?: string | null
           contact_id?: string | null
           contract_id?: string | null
@@ -220,6 +224,7 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           employee_id?: string | null
+          engagement_id?: string | null
           id?: string
           legacy_payment_id?: string | null
           organization_id?: string
@@ -272,6 +277,13 @@ export type Database = {
             columns: ["employee_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "accounting_transactions_engagement_id_fkey"
+            columns: ["engagement_id"]
+            isOneToOne: false
+            referencedRelation: "management_engagements"
             referencedColumns: ["id"]
           },
           {
@@ -1637,9 +1649,14 @@ export type Database = {
           notes: string | null
           organization_id: string
           owner_contact_id: string | null
+          owner_fixed_amount: number | null
           owner_id: string | null
+          owner_payout_day: number | null
           owner_representative_id: string | null
+          plan_id: string | null
+          plan_rate: number | null
           property_id: string | null
+          settlement_scheme: string | null
           start_date: string | null
           status: string
         }
@@ -1666,9 +1683,14 @@ export type Database = {
           notes?: string | null
           organization_id: string
           owner_contact_id?: string | null
+          owner_fixed_amount?: number | null
           owner_id?: string | null
+          owner_payout_day?: number | null
           owner_representative_id?: string | null
+          plan_id?: string | null
+          plan_rate?: number | null
           property_id?: string | null
+          settlement_scheme?: string | null
           start_date?: string | null
           status?: string
         }
@@ -1695,9 +1717,14 @@ export type Database = {
           notes?: string | null
           organization_id?: string
           owner_contact_id?: string | null
+          owner_fixed_amount?: number | null
           owner_id?: string | null
+          owner_payout_day?: number | null
           owner_representative_id?: string | null
+          plan_id?: string | null
+          plan_rate?: number | null
           property_id?: string | null
+          settlement_scheme?: string | null
           start_date?: string | null
           status?: string
         }
@@ -1763,6 +1790,13 @@ export type Database = {
             columns: ["owner_representative_id"]
             isOneToOne: false
             referencedRelation: "contact_representatives"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "service_plans"
             referencedColumns: ["id"]
           },
           {
@@ -1845,14 +1879,17 @@ export type Database = {
           id: string
           lead_id: string | null
           manager_id: string | null
+          needs_review: boolean
           notes: string | null
           organization_id: string
           owner_contact_id: string | null
           owner_id: string | null
           owner_representative_id: string | null
           payment_method: string | null
+          plan_id: string | null
           property_id: string | null
           source: string | null
+          stage_progress: Json
           status: string
           updated_at: string | null
         }
@@ -1874,14 +1911,17 @@ export type Database = {
           id?: string
           lead_id?: string | null
           manager_id?: string | null
+          needs_review?: boolean
           notes?: string | null
           organization_id: string
           owner_contact_id?: string | null
           owner_id?: string | null
           owner_representative_id?: string | null
           payment_method?: string | null
+          plan_id?: string | null
           property_id?: string | null
           source?: string | null
+          stage_progress?: Json
           status?: string
           updated_at?: string | null
         }
@@ -1903,14 +1943,17 @@ export type Database = {
           id?: string
           lead_id?: string | null
           manager_id?: string | null
+          needs_review?: boolean
           notes?: string | null
           organization_id?: string
           owner_contact_id?: string | null
           owner_id?: string | null
           owner_representative_id?: string | null
           payment_method?: string | null
+          plan_id?: string | null
           property_id?: string | null
           source?: string | null
+          stage_progress?: Json
           status?: string
           updated_at?: string | null
         }
@@ -1962,6 +2005,13 @@ export type Database = {
             columns: ["owner_representative_id"]
             isOneToOne: false
             referencedRelation: "contact_representatives"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deals_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "service_plans"
             referencedColumns: ["id"]
           },
           {
@@ -2476,6 +2526,178 @@ export type Database = {
           },
         ]
       }
+      management_engagements: {
+        Row: {
+          contract_id: string | null
+          created_at: string
+          deal_id: string | null
+          ended_at: string | null
+          id: string
+          notes: string | null
+          organization_id: string
+          owner_contact_id: string | null
+          owner_fixed_amount: number | null
+          owner_payout_day: number | null
+          plan_id: string | null
+          property_id: string
+          rate: number | null
+          repair_limit: number | null
+          settlement_scheme: string | null
+          started_at: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          contract_id?: string | null
+          created_at?: string
+          deal_id?: string | null
+          ended_at?: string | null
+          id?: string
+          notes?: string | null
+          organization_id: string
+          owner_contact_id?: string | null
+          owner_fixed_amount?: number | null
+          owner_payout_day?: number | null
+          plan_id?: string | null
+          property_id: string
+          rate?: number | null
+          repair_limit?: number | null
+          settlement_scheme?: string | null
+          started_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          contract_id?: string | null
+          created_at?: string
+          deal_id?: string | null
+          ended_at?: string | null
+          id?: string
+          notes?: string | null
+          organization_id?: string
+          owner_contact_id?: string | null
+          owner_fixed_amount?: number | null
+          owner_payout_day?: number | null
+          plan_id?: string | null
+          property_id?: string
+          rate?: number | null
+          repair_limit?: number | null
+          settlement_scheme?: string | null
+          started_at?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "management_engagements_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "management_engagements_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "management_engagements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "management_engagements_owner_contact_id_fkey"
+            columns: ["owner_contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "management_engagements_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "service_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "management_engagements_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      management_regulations: {
+        Row: {
+          code: string
+          created_at: string
+          day_of_month: number | null
+          description: string | null
+          id: string
+          is_active: boolean
+          lead_days: number
+          organization_id: string
+          period: string
+          plan_id: string | null
+          priority: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          day_of_month?: number | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          lead_days?: number
+          organization_id: string
+          period: string
+          plan_id?: string | null
+          priority?: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          day_of_month?: number | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          lead_days?: number
+          organization_id?: string
+          period?: string
+          plan_id?: string | null
+          priority?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "management_regulations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "management_regulations_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "service_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       meter_readings: {
         Row: {
           amount: number | null
@@ -2487,6 +2709,7 @@ export type Database = {
           note: string | null
           organization_id: string
           reading_date: string
+          source: string
           value: number
         }
         Insert: {
@@ -2499,6 +2722,7 @@ export type Database = {
           note?: string | null
           organization_id: string
           reading_date?: string
+          source?: string
           value: number
         }
         Update: {
@@ -2511,6 +2735,7 @@ export type Database = {
           note?: string | null
           organization_id?: string
           reading_date?: string
+          source?: string
           value?: number
         }
         Relationships: [
@@ -2951,6 +3176,129 @@ export type Database = {
           },
         ]
       }
+      property_handovers: {
+        Row: {
+          completed_at: string | null
+          condition_note: string | null
+          created_at: string
+          created_by: string | null
+          documents: Json
+          engagement_id: string
+          id: string
+          inventory: Json
+          keys_count: number | null
+          organization_id: string
+          photo_urls: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          condition_note?: string | null
+          created_at?: string
+          created_by?: string | null
+          documents?: Json
+          engagement_id: string
+          id?: string
+          inventory?: Json
+          keys_count?: number | null
+          organization_id: string
+          photo_urls?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          condition_note?: string | null
+          created_at?: string
+          created_by?: string | null
+          documents?: Json
+          engagement_id?: string
+          id?: string
+          inventory?: Json
+          keys_count?: number | null
+          organization_id?: string
+          photo_urls?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_handovers_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_handovers_engagement_id_fkey"
+            columns: ["engagement_id"]
+            isOneToOne: false
+            referencedRelation: "management_engagements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "property_handovers_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_plans: {
+        Row: {
+          charge_type: string
+          code: string
+          created_at: string
+          directions: string[]
+          id: string
+          is_active: boolean
+          obligations: Json
+          organization_id: string
+          rate: number | null
+          repair_limit: number | null
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          charge_type: string
+          code: string
+          created_at?: string
+          directions?: string[]
+          id?: string
+          is_active?: boolean
+          obligations?: Json
+          organization_id: string
+          rate?: number | null
+          repair_limit?: number | null
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          charge_type?: string
+          code?: string
+          created_at?: string
+          directions?: string[]
+          id?: string
+          is_active?: boolean
+          obligations?: Json
+          organization_id?: string
+          rate?: number | null
+          repair_limit?: number | null
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_plans_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       showings: {
         Row: {
           agent_id: string | null
@@ -3055,6 +3403,7 @@ export type Database = {
           deal_id: string | null
           description: string | null
           due_date: string | null
+          engagement_id: string | null
           id: string
           lead_id: string | null
           organization_id: string
@@ -3062,6 +3411,7 @@ export type Database = {
           payment_id: string | null
           priority: string
           property_id: string | null
+          regulation_code: string | null
           status: string
           title: string
         }
@@ -3075,6 +3425,7 @@ export type Database = {
           deal_id?: string | null
           description?: string | null
           due_date?: string | null
+          engagement_id?: string | null
           id?: string
           lead_id?: string | null
           organization_id: string
@@ -3082,6 +3433,7 @@ export type Database = {
           payment_id?: string | null
           priority?: string
           property_id?: string | null
+          regulation_code?: string | null
           status?: string
           title: string
         }
@@ -3095,6 +3447,7 @@ export type Database = {
           deal_id?: string | null
           description?: string | null
           due_date?: string | null
+          engagement_id?: string | null
           id?: string
           lead_id?: string | null
           organization_id?: string
@@ -3102,6 +3455,7 @@ export type Database = {
           payment_id?: string | null
           priority?: string
           property_id?: string | null
+          regulation_code?: string | null
           status?: string
           title?: string
         }
@@ -3132,6 +3486,13 @@ export type Database = {
             columns: ["deal_id"]
             isOneToOne: false
             referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_engagement_id_fkey"
+            columns: ["engagement_id"]
+            isOneToOne: false
+            referencedRelation: "management_engagements"
             referencedColumns: ["id"]
           },
           {

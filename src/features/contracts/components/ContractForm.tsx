@@ -11,6 +11,7 @@ import { CommercialRentExtraFields } from './CommercialRentExtraFields'
 import { SaleExtraFields } from './SaleExtraFields'
 import { AgencyServiceExtraFields } from './AgencyServiceExtraFields'
 import { PropertyManagementExtraFields } from './PropertyManagementExtraFields'
+import { SETTLEMENT_SCHEMES, getChargeType } from '@/features/plans/config/settlement'
 import { SubleaseExtraFields } from './SubleaseExtraFields'
 
 const AGENCY_SERVICE_TYPES = ['agency_owner', 'agency_client', 'agency_legal_entity']
@@ -38,6 +39,7 @@ interface ContractFormProps {
  baseContracts: BaseContractOption[]
  companyProfiles: CompanyProfileOption[]
  deals?: DealOption[]
+ plans?: PlanOption[]
  backHref: string
  submitLabel: string
  mode: 'create' | 'edit'
@@ -58,7 +60,21 @@ interface ContractFormProps {
  notes?: string | null
  status?: string
  contract_type_data?: Record<string, unknown> | null
+ plan_id?: string | null
+ settlement_scheme?: string | null
+ owner_fixed_amount?: number | null
+ owner_payout_day?: number | null
  }
+}
+
+/** Тариф из справочника — форма показывает только активные и подходящие направлению. */
+export interface PlanOption {
+ id: string
+ code: string
+ title: string
+ chargeType: string
+ rate: number | null
+ directions: string[]
 }
 
 function fieldsForRole(role: ContractPartyRole) {
@@ -69,10 +85,11 @@ function fieldsForRole(role: ContractPartyRole) {
 
 export function ContractForm({
  action, owners, clients, representativesByContact, properties, baseContracts, companyProfiles, deals = [],
- backHref, submitLabel, mode, defaults = {}
+ plans = [], backHref, submitLabel, mode, defaults = {}
 }: ContractFormProps) {
  const [state, formAction, isPending] = useActionState(action, { error: undefined })
  const [selectedType, setSelectedType] = useState(defaults.contract_type ?? 'rent_apartment')
+ const [scheme, setScheme] = useState(defaults.settlement_scheme ?? 'percent')
 
  const config = CONTRACT_TYPE_MAP[selectedType] ?? CONTRACT_TYPES[0]
  const directTypes = CONTRACT_TYPES.filter(t => t.group === 'direct')
@@ -320,6 +337,79 @@ export function ContractForm({
  )}
  </div>
  </div>
+
+ {/* Тариф агентства — только у договоров, где агентство является стороной
+ и получает вознаграждение. У договоров между собственником и клиентом
+ напрямую агентство стороной не является, и тариф там не при чём. */}
+ {config.direction && (
+ <div className="hp-card p-5 space-y-5">
+ <h2 className={h2}>Тариф и расчёт</h2>
+
+ <div className="grid grid-cols-2 gap-4">
+ <div className="space-y-1.5">
+ <label className={lbl}>Тариф</label>
+ <select name="plan_id" defaultValue={defaults.plan_id ?? ''} className={sel}>
+ <option value="">Не выбран</option>
+ {plans
+ .filter(p => p.directions.includes(config.direction!))
+ .map(p => {
+ const charge = getChargeType(p.chargeType)
+ const rate = p.rate !== null && charge?.rateUnit ? ` — ${p.rate}${charge.rateUnit}` : ''
+ return <option key={p.id} value={p.id}>{p.title}{rate}</option>
+ })}
+ </select>
+ <p className="text-xs text-[var(--hp-sub)]">
+ Ставка копируется в договор при сохранении и дальше не меняется, даже если тариф поправят
+ </p>
+ </div>
+ </div>
+
+ {(selectedType === 'property_management' || selectedType === 'sublease') && (
+ <div className="space-y-4">
+ <div className="space-y-1.5">
+ <label className={lbl}>Схема расчёта с собственником</label>
+ <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+ {SETTLEMENT_SCHEMES.map(s => (
+ <label key={s.value} className="flex items-start gap-2 p-2.5 border border-[var(--hp-border)] cursor-pointer text-sm text-[var(--hp-ink)] transition-colors hover:border-[var(--hp-sub)] has-[:checked]:border-[var(--hp-accent)]">
+ <input
+ type="radio" name="settlement_scheme" value={s.value}
+ checked={scheme === s.value}
+ onChange={() => setScheme(s.value)}
+ className="mt-0.5 w-4 h-4 shrink-0 accent-[var(--hp-accent)]"
+ />
+ <span className="min-w-0">
+ {s.label}
+ <span className="block text-xs text-[var(--hp-sub)]">{s.description}</span>
+ <span className="block text-xs text-[var(--hp-warn)] mt-1">
+ Риск простоя: {s.vacancyRiskBearer === 'agency' ? 'на агентстве' : 'на собственнике'}
+ </span>
+ </span>
+ </label>
+ ))}
+ </div>
+ </div>
+
+ {scheme === 'fixed' && (
+ <div className="grid grid-cols-2 gap-4">
+ <div className="space-y-1.5">
+ <label className={lbl}>Выплата собственнику (₽/мес)</label>
+ <input name="owner_fixed_amount" type="number" required
+ defaultValue={defaults.owner_fixed_amount ?? ''} placeholder="40 000" className={inp} />
+ </div>
+ <div className="space-y-1.5">
+ <label className={lbl}>День выплаты</label>
+ <input name="owner_payout_day" type="number" min="1" max="28" required
+ defaultValue={defaults.owner_payout_day ?? 5} className={inp} />
+ <p className="text-xs text-[var(--hp-sub)]">
+ От 1 до 28: 29-е и позже есть не в каждом месяце
+ </p>
+ </div>
+ </div>
+ )}
+ </div>
+ )}
+ </div>
+ )}
 
  {/* Поля, специфичные для выбранного типа договора */}
  {selectedType === 'rent_apartment' && (

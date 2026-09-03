@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { normalizePhone } from '@/lib/utils'
+import { ALL_STAGE_VALUES } from '@/features/directions/config/directions'
 
 // ─── Общие примитивы ─────────────────────────────────────────────────────────
 
@@ -119,12 +120,19 @@ export type RepresentativeInput = z.infer<typeof RepresentativeSchema>
 // ─── Deal ─────────────────────────────────────────────────────────────────────
 
 export const DealSchema = z.object({
-  deal_type: z.enum(['rent', 'sale', 'management', 'commercial', 'subrent'], {
-    message: 'Неверный тип сделки',
+  // Направление работы, а не «тип сделки»: у каждого из четырёх своя воронка.
+  deal_type: z.enum(['rent_agent', 'management', 'sale', 'tenant_search'], {
+    message: 'Выберите направление работы',
   }),
+  // Стадии перечислены не здесь, а в конфиге направлений: их 22 на четыре
+  // воронки, и дубль списка немедленно бы разъехался. Здесь — только проверка
+  // принадлежности; что стадия относится именно к этому направлению,
+  // проверяет canMoveStage при переходе.
   status: z
-    .enum(['new', 'showing', 'negotiation', 'contract', 'payment', 'completed', 'cancelled'])
+    .string()
+    .refine(v => ALL_STAGE_VALUES.includes(v), { message: 'Неизвестная стадия работы' })
     .optional(),
+  plan_id: uuid,
   owner_contact_id: uuid,
   client_contact_id: uuid,
   owner_representative_id: uuid,
@@ -209,6 +217,22 @@ export const ContractSchema = z.object({
   start_date: optDate,
   end_date: optDate,
   notes: optStr,
+  // Тариф агентства. Ставка (plan_rate) в форму НЕ приходит: её подставляет
+  // сервер из справочника на момент подписания. Деньги нельзя брать из
+  // браузера — там их можно поправить в инструментах разработчика.
+  plan_id: uuid,
+  // Схема расчёта с собственником при управлении и субаренде.
+  settlement_scheme: z.enum(['percent', 'fixed']).nullable().optional()
+    .or(z.literal('').transform(() => null)),
+  owner_fixed_amount: optPositiveNum,
+  owner_payout_day: z
+    .union([z.string(), z.number()])
+    .transform(v => (v === '' || v === null || v === undefined ? null : Number(v)))
+    .refine(v => v === null || (Number.isInteger(v) && v >= 1 && v <= 28), {
+      message: 'День выплаты собственнику — число от 1 до 28: 29-е и позже есть не в каждом месяце',
+    })
+    .nullable()
+    .optional(),
 })
 
 export type ContractInput = z.infer<typeof ContractSchema>

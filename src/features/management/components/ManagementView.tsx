@@ -8,7 +8,14 @@ import { formatAmount, formatDateCompact } from '@/lib/utils'
 
 /** Строка реестра управления: объект + всё, что вокруг него собрано. */
 export interface ManagementRow {
+  /** id объекта — по нему открывается карточка. */
   id: string
+  /** id обслуживания: объект в управлении — самостоятельная сущность. */
+  engagementId: string
+  engagementStatus: string
+  settlementScheme: string | null
+  /** Чего не хватает, чтобы обслуживание считать налаженным. */
+  missingTerms: string[]
   title: string
   address: string | null
   ownerId: string | null
@@ -106,7 +113,19 @@ export function ManagementView({ rows }: { rows: ManagementRow[] }) {
     },
     {
       key: 'state', title: 'Статус',
-      cell: r => <span className={`hp-badge ${STATE[r.state].badge}`}>{STATE[r.state].label}</span>,
+      cell: r => (
+        <span className="flex flex-col items-start gap-1">
+          <span className={`hp-badge ${STATE[r.state].badge}`}>{STATE[r.state].label}</span>
+          {/* Обслуживание без собственника или схемы расчёта не считается
+              налаженным: взаиморасчёт по нему не посчитать. Молчать об этом
+              хуже, чем показать пробел. */}
+          {r.missingTerms.length > 0 && (
+            <span className="hp-badge hp-badge-warn" title={`Не заполнено: ${r.missingTerms.join(', ')}`}>
+              Дозаполнить: {r.missingTerms.length}
+            </span>
+          )}
+        </span>
+      ),
     },
     {
       key: 'fee', title: 'Вознагр.', cellClass: 'num whitespace-nowrap', headClass: 'hidden md:table-cell',

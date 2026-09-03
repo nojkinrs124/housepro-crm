@@ -13,6 +13,7 @@ import {
   type SchedulePeriodicity,
 } from '@/features/accounting/services/payment-schedule.service'
 import {
+  calcCommission,
   contractTypeForDeal,
   needsSchedule,
   propertyStatusAfterDeal,
@@ -70,7 +71,7 @@ export async function completeDealAction(
   const { data: deal } = await supabase
     .from('deals')
     .select(`
-      id, deal_type, status, amount,
+      id, deal_type, status, amount, plan_id,
       owner_contact_id, client_contact_id,
       owner_representative_id, client_representative_id,
       property_id,
@@ -210,8 +211,104 @@ export async function completeDealAction(
     }
   }
 
-  // ─── 5. Этап сделки ─────────────────────────────────────────────────────
-  // advanceDealStage двигает только вперёд и не трогает завершённые сделки.
+  // ─── 5. Вознаграждение агентства ────────────────────────────────────────
+  // Считается по тарифу работы, а не вводится руками: ставка уже зафиксирована,
+  // и ручной ввод здесь означал бы третий источник правды о деньгах.
+  if (formData.get('with_commission') === 'on') {
+    const { data: plan } = deal.plan_id
+      ? await supabase.from('service_plans').select('charge_type, rate, title').eq('id', deal.plan_id).maybeSingle()
+      : { data: null }
+
+    // «Первая сделка бесплатно» — по завершённым работам с этим собственником,
+    // кроме текущей. Считаем ровно те стадии, которые означают доведённую работу.
+    const { count: previousDeals } = deal.owner_contact_id
+      ? await supabase.from('deals').select('id', { count: 'exact', head: true })
+          .eq('owner_contact_id', deal.owner_contact_id)
+          .in('status', ['completed', 'in_service'])
+          .neq('id', dealId)
+      : { count: 0 }
+
+    // Вознаграждение, согласованное в агентском договоре: при подборе для
+    // арендатора комиссия фиксируется до начала поиска, и повторный ввод её
+    // при оформлении означал бы второй источник правды о деньгах.
+    const { data: agencyContracts } = await supabase
+      .from('contracts')
+      .select('amount, contract_type, status')
+      .eq('deal_id', dealId)
+      .in('contract_type', ['agency_client', 'agency_legal_entity', 'agency_owner'])
+      .in('status', ['generated', 'signed', 'completed'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+
+    const commission = calcCommission({
+      chargeType: plan?.charge_type,
+      rate: plan?.rate,
+      dealAmount: amount ?? deal.amount,
+      isFirstDealWithOwner: (previousDeals ?? 0) === 0,
+      agreedFee: agencyContracts?.[0]?.amount ?? null,
+    })
+
+    if (commission.amount > 0) {
+      const { error: feeError } = await supabase.from('accounting_transactions').insert({
+        type: 'income',
+        status: 'planned',
+        amount: commission.amount,
+        date: startDate,
+        description: `Вознаграждение агентства${commission.basis ? ` — ${commission.basis}` : ''}`,
+        deal_id: dealId,
+        contract_id: contract.id,
+        property_id: deal.property_id,
+        contact_id: deal.owner_contact_id,
+        created_by: user.id,
+        organization_id: orgId,
+      })
+      if (!feeError) created.push(`комиссия ${commission.amount.toLocaleString('ru-RU')} ₽`)
+    } else if (commission.waivedReason) {
+      // Обнуление объясняется: пустая комиссия неотличима от забытой.
+      created.push(`без комиссии (${commission.waivedReason.toLowerCase()})`)
+    }
+  }
+
+  // ─── 6. Дополнительные услуги ───────────────────────────────────────────
+  // Юрсопровождение и подобные идут отдельными строками, а не суммой к комиссии:
+  // клиент должен видеть, за что именно платит, а мы — сколько заработали на чём.
+  const extraPlanIds = formData.getAll('extra_services').map(String).filter(Boolean)
+  if (extraPlanIds.length > 0) {
+    const { data: extraPlans } = await supabase
+      .from('service_plans')
+      .select('id, title, rate, charge_type, is_active')
+      .in('id', extraPlanIds)
+      .eq('charge_type', 'flat_fee')
+      .eq('is_active', true)
+
+    const extraRows = (extraPlans ?? [])
+      .filter(pl => pl.rate !== null && Number(pl.rate) > 0)
+      .map(pl => ({
+        type: 'income',
+        status: 'planned',
+        amount: Number(pl.rate),
+        date: startDate,
+        description: pl.title,
+        deal_id: dealId,
+        contract_id: contract.id,
+        property_id: deal.property_id,
+        contact_id: deal.client_contact_id,
+        created_by: user.id,
+        organization_id: orgId,
+      }))
+
+    if (extraRows.length > 0) {
+      const { error: extraError } = await supabase.from('accounting_transactions').insert(extraRows)
+      if (!extraError) {
+        created.push(extraRows.length === 1
+          ? `услуга «${extraRows[0].description}»`
+          : `дополнительных услуг: ${extraRows.length}`)
+      }
+    }
+  }
+
+  // ─── 7. Стадия сделки ───────────────────────────────────────────────────
+  // advanceDealStage двигает только вперёд и не трогает закрытые сделки.
   await advanceDealStage(supabase, dealId, 'contract')
 
   await writeAuditLog({

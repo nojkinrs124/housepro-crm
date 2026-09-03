@@ -26,7 +26,7 @@ export default async function NewContractPage({
   }>
 }) {
   const params = await searchParams
-  const { owners, clients, properties, representativesByContact, baseContracts, companyProfiles, defaultCompanyProfileId, deals } =
+  const { owners, clients, properties, representativesByContact, baseContracts, companyProfiles, defaultCompanyProfileId, deals, plans } =
     await getContractFormData()
 
   // Авто-подстановка стороны по роли контакта, если договор создаётся с его карточки.
@@ -100,6 +100,7 @@ export default async function NewContractPage({
         properties={properties}
         baseContracts={baseContracts}
         companyProfiles={companyProfiles}
+        plans={plans}
         deals={deals}
         backHref="/contracts"
         submitLabel="Создать договор"

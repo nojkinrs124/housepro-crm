@@ -33,6 +33,16 @@ export interface ContractTypeConfig {
   requiresBaseContract?: boolean
   /** DOCX заголовок для базовой генерации без шаблона */
   docTitle: string
+  /**
+   * Направление работы, в котором заключается такой договор. Нужно, чтобы
+   * предложить тарифы именно этого направления, а не весь справочник, и чтобы
+   * проверить, что тариф договору подходит.
+   *
+   * У договоров группы 'direct' его нет: они заключаются между собственником и
+   * клиентом напрямую, агентство стороной не является и вознаграждения по ним
+   * не получает.
+   */
+  direction?: 'rent_agent' | 'management' | 'sale' | 'tenant_search'
 
   // ── Финансы и сроки ──
   amountLabel: string
@@ -106,6 +116,7 @@ export const CONTRACT_TYPES: ContractTypeConfig[] = [
   },
   {
     value: 'agency_owner',
+    direction: 'rent_agent',
     label: 'Агентский договор с собственником',
     shortLabel: 'Агентский (собственник)',
     icon: ClipboardList,
@@ -124,6 +135,7 @@ export const CONTRACT_TYPES: ContractTypeConfig[] = [
   },
   {
     value: 'agency_client',
+    direction: 'tenant_search',
     label: 'Агентский договор с заказчиком',
     shortLabel: 'Агентский (заказчик)',
     icon: FileSignature,
@@ -142,6 +154,7 @@ export const CONTRACT_TYPES: ContractTypeConfig[] = [
   },
   {
     value: 'agency_legal_entity',
+    direction: 'tenant_search',
     label: 'Агентский договор с юр. лицом',
     shortLabel: 'Агентский (юр. лицо)',
     icon: Briefcase,
@@ -161,6 +174,7 @@ export const CONTRACT_TYPES: ContractTypeConfig[] = [
   },
   {
     value: 'property_management',
+    direction: 'management',
     label: 'Договор управления недвижимостью',
     shortLabel: 'Управление',
     icon: Settings,
@@ -179,6 +193,7 @@ export const CONTRACT_TYPES: ContractTypeConfig[] = [
   },
   {
     value: 'sublease',
+    direction: 'management',
     label: 'Договор субаренды',
     shortLabel: 'Субаренда',
     icon: Repeat,

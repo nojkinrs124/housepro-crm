@@ -25,7 +25,7 @@ export default async function CompleteDealPage({ params }: { params: Promise<{ i
   const { data: deal } = await supabase
     .from('deals')
     .select(`
-      id, deal_number, deal_type, status, amount, owner_contact_id, client_contact_id, property_id,
+      id, deal_number, deal_type, status, amount, plan_id, owner_contact_id, client_contact_id, property_id,
       property:properties(id, title, property_type, status),
       client_contact:contacts!deals_client_contact_id_fkey(id, full_name, company_name),
       owner_contact:contacts!deals_owner_contact_id_fkey(id, full_name, company_name)
@@ -52,11 +52,45 @@ export default async function CompleteDealPage({ params }: { params: Promise<{ i
       .order('created_at', { ascending: false }),
   ])
 
+  // Тариф работы и история с собственником — от них зависит комиссия и то,
+  // сработает ли правило «первая сделка бесплатно».
+  const [{ data: plan_ }, { count: previousDeals }, { data: agencyContracts }, { data: flatFeePlans }] = await Promise.all([
+    deal.plan_id
+      ? supabase.from('service_plans').select('charge_type, rate, title').eq('id', deal.plan_id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    deal.owner_contact_id
+      ? supabase.from('deals').select('id', { count: 'exact', head: true })
+          .eq('owner_contact_id', deal.owner_contact_id)
+          .in('status', ['completed', 'in_service'])
+          .neq('id', id)
+      : Promise.resolve({ count: 0 }),
+    // Согласованное вознаграждение из подписанного агентского договора.
+    supabase.from('contracts')
+      .select('amount')
+      .eq('deal_id', id)
+      .in('contract_type', ['agency_client', 'agency_legal_entity', 'agency_owner'])
+      .in('status', ['generated', 'signed', 'completed'])
+      .order('created_at', { ascending: false })
+      .limit(1),
+    // Услуги с фиксированной ценой — юрсопровождение и подобные. Заводятся в
+    // Настройки → Тарифы агентства со способом начисления «фиксированная сумма».
+    supabase.from('service_plans')
+      .select('id, code, title, charge_type, rate, directions')
+      .eq('is_active', true)
+      .eq('charge_type', 'flat_fee')
+      .order('sort_order'),
+  ])
+
   const plan = buildCompletionPlan({
     dealType: deal.deal_type,
     propertyType: property?.property_type,
     amount: deal.amount,
     seqInYear: (count ?? 0) + 1,
+    planChargeType: plan_?.charge_type,
+    planRate: plan_?.rate,
+    isFirstDealWithOwner: (previousDeals ?? 0) === 0,
+    agreedFee: agencyContracts?.[0]?.amount ?? null,
+    plans: flatFeePlans ?? [],
   })
 
   const blockers = [

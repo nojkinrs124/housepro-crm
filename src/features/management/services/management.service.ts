@@ -23,54 +23,47 @@ function stateOf(contractEnd: string | null, hasContract: boolean, today: Date):
 }
 
 /**
- * Собирает строки раздела «Управление».
+ * Собирает строки раздела «Объекты в управлении».
  *
- * Объект в управлении — это properties.deal_type = 'management' либо объект,
- * на который оформлен договор property_management: второе важнее, потому что
- * тип сделки у объекта могли не переставить, а договор уже действует.
+ * Источник — таблица `management_engagements`. До 03.09.2026 раздел был
+ * витриной: список каждый раз выводился из `properties.deal_type` и типа
+ * договора, своей сущности не существовало, и вешать на неё регламент,
+ * счётчики и взаиморасчёт было некуда.
  *
- * Всё считается пятью запросами по списку id, без выборок в цикле.
+ * Всё считается фиксированным числом запросов по списку id, без выборок в цикле.
  */
 export async function collectManagement(supabase: Client): Promise<ManagementRow[]> {
-  const [{ data: byDealType }, { data: mgmtContracts }] = await Promise.all([
-    supabase.from('properties')
-      .select('id, title, address, owner_id, manager_id, management_fee')
-      .eq('deal_type', 'management'),
-    supabase.from('contracts')
-      .select('id, contract_number, property_id, amount, end_date, status, created_at')
-      .eq('contract_type', 'property_management')
-      .not('property_id', 'is', null)
-      .order('created_at', { ascending: false }),
-  ])
+  const { data: engagements } = await supabase
+    .from('management_engagements')
+    .select(`
+      id, property_id, owner_contact_id, contract_id, plan_id, status,
+      settlement_scheme, rate, owner_fixed_amount, owner_payout_day, repair_limit,
+      started_at, ended_at, notes,
+      property:properties(id, title, address, manager_id, management_fee),
+      contract:contracts(id, contract_number, end_date, amount, status),
+      handover:property_handovers(completed_at)
+    `)
+    .is('ended_at', null)
+    .order('started_at', { ascending: false })
 
-  const contractByProperty = new Map<string, NonNullable<typeof mgmtContracts>[number]>()
-  for (const c of mgmtContracts ?? []) {
-    // Договоры отсортированы от новых к старым — берём первый по объекту
-    if (c.property_id && !contractByProperty.has(c.property_id)) contractByProperty.set(c.property_id, c)
+  if (!engagements || engagements.length === 0) return []
+
+  type EngagementRow = NonNullable<typeof engagements>[number]
+  const byProperty = new Map<string, EngagementRow>()
+  for (const e of engagements) {
+    if (e.property_id) byProperty.set(e.property_id, e)
   }
 
-  const ids = [...new Set([
-    ...(byDealType ?? []).map(p => p.id),
-    ...contractByProperty.keys(),
-  ])]
-  if (ids.length === 0) return []
-
-  const knownProperties = new Map((byDealType ?? []).map(p => [p.id, p]))
-  const missing = ids.filter(id => !knownProperties.has(id))
-  if (missing.length > 0) {
-    const { data: extra } = await supabase.from('properties')
-      .select('id, title, address, owner_id, manager_id, management_fee')
-      .in('id', missing)
-    for (const p of extra ?? []) knownProperties.set(p.id, p)
-  }
+  const ids = [...byProperty.keys()]
+  const ownerIds = [...new Set(engagements.map(e => e.owner_contact_id).filter((v): v is string => !!v))]
+  const managerIds = [...new Set(engagements
+    .map(e => (Array.isArray(e.property) ? e.property[0] : e.property)?.manager_id)
+    .filter((v): v is string => !!v))]
 
   const now = new Date()
   const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
   const monthStart = startOfMonth(now)
   const todayStr = today.toISOString().slice(0, 10)
-
-  const ownerIds = [...new Set([...knownProperties.values()].map(p => p.owner_id).filter((v): v is string => !!v))]
-  const managerIds = [...new Set([...knownProperties.values()].map(p => p.manager_id).filter((v): v is string => !!v))]
 
   const [
     { data: managers }, { data: txns }, { data: tasks }, { data: meters }, { data: rentContracts },
@@ -121,8 +114,10 @@ export async function collectManagement(supabase: Client): Promise<ManagementRow
   const managerById = new Map((managers ?? []).map(m => [m.id, m.full_name]))
 
   return ids.map(id => {
-    const property = knownProperties.get(id)!
-    const contract = contractByProperty.get(id) ?? null
+    const engagement = byProperty.get(id)!
+    const property = (Array.isArray(engagement.property) ? engagement.property[0] : engagement.property)!
+    const contract = (Array.isArray(engagement.contract) ? engagement.contract[0] : engagement.contract) ?? null
+    const handover = Array.isArray(engagement.handover) ? engagement.handover[0] : engagement.handover
     const rent = rentByProperty.get(id) ?? null
 
     const propertyTxns = (txns ?? []).filter(t => t.property_id === id)
@@ -148,17 +143,35 @@ export async function collectManagement(supabase: Client): Promise<ManagementRow
       .sort()
       .pop() ?? null
 
+    // Чего не хватает, чтобы обслуживание считать налаженным. Показывается на
+    // карточке — тот же принцип, что и в блоке «Чего не хватает» по проекту:
+    // лучше честно перечислить пробелы, чем притворяться, что всё готово.
+    const missingTerms: string[] = []
+    if (!engagement.owner_contact_id) missingTerms.push('собственник')
+    if (!engagement.settlement_scheme) missingTerms.push('схема расчёта')
+    if (!engagement.contract_id) missingTerms.push('договор управления')
+    if (!handover?.completed_at) missingTerms.push('акт приёма')
+
     return {
       id,
+      engagementId: engagement.id,
+      engagementStatus: engagement.status,
+      settlementScheme: engagement.settlement_scheme,
+      missingTerms,
       title: property.title,
       address: property.address,
-      ownerId: property.owner_id,
-      ownerName: property.owner_id ? ownerById.get(property.owner_id) ?? null : null,
+      ownerId: engagement.owner_contact_id,
+      ownerName: engagement.owner_contact_id ? ownerById.get(engagement.owner_contact_id) ?? null : null,
       managerName: property.manager_id ? managerById.get(property.manager_id) ?? null : null,
       contractId: contract?.id ?? null,
       contractNumber: contract?.contract_number ?? null,
       contractEnd: contract?.end_date ?? null,
-      fee: contract?.amount != null ? Number(contract.amount)
+      // Вознаграждение: при фиксированной схеме показываем выплату собственнику,
+      // при процентной — сумму договора управления. Величины разные по смыслу,
+      // поэтому в колонке подписаны схемой.
+      fee: engagement.settlement_scheme === 'fixed' && engagement.owner_fixed_amount != null
+        ? Number(engagement.owner_fixed_amount)
+        : contract?.amount != null ? Number(contract.amount)
         : property.management_fee != null ? Number(property.management_fee) : null,
       nextPaymentDate: upcoming?.due_date ?? null,
       nextPaymentAmount: upcoming ? Number(upcoming.amount) : null,

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { ALL_STAGE_VALUES } from '@/features/directions/config/directions'
 
 // Отдельный файл (не в schemas/index.ts) — эта схема используется только новым
 // API v1 роутом для Telegram-бота, не формами в UI.
@@ -34,8 +35,20 @@ export const TransactionCreateSchema = z.object({
 
 export type TransactionCreateInput = z.infer<typeof TransactionCreateSchema>
 
+/**
+ * Смена стадии сделки через публичный API.
+ *
+ * Список стадий не дублируется здесь: он зависит от направления работы и живёт
+ * в конфиге направлений. Своя копия тут осталась на старых шести стадиях, и
+ * после перехода на направления API отвергал валидное `showings`, а
+ * `negotiation` пропускал — тот падал уже на CHECK в базе, отдавая наружу 500
+ * вместо внятной ошибки.
+ *
+ * Принадлежность стадии направлению проверяет сам роут: она зависит от данных
+ * сделки, а не от формы запроса.
+ */
 export const DealStatusUpdateSchema = z.object({
-  status: z.enum(['new', 'showing', 'negotiation', 'contract', 'payment', 'completed', 'cancelled'], {
-    message: 'Неверный статус сделки',
+  status: z.string().refine(v => ALL_STAGE_VALUES.includes(v), {
+    message: 'Неизвестная стадия сделки',
   }),
 })

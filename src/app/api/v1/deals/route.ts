@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { authenticateApiKey, hasScope } from '@/lib/api-auth'
 import { DealStatusUpdateSchema } from '@/lib/schemas/accounting-api'
 import { writeAuditLogServiceRole } from '@/lib/audit'
+import { isStageOf, stagesOf } from '@/features/directions/config/directions'
 
 // КРИТИЧНО: этот роут отдаёт данные, специфичные для конкретной организации/пользователя
 // (RLS или ручная фильтрация по organization_id). Next.js по умолчанию может закэшировать
@@ -78,13 +79,29 @@ export async function PATCH(request: Request) {
   // Читаем текущий статус для audit log и чтобы убедиться, что сделка принадлежит этой организации
   const { data: existing, error: fetchError } = await supabaseAdmin
     .from('deals')
-    .select('id, status')
+    .select('id, status, deal_type')
     .eq('id', dealId)
     .eq('organization_id', auth.orgId)
     .maybeSingle()
 
   if (fetchError) return NextResponse.json({ error: fetchError.message }, { status: 500 })
   if (!existing) return NextResponse.json({ error: 'Deal not found' }, { status: 404 })
+
+  // Стадия обязана принадлежать направлению сделки: у аренды, управления,
+  // продажи и подбора разные воронки. Без этой проверки запрос доходил бы до
+  // CHECK в базе и возвращал наружу 500 вместо внятной ошибки.
+  if (!isStageOf(existing.deal_type, parsed.data.status)) {
+    return NextResponse.json(
+      {
+        error: 'Stage does not belong to the deal direction',
+        details: {
+          direction: existing.deal_type,
+          allowed: stagesOf(existing.deal_type).map(stage => stage.value),
+        },
+      },
+      { status: 400 },
+    )
+  }
 
   const { data, error } = await supabaseAdmin
     .from('deals')

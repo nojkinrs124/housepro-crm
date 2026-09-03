@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { stagesOf, terminalStageOf } from '@/features/directions/config/directions'
 import {
  Users, Home, FileText, CheckSquare, TrendingUp,
  Zap, Clock, DollarSign, AlertTriangle, ArrowUpRight,
@@ -8,7 +9,7 @@ import Link from 'next/link'
 import { DashboardKpiCards } from '@/features/dashboard/components/DashboardKpiCards'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { formatDate } from '@/lib/utils'
-import { DEAL_TYPE_LABELS as dealTypeLabels, DEAL_STATUS_LABELS as dealStatusLabels } from '@/features/deals/config/deal-stages'
+import { DEAL_TYPE_LABELS as dealTypeLabels, DEAL_STATUS_LABELS as dealStatusLabels, dealStageBadgeClass } from '@/features/deals/config/deal-stages'
 
 export default async function DashboardPage() {
  const supabase = await createClient()
@@ -42,7 +43,7 @@ export default async function DashboardPage() {
  .lt('deadline', now).not('status', 'in', '(done,cancelled)'),
  supabase.from('payments').select('id', { count: 'exact', head: true })
  .eq('payment_status', 'overdue'),
- supabase.from('deals').select('status'),
+ supabase.from('deals').select('status, deal_type'),
  supabase.from('payments')
  .select('amount, payment_status')
  .gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()),
@@ -75,26 +76,33 @@ export default async function DashboardPage() {
  // поверхности та же rgba-прозрачность почти не видна (12% альфы поверх тёмного —
  // это всё ещё тёмный), color-mix подмешивает цвет в текущий --hp-surface, а не в
  // абсолютный белый/прозрачный — тон одинаково читается в обеих темах.
- const funnelStages = [
- { key: 'new', label: 'Новые', color: '#5A6B82', bg: 'color-mix(in srgb, #60A5FA 18%, var(--hp-surface))' },
- { key: 'showing', label: 'Показы', color: '#9C8B5A', bg: 'color-mix(in srgb, #FBBF24 18%, var(--hp-surface))' },
- { key: 'negotiation', label: 'Переговоры', color: '#8A6B3F', bg: 'color-mix(in srgb, #F97316 18%, var(--hp-surface))' },
- { key: 'contract', label: 'Договор', color: 'var(--hp-tertiary)', bg: 'color-mix(in srgb, #A78BFA 18%, var(--hp-surface))' },
- { key: 'payment', label: 'Оплата', color: '#22D3EE', bg: 'color-mix(in srgb, #22D3EE 18%, var(--hp-surface))' },
- { key: 'completed', label: 'Завершено', color: 'var(--hp-accent)', bg: 'color-mix(in srgb, #22C55E 18%, var(--hp-surface))' },
- ]
+ // Воронка на дашборде показывает направление, в котором сейчас больше всего
+ // работ: общей воронки не существует, а рисовать вперемешку стадии четырёх
+ // разных процессов бессмысленно. Колонки нейтральные — стадия читается по
+ // позиции и счётчику, как на канбане.
+ const dashboardDirection = (() => {
+ const counts = new Map<string, number>()
+ for (const d of dealsByStatus ?? []) counts.set(d.deal_type, (counts.get(d.deal_type) ?? 0) + 1)
+ return [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? 'rent_agent'
+ })()
+
+ const funnelStages = stagesOf(dashboardDirection)
+ .filter(stage => stage.value !== 'cancelled')
+ .map(stage => ({
+ key: stage.value,
+ label: stage.board,
+ color: stage.value === terminalStageOf(dashboardDirection) ? 'var(--hp-accent)' : 'var(--hp-sub)',
+ bg: 'var(--hp-neutral-tint)',
+ }))
  const dealCounts = Object.fromEntries(
- funnelStages.map(s => [s.key, (dealsByStatus ?? []).filter(d => d.status === s.key).length])
+ funnelStages.map(s => [s.key, (dealsByStatus ?? []).filter(d => d.deal_type === dashboardDirection && d.status === s.key).length])
  )
  const maxDeals = Math.max(...Object.values(dealCounts), 1)
 
  const roleLabels: Record<string, string> = { client: 'Клиент', owner: 'Собственник', both: 'Кл.+Собств.' }
- const dealStatusColors: Record<string, string> = {
- new: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]', showing: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]',
- negotiation: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]', contract: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]',
- payment: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]', completed: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]',
- cancelled: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]',
- }
+ // Оформление бейджа стадии зависит от направления: «В обслуживании» — это
+ // успешное завершение воронки управления, а не работа в процессе.
+ const dealStatusColors: Record<string, string> = {}
  const priorityColors: Record<string, { bg: string; text: string; dot: string }> = {
  low: { bg: 'bg-[var(--hp-neutral-tint)]', text: 'text-[var(--hp-sub)]', dot: 'bg-[var(--hp-tertiary)]' },
  medium: { bg: 'bg-[var(--hp-warn-tint)]', text: 'text-[var(--hp-warn)]', dot: 'bg-[var(--hp-warn)]' },
@@ -329,7 +337,7 @@ export default async function DashboardPage() {
  <p className="text-xs text-muted-foreground truncate">{clientName ?? formatDate(d.created_at)}</p>
  </div>
  <div className="shrink-0 text-right">
- <span className={`text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold block ${dealStatusColors[d.status] ?? 'bg-[var(--hp-neutral-tint)]'}`}>
+ <span className={`text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold block hp-badge ${dealStageBadgeClass(d.status, d.deal_type)}`}>
  {dealStatusLabels[d.status] ?? d.status}
  </span>
  {d.amount && <p className="text-xs text-muted-foreground mt-0.5 font-medium">{Number(d.amount).toLocaleString('ru-RU')} ₽</p>}

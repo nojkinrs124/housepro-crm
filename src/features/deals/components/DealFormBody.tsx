@@ -1,7 +1,8 @@
 import { Building2, User } from 'lucide-react'
 import { PartyContactSelect } from '@/features/contacts/components/PartyContactSelect'
 import { PropertySelectField } from '@/features/properties/components/PropertySelectField'
-import { DEAL_STAGES, DEAL_STAGE_CANCELLED, DEAL_TYPE_LABELS } from '@/features/deals/config/deal-stages'
+import { DirectionStagePicker } from '@/features/directions/components/DirectionStagePicker'
+import { DEAL_SOURCES } from '@/features/deals/config/deal-sources'
 
 /**
  * Общее тело формы сделки для /deals/new и /deals/[id]/edit.
@@ -20,12 +21,7 @@ const radioCls =
   'flex items-center gap-2 p-2.5 rounded-[var(--hp-radius)] border border-[var(--hp-border)] cursor-pointer text-sm text-[var(--hp-ink)] transition-colors hover:border-[var(--hp-sub)] has-[:checked]:border-[var(--hp-accent)] has-[:checked]:bg-[var(--hp-accent-tint)]'
 
 const PAYMENT_METHODS = ['Наличные', 'Безналичный расчёт', 'Ипотека', 'Материнский капитал', 'Рассрочка']
-const DEAL_SOURCES = [
-  { value: 'referral', label: 'Рекомендация' }, { value: 'avito', label: 'Avito' },
-  { value: 'cian', label: 'ЦИАН' }, { value: 'domclick', label: 'Домклик' },
-  { value: 'site', label: 'Сайт' }, { value: 'telegram', label: 'Telegram' },
-  { value: 'phone', label: 'Звонок' }, { value: 'other', label: 'Другое' },
-]
+
 
 // `| null` вместо `?:` — колонки в базе nullable, страницы отдают ровно то,
 // что вернул запрос, без подмены null на undefined.
@@ -63,41 +59,13 @@ export function DealFormBody({
 
   return (
     <>
-      {/* Тип сделки */}
-      <div className="hp-card p-5 space-y-4">
-        <h2 className="hp-h2">Тип сделки</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          {Object.entries(DEAL_TYPE_LABELS).map(([value, label]) => (
-            <label key={value} className={radioCls}>
-              <input
-                type="radio" name="deal_type" value={value}
-                defaultChecked={d.deal_type ? d.deal_type === value : value === 'rent'}
-                className="w-4 h-4 shrink-0 accent-[var(--hp-accent)]"
-              />
-              {label}
-            </label>
-          ))}
-        </div>
-      </div>
+      {/* Направление и стадия — клиентский блок: список стадий зависит от направления */}
+      <DirectionStagePicker
+        direction={d.deal_type}
+        status={d.status}
+        showStatus={showStatus}
+      />
 
-      {/* Этап — только при редактировании */}
-      {showStatus && (
-        <div className="hp-card p-5 space-y-4">
-          <h2 className="hp-h2">Этап</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {[...DEAL_STAGES, DEAL_STAGE_CANCELLED].map(s => (
-              <label key={s.value} className={radioCls}>
-                <input
-                  type="radio" name="status" value={s.value}
-                  defaultChecked={d.status === s.value}
-                  className="w-4 h-4 shrink-0 accent-[var(--hp-accent)]"
-                />
-                {s.label}
-              </label>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Стороны */}
       <div className="hp-card p-5 space-y-5">

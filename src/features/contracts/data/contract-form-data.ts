@@ -15,6 +15,7 @@ export async function getContractFormData(excludeContractId?: string, currentDea
     { data: rawBaseContracts },
     { data: rawCompanyProfiles },
     { data: rawDeals },
+    { data: rawPlans },
   ] = await Promise.all([
     supabase.from('contacts').select('id, full_name, phone, role, client_type').order('full_name'),
     supabase.from('properties').select('id, title, address, property_type').order('title'),
@@ -42,6 +43,13 @@ export async function getContractFormData(excludeContractId?: string, currentDea
           : 'status.not.in.(completed,cancelled)'
       )
       .order('created_at', { ascending: false }),
+    // Активные тарифы: их ставка копируется в договор при сохранении и дальше
+    // не зависит от правок справочника.
+    supabase
+      .from('service_plans')
+      .select('id, code, title, charge_type, rate, directions')
+      .eq('is_active', true)
+      .order('sort_order'),
   ])
 
   const contacts = rawContacts ?? []
@@ -81,5 +89,14 @@ export async function getContractFormData(excludeContractId?: string, currentDea
     return { id: d.id as string, label: `${dealTypeLabels[d.deal_type] ?? d.deal_type}${addressPart}${amountPart}` }
   })
 
-  return { owners, clients, properties, representativesByContact, baseContracts, companyProfiles, defaultCompanyProfileId, deals }
+  const plans = (rawPlans ?? []).map((p) => ({
+    id: p.id as string,
+    code: p.code as string,
+    title: p.title as string,
+    chargeType: p.charge_type as string,
+    rate: p.rate as number | null,
+    directions: (p.directions ?? []) as string[],
+  }))
+
+  return { owners, clients, properties, representativesByContact, baseContracts, companyProfiles, defaultCompanyProfileId, deals, plans }
 }

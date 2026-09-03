@@ -1,6 +1,6 @@
 {
   "name": "housepro-crm",
-  "version": "1.4.0",
+  "version": "2.0.0",
   "private": true,
   "license": "MIT",
   "scripts": {
@@ -17,6 +17,7 @@
     "check:design:baseline": "node scripts/checks/design-tokens.mjs --baseline",
     "check:boundary": "node scripts/checks/client-boundary.mjs",
     "check:cron": "node scripts/checks/vercel-cron.mjs",
+    "check:stages": "node scripts/checks/stage-dictionary.mjs",
     "check:server": "node scripts/checks/server-rules.mjs",
     "check:forms": "node scripts/checks/form-fields.mjs",
     "check:any": "node scripts/checks/no-any.mjs",

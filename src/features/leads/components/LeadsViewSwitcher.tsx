@@ -9,7 +9,7 @@ import { useRegistryFilters } from '@/hooks/useRegistryFilters'
 import { useSelection } from '@/hooks/useSelection'
 import { usePersistedState } from '@/hooks/usePersistedFilters'
 import { LEAD_STATUSES } from '@/features/leads/config/lead-statuses'
-import { DEAL_TYPE_LABELS } from '@/features/deals/config/deal-stages'
+import { PROPERTY_PURPOSE_LABELS as DEAL_TYPE_LABELS } from '@/features/properties/config/purpose'
 
 type ViewMode = 'kanban' | 'list'
 

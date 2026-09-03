@@ -3,8 +3,10 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import {
   Plus, FileText, Gauge, CheckSquare, Wallet, ArrowUpRight, KeyRound, Phone, CalendarClock, Receipt,
+  Settings2, ClipboardCheck, Scale,
 } from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { getSettlementScheme } from '@/features/plans/config/settlement'
 import { ReadinessPanel } from '@/components/layout/ReadinessPanel'
 import { isActiveRentContract } from '@/features/contracts/config/contract-types'
 import { checkProperty } from '@/lib/readiness'
@@ -40,6 +42,15 @@ export default async function ManagementDetailPage({ params }: { params: Promise
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  // Обслуживание — самостоятельная сущность: от него зависят условия расчёта,
+  // акт приёма и всё, что считается по объекту.
+  const { data: engagement } = await supabase
+    .from('management_engagements')
+    .select('id, status, settlement_scheme, owner_contact_id, contract_id, notes, started_at, handover:property_handovers(completed_at)')
+    .eq('property_id', id)
+    .is('ended_at', null)
+    .maybeSingle()
+
   const { data: property } = await supabase
     .from('properties')
     .select('id, title, address, deal_type, status, owner_id, manager_id, management_fee, price')
@@ -54,14 +65,16 @@ export default async function ManagementDetailPage({ params }: { params: Promise
   ] = await Promise.all([
     supabase.from('contracts')
       .select(`id, contract_number, contract_type, status, amount, deposit, start_date, end_date,
-               client_contact_id, contract_type_data, indexation_percent, indexation_period_months, created_at`)
+               client_contact_id, contract_type_data, indexation_percent, indexation_period_months, created_at,
+               plan_id, plan_rate, settlement_scheme, owner_fixed_amount, owner_payout_day,
+               plan:service_plans(title, charge_type, repair_limit, obligations)`)
       .eq('property_id', id).order('start_date', { ascending: false, nullsFirst: false }),
     supabase.from('accounting_transactions')
       .select(`id, type, amount, status, date, due_date, description, contract_id, schedule_seq,
                category:accounting_categories(name)`)
       .eq('property_id', id).order('date', { ascending: false }).limit(100),
     supabase.from('tasks')
-      .select('id, title, status, priority, deadline')
+      .select('id, title, status, priority, deadline, due_date, regulation_code')
       .eq('property_id', id).order('created_at', { ascending: false }).limit(50),
     supabase.from('utility_meters')
       .select('id, kind, title, serial_number, unit, tariff, readings:meter_readings(id, reading_date, value, consumption, amount)')
@@ -135,6 +148,18 @@ export default async function ManagementDetailPage({ params }: { params: Promise
     : 0
 
   const openTasks = (tasks ?? []).filter(t => !['done', 'cancelled'].includes(t.status))
+
+  // Регламентные задачи: заведены кроном по правилам тарифа. Показываются
+  // отдельно от ручных и с разделением на просроченные и предстоящие — иначе
+  // «снять показания» тонет среди прочего, а пропущенное показание означает
+  // неверный счёт.
+  const regulationTasks = openTasks.filter(t => t.regulation_code)
+  const overdueRegulation = regulationTasks
+    .filter(t => (t.due_date ?? t.deadline) && (t.due_date ?? t.deadline)! < todayStr)
+    .sort((a, b) => ((a.due_date ?? a.deadline) ?? '').localeCompare((b.due_date ?? b.deadline) ?? ''))
+  const upcomingRegulation = regulationTasks
+    .filter(t => (t.due_date ?? t.deadline) && (t.due_date ?? t.deadline)! >= todayStr)
+    .sort((a, b) => ((a.due_date ?? a.deadline) ?? '').localeCompare((b.due_date ?? b.deadline) ?? ''))
   const ownerName = owner ? (owner.company_name || owner.full_name) : null
 
   return (
@@ -146,6 +171,22 @@ export default async function ManagementDetailPage({ params }: { params: Promise
         backLabel="Управление"
         actions={
           <>
+            {engagement && (
+              <>
+                <Link href={`/management/${id}/terms`} className={buttonVariants({ variant: 'secondary', size: 'sm' })}>
+                  <Settings2 style={{ width: 16, height: 16 }} />
+                  Условия
+                </Link>
+                <Link href={`/management/${id}/handover`} className={buttonVariants({ variant: 'secondary', size: 'sm' })}>
+                  <ClipboardCheck style={{ width: 16, height: 16 }} />
+                  Акт приёма
+                </Link>
+                <Link href={`/management/${id}/settlement`} className={buttonVariants({ variant: 'secondary', size: 'sm' })}>
+                  <Scale style={{ width: 16, height: 16 }} />
+                  Взаиморасчёт
+                </Link>
+              </>
+            )}
             <Link href={`/management/${id}/report`} className={buttonVariants({ variant: 'secondary', size: 'sm' })}>
               <Receipt style={{ width: 16, height: 16 }} />
               Отчёт собственнику
@@ -162,6 +203,68 @@ export default async function ManagementDetailPage({ params }: { params: Promise
         }
       />
 
+
+      {/* Что не заполнено в обслуживании. Показывается до всех цифр: пока нет
+          собственника и схемы расчёта, взаиморасчёт и отчёт посчитать нельзя,
+          и любые суммы ниже будут неполными. */}
+      {engagement && (() => {
+        const handover = Array.isArray(engagement.handover) ? engagement.handover[0] : engagement.handover
+        const missing: string[] = []
+        if (!engagement.owner_contact_id) missing.push('не указан собственник — не с кем вести взаиморасчёт')
+        if (!engagement.settlement_scheme) missing.push('не выбрана схема расчёта — не посчитать ни выплату, ни вознаграждение')
+        if (!engagement.contract_id) missing.push('не привязан договор управления')
+        if (!handover?.completed_at) missing.push('не закрыт акт приёма — нет начальных показаний и описи')
+        if (missing.length === 0) return null
+
+        return (
+          <div className="hp-block">
+            <div className="hp-block-header">Обслуживание не настроено</div>
+            <div className="p-[18px] space-y-3">
+              <ul className="space-y-1.5 text-sm text-[var(--hp-ink)]">
+                {missing.map(m => (
+                  <li key={m} className="flex gap-2">
+                    <span className="text-[var(--hp-warn)]">•</span>
+                    <span>{m}</span>
+                  </li>
+                ))}
+              </ul>
+              {engagement.notes && (
+                <p className="text-xs text-[var(--hp-sub)]">{engagement.notes}</p>
+              )}
+              <div className="flex flex-wrap gap-2 shrink-0">
+                <Link href={`/management/${id}/terms`} className="hp-btn-primary">Заполнить условия</Link>
+                <Link href={`/management/${id}/handover`} className="hp-btn-secondary">Акт приёма</Link>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* Регламент обслуживания: что просрочено и что предстоит. Просроченное
+          идёт первым и красным — по FR-028 ни одно плановое действие не должно
+          пропадать незаметно. */}
+      {regulationTasks.length > 0 && (
+        <div className="hp-block">
+          <div className="hp-block-header flex items-center justify-between gap-2">
+            <span>Регламент обслуживания</span>
+            {overdueRegulation.length > 0 && (
+              <span className="hp-badge hp-badge-danger">Просрочено: {overdueRegulation.length}</span>
+            )}
+          </div>
+          {[...overdueRegulation, ...upcomingRegulation].slice(0, 8).map(task => {
+            const date = task.due_date ?? task.deadline
+            const overdue = date != null && date < todayStr
+            return (
+              <Link key={task.id} href={`/tasks/${task.id}`} className="hp-block-item">
+                <span className="flex-1 min-w-0 truncate text-[var(--hp-ink)]">{task.title}</span>
+                <span className={`shrink-0 text-[12px] ${overdue ? 'text-[var(--hp-danger)]' : 'text-[var(--hp-sub)]'}`}>
+                  {overdue ? 'просрочено ' : 'до '}{date ? formatDateCompact(date) : '—'}
+                </span>
+              </Link>
+            )
+          })}
+        </div>
+      )}
 
       <ReadinessPanel issues={issues} />
 
@@ -250,6 +353,90 @@ export default async function ManagementDetailPage({ params }: { params: Promise
               </div>
             )}
           </div>
+
+          {/* Тариф агентства: по составу обязательств видно, чем «Премиум»
+              отличается от обычного управления, и кто несёт риск простоя */}
+          {mgmtContract && (
+            <div className="hp-block">
+              <div className="hp-block-header">Тариф и обязательства</div>
+              {(() => {
+                const plan = mgmtContract.plan as {
+                  title?: string
+                  charge_type?: string
+                  repair_limit?: number | null
+                  obligations?: unknown
+                } | null
+
+                if (!plan) {
+                  return (
+                    <div className="p-[18px]">
+                      <p className="text-sm text-[var(--hp-sub)]">
+                        Тариф в договоре не выбран — вознаграждение и состав обязательств взять неоткуда.
+                      </p>
+                    </div>
+                  )
+                }
+
+                const obligations = Array.isArray(plan.obligations)
+                  ? (plan.obligations as { code?: string; title?: string }[])
+                      .map(o => o?.title)
+                      .filter((t): t is string => typeof t === 'string')
+                  : []
+
+                const scheme = getSettlementScheme(mgmtContract.settlement_scheme)
+
+                return (
+                  <>
+                    <div className="hp-block-row">
+                      <span className="label">Тариф</span>
+                      <span className="value">{plan.title ?? '—'}</span>
+                    </div>
+                    {scheme && (
+                      <>
+                        <div className="hp-block-row">
+                          <span className="label">Схема расчёта</span>
+                          <span className="value">{scheme.label}</span>
+                        </div>
+                        <div className="hp-block-row">
+                          <span className="label">Риск простоя</span>
+                          <span className={`value ${scheme.vacancyRiskBearer === 'agency' ? 'danger' : ''}`}>
+                            {scheme.vacancyRiskBearer === 'agency' ? 'на агентстве' : 'на собственнике'}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                    {mgmtContract.settlement_scheme === 'percent' && mgmtContract.plan_rate != null && (
+                      <div className="hp-block-row">
+                        <span className="label">Удержание агентства</span>
+                        <span className="value">{mgmtContract.plan_rate}% от платежа</span>
+                      </div>
+                    )}
+                    {mgmtContract.settlement_scheme === 'fixed' && mgmtContract.owner_fixed_amount != null && (
+                      <div className="hp-block-row">
+                        <span className="label">Выплата собственнику</span>
+                        <span className="value">
+                          {formatAmount(Number(mgmtContract.owner_fixed_amount))} ₽/мес
+                          {mgmtContract.owner_payout_day != null && `, ${mgmtContract.owner_payout_day}-го числа`}
+                        </span>
+                      </div>
+                    )}
+                    {plan.repair_limit != null && (
+                      <div className="hp-block-row">
+                        <span className="label">Мелкий ремонт за счёт агентства</span>
+                        <span className="value">до {formatAmount(Number(plan.repair_limit))} ₽</span>
+                      </div>
+                    )}
+                    {obligations.length > 0 && (
+                      <div className="hp-block-row">
+                        <span className="label">Что входит</span>
+                        <span className="value">{obligations.join(' · ')}</span>
+                      </div>
+                    )}
+                  </>
+                )
+              })()}
+            </div>
+          )}
 
           {/* Платежи */}
           <div className="hp-block">

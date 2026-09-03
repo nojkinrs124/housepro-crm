@@ -1,3 +1,6 @@
+import { stagesOf, DIRECTION_SHORT_LABELS } from '@/features/directions/config/directions'
+import { isDealSucceeded, isDealClosed } from '@/features/deals/config/deal-stages'
+import { DEAL_SOURCE_LABELS } from '@/features/deals/config/deal-sources'
 import {
  TrendingUp, Banknote, Users, Home,
  AlertTriangle, CheckCircle2, Clock, FileText,
@@ -47,15 +50,15 @@ export default async function AnalyticsPage({
  // ── KPI ──────────────────────────────────────────────────────────────────────
 
  const totalRevenue = deals
- .filter(d => d.status === 'completed')
+ .filter(d => isDealSucceeded(d.status, d.deal_type))
  .reduce((s, d) => s + Number(d.commission ?? 0), 0)
 
  const totalDealsAmount = deals
- .filter(d => d.status === 'completed')
+ .filter(d => isDealSucceeded(d.status, d.deal_type))
  .reduce((s, d) => s + Number(d.amount ?? 0), 0)
 
- const activeDeals = deals.filter(d => !['completed', 'cancelled'].includes(d.status)).length
- const completedDeals = deals.filter(d => d.status === 'completed').length
+ const activeDeals = deals.filter(d => !isDealClosed(d.status, d.deal_type)).length
+ const completedDeals = deals.filter(d => isDealSucceeded(d.status, d.deal_type)).length
  const conversionRate = leads.length > 0
  ? Math.round((leadsConverted.length / leads.length) * 100)
  : 0
@@ -85,12 +88,25 @@ export default async function AnalyticsPage({
  }
  })
 
- const funnelStages: FunnelData[] = (
- ['new', 'showing', 'negotiation', 'contract', 'payment', 'completed'] as const
- ).map((status, i) => ({
- stage: ['Новые', 'Показы', 'Переговоры', 'Договор', 'Оплата', 'Завершено'][i],
- color: CHART_SERIES[i],
- count: deals.filter(d => d.status === status).length,
+ // Общей воронки больше нет: у каждого направления своя. Сводная диаграмма
+ // строится по самому массовому направлению в выборке — рисовать вперемешку
+ // стадии четырёх разных процессов значит показывать бессмыслицу.
+ const dealsByDirection = new Map<string, typeof deals>()
+ for (const d of deals) {
+ const list = dealsByDirection.get(d.deal_type) ?? []
+ list.push(d)
+ dealsByDirection.set(d.deal_type, list)
+ }
+ const mainDirection = [...dealsByDirection.entries()]
+ .sort((a, b) => b[1].length - a[1].length)[0]?.[0] ?? 'rent_agent'
+ const mainDirectionDeals = dealsByDirection.get(mainDirection) ?? []
+
+ const funnelStages: FunnelData[] = stagesOf(mainDirection)
+ .filter(stage => stage.value !== 'cancelled')
+ .map((stage, i) => ({
+ stage: stage.board,
+ color: CHART_SERIES[i % CHART_SERIES.length],
+ count: mainDirectionDeals.filter(d => d.status === stage.value).length,
  }))
 
  const leadsConversionData: LeadsConversionData[] = last12.map(m => ({
@@ -109,12 +125,14 @@ export default async function AnalyticsPage({
  }
  })
 
+ // Названия берутся из конфига направлений: своя копия словаря здесь осталась
+ // на старых значениях (rent, commercial, subrent) и после перехода на
+ // направления показывала бы в диаграмме сырые коды.
  const dealTypeMap: Record<string, { name: string; color: string }> = {
- rent: { name: 'Аренда', color: 'var(--hp-accent)' },
- sale: { name: 'Продажа', color: CHART.info },
- management: { name: 'Управление', color: CHART.sub },
- commercial: { name: 'Коммерция', color: 'var(--hp-warn)' },
- subrent: { name: 'Субаренда', color: CHART.danger },
+ rent_agent: { name: DIRECTION_SHORT_LABELS.rent_agent, color: 'var(--hp-accent)' },
+ management: { name: DIRECTION_SHORT_LABELS.management, color: CHART.sub },
+ sale: { name: DIRECTION_SHORT_LABELS.sale, color: CHART.info },
+ tenant_search: { name: DIRECTION_SHORT_LABELS.tenant_search, color: 'var(--hp-warn)' },
  }
  const dealTypeCounts: Record<string, number> = {}
  for (const d of deals) {
@@ -126,6 +144,21 @@ export default async function AnalyticsPage({
  name: dealTypeMap[k]?.name ?? k,
  value: v,
  color: dealTypeMap[k]?.color ?? CHART.tertiary,
+ }))
+ .sort((a, b) => b.value - a.value)
+
+ // Откуда приходят сделки: по этому срезу видно, какая площадка окупается.
+ const sourceCounts: Record<string, number> = {}
+ for (const d of deals) {
+ const key = d.source || 'unknown'
+ sourceCounts[key] = (sourceCounts[key] ?? 0) + 1
+ }
+ const sourcePie: DealTypeData[] = Object.entries(sourceCounts)
+ .filter(([, v]) => v > 0)
+ .map(([k, v], i) => ({
+ name: DEAL_SOURCE_LABELS[k] ?? k,
+ value: v,
+ color: CHART_SERIES[i % CHART_SERIES.length],
  }))
  .sort((a, b) => b.value - a.value)
 
@@ -232,12 +265,22 @@ export default async function AnalyticsPage({
  <PaymentsMonthlyChart data={paymentsMonthly} />
  </div>
  <div className="bg-[var(--hp-surface)] border border-border p-5">
- <h2 className="text-sm font-semibold text-foreground mb-4">Типы сделок</h2>
+ <h2 className="text-sm font-semibold text-foreground mb-4">Направления работы</h2>
  {dealTypePie.length > 0 ? (
  <DealTypePieChart data={dealTypePie} />
  ) : (
  <div className="h-[220px] flex items-center justify-center text-sm text-[var(--hp-tertiary)]">
  Нет данных о сделках
+ </div>
+ )}
+ </div>
+ <div className="bg-[var(--hp-surface)] border border-border p-5">
+ <h2 className="text-sm font-semibold text-foreground mb-4">Источники сделок</h2>
+ {sourcePie.length > 0 ? (
+ <DealTypePieChart data={sourcePie} />
+ ) : (
+ <div className="h-[220px] flex items-center justify-center text-sm text-[var(--hp-tertiary)]">
+ Источник ни у одной сделки не указан
  </div>
  )}
  </div>

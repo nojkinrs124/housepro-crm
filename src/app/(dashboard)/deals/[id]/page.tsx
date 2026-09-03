@@ -5,6 +5,7 @@ import {
 import { DeleteDealButton } from '@/features/deals/components/DeleteDealButton'
 import { DealComments } from '@/features/deals/components/DealComments'
 import { DealStageBar } from '@/features/deals/components/DealStageBar'
+import { StageChecklist } from '@/features/directions/components/StageChecklist'
 import { FileUploadToggle } from '@/features/files/components/FileUploadToggle'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -199,7 +200,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
         title={objectLabel ? `Сделка №${deal.deal_number ?? ''} — ${objectLabel}` : `Сделка №${deal.deal_number ?? ''} — ${typeLabel}`}
         badges={
           <span className="flex items-center gap-1.5 flex-wrap">
-            <span className={`hp-badge ${dealStageBadgeClass(deal.status)}`}>{stageLabel}</span>
+            <span className={`hp-badge ${dealStageBadgeClass(deal.status, deal.deal_type)}`}>{stageLabel}</span>
             {bargain && <span className="hp-badge hp-badge-danger">Торг</span>}
           </span>
         }
@@ -283,8 +284,16 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
         ]}
       />
 
-      {/* Этапы */}
-      <DealStageBar dealId={id} status={deal.status} />
+      {/* Стадии — своя воронка у каждого направления */}
+      <DealStageBar dealId={id} status={deal.status} direction={deal.deal_type} />
+
+      {/* Что нужно сделать на текущей стадии, чтобы уйти дальше */}
+      <StageChecklist
+        dealId={id}
+        direction={deal.deal_type}
+        stage={deal.status}
+        progress={(deal.stage_progress ?? {}) as Record<string, string[]>}
+      />
 
       <div className="grid lg:grid-cols-3 gap-4 items-start">
         <div className="lg:col-span-2 space-y-4">

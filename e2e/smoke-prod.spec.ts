@@ -29,6 +29,7 @@ const DASHBOARD_ROUTES = [
   '/showings', '/showings/new',
   '/tasks', '/tasks/new',
   '/settings', '/settings/api', '/settings/audit', '/settings/avito',
+  '/settings/plans', '/settings/plans/new',
   '/settings/billing', '/settings/company', '/settings/company/new',
   '/settings/general', '/settings/notifications', '/settings/profile',
   '/settings/security', '/settings/templates', '/settings/webhooks',
@@ -105,4 +106,44 @@ test('кабинет закрыт для неавторизованных — р
     await page.goto(route, { waitUntil: 'domcontentloaded' })
     await expect(page, `${route} доступен без авторизации`).toHaveURL(/\/login/)
   }
+})
+
+/**
+ * Экраны, которым нужен идентификатор существующей записи: их нельзя перечислить
+ * списком, а именно на них живёт вся новая логика управления — условия расчёта,
+ * акт приёма, взаиморасчёт и регламент тарифа.
+ *
+ * Раньше такие страницы в смоук не попадали вовсе: список маршрутов
+ * захардкожен, а адреса с id в него не вписать.
+ */
+test('страницы управления и регламента открываются на реальных записях', async ({ page }) => {
+  test.setTimeout(300_000)
+  await login(page)
+
+  // Объект в управлении: берём первый из реестра.
+  await page.goto('/management', { waitUntil: 'domcontentloaded' })
+  const propertyHref = await page
+    .locator('a[href^="/management/"]')
+    .evaluateAll((links) =>
+      (links as HTMLAnchorElement[])
+        .map((a) => a.getAttribute('href') ?? '')
+        .find((h) => /^\/management\/[0-9a-f-]{36}$/.test(h)) ?? null
+    )
+
+  const routes: string[] = []
+  if (propertyHref) {
+    routes.push(propertyHref, `${propertyHref}/terms`, `${propertyHref}/handover`, `${propertyHref}/settlement`)
+  }
+
+  // Регламент тарифа управления.
+  await page.goto('/settings/plans', { waitUntil: 'domcontentloaded' })
+  const regulationsHref = await page
+    .locator('a[href$="/regulations"]')
+    .evaluateAll((links) => (links as HTMLAnchorElement[])[0]?.getAttribute('href') ?? null)
+  if (regulationsHref) routes.push(regulationsHref)
+
+  expect(routes.length, 'не нашлось ни объекта в управлении, ни тарифа с регламентом').toBeGreaterThan(0)
+
+  const failures = await visitAll(page, routes)
+  expect(failures, `Проблемные маршруты управления:\n${failures.join('\n')}`).toEqual([])
 })

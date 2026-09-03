@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface AnalyticsRawData {
-  deals: Array<{ status: string; deal_type: string; amount: number | null; commission: number | null; created_at: string | null }>
+  deals: Array<{ status: string; deal_type: string; amount: number | null; commission: number | null; created_at: string | null; source: string | null }>
   payments: Array<{ payment_status: string; amount: number | null; payment_date: string | null; due_date: string | null; created_at: string | null }>
   leads: Array<{ status: string; created_at: string | null }>
   leadsConverted: Array<{ status: string; created_at: string | null }>
@@ -50,7 +50,7 @@ async function fetchAnalyticsData(from?: string, to?: string): Promise<Analytics
   ] = await Promise.all([
     supabase
       .from('deals')
-      .select('status, deal_type, amount, commission, created_at')
+      .select('status, deal_type, amount, commission, created_at, source')
       .gte('created_at', fromDate)
       .lte('created_at', toDate ?? new Date().toISOString()),
 

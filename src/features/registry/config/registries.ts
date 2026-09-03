@@ -15,7 +15,7 @@
  */
 
 import { LEAD_STATUSES } from '@/features/leads/config/lead-statuses'
-import { DEAL_STAGES, DEAL_STAGE_CANCELLED } from '@/features/deals/config/deal-stages'
+import { ALL_STAGE_OPTIONS } from '@/features/deals/config/deal-stages'
 import { PROPERTY_STATUS_LABELS } from '@/features/properties/config/property-labels'
 
 export interface StatusOption { value: string; label: string }
@@ -93,7 +93,9 @@ const REGISTRY_MAP = {
     nouns: ['сделку', 'сделки', 'сделок'],
     labelColumn: 'deal_number',
     statusColumn: 'status',
-    statuses: [...DEAL_STAGES.map(s => ({ value: s.value, label: s.label })), { ...DEAL_STAGE_CANCELLED }],
+    // Реестр показывает работы всех направлений вперемешку, поэтому фильтр
+    // предлагает объединение стадий: своя воронка есть только у карточки.
+    statuses: ALL_STAGE_OPTIONS,
     assigneeColumn: 'manager_id',
   },
   contacts: {

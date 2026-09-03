@@ -8,17 +8,20 @@ import { BulkBar } from '@/features/registry/components/BulkBar'
 import { useRegistryFilters } from '@/hooks/useRegistryFilters'
 import { useSelection } from '@/hooks/useSelection'
 import { usePersistedState } from '@/hooks/usePersistedFilters'
-import { DEAL_STAGES, DEAL_STAGE_CANCELLED, DEAL_TYPE_LABELS } from '@/features/deals/config/deal-stages'
+import { ALL_STAGE_OPTIONS, DEAL_TYPE_LABELS } from '@/features/deals/config/deal-stages'
 
 type ViewMode = 'kanban' | 'list'
 
+// Список показывает работы всех направлений сразу, поэтому фильтр по стадии —
+// объединение стадий всех воронок. Своя воронка появляется, когда выбрано
+// направление: тогда доска перестраивается под него.
 const STATUS_OPTIONS = [
   { value: 'all', label: 'Этап: все' },
-  ...[...DEAL_STAGES, DEAL_STAGE_CANCELLED].map(s => ({ value: s.value, label: s.label })),
+  ...ALL_STAGE_OPTIONS,
 ]
 
 const TYPE_OPTIONS = [
-  { value: 'all', label: 'Тип: все' },
+  { value: 'all', label: 'Направление: все' },
   ...Object.entries(DEAL_TYPE_LABELS).map(([value, label]) => ({ value, label })),
 ]
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useActionState, useMemo, useState } from 'react'
-import { AlertCircle, FileText, CalendarRange, CheckSquare, Home } from 'lucide-react'
+import { AlertCircle, FileText, CalendarRange, CheckSquare, Home, Banknote } from 'lucide-react'
 import {
   buildPaymentSchedule,
   scheduleTotal,
@@ -56,6 +56,9 @@ export function CompleteDealPanel({
     with_deposit: false,
     with_task: true,
     with_property_status: plan.propertyStatus !== null,
+    with_commission: plan.commission.amount > 0,
+    // Дополнительные услуги по умолчанию выключены: их подключают осознанно.
+    extra_services: [] as string[],
     task_title: plan.taskTitle,
     task_deadline: plan.taskDeadline,
   })
@@ -303,9 +306,62 @@ export function CompleteDealPanel({
             </label>
           )}
 
+          {plan.commission.amount > 0 ? (
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                name="with_commission"
+                checked={form.with_commission}
+                onChange={e => set('with_commission', e.target.checked)}
+                className="w-4 h-4 accent-[var(--hp-accent)]"
+              />
+              <Banknote className="w-3.5 h-3.5 text-[var(--hp-sub)]" />
+              Начислить комиссию {plan.commission.amount.toLocaleString('ru-RU')} ₽
+              {plan.commission.basis && (
+                <span className="text-xs text-[var(--hp-sub)]">({plan.commission.basis})</span>
+              )}
+            </label>
+          ) : (
+            plan.commission.waivedReason && (
+              // Обнулённая комиссия объясняется прямо здесь: пустое поле
+              // неотличимо от забытого, а по этому решению идут деньги.
+              <p className="text-xs text-[var(--hp-warn)]">
+                Комиссия не начисляется: {plan.commission.waivedReason.toLowerCase()}
+              </p>
+            )
+          )}
+
+          {plan.extraServices.length > 0 && (
+            <div className="space-y-2 pt-1">
+              <span className="text-xs font-semibold text-[var(--hp-sub)]">Дополнительные услуги</span>
+              {plan.extraServices.map(svc => (
+                <label key={svc.planId} className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="extra_services"
+                    value={svc.planId}
+                    checked={form.extra_services.includes(svc.planId)}
+                    onChange={e => set(
+                      'extra_services',
+                      e.target.checked
+                        ? [...form.extra_services, svc.planId]
+                        : form.extra_services.filter(id => id !== svc.planId),
+                    )}
+                    className="w-4 h-4 accent-[var(--hp-accent)]"
+                  />
+                  <Banknote className="w-3.5 h-3.5 text-[var(--hp-sub)]" />
+                  {svc.title} — {svc.amount.toLocaleString('ru-RU')} ₽
+                </label>
+              ))}
+              <p className="text-xs text-[var(--hp-sub)]">
+                Идут отдельными строками, а не в комиссии: клиент должен видеть, за что платит
+              </p>
+            </div>
+          )}
+
           <p className="text-xs text-[var(--hp-sub)]">
-            Сделка при оформлении переходит на этап «Договор». Назад автоматика
-            её не двигает и завершённые сделки не трогает.
+            Сделка при оформлении переходит на стадию договора своего направления.
+            Назад автоматика её не двигает и закрытые сделки не трогает.
           </p>
         </div>
       </div>

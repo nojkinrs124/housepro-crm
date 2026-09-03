@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { Home, MapPin, Phone } from 'lucide-react'
 import { PropertyMap, type MapPoint } from '@/features/properties/components/PropertyMap'
-import { DEAL_TYPE_LABELS as DEAL_LABELS } from '@/features/deals/config/deal-stages'
+import { PROPERTY_PURPOSE_LABELS as DEAL_LABELS } from '@/features/properties/config/purpose'
 
 export default async function PublicCollectionPage({ params }: { params: Promise<{ token: string }> }) {
  const { token } = await params

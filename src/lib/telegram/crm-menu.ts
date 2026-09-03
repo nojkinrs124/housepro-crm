@@ -69,18 +69,13 @@ export async function advanceLeadStatus(orgId: string, leadId: string): Promise<
   return { error: error?.message }
 }
 
+import { stagesOf, stageLabel } from '@/features/directions/config/directions'
+
 // --- Сделки ---
 
-const DEAL_STATUS_LABELS: Record<string, string> = {
-  new: 'Новая',
-  showing: 'Показы',
-  negotiation: 'Переговоры',
-  contract: 'Договор',
-  payment: 'Оплата',
-  completed: 'Завершена',
-  cancelled: 'Отменена',
-}
-const DEAL_PIPELINE = ['new', 'showing', 'negotiation', 'contract', 'payment', 'completed']
+// Подписи и порядок стадий берутся из конфига направлений. Своя копия словаря
+// здесь уже расходилась бы с базой, а с четырьмя воронками цена расхождения
+// выше: кнопка «следующая стадия» предлагала бы шаг из чужого процесса.
 
 export async function buildDealsScreen(orgId: string): Promise<ScreenContent> {
   const supabaseAdmin = getSupabaseAdmin()
@@ -102,10 +97,11 @@ export async function buildDealsScreen(orgId: string): Promise<ScreenContent> {
     const property = Array.isArray(deal.properties) ? deal.properties[0] : deal.properties
     const label = property?.address || `Сделка №${String(deal.id).slice(0, 8)}`
     const amount = deal.amount ? ` · ${Number(deal.amount).toLocaleString('ru-RU')} ₽` : ''
-    lines.push(`• <b>${label}</b> — ${DEAL_STATUS_LABELS[deal.status] ?? deal.status}${amount}`)
-    const next = nextInPipeline(DEAL_PIPELINE, deal.status)
+    lines.push(`• <b>${label}</b> — ${stageLabel(deal.deal_type, deal.status)}${amount}`)
+    const pipeline = stagesOf(deal.deal_type).map(st => st.value).filter(v => v !== 'cancelled')
+    const next = nextInPipeline(pipeline, deal.status)
     const row: InlineKeyboardButton[] = []
-    if (next) row.push({ text: `➡ ${DEAL_STATUS_LABELS[next]}`, callback_data: `dealnext:${deal.id}` })
+    if (next) row.push({ text: `➡ ${stageLabel(deal.deal_type, next)}`, callback_data: `dealnext:${deal.id}` })
     row.push(openInCrmButton(`/deals/${deal.id}`))
     keyboard.push(row)
   }
@@ -116,9 +112,12 @@ export async function buildDealsScreen(orgId: string): Promise<ScreenContent> {
 
 export async function advanceDealStatus(orgId: string, dealId: string): Promise<{ error?: string }> {
   const supabaseAdmin = getSupabaseAdmin()
-  const { data: deal } = await supabaseAdmin.from('deals').select('status').eq('id', dealId).eq('organization_id', orgId).maybeSingle()
+  const { data: deal } = await supabaseAdmin.from('deals').select('status, deal_type').eq('id', dealId).eq('organization_id', orgId).maybeSingle()
   if (!deal) return { error: 'сделка не найдена' }
-  const next = nextInPipeline(DEAL_PIPELINE, deal.status)
+  // Воронка своя у каждого направления, поэтому «следующая стадия» считается
+  // по стадиям именно этого направления, а не по общему списку.
+  const pipeline = stagesOf(deal.deal_type).map(st => st.value).filter(v => v !== 'cancelled')
+  const next = nextInPipeline(pipeline, deal.status)
   if (!next) return { error: 'дальше двигать некуда' }
   const { error } = await supabaseAdmin.from('deals').update({ status: next }).eq('id', dealId).eq('organization_id', orgId)
   return { error: error?.message }

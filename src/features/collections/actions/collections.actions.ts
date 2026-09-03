@@ -8,6 +8,7 @@ import { requirePermission } from '@/lib/permissions'
 import { isValidEmail } from '@/lib/email/provider'
 import { sendCollectionSharedEmail } from '@/lib/email/send'
 import { getSiteUrl } from '@/lib/telegram/site-url'
+import { advanceDealStage } from '@/lib/deal-automation'
 
 export async function createCollectionAction(formData: FormData) {
   const supabase = await createClient()
@@ -126,7 +127,7 @@ export async function sendCollectionByEmailAction(collectionId: string, formData
 
   const { data, error } = await supabase
     .from('property_collections')
-    .select(`id, title, share_token, is_public,
+    .select(`id, title, share_token, is_public, lead_id,
              lead:leads(email, full_name),
              items:collection_items(property_id)`)
     .eq('id', collectionId)
@@ -139,6 +140,7 @@ export async function sendCollectionByEmailAction(collectionId: string, formData
     title: string
     share_token: string
     is_public: boolean
+    lead_id: string | null
     lead: { email: string | null; full_name: string | null } | null
     items: { property_id: string }[] | null
   }
@@ -180,6 +182,26 @@ export async function sendCollectionByEmailAction(collectionId: string, formData
   if (!result.ok) return { error: result.error ?? 'Не удалось отправить письмо' }
   if (result.skipped) {
     return { error: 'Почта не настроена: задайте RESEND_API_KEY или UNISENDER_API_KEY в окружении' }
+  }
+
+  // Отправка подборки — это событие процесса, а не только письмо: в подборе
+  // для арендатора она двигает сделку на стадию «Подборка отправлена».
+  // У остальных направлений такой вехи нет, и автоматика там ничего не делает.
+  if (collection.lead_id) {
+    const { data: deal } = await supabase
+      .from('deals')
+      .select('id')
+      .eq('lead_id', collection.lead_id)
+      .eq('deal_type', 'tenant_search')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (deal) {
+      await advanceDealStage(supabase, deal.id, 'collection')
+      revalidatePath('/deals')
+      revalidatePath(`/deals/${deal.id}`)
+    }
   }
 
   revalidatePath(`/collections/${collectionId}`)

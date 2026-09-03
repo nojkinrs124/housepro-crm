@@ -20,8 +20,14 @@ export function createSupabaseMock(overrides: {
    * Передайте другую роль (или null) для теста именно проверки прав.
    */
   role?: string | null
+  /**
+   * Ответы по конкретным таблицам. Нужны тем экшенам, которые перед записью
+   * собирают факты из нескольких таблиц: с одним общим `data` такой экшен
+   * получал бы договор вместо объекта и наоборот.
+   */
+  tables?: Record<string, { data?: unknown; error?: { message: string } | null; single?: unknown }>
 }) {
-  const { user = { id: 'test-user-id', email: 'test@test.com' }, data = [], error = null, single, role = 'admin' } = overrides
+  const { user = { id: 'test-user-id', email: 'test@test.com' }, data = [], error = null, single, role = 'admin', tables } = overrides
 
   const usersRoleBuilder = {
     select: vi.fn().mockReturnThis(),
@@ -56,6 +62,28 @@ export function createSupabaseMock(overrides: {
   queryBuilder.then = (resolve: (v: unknown) => void) =>
     Promise.resolve({ data, error }).then(resolve)
 
+  /** Построитель с собственными данными — для режима `tables`. */
+  function builderFor(spec: { data?: unknown; error?: { message: string } | null; single?: unknown }) {
+    const tableData = spec.data ?? []
+    const tableError = spec.error ?? null
+    const b: Record<string, unknown> = {}
+    for (const m of ['select', 'insert', 'update', 'delete', 'upsert', 'eq', 'neq', 'lt', 'lte',
+                     'gt', 'gte', 'or', 'not', 'in', 'order', 'limit', 'ilike']) {
+      b[m] = vi.fn(() => b)
+    }
+    const first = spec.single ?? (Array.isArray(tableData) ? tableData[0] : tableData)
+    b.single = vi.fn().mockResolvedValue({ data: first, error: tableError })
+    b.maybeSingle = vi.fn().mockResolvedValue({ data: first, error: tableError })
+    b.then = (resolve: (v: unknown) => void) =>
+      Promise.resolve({ data: tableData, error: tableError }).then(resolve)
+    return b
+  }
+
+  const tableBuilders: Record<string, ReturnType<typeof builderFor>> = {}
+  if (tables) {
+    for (const [name, spec] of Object.entries(tables)) tableBuilders[name] = builderFor(spec)
+  }
+
   const supabase = {
     auth: {
       getUser: vi.fn().mockResolvedValue({
@@ -71,7 +99,10 @@ export function createSupabaseMock(overrides: {
         error: null,
       }),
     },
-    from: vi.fn((table: string) => (table === 'users' ? usersRoleBuilder : queryBuilder)),
+    from: vi.fn((table: string) => {
+      if (tableBuilders[table]) return tableBuilders[table]
+      return table === 'users' ? usersRoleBuilder : queryBuilder
+    }),
     _queryBuilder: queryBuilder,
   }
 
