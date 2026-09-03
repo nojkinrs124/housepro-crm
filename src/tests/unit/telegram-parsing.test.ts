@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
+  parseDay,
   parseCallbackData,
   parseAddUserInput,
   parseScheduleSlot,
@@ -8,7 +9,12 @@ import {
   parseImageStyle,
 } from '@/features/telegram/services/parsing'
 
-const RUBRICS = ['cta', 'case', 'analytics', 'adhoc']
+const RUBRICS = [
+  { key: 'analytics', label: '📊 Аналитика' },
+  { key: 'case',      label: '🏠 Кейс' },
+  { key: 'cta',       label: '📣 CTA/оффер' },
+  { key: 'adhoc',     label: '✍️ Разовый пост' },
+]
 
 describe('parseCallbackData', () => {
   it('разбирает действие и аргумент', () => {
@@ -50,10 +56,58 @@ describe('parseAddUserInput', () => {
   })
 })
 
+describe('parseDay', () => {
+  it('понимает короткие формы', () => {
+    expect(parseDay('пн')).toBe('mon')
+    expect(parseDay('вс')).toBe('sun')
+    expect(parseDay('сб')).toBe('sat')
+  })
+
+  it('понимает полные названия', () => {
+    expect(parseDay('понедельник')).toBe('mon')
+    expect(parseDay('воскресенье')).toBe('sun')
+    expect(parseDay('суббота')).toBe('sat')
+    expect(parseDay('среда')).toBe('wed')
+  })
+
+  it('понимает «вск» и опечатку в хвосте', () => {
+    // ровно то, что человек написал боту 04.09.2026 и получил отказ
+    expect(parseDay('вск')).toBe('sun')
+    expect(parseDay('воскресеньк')).toBe('sun')
+  })
+
+  it('понимает английские названия', () => {
+    expect(parseDay('fri')).toBe('fri')
+    expect(parseDay('Monday')).toBe('mon')
+  })
+
+  it('не гадает по одной букве', () => {
+    // «в» — это вторник или воскресенье, «с» — среда или суббота
+    expect(parseDay('в')).toBeNull()
+    expect(parseDay('с')).toBeNull()
+  })
+
+  it('не узнаёт мусор', () => {
+    expect(parseDay('завтра')).toBeNull()
+  })
+})
+
 describe('parseScheduleSlot', () => {
-  it('разбирает день, время и рубрику', () => {
+  it('разбирает день, время и рубрику по ключу', () => {
     const res = parseScheduleSlot('пн 08:00 cta', RUBRICS)
-    expect(res).toEqual({ ok: true, value: { dayKey: 'mon', dayRaw: 'пн', time: '08:00', rubricKey: 'cta' } })
+    expect(res).toEqual({ ok: true, value: { dayKey: 'mon', dayLabel: 'Пн', time: '08:00', rubricKey: 'cta' } })
+  })
+
+  it('принимает рубрику названием, а не только ключом', () => {
+    // в меню человек видит «📊 Аналитика», а не `analytics`
+    const res = parseScheduleSlot('воскресенье 19:00 Аналитика', RUBRICS)
+    expect(res.ok && res.value.rubricKey).toBe('analytics')
+    expect(res.ok && res.value.dayKey).toBe('sun')
+  })
+
+  it('принимает название с эмодзи, скопированное из меню', () => {
+    const res = parseScheduleSlot('вс 19:00 📣 CTA/оффер', RUBRICS)
+    expect(res.ok && res.value.rubricKey).toBe('cta')
   })
 
   it('дополняет время до ЧЧ:ММ', () => {
@@ -61,30 +115,32 @@ describe('parseScheduleSlot', () => {
     expect(res.ok && res.value.time).toBe('08:00')
   })
 
-  it('понимает английские сокращения дней', () => {
-    const res = parseScheduleSlot('fri 19:30 cta', RUBRICS)
-    expect(res.ok && res.value.dayKey).toBe('fri')
-  })
-
-  it('несуществующее время отвергается', () => {
-    // до 04.09.2026 «пн 99:99 cta» проходило регулярку и уезжало в базу
+  it('несуществующее время отвергается и называет причину', () => {
     const res = parseScheduleSlot('пн 99:99 cta', RUBRICS)
     expect(res.ok).toBe(false)
     expect(res.ok === false && res.error).toContain('не бывает')
   })
 
-  it('неизвестный день отвергается', () => {
-    expect(parseScheduleSlot('понедельник 08:00 cta', RUBRICS).ok).toBe(false)
-  })
-
-  it('неизвестная рубрика отвергается и перечисляет доступные', () => {
-    const res = parseScheduleSlot('пн 08:00 нет-такой', RUBRICS)
+  it('неизвестный день отвергается и называет причину', () => {
+    const res = parseScheduleSlot('завтра 08:00 cta', RUBRICS)
     expect(res.ok).toBe(false)
-    expect(res.ok === false && res.error).toContain('cta')
+    expect(res.ok === false && res.error).toContain('день')
   })
 
-  it('мусор отвергается', () => {
-    expect(parseScheduleSlot('привет', RUBRICS).ok).toBe(false)
+  it('неизвестная рубрика перечисляет доступные и подсказывает, как завести новую', () => {
+    // «вск 19:00 итоги недели» — реальный ввод, на который бот отвечал
+    // одинаковым «не разобрал формат» и не подсказывал ничего
+    const res = parseScheduleSlot('вск 19:00 итоги недели', RUBRICS)
+    expect(res.ok).toBe(false)
+    expect(res.ok === false && res.error).toContain('итоги недели')
+    expect(res.ok === false && res.error).toContain('Аналитика')
+    expect(res.ok === false && res.error).toContain('Новая рубрика')
+  })
+
+  it('мусор отвергается с примером формата', () => {
+    const res = parseScheduleSlot('привет', RUBRICS)
+    expect(res.ok).toBe(false)
+    expect(res.ok === false && res.error).toContain('19:00')
   })
 })
 

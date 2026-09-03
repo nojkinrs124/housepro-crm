@@ -13,10 +13,48 @@
  * Файл без 'use client'.
  */
 
-/** Дни недели так, как их пишет человек, и так, как они лежат в базе. */
-export const DAY_ALIASES: Record<string, string> = {
-  пн: 'mon', вт: 'tue', ср: 'wed', чт: 'thu', пт: 'fri', сб: 'sat', вс: 'sun',
-  mon: 'mon', tue: 'tue', wed: 'wed', thu: 'thu', fri: 'fri', sat: 'sat', sun: 'sun',
+/**
+ * Дни недели по началу слова.
+ *
+ * Раньше принимались только точные «пн»…«вс», и живой ввод отвергался: «вск»,
+ * «воскресенье», «воскресеньк» с опечаткой — всё это одинаково получало
+ * «не разобрал формат». Сравнение по началу слова покрывает и сокращения, и
+ * полные названия, и хвостовые опечатки.
+ *
+ * Основы не короче двух букв и не пересекаются: «в» и «с» сами по себе
+ * неоднозначны (вторник/воскресенье, среда/суббота).
+ */
+const DAY_STEMS: Array<[string[], string]> = [
+  [['пн', 'пон', 'mon'], 'mon'],
+  [['вт', 'вто', 'tue'], 'tue'],
+  [['ср', 'сре', 'wed'], 'wed'],
+  [['чт', 'чет', 'thu'], 'thu'],
+  [['пт', 'пят', 'fri'], 'fri'],
+  [['сб', 'суб', 'sat'], 'sat'],
+  [['вс', 'вск', 'вос', 'sun'], 'sun'],
+]
+
+/** `воскресенье` → `sun`. Возвращает null, если день не узнан. */
+export function parseDay(raw: string): string | null {
+  const word = raw.trim().toLowerCase().replace(/[^a-zа-яё]/g, '')
+  if (word.length < 2) return null
+  for (const [stems, key] of DAY_STEMS) {
+    if (stems.some(stem => word.startsWith(stem))) return key
+  }
+  return null
+}
+
+/** День недели по-русски — для подтверждений и списков. */
+export const DAY_RU: Record<string, string> = {
+  mon: 'Пн', tue: 'Вт', wed: 'Ср', thu: 'Чт', fri: 'Пт', sat: 'Сб', sun: 'Вс',
+}
+
+/**
+ * Сравнение названий рубрик: без эмодзи, регистра и знаков.
+ * `📊 Аналитика` и `аналитика` — одно и то же.
+ */
+function normalizeRubric(value: string): string {
+  return value.toLowerCase().replace(/[^a-zа-яё0-9]/g, '')
 }
 
 export type Parsed<T> = { ok: true; value: T } | { ok: false; error: string }
@@ -56,35 +94,64 @@ export function parseAddUserInput(
   return { ok: true, value: { telegramUserId: match[1], label: match[2]?.trim() || undefined } }
 }
 
-/** Слот расписания: «пн 08:00 cta». */
+export interface RubricRef {
+  key: string
+  label: string
+}
+
+/**
+ * Слот расписания: «пн 08:00 cta», «воскресенье 19:00 Аналитика».
+ *
+ * Рубрика берётся как весь остаток строки и узнаётся по ключу ИЛИ по названию:
+ * человек читает в меню «📊 Аналитика» и пишет «аналитика», а не `analytics`.
+ *
+ * Ошибка называет, что именно не разобрано. Раньше на любую причину — не тот
+ * день, не то время, неизвестная рубрика — отвечало одно и то же «не разобрал
+ * формат», и человек перебирал варианты вслепую.
+ */
 export function parseScheduleSlot(
   text: string,
-  knownRubricKeys: readonly string[],
-): Parsed<{ dayKey: string; dayRaw: string; time: string; rubricKey: string }> {
-  const match = text.trim().toLowerCase().match(/^(\S+)\s+(\d{1,2}:\d{2})\s+(\S+)$/)
+  rubrics: readonly RubricRef[],
+): Parsed<{ dayKey: string; dayLabel: string; time: string; rubricKey: string }> {
+  const rubricList = rubrics.map(r => `${r.key} (${r.label})`).join(', ')
+  const howToAdd = rubrics.length
+    ? `\nДоступные рубрики: ${rubricList}.\nНужной нет — заведи её кнопкой «➕ Новая рубрика».`
+    : '\nРубрик пока нет — сначала заведи рубрику кнопкой «➕ Новая рубрика».'
+
+  const match = text.trim().match(/^(\S+)\s+(\d{1,2}:\d{2})\s+(.+)$/)
   if (!match) {
-    return { ok: false, error: '⚠️ Не разобрал формат. Пример: <code>пн 08:00 cta</code>' }
-  }
-  const [, dayRaw, time, rubricKey] = match
-
-  const dayKey = DAY_ALIASES[dayRaw]
-  if (!dayKey) {
-    return { ok: false, error: '⚠️ Не узнал день. Используй: пн вт ср чт пт сб вс.' }
-  }
-
-  const [hh, mm] = time.split(':').map(Number)
-  if (hh > 23 || mm > 59) {
-    return { ok: false, error: '⚠️ Такого времени не бывает. Часы 00–23, минуты 00–59.' }
-  }
-
-  if (!knownRubricKeys.includes(rubricKey)) {
     return {
       ok: false,
-      error: `⚠️ Не знаю рубрику «${rubricKey}». Доступные: ${knownRubricKeys.join(', ')}`,
+      error:
+        '⚠️ Жду три части: день, время и рубрику одной строкой.\n' +
+        'Например: <code>вс 19:00 cta</code>',
+    }
+  }
+  const [, dayRaw, timeRaw, rubricRaw] = match
+
+  const dayKey = parseDay(dayRaw)
+  if (!dayKey) {
+    return {
+      ok: false,
+      error: `⚠️ Не узнал день «${dayRaw}». Можно так: пн, вт, ср, чт, пт, сб, вс — или полным словом.`,
     }
   }
 
-  return { ok: true, value: { dayKey, dayRaw, time: time.padStart(5, '0'), rubricKey } }
+  const [hh, mm] = timeRaw.split(':').map(Number)
+  if (hh > 23 || mm > 59) {
+    return { ok: false, error: `⚠️ Времени «${timeRaw}» не бывает. Часы 00–23, минуты 00–59.` }
+  }
+  const time = `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`
+
+  const wanted = normalizeRubric(rubricRaw)
+  const rubric = rubrics.find(
+    r => normalizeRubric(r.key) === wanted || normalizeRubric(r.label) === wanted,
+  )
+  if (!rubric) {
+    return { ok: false, error: `⚠️ Не знаю рубрику «${rubricRaw.trim()}».${howToAdd}` }
+  }
+
+  return { ok: true, value: { dayKey, dayLabel: DAY_RU[dayKey], time, rubricKey: rubric.key } }
 }
 
 /** Новая рубрика: «key | Название | текст промпта». */

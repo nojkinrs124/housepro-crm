@@ -559,12 +559,15 @@ async function handleScheduleAction(action: string, arg: string, actor: BotActor
   if (action === 'chschedadd') {
     await setAwaitingIntent(orgId, 'add_slot', actor.telegramUserId)
     const rubrics = await getRubrics(orgId)
-    const rubricKeys = rubrics.map((r) => r.key).join(', ')
+    const rubricList = rubrics.map((r) => `• ${r.label} — <code>${r.key}</code>`).join('\n')
     await sendMessage(
       chatId,
       '➕ Пришли одной строкой: день, время (ЧЧ:ММ) и рубрику.\n' +
-        `Дни: пн вт ср чт пт сб вс. Рубрики: ${rubricKeys}.\n` +
-        'Например: <code>пн 08:00 cta</code>'
+        'День — как удобно: <code>вс</code>, <code>вск</code> или <code>воскресенье</code>.\n' +
+        'Рубрику — ключом или названием.\n\n' +
+        `${rubricList}\n\n` +
+        'Например: <code>вс 19:00 cta</code>\n' +
+        'Нужной рубрики нет — заведи её кнопкой «➕ Новая рубрика».'
     )
     return
   }
@@ -638,19 +641,19 @@ async function tryHandleScheduleOrRubricInput(actor: BotActor, text: string): Pr
 
   if (intent === 'add_slot') {
     const rubrics = await getRubrics(orgId)
-    const parsed = parseScheduleSlot(text, rubrics.map(r => r.key))
+    const parsed = parseScheduleSlot(text, rubrics)
     if (!parsed.ok) {
       await sendMessage(chatId, parsed.error)
       return true
     }
-    const { dayKey, dayRaw, time, rubricKey } = parsed.value
+    const { dayKey, dayLabel, time, rubricKey } = parsed.value
     const rubric = rubrics.find(r => r.key === rubricKey)!
     const result = await addScheduleSlot(orgId, rubric.id, dayKey, time)
     await setAwaitingIntent(orgId, null)
     if (result.error) {
       await sendMessage(chatId, `⚠️ Не удалось добавить слот: ${result.error}`)
     } else {
-      await sendMessage(chatId, `✅ Слот добавлен: ${dayRaw} ${time} — ${rubric.label}`)
+      await sendMessage(chatId, `✅ Слот добавлен: ${dayLabel} ${time} — ${rubric.label}`)
     }
     await showMenuScreen(chatId, orgId, 'channel_schedule', HELP_TEXT, actor.role)
     return true

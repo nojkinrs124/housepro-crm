@@ -61,7 +61,7 @@ export async function buildChannelPostsScreen(orgId: string): Promise<ScreenCont
   return { text: `🗂 <b>Последние посты</b>\n\n${lines.join('\n\n')}`, keyboard }
 }
 
-const DAY_RU: Record<string, string> = { mon: 'Пн', tue: 'Вт', wed: 'Ср', thu: 'Чт', fri: 'Пт', sat: 'Сб', sun: 'Вс' }
+import { DAY_RU } from '@/features/telegram/services/parsing'
 
 // Слоты расписания — читаются из channel_schedule (Phase 1/2/3, заменили старый
 // hardcoded schedule_json). Время слота = когда heartbeat-крон присылает черновик на
@@ -75,9 +75,12 @@ export async function buildChannelScheduleScreen(orgId: string): Promise<ScreenC
     const rubricLabel = s.rubric?.label ?? '?'
     const status = s.enabled ? '' : ' ⏸'
     lines.push(`${DAY_RU[s.day_key] ?? s.day_key} ${s.send_time_local} — ${rubricLabel}${status}`)
+    // Подписи обязательны: три слота давали три одинаковых ряда «⏸ 🗑», и
+    // какой из них Пн, а какой Пт, понять было нельзя.
+    const slotName = `${DAY_RU[s.day_key] ?? s.day_key} ${s.send_time_local}`
     keyboard.push([
-      { text: s.enabled ? '⏸' : '▶️', callback_data: `chschedtoggle:${s.id}` },
-      { text: '🗑', callback_data: `chscheddel:${s.id}` },
+      { text: `${s.enabled ? '⏸' : '▶️'} ${slotName}`, callback_data: `chschedtoggle:${s.id}` },
+      { text: `🗑 ${slotName}`, callback_data: `chscheddel:${s.id}` },
     ])
   }
 
@@ -87,7 +90,8 @@ export async function buildChannelScheduleScreen(orgId: string): Promise<ScreenC
     '\n\n<i>Время — когда бот присылает черновик на утверждение, не время публикации ' +
     '(публикация всегда вручную по кнопке ✅).\n\n' +
     'Добавить слот: нажми "➕" и пришли одной строкой день, время и рубрику, например:\n' +
-    '<code>пн 08:00 cta</code></i>'
+    '<code>вс 19:00 cta</code>\n' +
+    'День можно писать как удобно: вс, вск, воскресенье. Рубрику — ключом или названием.</i>'
 
   keyboard.push([{ text: '➕ Добавить слот', callback_data: 'chschedadd:new' }])
   keyboard.push([BACK_TO_CHANNEL])
