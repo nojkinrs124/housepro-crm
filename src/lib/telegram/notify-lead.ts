@@ -1,6 +1,7 @@
 import { sendMessage } from './api'
 import { getChannelSettings } from './channel'
 import { getSiteUrl } from './site-url'
+import { LEAD_SOURCE_LABELS } from '@/features/leads/config/lead-sources'
 
 // Уведомление админу в Telegram о новом лиде — и с публичного сайта, и созданном
 // вручную в CRM (см. вызовы в src/app/api/public/leads/route.ts и
@@ -10,13 +11,6 @@ import { getSiteUrl } from './site-url'
 // делаем, это не ошибка. Отправка никогда не бросает исключение наружу: создание
 // лида не должно падать из-за недоступности Telegram.
 
-const SOURCE_LABELS: Record<string, string> = {
-  website: '🌐 Сайт ХаусПро',
-  avito: 'Avito',
-  cian: 'Циан',
-  phone: 'Звонок',
-  referral: 'Рекомендация',
-}
 
 export interface NewLeadNotification {
   id: string
@@ -31,7 +25,7 @@ export async function notifyNewLead(orgId: string, lead: NewLeadNotification): P
     const chatId = settings?.admin_telegram_user_id
     if (!chatId) return
 
-    const sourceLabel = lead.source ? SOURCE_LABELS[lead.source] ?? lead.source : null
+    const sourceLabel = lead.source ? LEAD_SOURCE_LABELS[lead.source] ?? lead.source : null
 
     const lines = [
       '🧲 <b>Новый лид</b>',

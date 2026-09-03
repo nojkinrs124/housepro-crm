@@ -3,6 +3,7 @@ import { editMessageText, sendMessage, type InlineKeyboardButton } from '@/lib/t
 import { getChannelSettings, setSchedulePaused, type ChannelSettings } from '@/lib/telegram/channel'
 import { buildLeadsScreen, buildDealsScreen, buildPaymentsScreen, buildTasksScreen } from '@/lib/telegram/crm-menu'
 import { buildChannelPostsScreen, buildChannelScheduleScreen, buildChannelRubricsScreen } from '@/lib/telegram/channel-menu'
+import type { BotRole } from '@/features/telegram/services/access'
 
 // Разделы главного меню. 'multiagent' пока заглушка (фаза 4 роадмапа).
 export type MenuScreen =
@@ -28,21 +29,29 @@ export interface ScreenContent {
 
 const BACK_TO_ROOT: InlineKeyboardButton = { text: '⬅ Главное меню', callback_data: 'nav:root' }
 
-function rootScreen(): ScreenContent {
-  return {
-    text: '🏠 <b>Главное меню HousePro</b>\nВыбери раздел:',
-    keyboard: [
-      [
-        { text: '📋 CRM', callback_data: 'nav:crm' },
-        { text: '📢 Канал', callback_data: 'nav:channel' },
-      ],
-      [{ text: '🤖 Мультиагент', callback_data: 'nav:multiagent' }],
-      [
-        { text: '⚙️ Настройки', callback_data: 'nav:settings' },
-        { text: '❓ Помощь', callback_data: 'nav:help' },
-      ],
-    ],
+/**
+ * Корневой экран показывает только то, что этой роли действительно откроется.
+ * Кнопка, которая отвечает отказом, хуже отсутствующей.
+ */
+function rootScreen(role: BotRole): ScreenContent {
+  const keyboard: InlineKeyboardButton[][] = []
+
+  if (role === 'admin') {
+    keyboard.push([
+      { text: '📋 CRM', callback_data: 'nav:crm' },
+      { text: '📢 Канал', callback_data: 'nav:channel' },
+    ])
+    keyboard.push([{ text: '🤖 Мультиагент', callback_data: 'nav:multiagent' }])
+    keyboard.push([
+      { text: '⚙️ Настройки', callback_data: 'nav:settings' },
+      { text: '❓ Помощь', callback_data: 'nav:help' },
+    ])
+  } else {
+    keyboard.push([{ text: '📋 CRM', callback_data: 'nav:crm' }])
+    keyboard.push([{ text: '❓ Помощь', callback_data: 'nav:help' }])
   }
+
+  return { text: '🏠 <b>Главное меню HousePro</b>\nВыбери раздел:', keyboard }
 }
 
 function crmScreen(): ScreenContent {
@@ -136,10 +145,10 @@ function helpScreen(helpText: string): ScreenContent {
   return { text: helpText, keyboard: [[BACK_TO_ROOT]] }
 }
 
-async function buildScreen(screen: MenuScreen, orgId: string, helpText: string): Promise<ScreenContent> {
+async function buildScreen(screen: MenuScreen, orgId: string, helpText: string, role: BotRole): Promise<ScreenContent> {
   switch (screen) {
     case 'root':
-      return rootScreen()
+      return rootScreen(role)
     case 'crm':
       return crmScreen()
     case 'crm_leads':
@@ -178,10 +187,11 @@ export async function showMenuScreen(
   orgId: string,
   screen: MenuScreen,
   helpText: string,
+  role: BotRole,
   knownMessageId?: number
 ): Promise<void> {
   const supabaseAdmin = getSupabaseAdmin()
-  const content = await buildScreen(screen, orgId, helpText)
+  const content = await buildScreen(screen, orgId, helpText, role)
   const chatIdStr = String(chatId)
 
   let messageId = knownMessageId
@@ -249,10 +259,13 @@ export async function removeAllowedUser(orgId: string, telegramUserId: string): 
   return { error: error?.message }
 }
 
-export async function setAddUserAwaiting(orgId: string, awaiting: boolean): Promise<void> {
+export async function setAddUserAwaiting(orgId: string, awaiting: boolean, ownerUserId?: string): Promise<void> {
   const supabaseAdmin = getSupabaseAdmin()
   await supabaseAdmin
     .from('channel_bot_settings')
-    .update({ awaiting_intent: awaiting ? 'add_bot_user' : null })
+    .update({
+      awaiting_intent: awaiting ? 'add_bot_user' : null,
+      awaiting_intent_user_id: awaiting ? (ownerUserId ?? null) : null,
+    })
     .eq('organization_id', orgId)
 }

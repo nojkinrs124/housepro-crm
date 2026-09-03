@@ -32,7 +32,6 @@ import {
 } from '@/lib/telegram/tools'
 import {
   getChannelSettings,
-  isFromAdmin,
   setAwaitingIntent,
   setSchedulePaused,
   publishPost,
@@ -57,6 +56,15 @@ import {
   type ChannelRubric,
 } from '@/lib/telegram/channel'
 import { generateRubricDraft } from '@/lib/telegram/channel-generate'
+import {
+  roleOf,
+  isAtLeastMember,
+  canBootstrap,
+  ownsIntent,
+  canOpenScreen,
+  type BotActor,
+} from '@/features/telegram/services/access'
+import { parseCallbackData, parseAddUserInput, parseScheduleSlot, parseRubricInput, parseImageNote, parseImageStyle } from '@/features/telegram/services/parsing'
 
 // Node runtime (по умолчанию) — ОБЯЗАТЕЛЬНО, не ставить `export const runtime = 'edge'`.
 // pizzip/docxtemplater — Node-only, в Edge runtime не заработают.
@@ -191,31 +199,58 @@ async function resolveBotOrgId(): Promise<string | null> {
   return auth.orgId ?? null
 }
 
-async function isUserAllowed(orgId: string, telegramUserId: string, username?: string): Promise<boolean> {
+/**
+ * Кто пишет боту и что ему можно — один раз на входящее обновление.
+ *
+ * Раньше допуск проверялся россыпью: `bot_allowed_users` — только в обработчике
+ * текста, `admin_telegram_user_id` — в каждом обработчике кнопок отдельно, и в
+ * трёх из них проверку забыли. Теперь роль вычисляется здесь и передаётся
+ * дальше объектом: обработчику нечего «вспоминать».
+ *
+ * Идентификатор берётся из `from.id`, а не из `chat.id`: в приватном чате они
+ * совпадают, в группе — нет, и на chat.id проверка админа была бы бессмысленной.
+ */
+async function resolveActor(
+  telegramUserId: string,
+  chatId: number,
+  username?: string,
+): Promise<BotActor | null> {
+  const orgId = await resolveBotOrgId()
+  if (!orgId) return null
+
   const supabaseAdmin = getSupabaseAdmin()
+  const [{ data: settings }, { data: allowed }] = await Promise.all([
+    supabaseAdmin.from('channel_bot_settings').select('admin_telegram_user_id').eq('organization_id', orgId).maybeSingle(),
+    supabaseAdmin.from('bot_allowed_users').select('telegram_user_id').eq('organization_id', orgId),
+  ])
 
-  const { count } = await supabaseAdmin
-    .from('bot_allowed_users')
-    .select('telegram_user_id', { count: 'exact', head: true })
-    .eq('organization_id', orgId)
+  const adminId = settings?.admin_telegram_user_id ?? null
+  const allowedIds = (allowed ?? []).map(r => r.telegram_user_id)
 
-  if (!count || count === 0) {
+  // Первый запуск: пустой список — бота ещё некому настроить. Пускаем, но если
+  // админ уже назначен, то только его: иначе достаточно было опустошить список
+  // кнопкой «удалить пользователя», чтобы бота захватил случайный собеседник.
+  if (canBootstrap(telegramUserId, adminId, allowedIds.length)) {
     await supabaseAdmin.from('bot_allowed_users').insert({
       telegram_user_id: telegramUserId,
       organization_id: orgId,
       label: username ? `@${username} (первый пользователь, авто)` : 'первый пользователь (авто)',
     })
-    return true
+    allowedIds.push(telegramUserId)
   }
 
-  const { data } = await supabaseAdmin
-    .from('bot_allowed_users')
-    .select('telegram_user_id')
-    .eq('organization_id', orgId)
-    .eq('telegram_user_id', telegramUserId)
-    .maybeSingle()
+  return {
+    telegramUserId,
+    chatId,
+    username,
+    orgId,
+    role: roleOf(telegramUserId, adminId, allowedIds),
+  }
+}
 
-  return !!data
+/** Отказ вслух. Молчащая кнопка неотличима от сломанной — так и было до 04.09.2026. */
+async function denyAdmin(chatId: number): Promise<void> {
+  await sendMessage(chatId, '⛔ Это действие доступно только владельцу бота.')
 }
 
 type MessageContent =
@@ -277,23 +312,8 @@ async function callOpenRouter(messages: OpenRouterMessage[]) {
   return res.json()
 }
 
-async function handleUserTurn(
-  chatId: number,
-  telegramUserId: string,
-  username: string | undefined,
-  content: MessageContent
-) {
-  const orgId = await resolveBotOrgId()
-  if (!orgId) {
-    await sendMessage(chatId, '⚠️ Бот не настроен: не найден рабочий API-ключ (HOUSEPRO_BOT_API_KEY).')
-    return
-  }
-
-  const allowed = await isUserAllowed(orgId, telegramUserId, username)
-  if (!allowed) {
-    await sendMessage(chatId, '⛔ Этот аккаунт не имеет доступа к боту.')
-    return
-  }
+async function handleUserTurn(actor: BotActor, content: MessageContent) {
+  const { chatId, telegramUserId, orgId } = actor
 
   // Каждое обращение сюда — минимум один платный вызов OpenRouter (модель + tool loop до 4
   // раундов) — без лимита allowed-пользователь (или скомпрометированный аккаунт) может залить
@@ -411,42 +431,41 @@ async function handleUserTurn(
   }
 }
 
-async function sendMainMenu(chatId: number) {
-  const orgId = await resolveBotOrgId()
-  if (!orgId) return
-  await showMenuScreen(chatId, orgId, 'root', HELP_TEXT)
+async function sendMainMenu(actor: BotActor) {
+  await showMenuScreen(actor.chatId, actor.orgId, 'root', HELP_TEXT, actor.role)
 }
 
 const NAV_SCREENS: MenuScreen[] = ['root', 'crm', 'crm_leads', 'crm_deals', 'crm_payments', 'crm_tasks', 'channel', 'channel_posts', 'channel_schedule', 'channel_rubrics', 'multiagent', 'settings', 'settings_users', 'help']
 
 // Навигация верхнеуровневого меню: nav:<screen> — просто перерисовывает "экран" в том же сообщении.
-async function handleNavCallback(screen: string, chatId: number, orgId: string, messageId: number | undefined, telegramUserId: string) {
-  const settings = await getChannelSettings(orgId)
-  if (!isFromAdmin(settings, telegramUserId)) return
+async function handleNavCallback(screen: string, actor: BotActor, messageId: number | undefined) {
+  const { chatId, orgId } = actor
   if (!NAV_SCREENS.includes(screen as MenuScreen)) return
+  if (!canOpenScreen(actor.role, screen)) return denyAdmin(chatId)
+  const settings = await getChannelSettings(orgId)
   // Навигация по меню = отказ от любого незавершённого текстового ввода (добавление слота,
   // правка промпта/картинки и т.п.) — иначе застрявший awaiting_intent потом глотает команды.
   if (settings?.awaiting_intent) await setAwaitingIntent(orgId, null)
-  await showMenuScreen(chatId, orgId, screen as MenuScreen, HELP_TEXT, messageId)
+  await showMenuScreen(chatId, orgId, screen as MenuScreen, HELP_TEXT, actor.role, messageId)
 }
 
 // Действия внутри раздела "Настройки": set:pause / set:resume / set:adduser, а также deluser:<id>.
-async function handleSettingsAction(action: string, arg: string | undefined, chatId: number, orgId: string, messageId: number | undefined, telegramUserId: string) {
-  const settings = await getChannelSettings(orgId)
-  if (!isFromAdmin(settings, telegramUserId)) return
+async function handleSettingsAction(action: string, arg: string | undefined, actor: BotActor, messageId: number | undefined) {
+  const { chatId, orgId } = actor
+  if (actor.role !== 'admin') return denyAdmin(chatId)
 
   if (action === 'set' && arg === 'pause') {
     await setSchedulePaused(orgId, true)
-    await showMenuScreen(chatId, orgId, 'settings', HELP_TEXT, messageId)
+    await showMenuScreen(chatId, orgId, 'settings', HELP_TEXT, actor.role, messageId)
     return
   }
   if (action === 'set' && arg === 'resume') {
     await setSchedulePaused(orgId, false)
-    await showMenuScreen(chatId, orgId, 'settings', HELP_TEXT, messageId)
+    await showMenuScreen(chatId, orgId, 'settings', HELP_TEXT, actor.role, messageId)
     return
   }
   if (action === 'set' && arg === 'adduser') {
-    await setAddUserAwaiting(orgId, true)
+    await setAddUserAwaiting(orgId, true, actor.telegramUserId)
     await sendMessage(
       chatId,
       '➕ Перешли мне любое сообщение от нужного человека (чтобы я узнал его Telegram ID), ' +
@@ -456,7 +475,7 @@ async function handleSettingsAction(action: string, arg: string | undefined, cha
   }
   if (action === 'deluser' && arg) {
     await removeAllowedUser(orgId, arg)
-    await showMenuScreen(chatId, orgId, 'settings_users', HELP_TEXT, messageId)
+    await showMenuScreen(chatId, orgId, 'settings_users', HELP_TEXT, actor.role, messageId)
     return
   }
 }
@@ -464,29 +483,24 @@ async function handleSettingsAction(action: string, arg: string | undefined, cha
 // Обрабатывает текст, который бот ждёт после "➕ Добавить пользователя": пересланное
 // сообщение (forward_from) или "<telegram_id> [подпись]" текстом. Возвращает true, если
 // ввод был перехвачен под эту нужду (и не должен уходить в обычный CRM-диалог).
-async function tryHandleAddUserInput(chatId: number, orgId: string, text: string, forwardFromId?: number, forwardFromName?: string): Promise<boolean> {
+async function tryHandleAddUserInput(actor: BotActor, text: string, forwardFromId?: number, forwardFromName?: string): Promise<boolean> {
+  const { chatId, orgId } = actor
   const settings = await getChannelSettings(orgId)
   if (settings?.awaiting_intent !== 'add_bot_user') return false
 
-  let telegramUserId: string | undefined
-  let label: string | undefined
+  // Форма выдаёт полный доступ к боту, а её состояние — одно на организацию.
+  // Без этих двух проверок текст постороннего разбирался как ответ на неё, и
+  // он мог вписать в допущенные кого угодно, включая себя.
+  if (actor.role !== 'admin') return false
+  if (!ownsIntent(actor.telegramUserId, settings.awaiting_intent_user_id)) return false
 
-  if (forwardFromId) {
-    telegramUserId = String(forwardFromId)
-    label = forwardFromName
-  } else {
-    const match = text.trim().match(/^(\d+)\s*(.*)$/)
-    if (match) {
-      telegramUserId = match[1]
-      label = match[2]?.trim() || undefined
-    }
-  }
-
-  if (!telegramUserId) {
-    await sendMessage(chatId, '⚠️ Не распознал ID. Перешли сообщение от человека или пришли его числовой Telegram ID.')
+  const parsed = parseAddUserInput(text, forwardFromId, forwardFromName)
+  if (!parsed.ok) {
+    await sendMessage(chatId, parsed.error)
     return true
   }
 
+  const { telegramUserId, label } = parsed.value
   const result = await addAllowedUser(orgId, telegramUserId, label)
   await setAddUserAwaiting(orgId, false)
   if (result.error) {
@@ -494,17 +508,17 @@ async function tryHandleAddUserInput(chatId: number, orgId: string, text: string
   } else {
     await sendMessage(chatId, `✅ Добавлено: ${label || telegramUserId} (${telegramUserId})`)
   }
-  await showMenuScreen(chatId, orgId, 'settings_users', HELP_TEXT)
+  await showMenuScreen(chatId, orgId, 'settings_users', HELP_TEXT, actor.role)
   return true
 }
 
 // Раздел "🤖 Мультиагент" — MVP делегированного исследования (см. src/lib/telegram/market-research.ts).
-async function handleMultiagentAction(action: string, chatId: number, orgId: string, telegramUserId: string) {
-  const settings = await getChannelSettings(orgId)
-  if (!isFromAdmin(settings, telegramUserId)) return
+async function handleMultiagentAction(action: string, actor: BotActor) {
+  const { chatId, orgId } = actor
+  if (actor.role !== 'admin') return denyAdmin(chatId)
 
   if (action === 'research') {
-    await setAwaitingIntent(orgId, 'market_research')
+    await setAwaitingIntent(orgId, 'market_research', actor.telegramUserId)
     await sendMessage(chatId, '🔎 Опиши одним сообщением, что исследовать (можно с веб-поиском по рынку недвижимости).')
   }
 }
@@ -522,15 +536,10 @@ async function handleMarketResearchInput(chatId: number, orgId: string, topic: s
   }
 }
 
-const DAY_ALIASES: Record<string, string> = {
-  пн: 'mon', вт: 'tue', ср: 'wed', чт: 'thu', пт: 'fri', сб: 'sat', вс: 'sun',
-  mon: 'mon', tue: 'tue', wed: 'wed', thu: 'thu', fri: 'fri', sat: 'sat', sun: 'sun',
-}
-
 // Действия в разделе "⏰ Расписание": toggle/delete слота, + запрос на добавление нового.
-async function handleScheduleAction(action: string, arg: string, chatId: number, orgId: string, messageId: number | undefined, telegramUserId: string) {
-  const settings = await getChannelSettings(orgId)
-  if (!isFromAdmin(settings, telegramUserId)) return
+async function handleScheduleAction(action: string, arg: string, actor: BotActor, messageId: number | undefined) {
+  const { chatId, orgId } = actor
+  if (actor.role !== 'admin') return denyAdmin(chatId)
 
   if (action === 'chschedtoggle') {
     // текущее состояние неизвестно без чтения — просто читаем список заново после переключения,
@@ -539,16 +548,16 @@ async function handleScheduleAction(action: string, arg: string, chatId: number,
     const slots = await getScheduleWithRubrics(orgId)
     const slot = slots.find((s) => s.id === arg)
     if (slot) await toggleScheduleSlot(arg, !slot.enabled)
-    await showMenuScreen(chatId, orgId, 'channel_schedule', HELP_TEXT, messageId)
+    await showMenuScreen(chatId, orgId, 'channel_schedule', HELP_TEXT, actor.role, messageId)
     return
   }
   if (action === 'chscheddel') {
     await deleteScheduleSlot(arg)
-    await showMenuScreen(chatId, orgId, 'channel_schedule', HELP_TEXT, messageId)
+    await showMenuScreen(chatId, orgId, 'channel_schedule', HELP_TEXT, actor.role, messageId)
     return
   }
   if (action === 'chschedadd') {
-    await setAwaitingIntent(orgId, 'add_slot')
+    await setAwaitingIntent(orgId, 'add_slot', actor.telegramUserId)
     const rubrics = await getRubrics(orgId)
     const rubricKeys = rubrics.map((r) => r.key).join(', ')
     await sendMessage(
@@ -562,20 +571,20 @@ async function handleScheduleAction(action: string, arg: string, chatId: number,
 }
 
 // Действия в разделе "✍️ Рубрики": показать/начать правку промпта, вкл/выкл рубрику.
-async function handleRubricAction(action: string, rubricId: string, chatId: number, orgId: string, messageId: number | undefined, telegramUserId: string) {
-  const settings = await getChannelSettings(orgId)
-  if (!isFromAdmin(settings, telegramUserId)) return
+async function handleRubricAction(action: string, rubricId: string, actor: BotActor, messageId: number | undefined) {
+  const { chatId, orgId } = actor
+  if (actor.role !== 'admin') return denyAdmin(chatId)
 
   if (action === 'chrubtoggle') {
     const rubric = await getRubricById(rubricId)
     if (rubric) await toggleRubricActive(rubricId, !rubric.active)
-    await showMenuScreen(chatId, orgId, 'channel_rubrics', HELP_TEXT, messageId)
+    await showMenuScreen(chatId, orgId, 'channel_rubrics', HELP_TEXT, actor.role, messageId)
     return
   }
   if (action === 'chrubedit') {
     const rubric = await getRubricById(rubricId)
     if (!rubric) return
-    await setAwaitingIntent(orgId, `edit_rubric:${rubricId}`)
+    await setAwaitingIntent(orgId, `edit_rubric:${rubricId}`, actor.telegramUserId)
     await sendMessage(
       chatId,
       `<b>${rubric.label}</b>\n\nТекущий промпт:\n<i>${rubric.prompt_template}</i>\n\n` +
@@ -586,7 +595,7 @@ async function handleRubricAction(action: string, rubricId: string, chatId: numb
   if (action === 'chrubimg') {
     const rubric = await getRubricById(rubricId)
     if (!rubric) return
-    await setAwaitingIntent(orgId, `edit_rubric_image:${rubricId}`)
+    await setAwaitingIntent(orgId, `edit_rubric_image:${rubricId}`, actor.telegramUserId)
     await sendMessage(
       chatId,
       `<b>${rubric.label}</b> — стиль картинки\n\n` +
@@ -596,7 +605,7 @@ async function handleRubricAction(action: string, rubricId: string, chatId: numb
     return
   }
   if (action === 'chrubadd') {
-    await setAwaitingIntent(orgId, 'add_rubric')
+    await setAwaitingIntent(orgId, 'add_rubric', actor.telegramUserId)
     await sendMessage(
       chatId,
       '➕ Пришли одной строкой: key | Название | текст промпта.\n' +
@@ -609,7 +618,9 @@ async function handleRubricAction(action: string, rubricId: string, chatId: numb
 // Перехватывает текст, если бот ждёт добавление слота ('add_slot') или новый промпт
 // рубрики ('edit_rubric:<id>') — awaiting_intent выставляется в handleScheduleAction/
 // handleRubricAction выше. Возвращает true, если ввод был перехвачен.
-async function tryHandleScheduleOrRubricInput(chatId: number, orgId: string, text: string): Promise<boolean> {
+async function tryHandleScheduleOrRubricInput(actor: BotActor, text: string): Promise<boolean> {
+  const { chatId, orgId } = actor
+
   // Команды (/menu, /pause, /case и т.п.) не должны глотаться "застрявшим" awaiting_intent —
   // иначе после незавершённого добавления слота/правки промпта бот перестаёт реагировать
   // на команды, пока их случайно не распознает как невалидный ввод формы.
@@ -619,46 +630,39 @@ async function tryHandleScheduleOrRubricInput(chatId: number, orgId: string, tex
   const intent = settings?.awaiting_intent
   if (!intent) return false
 
+  // Эти формы правят расписание и промпты, по которым бот пишет в публичный
+  // канал, и запускают платный веб-поиск. Состояние одно на организацию,
+  // поэтому чужой текст в него подставляться не должен.
+  if (actor.role !== 'admin') return false
+  if (!ownsIntent(actor.telegramUserId, settings.awaiting_intent_user_id)) return false
+
   if (intent === 'add_slot') {
-    const match = text.trim().toLowerCase().match(/^(\S+)\s+(\d{1,2}:\d{2})\s+(\S+)$/)
-    if (!match) {
-      await sendMessage(chatId, '⚠️ Не разобрал формат. Пример: <code>пн 08:00 cta</code>')
-      return true
-    }
-    const [, dayRaw, time, rubricKey] = match
-    const dayKey = DAY_ALIASES[dayRaw]
-    if (!dayKey) {
-      await sendMessage(chatId, '⚠️ Не узнал день. Используй: пн вт ср чт пт сб вс.')
-      return true
-    }
     const rubrics = await getRubrics(orgId)
-    const rubric = rubrics.find((r) => r.key === rubricKey)
-    if (!rubric) {
-      await sendMessage(chatId, `⚠️ Не знаю рубрику «${rubricKey}». Доступные: ${rubrics.map((r) => r.key).join(', ')}`)
+    const parsed = parseScheduleSlot(text, rubrics.map(r => r.key))
+    if (!parsed.ok) {
+      await sendMessage(chatId, parsed.error)
       return true
     }
-    const result = await addScheduleSlot(orgId, rubric.id, dayKey, time.padStart(5, '0'))
+    const { dayKey, dayRaw, time, rubricKey } = parsed.value
+    const rubric = rubrics.find(r => r.key === rubricKey)!
+    const result = await addScheduleSlot(orgId, rubric.id, dayKey, time)
     await setAwaitingIntent(orgId, null)
     if (result.error) {
       await sendMessage(chatId, `⚠️ Не удалось добавить слот: ${result.error}`)
     } else {
       await sendMessage(chatId, `✅ Слот добавлен: ${dayRaw} ${time} — ${rubric.label}`)
     }
-    await showMenuScreen(chatId, orgId, 'channel_schedule', HELP_TEXT)
+    await showMenuScreen(chatId, orgId, 'channel_schedule', HELP_TEXT, actor.role)
     return true
   }
 
   if (intent === 'add_rubric') {
-    const parts = text.split('|').map((p) => p.trim())
-    if (parts.length !== 3 || !parts[0] || !parts[1] || !parts[2]) {
-      await sendMessage(chatId, '⚠️ Формат: <code>key | Название | текст промпта</code>')
+    const parsed = parseRubricInput(text)
+    if (!parsed.ok) {
+      await sendMessage(chatId, parsed.error)
       return true
     }
-    const [key, label, prompt] = parts
-    if (!/^[a-z0-9_]+$/.test(key)) {
-      await sendMessage(chatId, '⚠️ key — латиницей в нижнем регистре, без пробелов (например: listing).')
-      return true
-    }
+    const { key, label, prompt } = parsed.value
     const result = await addRubric(orgId, key, label, prompt)
     await setAwaitingIntent(orgId, null)
     if (result.error) {
@@ -666,7 +670,7 @@ async function tryHandleScheduleOrRubricInput(chatId: number, orgId: string, tex
     } else {
       await sendMessage(chatId, `✅ Рубрика «${label}» добавлена.`)
     }
-    await showMenuScreen(chatId, orgId, 'channel_rubrics', HELP_TEXT)
+    await showMenuScreen(chatId, orgId, 'channel_rubrics', HELP_TEXT, actor.role)
     return true
   }
 
@@ -679,14 +683,13 @@ async function tryHandleScheduleOrRubricInput(chatId: number, orgId: string, tex
     } else {
       await sendMessage(chatId, '✅ Промпт рубрики обновлён.')
     }
-    await showMenuScreen(chatId, orgId, 'channel_rubrics', HELP_TEXT)
+    await showMenuScreen(chatId, orgId, 'channel_rubrics', HELP_TEXT, actor.role)
     return true
   }
 
   if (intent.startsWith('edit_rubric_image:')) {
     const rubricId = intent.slice('edit_rubric_image:'.length)
-    const trimmed = text.trim()
-    const value = trimmed === '-' || trimmed === '' ? null : trimmed
+    const value = parseImageStyle(text)
     const result = await updateRubricImageStyle(rubricId, value)
     await setAwaitingIntent(orgId, null)
     if (result.error) {
@@ -694,7 +697,7 @@ async function tryHandleScheduleOrRubricInput(chatId: number, orgId: string, tex
     } else {
       await sendMessage(chatId, value ? '✅ Стиль картинки для рубрики обновлён.' : '✅ Стиль картинки сброшен на общий.')
     }
-    await showMenuScreen(chatId, orgId, 'channel_rubrics', HELP_TEXT)
+    await showMenuScreen(chatId, orgId, 'channel_rubrics', HELP_TEXT, actor.role)
     return true
   }
 
@@ -730,7 +733,12 @@ async function tryHandleScheduleOrRubricInput(chatId: number, orgId: string, tex
   return false
 }
 
-async function handleChannelCallback(action: string, postId: string, chatId: number, messageId: number | undefined) {
+async function handleChannelCallback(action: string, postId: string, actor: BotActor, messageId: number | undefined) {
+  const { chatId } = actor
+  // Эти кнопки публикуют в публичный канал и тратят платную генерацию.
+  // Проверки здесь не было вообще — в отличие от соседней handleChannelListAction.
+  if (actor.role !== 'admin') return denyAdmin(chatId)
+
   if (messageId) await editMessageReplyMarkup(chatId, messageId, null)
 
   if (action === 'chreject') {
@@ -792,9 +800,11 @@ const CRM_ACTION_SCREEN: Record<string, MenuScreen> = {
   taskdone: 'crm_tasks',
 }
 
-async function handleCrmQuickAction(action: string, entityId: string, chatId: number, orgId: string, messageId: number | undefined, telegramUserId: string) {
-  const settings = await getChannelSettings(orgId)
-  if (!isFromAdmin(settings, telegramUserId)) return
+async function handleCrmQuickAction(action: string, entityId: string, actor: BotActor, messageId: number | undefined) {
+  const { chatId, orgId } = actor
+  // Быстрые действия меняют данные CRM — их достаточно уровня сотрудника,
+  // но не постороннего.
+  if (!isAtLeastMember(actor.role)) return
 
   let result: { error?: string } = {}
   if (action === 'leadnext') result = await advanceLeadStatus(orgId, entityId)
@@ -803,12 +813,12 @@ async function handleCrmQuickAction(action: string, entityId: string, chatId: nu
   else if (action === 'taskdone') result = await markTaskDone(orgId, entityId)
 
   if (result.error) await sendMessage(chatId, `⚠️ Не получилось: ${result.error}`)
-  await showMenuScreen(chatId, orgId, CRM_ACTION_SCREEN[action], HELP_TEXT, messageId)
+  await showMenuScreen(chatId, orgId, CRM_ACTION_SCREEN[action], HELP_TEXT, actor.role, messageId)
 }
 
-async function handleChannelListAction(action: string, postId: string, chatId: number, orgId: string, messageId: number | undefined, telegramUserId: string) {
-  const settings = await getChannelSettings(orgId)
-  if (!isFromAdmin(settings, telegramUserId)) return
+async function handleChannelListAction(action: string, postId: string, actor: BotActor, messageId: number | undefined) {
+  const { chatId, orgId } = actor
+  if (actor.role !== 'admin') return denyAdmin(chatId)
 
   if (action === 'chlistpub') {
     const result = await publishPost(postId)
@@ -816,7 +826,7 @@ async function handleChannelListAction(action: string, postId: string, chatId: n
   } else if (action === 'chlistreject') {
     await rejectPost(postId)
   }
-  await showMenuScreen(chatId, orgId, 'channel_posts', HELP_TEXT, messageId)
+  await showMenuScreen(chatId, orgId, 'channel_posts', HELP_TEXT, actor.role, messageId)
 }
 
 async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_query']>) {
@@ -824,89 +834,65 @@ async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_
 
   const chatId = update.message?.chat.id
   const messageId = update.message?.message_id
-  if (!chatId || !update.data) return
+  if (!chatId) return
 
-  const [action, batchId] = update.data.split(':')
-  if (!batchId) return
+  const parsed = parseCallbackData(update.data)
+  if (!parsed) return
+  const { action, arg } = parsed
+
+  // Нажавший — это from.id кнопки, а не chat.id. В приватном чате они совпадают,
+  // в группе нет, и раньше проверка админа сравнивала admin_telegram_user_id с
+  // идентификатором чата — то есть в группе не работала бы вовсе.
+  const actor = await resolveActor(String(update.from.id), chatId, update.from.username)
+  if (!actor) return
+  if (actor.role === 'stranger') {
+    await sendMessage(chatId, '⛔ Этот аккаунт не имеет доступа к боту.')
+    return
+  }
 
   if (action === 'chmenu') {
-    const orgId = await resolveBotOrgId()
-    if (!orgId) return
-    const settings = await getChannelSettings(orgId)
-    if (!isFromAdmin(settings, String(chatId))) return
+    if (actor.role !== 'admin') return denyAdmin(chatId)
+    const settings = await getChannelSettings(actor.orgId)
 
-    if (batchId === 'post') {
-      await setAwaitingIntent(orgId, 'post')
+    if (arg === 'post') {
+      await setAwaitingIntent(actor.orgId, 'post', actor.telegramUserId)
       await sendMessage(chatId, '📝 Напиши тему одним сообщением — подготовлю черновик поста.')
-    } else if (batchId === 'case') {
-      await setAwaitingIntent(orgId, 'case')
+    } else if (arg === 'case') {
+      await setAwaitingIntent(actor.orgId, 'case', actor.telegramUserId)
       await sendMessage(chatId, '🎙 Надиктуй голосом или напиши текстом: с чем пришёл клиент, в чём была сложность, как решили, результат.')
-    } else if (batchId === 'stats') {
+    } else if (arg === 'stats') {
       await sendChatAction(chatId, 'typing')
-      await sendMessage(chatId, await getLiveStatsText(orgId, settings!))
+      if (settings) await sendMessage(chatId, await getLiveStatsText(actor.orgId, settings))
     }
     return
   }
 
-  if (action === 'nav') {
-    const orgId = await resolveBotOrgId()
-    if (!orgId) return
-    await handleNavCallback(batchId, chatId, orgId, messageId, String(chatId))
-    return
-  }
-
-  if (action === 'set' || action === 'deluser') {
-    const orgId = await resolveBotOrgId()
-    if (!orgId) return
-    await handleSettingsAction(action, batchId, chatId, orgId, messageId, String(chatId))
-    return
-  }
-
+  if (action === 'nav') return handleNavCallback(arg, actor, messageId)
+  if (action === 'set' || action === 'deluser') return handleSettingsAction(action, arg, actor, messageId)
   if (action === 'leadnext' || action === 'dealnext' || action === 'paypaid' || action === 'taskdone') {
-    const orgId = await resolveBotOrgId()
-    if (!orgId) return
-    await handleCrmQuickAction(action, batchId, chatId, orgId, messageId, String(chatId))
-    return
+    return handleCrmQuickAction(action, arg, actor, messageId)
   }
-
-  if (action === 'chlistpub' || action === 'chlistreject') {
-    const orgId = await resolveBotOrgId()
-    if (!orgId) return
-    await handleChannelListAction(action, batchId, chatId, orgId, messageId, String(chatId))
-    return
-  }
-
+  if (action === 'chlistpub' || action === 'chlistreject') return handleChannelListAction(action, arg, actor, messageId)
   if (action === 'chpub' || action === 'chregen' || action === 'chreject' || action === 'chregenimg') {
-    await handleChannelCallback(action, batchId, chatId, messageId)
-    return
+    return handleChannelCallback(action, arg, actor, messageId)
   }
-
   if (action === 'chschedtoggle' || action === 'chscheddel' || action === 'chschedadd') {
-    const orgId = await resolveBotOrgId()
-    if (!orgId) return
-    await handleScheduleAction(action, batchId, chatId, orgId, messageId, String(chatId))
-    return
+    return handleScheduleAction(action, arg, actor, messageId)
   }
-
   if (action === 'chrubedit' || action === 'chrubtoggle' || action === 'chrubadd' || action === 'chrubimg') {
-    const orgId = await resolveBotOrgId()
-    if (!orgId) return
-    await handleRubricAction(action, batchId, chatId, orgId, messageId, String(chatId))
-    return
+    return handleRubricAction(action, arg, actor, messageId)
   }
+  if (action === 'magent') return handleMultiagentAction(arg, actor)
 
-  if (action === 'magent') {
-    const orgId = await resolveBotOrgId()
-    if (!orgId) return
-    await handleMultiagentAction(batchId, chatId, orgId, String(chatId))
-    return
-  }
+  if (action !== 'confirm' && action !== 'cancel') return
 
+  const batchId = arg
   const supabaseAdmin = getSupabaseAdmin()
   const { data: batch } = await supabaseAdmin
     .from('bot_pending_actions')
     .select('*')
     .eq('batch_id', batchId)
+    .eq('organization_id', actor.orgId)
     .order('created_at', { ascending: true })
 
   if (messageId) await editMessageReplyMarkup(chatId, messageId, null)
@@ -916,6 +902,15 @@ async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_
     await sendMessage(chatId, 'Это действие уже недоступно (истекло или уже обработано).')
     return
   }
+
+  // Подтверждает тот, кто запросил. Раньше батч искался по одному batch_id, а
+  // сохранённые рядом telegram_user_id/chat_id не сверялись ни с кем — при том,
+  // что подтверждение выполняет мутации в CRM.
+  if (pendingRows.some((r) => r.telegram_user_id !== actor.telegramUserId)) {
+    await sendMessage(chatId, '⛔ Это подтверждение запрашивал другой пользователь.')
+    return
+  }
+
   if (new Date(pendingRows[0].expires_at) < new Date()) {
     await supabaseAdmin.from('bot_pending_actions').update({ status: 'expired' }).eq('batch_id', batchId)
     await sendMessage(chatId, '⏱ Время подтверждения истекло, попробуй ещё раз.')
@@ -928,28 +923,26 @@ async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_
     return
   }
 
-  if (action === 'confirm') {
-    if (pendingRows.some((r) => r.action_type === 'generate_contract')) {
-      await sendChatAction(chatId, 'upload_document')
-    }
-
-    const results: string[] = []
-    for (const row of pendingRows) {
-      const result = await executeConfirmedMutation(row.action_type, row.payload)
-      await supabaseAdmin.from('bot_pending_actions').update({ status: 'confirmed' }).eq('id', row.id)
-
-      if (result?.error) {
-        results.push(`⚠️ Не получилось (${row.action_type}): ${result.error}`)
-      } else if (row.action_type === 'generate_contract' && result?.data?.docxUrl) {
-        await sendDocument(chatId, result.data.docxUrl, row.summary_text)
-        results.push(`✅ ${row.summary_text}`)
-      } else {
-        results.push(`✅ ${row.summary_text}`)
-      }
-    }
-
-    await sendMessage(chatId, results.join('\n\n'))
+  if (pendingRows.some((r) => r.action_type === 'generate_contract')) {
+    await sendChatAction(chatId, 'upload_document')
   }
+
+  const results: string[] = []
+  for (const row of pendingRows) {
+    const result = await executeConfirmedMutation(row.action_type, row.payload)
+    await supabaseAdmin.from('bot_pending_actions').update({ status: 'confirmed' }).eq('id', row.id)
+
+    if (result?.error) {
+      results.push(`⚠️ Не получилось (${row.action_type}): ${result.error}`)
+    } else if (row.action_type === 'generate_contract' && result?.data?.docxUrl) {
+      await sendDocument(chatId, result.data.docxUrl, row.summary_text)
+      results.push(`✅ ${row.summary_text}`)
+    } else {
+      results.push(`✅ ${row.summary_text}`)
+    }
+  }
+
+  await sendMessage(chatId, results.join('\n\n'))
 }
 
 async function handleCaseInput(chatId: number, orgId: string, rawInput: string) {
@@ -988,15 +981,13 @@ async function handleAdhocPostCommand(chatId: number, orgId: string, topic: stri
 // Возвращает true, если сообщение было перехвачено под нужды канала (правка/меню/кейс/пост)
 // и НЕ должно попадать в обычный CRM-диалог с моделью.
 async function tryHandleChannelInput(
-  chatId: number,
-  telegramUserId: string,
+  actor: BotActor,
   text: string,
   replyToMessageId?: number
 ): Promise<boolean> {
-  const orgId = await resolveBotOrgId()
-  if (!orgId) return false
+  const { chatId, orgId } = actor
+  if (actor.role !== 'admin') return false
   const settings = await getChannelSettings(orgId)
-  if (!isFromAdmin(settings, telegramUserId)) return false
 
   // Ответ (reply) на сообщение с черновиком — прямая правка текста без обращения к модели,
   // либо (если начинается с "фото:"/"картинка:") — перегенерация картинки с конкретными пожеланиями.
@@ -1004,10 +995,10 @@ async function tryHandleChannelInput(
     const pendingPost = await getPendingReviewByMessageId(replyToMessageId)
     if (pendingPost) {
       await editMessageReplyMarkup(chatId, replyToMessageId, null)
-      const imageNoteMatch = text.match(/^(?:фото|картинка|изображение)\s*:\s*([\s\S]+)/i)
-      if (imageNoteMatch) {
+      const imageNote = parseImageNote(text)
+      if (imageNote) {
         await sendChatAction(chatId, 'upload_photo')
-        const result = await regenerateImage(pendingPost.id, imageNoteMatch[1])
+        const result = await regenerateImage(pendingPost.id, imageNote)
         if (result.error) await sendMessage(chatId, `⚠️ Не удалось перегенерировать картинку: ${result.error}`)
       } else {
         const result = await applyManualEdit(pendingPost.id, text)
@@ -1015,12 +1006,6 @@ async function tryHandleChannelInput(
       }
       return true
     }
-  }
-
-  if (text === '/menu') {
-    await setAwaitingIntent(orgId, null)
-    await sendMainMenu(chatId)
-    return true
   }
 
   if (text === '/pause') {
@@ -1039,7 +1024,7 @@ async function tryHandleChannelInput(
     const rawInput = text.replace('/case', '').trim()
     if (!rawInput) {
       await sendMessage(chatId, 'Опиши кейс текстом после команды или просто надиктуй голосовым — я жду.')
-      await setAwaitingIntent(orgId, 'case')
+      await setAwaitingIntent(orgId, 'case', actor.telegramUserId)
       return true
     }
     await handleCaseInput(chatId, orgId, rawInput)
@@ -1050,7 +1035,7 @@ async function tryHandleChannelInput(
     const topic = text.replace('/post', '').trim()
     if (!topic) {
       await sendMessage(chatId, 'Укажи тему: /post «тема поста»')
-      await setAwaitingIntent(orgId, 'post')
+      await setAwaitingIntent(orgId, 'post', actor.telegramUserId)
       return true
     }
     await handleAdhocPostCommand(chatId, orgId, topic)
@@ -1083,29 +1068,50 @@ export async function POST(request: Request) {
   }
 
   try {
+    // Реакции на посты приходят без автора-собеседника — это просто счётчик,
+    // ничего не читает и не пишет в CRM.
     if (update.message_reaction_count) {
       const totalCount = update.message_reaction_count.reactions.reduce((sum, r) => sum + r.total_count, 0)
       await updatePostReactionCount(update.message_reaction_count.message_id, totalCount)
-    } else if (update.callback_query) {
+      return NextResponse.json({ ok: true })
+    }
+
+    if (update.callback_query) {
       await handleCallbackQuery(update.callback_query)
-    } else if (update.message?.voice) {
-      const chatId = update.message.chat.id
-      const userId = String(update.message.from?.id ?? chatId)
-      const username = update.message.from?.username
-      const { base64 } = await downloadTelegramFile(update.message.voice.file_id)
+      return NextResponse.json({ ok: true })
+    }
+
+    const message = update.message
+    if (!message) return NextResponse.json({ ok: true })
+
+    const chatId = message.chat.id
+
+    // Одна дверь на все виды сообщений: текст, голос, фото, документ. Раньше
+    // допуск проверялся внутри handleUserTurn, то есть уже ПОСЛЕ скачивания
+    // файла и расшифровки голоса — посторонний мог заставить бота качать
+    // файлы и звать платную расшифровку, не имея доступа ни к чему.
+    const actor = await resolveActor(String(message.from?.id ?? chatId), chatId, message.from?.username)
+    if (!actor) {
+      await sendMessage(chatId, '⚠️ Бот не настроен: не найден рабочий API-ключ (HOUSEPRO_BOT_API_KEY).')
+      return NextResponse.json({ ok: true })
+    }
+    if (actor.role === 'stranger') {
+      await sendMessage(chatId, '⛔ Этот аккаунт не имеет доступа к боту.')
+      return NextResponse.json({ ok: true })
+    }
+
+    if (message.voice) {
+      const { base64 } = await downloadTelegramFile(message.voice.file_id)
       const transcript = await transcribeAudio(base64, 'ogg')
       await sendMessage(chatId, `🎤 <i>${transcript}</i>`)
-      if (!(await tryHandleChannelInput(chatId, userId, transcript))) {
-        await handleUserTurn(chatId, userId, username, transcript)
+      if (!(await tryHandleChannelInput(actor, transcript))) {
+        await handleUserTurn(actor, transcript)
       }
-    } else if (update.message?.photo && update.message.photo.length > 0) {
-      const chatId = update.message.chat.id
-      const userId = String(update.message.from?.id ?? chatId)
-      const username = update.message.from?.username
-      const largestPhoto = update.message.photo[update.message.photo.length - 1]
+    } else if (message.photo && message.photo.length > 0) {
+      const largestPhoto = message.photo[message.photo.length - 1]
       const { base64, mimeType } = await downloadTelegramFile(largestPhoto.file_id)
-      const caption = update.message.caption?.trim()
-      await handleUserTurn(chatId, userId, username, [
+      const caption = message.caption?.trim()
+      await handleUserTurn(actor, [
         {
           type: 'text',
           text:
@@ -1115,13 +1121,10 @@ export async function POST(request: Request) {
         },
         { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64}` } },
       ])
-    } else if (update.message?.document) {
-      const chatId = update.message.chat.id
-      const userId = String(update.message.from?.id ?? chatId)
-      const username = update.message.from?.username
-      const doc = update.message.document
+    } else if (message.document) {
+      const doc = message.document
       const fileName = doc.file_name ?? 'document'
-      const caption = update.message.caption?.trim()
+      const caption = message.caption?.trim()
       const prompt =
         caption ||
         'Это документ (договор, выписка ЕГРН и т.п.). Внимательно прочитай и определи, какие ' +
@@ -1131,7 +1134,7 @@ export async function POST(request: Request) {
 
       if (doc.mime_type === 'application/pdf' || fileName.toLowerCase().endsWith('.pdf')) {
         const { base64 } = await downloadTelegramFile(doc.file_id)
-        await handleUserTurn(chatId, userId, username, [
+        await handleUserTurn(actor, [
           { type: 'text', text: prompt },
           { type: 'file', file: { filename: fileName, file_data: `data:application/pdf;base64,${base64}` } },
         ])
@@ -1139,34 +1142,31 @@ export async function POST(request: Request) {
         const { base64 } = await downloadTelegramFile(doc.file_id)
         try {
           const text = extractTextFromDocx(Buffer.from(base64, 'base64'))
-          await handleUserTurn(chatId, userId, username, `${prompt}\n\n--- Текст документа "${fileName}" ---\n${text}`)
+          await handleUserTurn(actor, `${prompt}\n\n--- Текст документа "${fileName}" ---\n${text}`)
         } catch (e) {
           await sendMessage(chatId, `⚠️ Не смог прочитать DOCX: ${e instanceof Error ? e.message : 'ошибка'}`)
         }
       } else {
         await sendMessage(chatId, '⚠️ Понимаю пока только PDF и DOCX документы.')
       }
-    } else if (update.message?.text) {
-      const chatId = update.message.chat.id
-      const userId = String(update.message.from?.id ?? chatId)
-      const username = update.message.from?.username
-      const text = update.message.text.trim()
-
-      const orgIdForAddUser = await resolveBotOrgId()
-      const forwardFrom = update.message.forward_from
+    } else if (message.text) {
+      const text = message.text.trim()
+      const forwardFrom = message.forward_from
 
       if (text === '/start' || text === '/help') {
         await sendMessage(chatId, HELP_TEXT)
-        await sendMainMenu(chatId)
-      } else if (
-        orgIdForAddUser &&
-        (await tryHandleAddUserInput(chatId, orgIdForAddUser, text, forwardFrom?.id, forwardFrom?.first_name || forwardFrom?.username))
-      ) {
+        await sendMainMenu(actor)
+      } else if (text === '/menu') {
+        // Общая команда, а не часть контент-модуля канала: сотруднику меню
+        // тоже нужно — просто в нём меньше разделов.
+        if (actor.role === 'admin') await setAwaitingIntent(actor.orgId, null)
+        await sendMainMenu(actor)
+      } else if (await tryHandleAddUserInput(actor, text, forwardFrom?.id, forwardFrom?.first_name || forwardFrom?.username)) {
         // перехвачено — ID добавлен в allowlist
-      } else if (orgIdForAddUser && (await tryHandleScheduleOrRubricInput(chatId, orgIdForAddUser, text))) {
+      } else if (await tryHandleScheduleOrRubricInput(actor, text)) {
         // перехвачено — добавлен слот расписания или обновлён промпт рубрики
-      } else if (!(await tryHandleChannelInput(chatId, userId, text, update.message.reply_to_message?.message_id))) {
-        await handleUserTurn(chatId, userId, username, text)
+      } else if (!(await tryHandleChannelInput(actor, text, message.reply_to_message?.message_id))) {
+        await handleUserTurn(actor, text)
       }
     }
   } catch (e) {

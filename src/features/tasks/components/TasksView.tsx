@@ -11,6 +11,7 @@ import { useRegistryFilters } from '@/hooks/useRegistryFilters'
 import { useSelection } from '@/hooks/useSelection'
 import { usePersistedState } from '@/hooks/usePersistedFilters'
 import { formatDeadline } from '@/lib/utils'
+import { TASK_PRIORITIES, TASK_PRIORITY_LABELS, TASK_PRIORITY_BADGE } from '@/features/tasks/config/task-priorities'
 
 export interface TaskRow {
   id: string
@@ -32,8 +33,6 @@ const STATUS_BADGE: Record<string, string> = {
 }
 const STATUS_LABELS: Record<string, string> = Object.fromEntries(TASK_STATUSES.map(s => [s.value, s.label]))
 
-const PRIORITY_LABELS: Record<string, string> = { low: 'Низкий', medium: 'Средний', high: 'Высокий' }
-const PRIORITY_BADGE: Record<string, string> = { low: 'hp-badge-neutral', medium: 'hp-badge-warn', high: 'hp-badge-danger' }
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'Статус: все' },
@@ -41,7 +40,7 @@ const STATUS_OPTIONS = [
 ]
 const PRIORITY_OPTIONS = [
   { value: 'all', label: 'Приоритет: любой' },
-  ...Object.entries(PRIORITY_LABELS).map(([value, label]) => ({ value, label })),
+  ...TASK_PRIORITIES.map(p => ({ value: p.value, label: p.label })),
 ]
 
 const VIEWS = [
@@ -79,8 +78,8 @@ export function TasksView({ tasks }: { tasks: TaskRow[] }) {
     {
       key: 'priority', title: 'Приоритет',
       cell: t => (
-        <span className={`hp-badge ${PRIORITY_BADGE[t.priority] ?? 'hp-badge-neutral'}`}>
-          {PRIORITY_LABELS[t.priority] ?? t.priority}
+        <span className={`hp-badge ${TASK_PRIORITY_BADGE[t.priority] ?? 'hp-badge-neutral'}`}>
+          {TASK_PRIORITY_LABELS[t.priority] ?? t.priority}
         </span>
       ),
     },

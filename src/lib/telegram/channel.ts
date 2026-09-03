@@ -26,6 +26,12 @@ export interface ChannelSettings {
   // составные состояния вида 'edit_rubric:<uuid>' и 'add_slot' (см. Phase 3, менюшка
   // расписания/рубрик в боте). Фактическую валидацию значений делает CHECK в БД.
   awaiting_intent: string | null
+  /**
+   * Кто начал незавершённый ввод. Состояние одно на организацию, поэтому без
+   * владельца его подхватывал любой следующий собеседник бота — в том числе
+   * форму «добавить пользователя».
+   */
+  awaiting_intent_user_id: string | null
   schedule_paused: boolean
   timezone: string
 }
@@ -378,9 +384,26 @@ export async function getPendingReviewByMessageId(messageId: number) {
   return data
 }
 
-export async function setAwaitingIntent(orgId: string, intent: string | null): Promise<void> {
+/**
+ * Запомнить незавершённый ввод и его владельца.
+ *
+ * `ownerUserId` обязателен при постановке intent: состояние без владельца
+ * потребить нельзя (см. `ownsIntent`), поэтому забыть его — значит сделать
+ * форму неработающей, а не открытой всем.
+ */
+export async function setAwaitingIntent(
+  orgId: string,
+  intent: string | null,
+  ownerUserId?: string,
+): Promise<void> {
   const supabaseAdmin = getSupabaseAdmin()
-  await supabaseAdmin.from('channel_bot_settings').update({ awaiting_intent: intent }).eq('organization_id', orgId)
+  await supabaseAdmin
+    .from('channel_bot_settings')
+    .update({
+      awaiting_intent: intent,
+      awaiting_intent_user_id: intent ? (ownerUserId ?? null) : null,
+    })
+    .eq('organization_id', orgId)
 }
 
 // --- Phase 3: управление рубриками и расписанием из бот-меню ---
@@ -515,10 +538,6 @@ export async function updatePostReactionCount(messageId: number, totalCount: num
     .update({ reaction_count: totalCount })
     .eq('channel_message_id', messageId)
     .eq('status', 'published')
-}
-
-export function isFromAdmin(settings: ChannelSettings | null, telegramUserId: string): boolean {
-  return !!settings?.admin_telegram_user_id && settings.admin_telegram_user_id === telegramUserId
 }
 
 // Быстрая сводка по запросу из меню (в отличие от еженедельного cron — ничего не пишет

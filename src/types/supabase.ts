@@ -607,6 +607,7 @@ export type Database = {
           admin_telegram_user_id: string | null
           admin_telegram_username: string | null
           awaiting_intent: string | null
+          awaiting_intent_user_id: string | null
           channel_chat_id: string | null
           organization_id: string
           schedule_paused: boolean
@@ -618,6 +619,7 @@ export type Database = {
           admin_telegram_user_id?: string | null
           admin_telegram_username?: string | null
           awaiting_intent?: string | null
+          awaiting_intent_user_id?: string | null
           channel_chat_id?: string | null
           organization_id: string
           schedule_paused?: boolean
@@ -629,6 +631,7 @@ export type Database = {
           admin_telegram_user_id?: string | null
           admin_telegram_username?: string | null
           awaiting_intent?: string | null
+          awaiting_intent_user_id?: string | null
           channel_chat_id?: string | null
           organization_id?: string
           schedule_paused?: boolean

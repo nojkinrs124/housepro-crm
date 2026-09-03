@@ -2,6 +2,8 @@ import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import type { InlineKeyboardButton } from '@/lib/telegram/api'
 import type { ScreenContent } from '@/lib/telegram/menu'
 import { getSiteUrl } from '@/lib/telegram/site-url'
+import { LEAD_STATUS_LABELS, LEAD_PIPELINE } from '@/features/leads/config/lead-statuses'
+import { TASK_PRIORITY_LABELS } from '@/features/tasks/config/task-priorities'
 
 const BACK_TO_CRM: InlineKeyboardButton = { text: '⬅ CRM', callback_data: 'nav:crm' }
 
@@ -11,17 +13,10 @@ function openInCrmButton(path: string): InlineKeyboardButton {
 
 // --- Лиды ---
 
-const LEAD_STATUS_LABELS: Record<string, string> = {
-  new: 'Новый',
-  contacted: 'Связались',
-  meeting: 'Встреча',
-  searching: 'Подбираем варианты',
-  showing: 'Показы',
-  converted: 'Конвертирован',
-  closed: 'Закрыт',
-}
-// Порядок продвижения по воронке (без учёта терминального 'closed' — им управляют вручную текстом).
-const LEAD_PIPELINE = ['new', 'contacted', 'meeting', 'searching', 'showing', 'converted']
+// Подписи и воронка — из конфига лидов. Своя копия здесь знала статус
+// `meeting`, которого нет ни в базе, ни в вебе: кнопка «следующий статус»
+// записала бы его в `leads.status`, и лид пропал бы с доски (та же поломка,
+// что разбиралась в #28). Не заводить копию снова.
 
 function nextInPipeline(pipeline: string[], current: string): string | null {
   const idx = pipeline.indexOf(current)
@@ -176,8 +171,6 @@ export async function markPaymentPaid(orgId: string, paymentId: string): Promise
 
 // --- Задачи ---
 
-const TASK_PRIORITY_LABELS: Record<string, string> = { low: 'низкий', medium: 'средний', high: 'высокий' }
-
 export async function buildTasksScreen(orgId: string): Promise<ScreenContent> {
   const supabaseAdmin = getSupabaseAdmin()
   const { data: tasks } = await supabaseAdmin
@@ -197,7 +190,7 @@ export async function buildTasksScreen(orgId: string): Promise<ScreenContent> {
   for (const t of tasks) {
     const due = t.due_date || t.deadline
     const dueText = due ? ` · срок ${new Date(due).toLocaleDateString('ru-RU')}` : ''
-    lines.push(`• <b>${t.title}</b> — приоритет ${TASK_PRIORITY_LABELS[t.priority] ?? t.priority}${dueText}`)
+    lines.push(`• <b>${t.title}</b> — приоритет: ${TASK_PRIORITY_LABELS[t.priority] ?? t.priority}${dueText}`)
     keyboard.push([
       { text: '✅ Готово', callback_data: `taskdone:${t.id}` },
       openInCrmButton(`/tasks/${t.id}`),

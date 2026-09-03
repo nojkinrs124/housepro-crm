@@ -8,6 +8,7 @@ import { convertLeadToClient } from '@/features/leads/actions/leads.actions'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { STAGE_COLORS } from '@/lib/design/stageColors'
 import { LEAD_STATUSES, LEAD_STATUSES_TERMINAL } from '@/features/leads/config/lead-statuses'
+import { LEAD_SOURCE_LABELS } from '@/features/leads/config/lead-sources'
 import type { LeadRow } from './LeadsListView'
 
 // Колонка на каждый статус: лид, для которого колонки нет, не «уезжает вниз»,
@@ -18,11 +19,6 @@ const columns = LEAD_STATUSES.map(s => ({
  ...STAGE_COLORS[s.stage],
 }))
 
-const sourceLabels: Record<string, string> = {
- avito: 'Авито', cian: 'ЦИАН', whatsapp: 'WhatsApp',
- telegram: 'Telegram', call: 'Звонок', website: 'Сайт',
- referral: 'Рекомендация', other: 'Другое',
-}
 
 export function LeadsKanban({ leads: initialLeads }: { leads: LeadRow[] }) {
  const [leads, setLeads] = useState<LeadRow[]>(initialLeads)
@@ -134,7 +130,7 @@ export function LeadsKanban({ leads: initialLeads }: { leads: LeadRow[] }) {
  {lead.full_name || 'Без имени'}
  </a>
  {lead.source && (
- <p className="text-xs text-muted-foreground">{sourceLabels[lead.source] ?? lead.source}</p>
+ <p className="text-xs text-muted-foreground">{LEAD_SOURCE_LABELS[lead.source] ?? lead.source}</p>
  )}
  </div>
 
