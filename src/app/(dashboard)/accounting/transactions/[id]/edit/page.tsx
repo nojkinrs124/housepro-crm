@@ -4,6 +4,7 @@ import { TransactionForm } from '@/features/accounting/components/TransactionFor
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/layout/PageHeader'
+import type { AccountingCategory, AccountingTransaction, Contact, Contract, Deal } from '@/types/database'
 
 export default async function EditTransactionPage({
   params,
@@ -29,18 +30,12 @@ export default async function EditTransactionPage({
 
   if (!txnRes.data) notFound()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const transaction = txnRes.data as any
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const categories  = (categoriesRes.data ?? []) as any[]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const contracts   = (contractsRes.data  ?? []) as any[]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const deals       = (dealsRes.data      ?? []) as any[]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const employees   = (employeesRes.data  ?? []) as any[]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const contacts    = (contactsRes.data   ?? []) as any[]
+  const transaction = txnRes.data as AccountingTransaction
+  const categories  = (categoriesRes.data ?? []) as AccountingCategory[]
+  const contracts   = (contractsRes.data  ?? []) as Pick<Contract, 'id' | 'contract_number' | 'contract_type'>[]
+  const deals       = (dealsRes.data      ?? []) as Pick<Deal, 'id' | 'deal_type'>[]
+  const employees   = (employeesRes.data  ?? [])
+  const contacts    = (contactsRes.data   ?? []) as Pick<Contact, 'id' | 'full_name' | 'company_name' | 'client_type'>[]
   const properties  = propertiesRes.data  ?? []
 
   return (

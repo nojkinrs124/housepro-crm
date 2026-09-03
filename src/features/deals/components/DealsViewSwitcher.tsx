@@ -9,6 +9,7 @@ import { useRegistryFilters } from '@/hooks/useRegistryFilters'
 import { useSelection } from '@/hooks/useSelection'
 import { usePersistedState } from '@/hooks/usePersistedFilters'
 import { ALL_STAGE_OPTIONS, DEAL_TYPE_LABELS } from '@/features/deals/config/deal-stages'
+import type { DealListItem } from '@/features/deals/types/deal-views'
 
 type ViewMode = 'kanban' | 'list'
 
@@ -30,30 +31,15 @@ const VIEWS = [
   { value: 'list',   label: 'Реестр', icon: List },
 ]
 
-interface Party { full_name?: string; company_name?: string }
 
-/** Поля сделки, которые нужны фильтрам и реестру; страница отдаёт их с запасом. */
-interface DealItem {
-  id: string
-  status: string
-  deal_type: string
-  deal_number: number | null
-  amount: number | null
-  expected_close_date: string | null
-  client_contact?: Party | null
-  owner_contact?: Party | null
-  client?: { full_name?: string } | null
-  property?: { title?: string; address?: string } | null
-}
-
-export function DealsViewSwitcher({ deals }: { deals: DealItem[] }) {
+export function DealsViewSwitcher({ deals }: { deals: DealListItem[] }) {
   const [view, setView] = usePersistedState<ViewMode>('deals:view', 'kanban')
 
   const { search, setSearch, filtered: filteredDeals, toolbarFilters, reset } = useRegistryFilters(deals, {
     storageKey: 'deals',
     haystack: d => [
       d.deal_number ? `сд-${d.deal_number}` : '',
-      d.client_contact?.full_name, d.client_contact?.company_name, d.client?.full_name,
+      d.client_contact?.full_name, d.client_contact?.company_name,
       d.owner_contact?.full_name, d.owner_contact?.company_name,
       d.property?.title, d.property?.address,
     ].filter(Boolean).join(' '),

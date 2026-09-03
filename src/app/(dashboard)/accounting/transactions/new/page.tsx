@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { TransactionForm } from '@/features/accounting/components/TransactionForm'
 import { PageHeader } from '@/components/layout/PageHeader'
+import type { AccountingCategory, Contact, Contract, Deal } from '@/types/database'
 
 export default async function NewTransactionPage({
   searchParams,
@@ -19,16 +20,11 @@ export default async function NewTransactionPage({
     supabase.from('properties').select('id, title, address').order('title').limit(300),
   ])
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const categories  = (categoriesRes.data  ?? []) as any[]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const contracts   = (contractsRes.data   ?? []) as any[]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const deals       = (dealsRes.data       ?? []) as any[]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const employees   = (employeesRes.data   ?? []) as any[]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const contacts    = (contactsRes.data    ?? []) as any[]
+  const categories  = (categoriesRes.data  ?? []) as AccountingCategory[]
+  const contracts   = (contractsRes.data   ?? []) as Pick<Contract, 'id' | 'contract_number' | 'contract_type'>[]
+  const deals       = (dealsRes.data       ?? []) as Pick<Deal, 'id' | 'deal_type'>[]
+  const employees   = (employeesRes.data   ?? [])
+  const contacts    = (contactsRes.data    ?? []) as Pick<Contact, 'id' | 'full_name' | 'company_name' | 'client_type'>[]
   const properties  = propertiesRes.data   ?? []
 
   return (

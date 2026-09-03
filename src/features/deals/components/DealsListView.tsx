@@ -7,28 +7,16 @@ import {
 import { RegistryTable, type RegistryColumn } from '@/features/registry/components/RegistryTable'
 import type { Selection } from '@/hooks/useSelection'
 import { formatAmount, formatDateCompact } from '@/lib/utils'
+import type { Party, DealListItem } from '@/features/deals/types/deal-views'
 
-interface Party { full_name?: string; company_name?: string }
-
-interface DealRow {
-  id: string
-  deal_number: number | null
-  deal_type: string
-  status: string
-  amount: number | null
-  expected_close_date: string | null
-  owner_contact?: Party | null
-  client_contact?: Party | null
-  property?: { title?: string; address?: string } | null
-}
 
 /**
  * Реестр сделок — та же плотная таблица, что и в контактах: номер, тип,
  * стороны, объект, этап, сумма, дата закрытия. На узком экране колонки
  * второго плана скрываются, строка остаётся кликабельной целиком.
  */
-export function DealsListView({ deals, selection }: { deals: DealRow[]; selection?: Selection }) {
-  const columns: RegistryColumn<DealRow>[] = [
+export function DealsListView({ deals, selection }: { deals: DealListItem[]; selection?: Selection }) {
+  const columns: RegistryColumn<DealListItem>[] = [
     {
       key: 'number', title: '№', cellClass: 'sub whitespace-nowrap',
       cell: d => (

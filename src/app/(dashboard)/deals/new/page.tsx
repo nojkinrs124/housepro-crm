@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { DealFormBody } from '@/features/deals/components/DealFormBody'
 import { PageHeader } from '@/components/layout/PageHeader'
+import type { RepresentativeOption } from '@/features/deals/components/DealFormBody'
 
 export default async function NewDealPage({
   searchParams,
@@ -30,8 +31,7 @@ export default async function NewDealPage({
   const owners  = contacts.filter(c => c.role === 'owner'  || c.role === 'both')
   const clients = contacts.filter(c => c.role === 'client' || c.role === 'both')
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const representativesByContact: Record<string, any[]> = {}
+  const representativesByContact: Record<string, RepresentativeOption[]> = {}
   for (const r of rawReps ?? []) {
     (representativesByContact[r.contact_id] ??= []).push(r)
   }

@@ -10,7 +10,7 @@ export default async function LeadsPage() {
  const supabase = await createClient()
  const { data: leads } = await supabase
  .from('leads')
- .select('id, full_name, phone, status, source, budget_min, budget_max, deal_type, assigned_to, created_at')
+ .select('id, full_name, phone, telegram, comment, status, source, budget_min, budget_max, rooms, deal_type, assigned_to, created_at')
  .order('created_at', { ascending: false })
 
  const total = leads?.length ?? 0

@@ -32,8 +32,7 @@ export default async function ShowingDetailPage({ params }: { params: Promise<{ 
  throw new Error(`Не удалось загрузить показ: ${rawError.message}`)
  }
  if (!raw) notFound()
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const showing = raw as any
+ const showing = raw
 
  const cancelAction = updateShowingStatusAction.bind(null, id, 'cancelled')
 

@@ -6,6 +6,20 @@ import Link from 'next/link'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { ReadinessPanel } from '@/components/layout/ReadinessPanel'
 import { checkTransaction } from '@/lib/readiness'
+import type { Row } from '@/types/database'
+
+/** Операция со связями — ровно те поля, что перечислены в select ниже. */
+type TransactionDetail = Pick<
+  Row<'accounting_transactions'>,
+  'id' | 'type' | 'amount' | 'date' | 'description' | 'status' | 'payment_method'
+  | 'due_date' | 'created_at' | 'legacy_payment_id' | 'property_id' | 'category_id'
+> & {
+  category: { id: string; name: string; color: string } | null
+  contract: { id: string; contract_number: string | null; contract_type: string } | null
+  deal: { id: string; deal_type: string } | null
+  contact: { id: string; full_name: string } | null
+  employee: { id: string; full_name: string } | null
+}
 
 const STATUS_CFG: Record<string, { label: string; cls: string }> = {
  completed: { label: 'Выполнено', cls: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)] border border-[var(--hp-border)]' },
@@ -47,8 +61,7 @@ export default async function TransactionDetailPage({
  throw new Error(`Не удалось загрузить операцию: ${rawError.message}`)
  }
  if (!raw) notFound()
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const t = raw as any
+ const t = raw as TransactionDetail
 
  const issues = checkTransaction(t)
 

@@ -7,9 +7,8 @@ import { updateDealStatusAction } from '../actions/deals.actions'
 import { DIRECTIONS, stagesOf } from '@/features/directions/config/directions'
 import { DEAL_TYPE_LABELS } from '@/features/deals/config/deal-stages'
 import { formatAmount } from '@/lib/utils'
+import type { Party, PropertyRef } from '@/features/deals/types/deal-views'
 
-interface Party { full_name?: string; company_name?: string }
-interface PropertyRef { title?: string; address?: string }
 
 /** Поля, которые доска действительно читает. Страница отдаёт их с запасом. */
 export interface KanbanDeal {

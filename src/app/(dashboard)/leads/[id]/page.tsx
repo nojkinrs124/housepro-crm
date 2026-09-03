@@ -12,6 +12,7 @@ import { ReadinessPanel } from '@/components/layout/ReadinessPanel'
 import { checkLead } from '@/lib/readiness'
 import { CommunicationTimeline } from '@/features/communications/components/CommunicationTimeline'
 import { LEAD_STATUS_BADGE, LEAD_STATUS_LABELS } from '@/features/leads/config/lead-statuses'
+import { formatDate } from '@/lib/utils'
 
 const sourceLabels: Record<string, string> = {
  avito: 'Авито', cian: 'ЦИАН', domclick: 'Домклик',
@@ -59,10 +60,8 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
  }
  if (!rawLead) notFound()
 
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const lead = rawLead as any
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const activities = (rawActivities ?? []) as any[]
+ const lead = rawLead
+ const activities = (rawActivities ?? [])
  const assignee = lead.assignee as { full_name?: string } | null
 
  const issues = checkLead(lead)
@@ -266,7 +265,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
  {activityLabels[act.type] ?? act.type}
  </span>
  <span className="text-xs text-muted-foreground">
- {new Date(act.created_at).toLocaleDateString('ru-RU', {
+ {formatDate(act.created_at, {
  day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
  })}
  </span>
@@ -326,7 +325,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
  )}
  <div className="flex justify-between">
  <span className="text-muted-foreground">Добавлен</span>
- <span className="text-foreground">{new Date(lead.created_at).toLocaleDateString('ru-RU')}</span>
+ <span className="text-foreground">{formatDate(lead.created_at)}</span>
  </div>
  {lead.updated_at && (
  <div className="flex justify-between">

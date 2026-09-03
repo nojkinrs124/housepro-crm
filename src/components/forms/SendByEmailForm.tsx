@@ -8,8 +8,7 @@ type Result = { error?: string; success?: boolean; message?: string } | undefine
 
 interface SendByEmailFormProps {
  /** Server Action, уже забинженный на id сущности: (formData) => Result. */
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- action: (formData: FormData) => Promise<any>
+ action: (formData: FormData) => Promise<{ error?: string; success?: boolean; message?: string } | void>
  /** Подставляется в поле — обычно email клиента из карточки. */
  defaultEmail?: string | null
  title?: string

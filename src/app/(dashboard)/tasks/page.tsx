@@ -18,6 +18,7 @@ export default async function TasksPage() {
  status: t.status,
  priority: t.priority,
  deadline: t.deadline,
+ description: t.description,
  assigneeName: (t.assignee as { full_name: string | null } | null)?.full_name ?? null,
  }))
 

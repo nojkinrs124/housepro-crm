@@ -5,6 +5,7 @@ import { CheckSquare, Clock } from 'lucide-react'
 import { updateTaskStatusAction } from '../actions/tasks.actions'
 import Link from 'next/link'
 import { STAGE_COLORS } from '@/lib/design/stageColors'
+import type { TaskRow } from './TasksView'
 
 const columns = [
  { status: 'todo', label: 'К выполнению', ...STAGE_COLORS.gray },
@@ -23,19 +24,15 @@ const priorityLabels: Record<string, string> = {
  low: 'Низкий', medium: 'Средний', high: 'Высокий',
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function TasksKanbanBoard({ tasks: initialTasks }: { tasks: any[] }) {
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const [tasks, setTasks] = useState<any[]>(initialTasks)
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const [draggedTask, setDraggedTask] = useState<any | null>(null)
+export function TasksKanbanBoard({ tasks: initialTasks }: { tasks: TaskRow[] }) {
+ const [tasks, setTasks] = useState<TaskRow[]>(initialTasks)
+ const [draggedTask, setDraggedTask] = useState<TaskRow | null>(null)
  const [dragOverCol, setDragOverCol] = useState<string | null>(null)
  const isDragging = useRef(false)
 
  const byStatus = (status: string) => tasks.filter(t => t.status === status)
 
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const handleDragStart = (e: React.DragEvent, task: any) => {
+ const handleDragStart = (e: React.DragEvent, task: TaskRow) => {
  isDragging.current = true
  setDraggedTask(task)
  e.dataTransfer.effectAllowed = 'move'
@@ -144,14 +141,14 @@ export function TasksKanbanBoard({ tasks: initialTasks }: { tasks: any[] }) {
  {new Date(task.deadline).toLocaleDateString('ru-RU')}
  </div>
  )}
- {task.assignee?.full_name && (
+ {task.assigneeName && (
  <div className="flex items-center gap-1 text-xs text-muted-foreground ml-auto">
  <div className="w-4 h-4 rounded-[var(--hp-radius)] bg-primary/20 flex items-center justify-center shrink-0">
  <span className="text-primary text-[9px] font-bold">
- {task.assignee.full_name.charAt(0).toUpperCase()}
+ {task.assigneeName.charAt(0).toUpperCase()}
  </span>
  </div>
- <span className="truncate max-w-16">{task.assignee.full_name.split(' ')[0]}</span>
+ <span className="truncate max-w-16">{task.assigneeName.split(' ')[0]}</span>
  </div>
  )}
  </div>

@@ -8,6 +8,7 @@ import { DealFormBody } from '@/features/deals/components/DealFormBody'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { DEAL_STATUS_LABELS } from '@/features/deals/config/deal-stages'
 import { formatDate } from '@/lib/utils'
+import type { RepresentativeOption } from '@/features/deals/components/DealFormBody'
 
 export default async function EditDealPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -22,16 +23,14 @@ export default async function EditDealPage({ params }: { params: Promise<{ id: s
 
   if (!rawDeal) notFound()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const deal = rawDeal as any
+  const deal = rawDeal
   const contacts = rawContacts ?? []
   const properties = rawProperties ?? []
 
   const owners  = contacts.filter(c => c.role === 'owner'  || c.role === 'both')
   const clients = contacts.filter(c => c.role === 'client' || c.role === 'both')
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const representativesByContact: Record<string, any[]> = {}
+  const representativesByContact: Record<string, RepresentativeOption[]> = {}
   for (const r of rawReps ?? []) {
     (representativesByContact[r.contact_id] ??= []).push(r)
   }

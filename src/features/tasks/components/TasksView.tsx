@@ -17,6 +17,7 @@ export interface TaskRow {
   title: string
   status: string
   priority: string
+  description: string | null
   deadline: string | null
   assigneeName: string | null
 }

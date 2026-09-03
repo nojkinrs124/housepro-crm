@@ -8,6 +8,7 @@ import { convertLeadToClient } from '@/features/leads/actions/leads.actions'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { STAGE_COLORS } from '@/lib/design/stageColors'
 import { LEAD_STATUSES, LEAD_STATUSES_TERMINAL } from '@/features/leads/config/lead-statuses'
+import type { LeadRow } from './LeadsListView'
 
 // Колонка на каждый статус: лид, для которого колонки нет, не «уезжает вниз»,
 // а пропадает с доски совсем — так до 02.09.2026 терялись interested и rejected.
@@ -23,19 +24,15 @@ const sourceLabels: Record<string, string> = {
  referral: 'Рекомендация', other: 'Другое',
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function LeadsKanban({ leads: initialLeads }: { leads: any[] }) {
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const [leads, setLeads] = useState<any[]>(initialLeads)
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const [draggedLead, setDraggedLead] = useState<any | null>(null)
+export function LeadsKanban({ leads: initialLeads }: { leads: LeadRow[] }) {
+ const [leads, setLeads] = useState<LeadRow[]>(initialLeads)
+ const [draggedLead, setDraggedLead] = useState<LeadRow | null>(null)
  const isDragging = useRef(false)
  const [dragOverCol, setDragOverCol] = useState<string | null>(null)
 
  const byStatus = (status: string) => leads.filter(l => l.status === status)
 
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const handleDragStart = (e: React.DragEvent, lead: any) => {
+ const handleDragStart = (e: React.DragEvent, lead: LeadRow) => {
  isDragging.current = true
  setDraggedLead(lead)
  e.dataTransfer.effectAllowed = 'move'
@@ -185,9 +182,11 @@ export function LeadsKanban({ leads: initialLeads }: { leads: any[] }) {
  )}
 
  {/* Date */}
+ {lead.created_at && (
  <p className="text-xs text-muted-foreground/60">
  {new Date(lead.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
  </p>
+ )}
 
  {/* Convert button */}
  {!LEAD_STATUSES_TERMINAL.includes(col.status) && (

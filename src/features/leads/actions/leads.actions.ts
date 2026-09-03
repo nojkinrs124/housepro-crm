@@ -175,8 +175,7 @@ export async function convertLeadToClient(id: string) {
   const permError = await requirePermission(user.id, 'leads', 'update')
   if (permError) return permError
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const l = lead as any
+  const l = lead
 
   const { data: contact, error } = await supabase
     .from('contacts')

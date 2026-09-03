@@ -34,8 +34,7 @@ export default async function ContactsPage() {
   ])
 
   const list = (contacts ?? []) as Contact[]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const deals = (rawDeals ?? []) as any[]
+  const deals = (rawDeals ?? [])
 
   const meta: Record<string, ContactMeta> = {}
   const dealCountByContact: Record<string, number> = {}

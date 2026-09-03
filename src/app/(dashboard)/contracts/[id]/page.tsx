@@ -22,6 +22,7 @@ import {
 } from '@/features/contracts/components/PodpislonSigningPanel'
 import { getSiteUrl } from '@/lib/telegram/site-url'
 import { DEAL_TYPE_LABELS as dealTypeLabels, DEAL_STATUS_LABELS as dealStageLabels } from '@/features/deals/config/deal-stages'
+import { formatDate } from '@/lib/utils'
 
 const contractTypeLabels = CONTRACT_TYPE_LABELS
 
@@ -53,7 +54,6 @@ export default async function ContractPage({
  const { created } = await searchParams
  const supabase = await createClient()
 
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
  const { data: rawContract, error: contractError } = await supabase
  .from('contracts')
  .select(`*,
@@ -74,8 +74,7 @@ export default async function ContractPage({
  if (contractError && contractError.code !== 'PGRST116') {
  throw new Error(`Не удалось загрузить договор: ${contractError.message}`)
  }
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const contract = rawContract as any
+ const contract = rawContract
 
  if (!contract) notFound()
 
@@ -418,8 +417,7 @@ export default async function ContractPage({
  {contractVersions && contractVersions.length > 0 && (
  <ContractVersionHistory
  contractId={id}
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- versions={contractVersions as any}
+ versions={contractVersions}
  />
  )}
  </div>
@@ -442,7 +440,7 @@ export default async function ContractPage({
  <div className="flex justify-between">
  <span className="text-muted-foreground">Создан</span>
  <span className="text-foreground">
- {new Date(contract.created_at).toLocaleDateString('ru-RU')}
+ {formatDate(contract.created_at)}
  </span>
  </div>
  </div>

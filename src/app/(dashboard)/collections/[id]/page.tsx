@@ -31,8 +31,7 @@ export default async function CollectionDetailPage({ params }: { params: Promise
  throw new Error(`Не удалось загрузить подборку: ${rawError.message}`)
  }
  if (!raw) notFound()
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const col = raw as any
+ const col = raw
 
  const { data: allProperties } = await supabase
  .from('properties')
@@ -124,7 +123,7 @@ export default async function CollectionDetailPage({ params }: { params: Promise
  <p className="text-xs mt-1">Добавьте объекты из списка справа</p>
  </div>
  ) : (
- col.items.map((item: { property: { id: string; title: string; address?: string; price?: number; deal_type?: string; status?: string }; agent_note?: string }) => (
+ col.items.map(item => (
  <div key={item.property?.id} className="flex items-start justify-between gap-3 p-4 hp-card">
  <div className="min-w-0">
  <Link href={`/properties/${item.property?.id}`} className="font-medium text-foreground hover:underline truncate block">

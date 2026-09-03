@@ -77,39 +77,35 @@ export async function searchAction(query: string): Promise<SearchResults> {
     ...CONTRACT_TYPE_LABELS,
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const contacts: SearchResult[] = (contactsRes.data ?? []).map((c: any) => ({
+  const contacts: SearchResult[] = (contactsRes.data ?? []).map(c => ({
     id: c.id,
     type: 'contact',
     title: c.full_name,
-    subtitle: [c.phone, roleLabels[c.role], statusLabels[c.status]].filter(Boolean).join(' · '),
+    subtitle: [c.phone, c.role && roleLabels[c.role], (c.status ? statusLabels[c.status] : null)].filter(Boolean).join(' · '),
     href: `/contacts/${c.id}`,
   }))
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const properties: SearchResult[] = (propertiesRes.data ?? []).map((p: any) => ({
+  const properties: SearchResult[] = (propertiesRes.data ?? []).map(p => ({
     id: p.id,
     type: 'property',
     title: p.title,
-    subtitle: [typeLabels[p.property_type], p.address, statusLabels[p.status]].filter(Boolean).join(' · '),
+    subtitle: [(p.property_type ? typeLabels[p.property_type] : null), p.address, (p.status ? statusLabels[p.status] : null)].filter(Boolean).join(' · '),
     href: `/properties/${p.id}`,
   }))
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const contracts: SearchResult[] = (contractsRes.data ?? []).map((c: any) => ({
+  const contracts: SearchResult[] = (contractsRes.data ?? []).map(c => ({
     id: c.id,
     type: 'contract',
     title: c.contract_number ?? `Договор #${c.id.slice(0, 8)}`,
-    subtitle: [typeLabels[c.contract_type], statusLabels[c.status]].filter(Boolean).join(' · '),
+    subtitle: [(c.contract_type ? typeLabels[c.contract_type] : null), (c.status ? statusLabels[c.status] : null)].filter(Boolean).join(' · '),
     href: `/contracts/${c.id}`,
   }))
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const tasks: SearchResult[] = (tasksRes.data ?? []).map((t: any) => ({
+  const tasks: SearchResult[] = (tasksRes.data ?? []).map(t => ({
     id: t.id,
     type: 'task',
     title: t.title,
-    subtitle: statusLabels[t.status],
+    subtitle: t.status ? statusLabels[t.status] : undefined,
     href: `/tasks`,
   }))
 

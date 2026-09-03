@@ -5,6 +5,20 @@ import { Plus, RefreshCw, Pencil } from 'lucide-react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { buttonVariants } from '@/components/ui/button'
+import type { Row } from '@/types/database'
+
+/**
+ * Правило со связанными рубрикой и сотрудником — ровно те поля, что
+ * перечислены в select ниже. Связи PostgREST отдаёт объектом или null.
+ */
+type RecurringRule = Pick<
+  Row<'accounting_recurring_rules'>,
+  'id' | 'name' | 'type' | 'amount' | 'frequency' | 'day_of_month'
+  | 'start_date' | 'end_date' | 'is_active' | 'last_generated_date'
+> & {
+  category: { name: string; color: string } | null
+  employee: { id: string; full_name: string } | null
+}
 
 const FREQ_LABEL: Record<string, string> = {
  daily: 'Ежедневно', weekly: 'Еженедельно',
@@ -29,8 +43,7 @@ export default async function RecurringPage() {
  .order('is_active', { ascending: false })
  .order('created_at', { ascending: false })
 
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const rules = (raw ?? []) as any[]
+ const rules = (raw ?? []) as RecurringRule[]
  const active = rules.filter(r => r.is_active)
  const inactive = rules.filter(r => !r.is_active)
 
@@ -113,8 +126,7 @@ export default async function RecurringPage() {
  )
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function RuleRow({ rule: r }: { rule: any }) {
+function RuleRow({ rule: r }: { rule: RecurringRule }) {
  const isIncome = r.type === 'income'
 
  function fmt(n: number) { return n.toLocaleString('ru-RU') + ' ₽' }

@@ -33,8 +33,7 @@ export async function GET() {
     .order('date', { ascending: false })
 
   const csvHeaders = ['Тип', 'Категория', 'Сумма', 'Дата', 'Статус', 'Способ оплаты', 'Описание']
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const rows = (transactions ?? []).map((t: any) => [
+  const rows = (transactions ?? []).map(t => [
     TYPE_LABELS[t.type] ?? t.type,
     t.category?.name ?? '',
     t.amount ?? '',

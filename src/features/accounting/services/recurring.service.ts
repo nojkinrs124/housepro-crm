@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Database } from '@/types/supabase'
 
 /**
  * Общая логика генерации транзакций по периодическим правилам (аренда офиса,
@@ -44,8 +45,7 @@ export function getNextDate(from: string, frequency: string, dayOfMonth: number 
 }
 
 export async function generateDueRecurringTransactions(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: SupabaseClient<any, any, any>
+  supabase: SupabaseClient<Database>
 ): Promise<{ generated: number }> {
   const today = new Date().toISOString().slice(0, 10)
 
@@ -60,6 +60,14 @@ export async function generateDueRecurringTransactions(
   let generated = 0
 
   for (const rule of rules as RecurringRuleRow[]) {
+    // Транзакция без организации не вставится: колонка обязательная. Правило
+    // без организации — испорченная строка; пропускаем её вслух, а не роняем
+    // весь ежедневный крон на первой такой.
+    if (!rule.organization_id) {
+      console.error(`[recurring] Правило ${rule.id} без организации — пропущено`)
+      continue
+    }
+
     const lastDate = rule.last_generated_date ?? rule.start_date
     const next = getNextDate(lastDate, rule.frequency, rule.day_of_month)
 

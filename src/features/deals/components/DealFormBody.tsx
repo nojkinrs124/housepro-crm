@@ -27,7 +27,7 @@ const PAYMENT_METHODS = ['Наличные', 'Безналичный расчё�
 // что вернул запрос, без подмены null на undefined.
 interface ContactOption { id: string; full_name: string; phone?: string | null; role: string; client_type?: string | null }
 interface PropertyOption { id: string; title: string; address?: string | null }
-interface RepresentativeOption { id: string; contact_id: string; full_name: string; position?: string | null; is_primary?: boolean | null }
+export interface RepresentativeOption { id: string; contact_id: string; full_name: string; position?: string | null; is_primary?: boolean | null }
 
 /**
  * Поля сделки, которые форма подставляет в значения по умолчанию. Именно те,

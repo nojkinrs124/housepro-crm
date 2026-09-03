@@ -11,6 +11,7 @@ import { ReadinessPanel } from '@/components/layout/ReadinessPanel'
 import { checkContact } from '@/lib/readiness'
 import { CommunicationTimeline } from '@/features/communications/components/CommunicationTimeline'
 import { DEAL_TYPE_LABELS as dealTypeLabels, DEAL_STATUS_LABELS as dealStatusLabels } from '@/features/deals/config/deal-stages'
+import { formatDate } from '@/lib/utils'
 
 const roleLabels: Record<string, string> = {
   client: 'Клиент',
@@ -52,12 +53,9 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
   if (!contact) notFound()
 
   const c = contact as Contact
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const tasks = rawTasks as any[] | null
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const deals = rawDeals as any[] | null
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const representatives = (rawReps ?? []) as any[]
+  const tasks = rawTasks
+  const deals = rawDeals
+  const representatives = (rawReps ?? [])
   const isLegalEntity = c.client_type === 'legal_entity'
   const statusInfo = statusLabels[c.status] ?? statusLabels.new
 
@@ -302,7 +300,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
                       {deal.amount && (
                         <p className="text-sm font-semibold text-foreground">{Number(deal.amount).toLocaleString('ru-RU')} ₽</p>
                       )}
-                      <p className="text-xs text-muted-foreground">{new Date(deal.created_at).toLocaleDateString('ru-RU')}</p>
+                      <p className="text-xs text-muted-foreground">{formatDate(deal.created_at)}</p>
                     </div>
                   </Link>
                 ))}

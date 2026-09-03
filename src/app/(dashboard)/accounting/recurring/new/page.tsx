@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { RecurringRuleForm } from '@/features/accounting/components/RecurringRuleForm'
 import { PageHeader } from '@/components/layout/PageHeader'
+import type { AccountingCategory } from '@/types/database'
 
 export default async function NewRecurringPage() {
   const supabase = await createClient()
@@ -10,10 +11,8 @@ export default async function NewRecurringPage() {
     supabase.from('users').select('id, full_name').order('full_name'),
   ])
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const categories = (categoriesRes.data ?? []) as any[]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const employees  = (employeesRes.data  ?? []) as any[]
+  const categories = (categoriesRes.data ?? []) as AccountingCategory[]
+  const employees  = (employeesRes.data  ?? [])
 
   return (
     <div className="space-y-6">

@@ -12,11 +12,15 @@ export interface LeadRow {
   id: string
   full_name: string | null
   phone: string | null
+  telegram: string | null
+  comment: string | null
   deal_type: string | null
   source: string | null
   status: string
   budget_min: number | null
   budget_max: number | null
+  rooms: number | null
+  created_at: string | null
 }
 
 export const LEAD_SOURCE_LABELS: Record<string, string> = {

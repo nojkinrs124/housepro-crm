@@ -390,9 +390,11 @@ export async function buildContractVariables(
     if (diff > 0) monthsCount = String(diff)
   }
 
-  // Поля, специфичные для найма жилого помещения — см. RentApartmentDataSchema
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const td = (contract.contract_type_data ?? {}) as Record<string, any>
+  // Доп-поля договора. Один и тот же jsonb обслуживает несколько типов
+  // договоров (наём, агентские услуги, управление, купля-продажа), поэтому
+  // единого типа у него нет — читаем через сужающие хелперы.
+  const td = (contract.contract_type_data ?? {}) as Record<string, unknown>
+  const tdStr = (key: string): string => (typeof td[key] === 'string' ? td[key] : '')
 
   const cohabitantsText = Array.isArray(td.cohabitants) && td.cohabitants.length > 0
     ? td.cohabitants.map((c: { full_name?: string; passport?: string }) =>
@@ -424,8 +426,8 @@ export async function buildContractVariables(
   // ── Купля-продажа ──
   const advanceAmount = Number(td.advance_amount) || 0
 
-  const handoverDate = td.handover_date ? formatDateRu(td.handover_date) : today
-  const returnDate = td.return_date ? formatDateRu(td.return_date) : null
+  const handoverDate = tdStr('handover_date') ? formatDateRu(tdStr('handover_date')) : today
+  const returnDate = tdStr('return_date') ? formatDateRu(tdStr('return_date')) : null
 
   const legalFormLabels: Record<string, string> = { individual: 'Физическое лицо', ip: 'Индивидуальный предприниматель', ooo: 'Общество с ограниченной ответственностью' }
   const companyLegalForm = company?.legal_form || 'ip'
@@ -488,7 +490,7 @@ export async function buildContractVariables(
 
     // ── Животные ──
     'ЖИВОТНЫЕ_ЗАПРЕЩ_РАЗРЕШ': td.pets_allowed ? 'разрешено' : 'запрещено',
-    ЖИВОТНЫЕ_ВИД: td.pets_species || '___',
+    ЖИВОТНЫЕ_ВИД: tdStr('pets_species') || '___',
     'ЖИВОТНЫЕ_КОЛ-ВО': td.pets_count != null ? String(td.pets_count) : '___',
 
     // ── Сроки ──
@@ -504,7 +506,7 @@ export async function buildContractVariables(
     // ── Финансы ──
     РАЗМЕР_АРЕНДНОЙ_ПЛАТЫ: price > 0 ? price.toLocaleString('ru-RU') : '_______________',
     'ВХОДИТ_ИЛИ_НЕ_ВХОДИТ': td.utilities_included_in_rent ? 'входит' : 'не входит',
-    ПЕРЕЧЕНЬ_КОММУНАЛЬНЫХ_УСЛУГ: td.utilities_paid_by_tenant || 'электроэнергия, холодная и горячая вода',
+    ПЕРЕЧЕНЬ_КОММУНАЛЬНЫХ_УСЛУГ: tdStr('utilities_paid_by_tenant') || 'электроэнергия, холодная и горячая вода',
     'КТО_ОПЛАЧИВАЕТ_ИНТЕРНЕТ_КОНСЬЕРЖ': td.concierge_internet_payer === 'landlord' ? 'Арендодатель' : 'Арендатор',
     РАЗМЕР_ОБЕСПЕЧИТЕЛЬНОГО_ПЛАТЕЖА: deposit > 0 ? deposit.toLocaleString('ru-RU') : '0',
 
@@ -522,9 +524,9 @@ export async function buildContractVariables(
     МЕСЯЦ_АКТА: handoverDate.month,
     ГОД_АКТА: handoverDate.year,
     'КОЛ-ВО_КЛЮЧЕЙ': td.handover_keys_count != null ? String(td.handover_keys_count) : '2',
-    'СЧЕТЧИК_ЭЛК-ВО': td.electricity_meter_reading || '___',
-    СЧЕТЧИК_ГВС: td.hot_water_meter_reading || '___',
-    СЧЕТЧИК_ХВС: td.cold_water_meter_reading || '___',
+    'СЧЕТЧИК_ЭЛК-ВО': tdStr('electricity_meter_reading') || '___',
+    СЧЕТЧИК_ГВС: tdStr('hot_water_meter_reading') || '___',
+    СЧЕТЧИК_ХВС: tdStr('cold_water_meter_reading') || '___',
     ОПИСЬ_ИМУЩЕСТВА: inventoryText,
 
     // ── Акт возврата ──
@@ -532,7 +534,7 @@ export async function buildContractVariables(
     МЕСЯЦ_ВОЗВРАТА: returnDate?.month ?? '___',
     ГОД_ВОЗВРАТА: returnDate?.year ?? '___',
     'КОЛ-ВО_КЛЮЧЕЙ_ВОЗВРАТ': td.return_keys_count != null ? String(td.return_keys_count) : '___',
-    ПРЕТЕНЗИИ_ПРИ_ВОЗВРАТЕ: td.return_claims || 'Претензий не имеется',
+    ПРЕТЕНЗИИ_ПРИ_ВОЗВРАТЕ: tdStr('return_claims') || 'Претензий не имеется',
 
     // ── Исполнитель (Агентство) ──
     ИСПОЛНИТЕЛЬ_НАЗВАНИЕ: company?.name || 'ИП HousePro',

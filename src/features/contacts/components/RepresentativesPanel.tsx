@@ -11,7 +11,7 @@ interface Representative {
   position: string | null
   phone: string | null
   email: string | null
-  basis_type: string
+  basis_type: string | null
   basis_details: string | null
   is_primary: boolean | null
 }
@@ -61,7 +61,7 @@ export function RepresentativesPanel({ contactId, representatives }: { contactId
               {r.full_name}{r.is_primary ? ' · основной' : ''}
             </p>
             <p className="text-xs text-[var(--hp-sub)] mt-0.5">
-              {[r.position, basisLabels[r.basis_type] ?? r.basis_type, r.basis_details].filter(Boolean).join(' · ')}
+              {[r.position, r.basis_type ? basisLabels[r.basis_type] ?? r.basis_type : null, r.basis_details].filter(Boolean).join(' · ')}
             </p>
             {(r.phone || r.email) && (
               <p className="text-xs text-[var(--hp-sub)]">{[r.phone, r.email].filter(Boolean).join(' · ')}</p>

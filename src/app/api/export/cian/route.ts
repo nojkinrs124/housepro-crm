@@ -15,14 +15,12 @@ export async function GET() {
     .eq('status', 'available')
     .order('created_at', { ascending: false })
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const esc = (v: any) => String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  const esc = (v: unknown) => String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
 
   const catMap: Record<string,string> = { apartment:'flatRent', house:'houseRent', commercial:'officeRent', office:'officeRent', warehouse:'warehouseRent', land:'landRent' }
   const catSaleMap: Record<string,string> = { apartment:'flatSale', house:'houseSale', commercial:'officeSale', office:'officeSale', warehouse:'warehouseSale', land:'landSale' }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const offers = (properties ?? []).map((p: any) => {
+  const offers = (properties ?? []).map(p => {
     const isRent = p.deal_type === 'rent' || p.deal_type === 'subrent' || p.deal_type === 'management'
     const cat = isRent ? (catMap[p.property_type] ?? 'flatRent') : (catSaleMap[p.property_type] ?? 'flatSale')
     return [

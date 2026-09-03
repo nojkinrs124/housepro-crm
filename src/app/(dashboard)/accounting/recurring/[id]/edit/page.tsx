@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { RecurringRuleForm } from '@/features/accounting/components/RecurringRuleForm'
 import { PageHeader } from '@/components/layout/PageHeader'
+import type { AccountingCategory, AccountingRecurringRule } from '@/types/database'
 
 export default async function EditRecurringPage({
   params,
@@ -19,12 +20,9 @@ export default async function EditRecurringPage({
 
   if (!ruleRes.data) notFound()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const rule       = ruleRes.data as any
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const categories = (categoriesRes.data ?? []) as any[]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const employees  = (employeesRes.data  ?? []) as any[]
+  const rule       = ruleRes.data as AccountingRecurringRule
+  const categories = (categoriesRes.data ?? []) as AccountingCategory[]
+  const employees  = (employeesRes.data  ?? [])
 
   return (
     <div className="space-y-6">

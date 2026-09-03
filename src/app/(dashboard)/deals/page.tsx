@@ -20,8 +20,7 @@ export default async function DealsPage() {
     `)
     .order('created_at', { ascending: false })
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const deals = (rawDeals ?? []) as any[]
+  const deals = (rawDeals ?? [])
 
   const active    = deals.filter(d => !['completed', 'cancelled'].includes(d.status))
   const completed = deals.filter(d => d.status === 'completed')
@@ -31,8 +30,8 @@ export default async function DealsPage() {
 
   // Ближайшее плановое закрытие среди активных сделок — что «горит» в этом месяце.
   const upcoming = active
-    .filter(d => d.expected_close_date)
-    .sort((a, b) => a.expected_close_date.localeCompare(b.expected_close_date))[0]
+    .filter(d => d.expected_close_date !== null)
+    .sort((a, b) => (a.expected_close_date ?? '').localeCompare(b.expected_close_date ?? ''))[0]
 
   const closingThisMonth = active.filter(d => {
     if (!d.expected_close_date) return false

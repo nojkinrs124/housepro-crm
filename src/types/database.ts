@@ -256,7 +256,7 @@ export interface AvitoSettings {
 
 export interface Contract {
   id: string
-  contract_number?: string
+  contract_number?: string | null
   contract_type: ContractType
   owner_contact_id?: string
   client_contact_id?: string
@@ -435,7 +435,7 @@ export interface AccountingTransaction {
   created_by?: string
   // Relations
   category?: AccountingCategory
-  contract?: { id: string; contract_number?: string; contract_type?: string }
+  contract?: { id: string; contract_number?: string | null; contract_type?: string }
   property?: { id: string; title?: string; address?: string }
   deal?: { id: string; deal_type?: string }
   contact?: { id: string; full_name: string }

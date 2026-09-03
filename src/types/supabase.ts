@@ -2266,6 +2266,7 @@ export type Database = {
           reviewed_by: string | null
           slug: string
           sort_order: number
+          source_hash: string | null
           summary: string | null
           title: string
           updated_at: string
@@ -2283,6 +2284,7 @@ export type Database = {
           reviewed_by?: string | null
           slug: string
           sort_order?: number
+          source_hash?: string | null
           summary?: string | null
           title: string
           updated_at?: string
@@ -2300,6 +2302,7 @@ export type Database = {
           reviewed_by?: string | null
           slug?: string
           sort_order?: number
+          source_hash?: string | null
           summary?: string | null
           title?: string
           updated_at?: string
@@ -3614,10 +3617,24 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "showings_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "showings_contact_id_fkey"
             columns: ["contact_id"]
             isOneToOne: false
             referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "showings_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
           {

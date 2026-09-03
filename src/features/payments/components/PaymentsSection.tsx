@@ -41,12 +41,9 @@ export async function PaymentsSection({ contractId }: { contractId: string }) {
  ])
 
  const rows = transactions ?? []
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const scheduledCount = rows.filter((t: any) => t.schedule_seq !== null && t.schedule_seq !== undefined).length
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const totalPaid = rows.filter((t: any) => t.status === 'completed').reduce((s: number, t: any) => s + Number(t.amount), 0)
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const totalOwed = rows.filter((t: any) => t.status === 'planned').reduce((s: number, t: any) => s + Number(t.amount), 0)
+ const scheduledCount = rows.filter(t => t.schedule_seq !== null && t.schedule_seq !== undefined).length
+ const totalPaid = rows.filter(t => t.status === 'completed').reduce((s: number, t) => s + Number(t.amount), 0)
+ const totalOwed = rows.filter(t => t.status === 'planned').reduce((s: number, t) => s + Number(t.amount), 0)
 
  return (
  <div className="hp-card p-5 space-y-4">
@@ -93,8 +90,7 @@ export async function PaymentsSection({ contractId }: { contractId: string }) {
  <p className="text-sm text-muted-foreground">Платежей нет</p>
  ) : (
  <div className="space-y-2">
- {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
- {rows.map((t: any) => {
+ {rows.map(t => {
  const isOverdue = t.status === 'planned' && t.due_date && new Date(t.due_date) < new Date()
  const statusKey = isOverdue ? 'overdue' : t.status
  const sc = statusConfig[statusKey] ?? statusConfig.planned

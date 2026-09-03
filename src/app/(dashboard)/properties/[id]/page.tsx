@@ -47,7 +47,6 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
  const { id } = await params
  const supabase = await createClient()
 
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
  const { data: property, error: propertyError } = await supabase
  .from('properties')
  .select('*, manager:users(full_name), owner:contacts!owner_id(id, full_name, phone, email)')
@@ -79,8 +78,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
  readings: [...(meter.readings ?? [])].sort((a, b) => b.reading_date.localeCompare(a.reading_date)),
  }))
 
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const p = property as any
+ const p = property
  const manager = p.manager as { full_name?: string } | null
  const owner = p.owner as { id: string; full_name: string; phone?: string | null; email?: string | null } | null
 
@@ -118,10 +116,10 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
  subtitle={
  <span className="flex items-center gap-2 flex-wrap">
  <span className="text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] bg-muted text-muted-foreground font-medium">
- {typeLabels[p.property_type] ?? p.property_type}
+ {p.property_type ? typeLabels[p.property_type] ?? p.property_type : null}
  </span>
  <span className="text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] bg-[var(--hp-info-tint)] text-[var(--hp-info)] font-medium">
- {dealLabels[p.deal_type] ?? p.deal_type}
+ {p.deal_type ? dealLabels[p.deal_type] ?? p.deal_type : null}
  </span>
  <span className={`text-xs px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-medium ${statusColors[p.status] ?? 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]'}`}>
  {PROPERTY_STATUS_LABELS[p.status]?.label ?? p.status}
@@ -198,7 +196,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
  {(p.photo_urls?.length ?? 0) > 0 && (
  <div className="hp-card p-5">
  <div className="flex items-center justify-between mb-3">
- <h2 className="font-semibold text-foreground text-sm">Фотографии ({p.photo_urls.length})</h2>
+ <h2 className="font-semibold text-foreground text-sm">Фотографии ({p.photo_urls?.length ?? 0})</h2>
  <Link href={`/properties/${id}/edit`} className="text-xs text-primary hover:underline">Управлять</Link>
  </div>
  <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
@@ -270,8 +268,8 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
  </h2>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
  <div>
- <Row label="Тип дома" value={houseTypeLabels[p.house_type] ?? p.house_type} />
- <Row label="Материал стен" value={wallMaterialLabels[p.wall_material] ?? p.wall_material} />
+ <Row label="Тип дома" value={p.house_type ? houseTypeLabels[p.house_type] ?? p.house_type : null} />
+ <Row label="Материал стен" value={p.wall_material ? wallMaterialLabels[p.wall_material] ?? p.wall_material : null} />
  <Row label="Год постройки" value={p.year_built} />
  </div>
  <div>
@@ -290,8 +288,8 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
  </h2>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
  <div>
- <Row label="Отопление" value={heatingLabels[p.heating_type] ?? p.heating_type} />
- <Row label="Водоснабжение" value={waterLabels[p.water_supply_type] ?? p.water_supply_type} />
+ <Row label="Отопление" value={p.heating_type ? heatingLabels[p.heating_type] ?? p.heating_type : null} />
+ <Row label="Водоснабжение" value={p.water_supply_type ? waterLabels[p.water_supply_type] ?? p.water_supply_type : null} />
  </div>
  <div>
  <Bool val={p.has_internet} label="Интернет" />

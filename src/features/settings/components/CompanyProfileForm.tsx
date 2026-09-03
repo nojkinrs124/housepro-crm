@@ -55,8 +55,8 @@ function SectionHeader({ icon: Icon, title }: { icon: React.ElementType; title: 
 interface CompanyProfileFormProps {
  mode: 'create' | 'edit'
  profile: CompanyProfile | null
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- action: (prevState: any, formData: FormData) => Promise<{ error?: string } | void>
+ /** Предыдущее состояние приходит от useActionState — той же формы, что и результат. */
+ action: (prevState: { error?: string } | void, formData: FormData) => Promise<{ error?: string } | void>
  isFirstProfile?: boolean
 }
 

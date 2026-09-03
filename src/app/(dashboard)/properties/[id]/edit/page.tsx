@@ -20,8 +20,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
 
  if (!rawProperty) notFound()
 
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const p = rawProperty as any
+ const p = rawProperty
  const boundAction = updatePropertyAction.bind(null, id)
 
  const inp = 'w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all'
@@ -122,7 +121,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
  <div className="hp-card p-6 space-y-4">
  <h2 className="font-semibold text-foreground">Параметры</h2>
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
- {[
+ {([
  { label: 'Площадь общая (м²)', name: 'area', step: '0.1' },
  { label: 'Площадь жилая (м²)', name: 'living_area', step: '0.1' },
  { label: 'Площадь кухни (м²)', name: 'kitchen_area', step: '0.1' },
@@ -130,7 +129,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
  { label: 'Этаж', name: 'floor', step: '1' },
  { label: 'Этажность дома', name: 'total_floors', step: '1' },
  { label: 'Высота потолков (м)', name: 'ceiling_height', step: '0.1' },
- ].map(f => (
+ ] as const).map(f => (
  <div key={f.name}>
  <label className={lbl}>{f.label}</label>
  <input type="number" name={f.name} step={f.step} defaultValue={p[f.name] ?? ''} className={inp} />

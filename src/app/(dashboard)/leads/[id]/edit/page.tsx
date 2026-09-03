@@ -33,8 +33,7 @@ export default async function EditLeadPage({ params }: { params: Promise<{ id: s
 
  if (!rawLead) notFound()
 
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const l = rawLead as any
+ const l = rawLead
  const boundAction = updateLeadAction.bind(null, id)
 
  const inp = 'w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all'
@@ -54,12 +53,12 @@ export default async function EditLeadPage({ params }: { params: Promise<{ id: s
  <input name="full_name" defaultValue={l.full_name ?? ''} className={inp} />
  </div>
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- {[
+ {([
  { name: 'phone', label: 'Телефон', type: 'tel' },
  { name: 'email', label: 'Email', type: 'email' },
  { name: 'telegram', label: 'Telegram', type: 'text' },
  { name: 'whatsapp', label: 'WhatsApp', type: 'text' },
- ].map(f => (
+ ] as const).map(f => (
  <div key={f.name}>
  <label className={lbl}>{f.label}</label>
  <input name={f.name} type={f.type} defaultValue={l[f.name] ?? ''} className={inp} />

@@ -35,8 +35,7 @@ export async function GET() {
     .order('created_at', { ascending: false })
 
   const csvHeaders = ['Номер договора', 'Тип', 'Статус', 'Объект', 'Сумма', 'Дата начала', 'Дата окончания', 'Дата создания']
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const rows = (contracts ?? []).map((c: any) => [
+  const rows = (contracts ?? []).map(c => [
     c.contract_number ?? '',
     c.contract_type ?? '',
     STATUS_LABELS[c.status] ?? c.status,
@@ -44,7 +43,7 @@ export async function GET() {
     c.amount ?? '',
     c.start_date ? new Date(c.start_date).toLocaleDateString('ru-RU') : '',
     c.end_date ? new Date(c.end_date).toLocaleDateString('ru-RU') : '',
-    new Date(c.created_at).toLocaleDateString('ru-RU'),
+    c.created_at ? new Date(c.created_at).toLocaleDateString('ru-RU') : '',
   ])
 
   const csv = BOM + [csvHeaders, ...rows].map(r => r.map(csvEscape).join(';')).join('\n')

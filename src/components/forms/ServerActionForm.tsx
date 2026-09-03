@@ -12,8 +12,7 @@ interface ServerActionFormProps extends Omit<React.FormHTMLAttributes<HTMLFormEl
  * { error } при неудаче. Лишние аргументы из useActionState игнорируются
  * вызываемой функцией, если она их не объявляет — это безопасно в JS.
  */
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- action: (...args: any[]) => any
+ action: (formData: FormData) => Promise<unknown>
  children: React.ReactNode
 }
 

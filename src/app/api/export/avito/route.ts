@@ -15,15 +15,13 @@ export async function GET() {
     .eq('status', 'available')
     .order('created_at', { ascending: false })
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const esc = (v: any) => String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  const esc = (v: unknown) => String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
 
   const catMap: Record<string,string> = { apartment:'Квартиры', house:'Дома и дачи', commercial:'Коммерческая недвижимость', office:'Коммерческая недвижимость', warehouse:'Коммерческая недвижимость', land:'Земельные участки' }
   const opMap:  Record<string,string> = { rent:'Сдам', sale:'Продам', subrent:'Сдам', management:'Сдам' }
   const ptMap:  Record<string,string> = { apartment:'Вторичка', house:'Дом', commercial:'Офис', office:'Офис', warehouse:'Склад', land:'Участок' }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const ads = (properties ?? []).map((p: any) => [
+  const ads = (properties ?? []).map(p => [
     `  <Ad>`,
     `    <Id>${esc(p.id)}</Id>`,
     `    <DateBegin>${p.created_at?.slice(0,10)}</DateBegin>`,
