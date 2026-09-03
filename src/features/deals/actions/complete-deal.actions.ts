@@ -188,7 +188,7 @@ export async function completeDealAction(
       deal_id: dealId,
       contract_id: contract.id,
       property_id: deal.property_id,
-      client_id: deal.client_contact_id,
+      contact_id: deal.client_contact_id,
       organization_id: orgId,
     })
     if (!taskError) created.push('задача на подписание')

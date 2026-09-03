@@ -12,7 +12,7 @@ export default async function NewTaskPage({
  searchParams,
 }: {
  searchParams: Promise<{
- lead_id?: string; client_id?: string; deal_id?: string;
+ lead_id?: string; contact_id?: string; client_id?: string; deal_id?: string;
  property_id?: string; contract_id?: string; payment_id?: string;
  }>
 }) {
@@ -90,8 +90,8 @@ export default async function NewTaskPage({
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
  <ContactSelectField
  contacts={clients ?? []}
- defaultContactId={params.client_id ?? ''}
- name="client_id"
+ defaultContactId={params.contact_id ?? params.client_id ?? ''}
+ name="contact_id"
  label="Контакт"
  role="both"
  placeholder="— не выбрано —"

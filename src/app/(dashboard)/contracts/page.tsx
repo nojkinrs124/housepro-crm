@@ -11,13 +11,12 @@ export default async function ContractsPage() {
 
   const { data: contracts, error } = await supabase
     .from('contracts')
-    .select('id, contract_number, contract_type, status, amount, client_id, client_contact_id, property_id, created_at')
+    .select('id, contract_number, contract_type, status, amount, client_contact_id, property_id, created_at')
     .order('created_at', { ascending: false })
     .limit(500)
 
   const contactIds = [...new Set([
     ...(contracts?.map(c => c.client_contact_id).filter(isId) ?? []),
-    ...(contracts?.map(c => c.client_id).filter(isId) ?? []),
   ])]
   const propertyIds = [...new Set(contracts?.map(c => c.property_id).filter(isId) ?? [])]
 
@@ -30,14 +29,14 @@ export default async function ContractsPage() {
       : Promise.resolve({ data: [] }),
   ])
 
-  // Запасной путь через legacy-таблицу clients убран 02.09.2026: договоров со
-  // ссылкой client_id без client_contact_id в базе нет ни одного, а сама таблица
-  // содержит одну запись, которая уже есть в contacts. Имена берутся из contacts.
+  // Имена сторон берутся только из contacts. Запасной путь через client_id убран
+  // 04.09.2026: колонка пуста во всех 13 договорах и больше не читается нигде —
+  // комментарий об этом стоял с 02.09.2026, а сам путь оставался в коде.
   const clientMap = Object.fromEntries((contactsData ?? []).map(c => [c.id, c]))
   const propertyMap = Object.fromEntries((propertiesData ?? []).map(p => [p.id, p]))
 
   const rows: ContractRow[] = (contracts ?? []).map(c => {
-    const clientId = c.client_contact_id || c.client_id
+    const clientId = c.client_contact_id
     const property = c.property_id ? propertyMap[c.property_id] : null
     return {
       id: c.id,

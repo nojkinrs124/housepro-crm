@@ -32,8 +32,10 @@ export async function createTaskAction(formData: FormData) {
     created_by: user.id,
     assigned_to: formData.get('assigned_to') as string || user.id,
     lead_id: formData.get('lead_id') as string || null,
-    client_id: formData.get('client_id') as string || null,
-    owner_id: formData.get('owner_id') as string || null,
+    // Связь задачи с человеком — через контакт. Колонка называлась client_id и
+    // указывала на удалённую таблицу clients; owner_id писался всегда пустым,
+    // поля для него в форме нет.
+    contact_id: formData.get('contact_id') as string || null,
     deal_id: formData.get('deal_id') as string || null,
     property_id: formData.get('property_id') as string || null,
     contract_id: formData.get('contract_id') as string || null,

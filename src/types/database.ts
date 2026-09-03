@@ -258,7 +258,6 @@ export interface Contract {
   id: string
   contract_number?: string
   contract_type: ContractType
-  client_id?: string
   owner_contact_id?: string
   client_contact_id?: string
   owner_representative_id?: string
@@ -300,8 +299,8 @@ export interface Task {
   assignee?: User
   // Relationships
   lead_id?: string
-  client_id?: string
-  owner_id?: string
+  /** Контакт задачи. Раньше назывался client_id и указывал на удалённую таблицу clients. */
+  contact_id?: string
   deal_id?: string
   property_id?: string
   contract_id?: string
@@ -315,7 +314,6 @@ export interface Deal {
   deal_number?: number
   deal_type: DealType
   status: string
-  client_id?: string
   property_id?: string
   owner_contact_id?: string
   client_contact_id?: string

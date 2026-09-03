@@ -42,7 +42,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
   const [{ data: contact }, { data: rawTasks }, { data: rawDeals }, { data: rawReps }] = await Promise.all([
     supabase.from('contacts').select('*').eq('id', id).single(),
     supabase.from('tasks').select('id, title, status, priority, deadline')
-      .eq('client_id', id).order('created_at', { ascending: false }).limit(10),
+      .eq('contact_id', id).order('created_at', { ascending: false }).limit(10),
     supabase.from('deals').select('id, deal_type, status, amount, created_at')
       .or(`owner_contact_id.eq.${id},client_contact_id.eq.${id}`)
       .order('created_at', { ascending: false }).limit(10),

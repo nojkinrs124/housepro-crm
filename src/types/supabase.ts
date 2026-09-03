@@ -2261,6 +2261,9 @@ export type Database = {
           id: string
           is_published: boolean
           organization_id: string
+          review_period_months: number
+          reviewed_at: string | null
+          reviewed_by: string | null
           slug: string
           sort_order: number
           summary: string | null
@@ -2275,6 +2278,9 @@ export type Database = {
           id?: string
           is_published?: boolean
           organization_id: string
+          review_period_months?: number
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           slug: string
           sort_order?: number
           summary?: string | null
@@ -2289,6 +2295,9 @@ export type Database = {
           id?: string
           is_published?: boolean
           organization_id?: string
+          review_period_months?: number
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           slug?: string
           sort_order?: number
           summary?: string | null
@@ -2301,6 +2310,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "knowledge_articles_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -3637,7 +3653,7 @@ export type Database = {
       tasks: {
         Row: {
           assigned_to: string | null
-          client_id: string | null
+          contact_id: string | null
           contract_id: string | null
           created_at: string | null
           created_by: string | null
@@ -3659,7 +3675,7 @@ export type Database = {
         }
         Insert: {
           assigned_to?: string | null
-          client_id?: string | null
+          contact_id?: string | null
           contract_id?: string | null
           created_at?: string | null
           created_by?: string | null
@@ -3681,7 +3697,7 @@ export type Database = {
         }
         Update: {
           assigned_to?: string | null
-          client_id?: string | null
+          contact_id?: string | null
           contract_id?: string | null
           created_at?: string | null
           created_by?: string | null
@@ -3707,6 +3723,13 @@ export type Database = {
             columns: ["assigned_to"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
             referencedColumns: ["id"]
           },
           {
