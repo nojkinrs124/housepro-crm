@@ -6,7 +6,7 @@
 //
 // Токен читается напрямую из process.env и НИКОГДА не уходит в браузер:
 // клиентские компоненты ходят через /api/dadata/[type] (см. роут), а не сюда.
-// В lib/env.ts не добавляем по той же причине, что Telegram и Stripe — иначе
+// В lib/env.ts не добавляем по той же причине, что Telegram — иначе
 // отсутствие ключа уронит все страницы разом.
 
 const DADATA_BASE = 'https://suggestions.dadata.ru/suggestions/api/4_1/rs'

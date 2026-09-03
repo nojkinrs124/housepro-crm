@@ -31,7 +31,7 @@ const DASHBOARD_ROUTES = [
   '/requests',
   '/settings', '/settings/api', '/settings/audit', '/settings/avito',
   '/settings/plans', '/settings/plans/new',
-  '/settings/billing', '/settings/company', '/settings/company/new',
+  '/settings/company', '/settings/company/new',
   '/settings/general', '/settings/notifications', '/settings/profile',
   '/settings/security', '/settings/templates', '/settings/webhooks',
   '/settings/export',

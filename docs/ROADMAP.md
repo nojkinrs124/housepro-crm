@@ -20,7 +20,7 @@
 > | 3.1 Показы | ✅ `/showings` |
 > | 3.2 Подборки | ✅ `/collections` + публичные страницы |
 > | 3.3 Email | ⚠️ реализовано иначе — не `src/lib/email.ts`, а провайдеры с автовыбором (см. `docs/INTEGRATIONS.md`) |
-> | 4.1 Stripe | ✅ `src/lib/feature-gates.ts`, `/api/stripe`, `/api/billing` |
+> | 4.1 Stripe | ❌ удалено 04.09.2026 — подписку сделают заново при масштабировании |
 > | 4.2 Onboarding | ✅ визард есть — `src/app/onboarding/page.tsx` + `OnboardingWizard.tsx`, 5 шагов (запись в таблице отставала) |
 > | 4.3 PWA | ✅ `public/manifest.json` |
 > | 5.1 Public API | ✅ `src/lib/api-auth.ts`, `/api/v1` |
@@ -62,7 +62,7 @@
 | **Phase 1** | Multi-tenant: org_id, RLS, JWT | 3–4 нед. | Данные агентств изолированы |
 | **Phase 2** | Security: Audit log, версионирование, permissions | 1–2 нед. | Compliance-ready |
 | **Phase 3** | PropTech: показы, подборки, email, KPI | 3–4 нед. | Конкурентный продукт |
-| **Phase 4** | SaaS core: Stripe, onboarding, PWA | 4–6 нед. | Можно принимать оплату |
+| **Phase 4** | SaaS core: onboarding, PWA (подписка отложена до масштабирования) | 4–6 нед. | Можно подключать агентства |
 | **Phase 5** | API & интеграции | 4–6 нед. | Enterprise-ready |
 
 ---

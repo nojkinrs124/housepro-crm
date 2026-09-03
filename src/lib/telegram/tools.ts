@@ -23,7 +23,7 @@ export const MUTATING_TOOLS = [
 ] as const
 
 function apiBase(): string {
-  // NEXT_PUBLIC_SITE_URL — если явно задан (см. billing/checkout, тот же паттерн).
+  // NEXT_PUBLIC_SITE_URL — если явно задан.
   // Иначе — автоматическая переменная Vercel (без протокола, поэтому https:// вручную).
   // localhost имеет смысл только при локальной разработке — на Vercel он не резолвится.
   if (process.env.NEXT_PUBLIC_SITE_URL) return process.env.NEXT_PUBLIC_SITE_URL

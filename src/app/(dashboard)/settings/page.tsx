@@ -22,7 +22,6 @@ const SETTINGS_GROUPS = [
       { icon: Building2, title: 'Компания', desc: 'Название, логотип, реквизиты', href: '/settings/company' },
       { icon: HandCoins, title: 'Тарифы агентства', desc: 'Условия работы с собственниками и клиентами', href: '/settings/plans' },
       { icon: Settings, title: 'Общие настройки', desc: 'Язык, валюта, временная зона', href: '/settings/general' },
-      { icon: CreditCard, title: 'Подписка на CRM', desc: 'Оплата самой системы ХаусПро', href: '/settings/billing' },
       { icon: Bell, title: 'Уведомления', desc: 'Email и push-уведомления', href: '/settings/notifications' },
       { icon: Database, title: 'Шаблоны документов', desc: 'DOCX шаблоны договоров', href: '/settings/templates' },
     ],

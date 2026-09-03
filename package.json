@@ -1,6 +1,6 @@
 {
   "name": "housepro-crm",
-  "version": "2.1.2",
+  "version": "2.2.0",
   "private": true,
   "license": "MIT",
   "scripts": {
@@ -50,7 +50,6 @@
     "react-hook-form": "^7.86.0",
     "recharts": "^3.10.1",
     "sonner": "^2.0.8",
-    "stripe": "^22.5.0",
     "tailwind-merge": "^3.6.0",
     "zod": "^4.4.3"
   },

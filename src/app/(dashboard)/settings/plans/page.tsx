@@ -26,7 +26,7 @@ function rateText(chargeType: string, rate: number | null): string {
 }
 
 /**
- * Справочник тарифов агентства. Не путать с /settings/billing — там подписка
+ * Справочник тарифов агентства: условия работы с собственниками и клиентами.
  * на саму CRM, здесь условия работы агентства с собственниками и клиентами.
  */
 export default async function PlansPage() {
