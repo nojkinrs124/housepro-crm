@@ -7,6 +7,18 @@ import { ContractForm } from '@/features/contracts/components/ContractForm'
 import { getContractFormData } from '@/features/contracts/data/contract-form-data'
 import { PageHeader } from '@/components/layout/PageHeader'
 
+/**
+ * contract_type_data хранится как jsonb: компилятор знает про него только то,
+ * что это Json. Форме нужен объект — всё остальное (строка, число, массив)
+ * означает испорченные данные, и подсовывать их в поля не надо.
+ */
+function asRecord(value: unknown): Record<string, unknown> | undefined {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : undefined
+}
+
+
 export default async function EditContractPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
@@ -14,12 +26,10 @@ export default async function EditContractPage({ params }: { params: Promise<{ i
   const { data: rawContract } = await supabase.from('contracts').select('*').eq('id', id).single()
   if (!rawContract) notFound()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const dealId = (rawContract as any).deal_id as string | undefined
+  const dealId = rawContract.deal_id ?? undefined
   const formData = await getContractFormData(id, dealId)
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const c = rawContract as any
+  const c = rawContract
   const { owners, clients, properties, representativesByContact, baseContracts, companyProfiles, deals } = formData
 
   const boundAction = updateContractAction.bind(null, id)
@@ -64,7 +74,7 @@ export default async function EditContractPage({ params }: { params: Promise<{ i
           end_date:          c.end_date,
           notes:             c.notes,
           status:            c.status,
-          contract_type_data: c.contract_type_data ?? undefined,
+          contract_type_data: asRecord(c.contract_type_data),
           plan_id:            c.plan_id ?? undefined,
           settlement_scheme:  c.settlement_scheme ?? undefined,
           owner_fixed_amount: c.owner_fixed_amount,

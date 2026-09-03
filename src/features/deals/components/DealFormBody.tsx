@@ -27,6 +27,28 @@ const PAYMENT_METHODS = ['Наличные', 'Безналичный расчё�
 // что вернул запрос, без подмены null на undefined.
 interface ContactOption { id: string; full_name: string; phone?: string | null; role: string; client_type?: string | null }
 interface PropertyOption { id: string; title: string; address?: string | null }
+interface RepresentativeOption { id: string; contact_id: string; full_name: string; position?: string | null; is_primary?: boolean | null }
+
+/**
+ * Поля сделки, которые форма подставляет в значения по умолчанию. Именно те,
+ * что читаются ниже, — не вся строка: остальное форме не нужно, а `any`
+ * прятал бы опечатку в имени поля.
+ */
+interface DealDefaults {
+  deal_type?: string | null
+  status?: string | null
+  amount?: number | null
+  commission?: number | null
+  advance_amount?: number | null
+  down_payment?: number | null
+  bargain_amount?: number | null
+  expected_close_date?: string | null
+  bank_approval_date?: string | null
+  bank_name?: string | null
+  payment_method?: string | null
+  source?: string | null
+  notes?: string | null
+}
 
 export function DealFormBody({
   deal,
@@ -41,13 +63,11 @@ export function DealFormBody({
   propertyDefaultId = '',
   showStatus = false,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  deal?: any
+  deal?: DealDefaults
   owners: ContactOption[]
   clients: ContactOption[]
   properties: PropertyOption[]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  representativesByContact: Record<string, any[]>
+  representativesByContact: Record<string, RepresentativeOption[]>
   ownerDefaultId?: string
   clientDefaultId?: string
   ownerRepDefaultId?: string

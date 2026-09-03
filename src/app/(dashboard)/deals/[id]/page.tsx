@@ -149,21 +149,16 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
       .order('created_at', { ascending: false }),
   ])
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const deal = dealResult.data as any
+  const deal = dealResult.data
   if (dealResult.error && dealResult.error.code !== 'PGRST116') {
     throw new Error(`Не удалось загрузить сделку: ${dealResult.error.message}`)
   }
   if (!deal) notFound()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const comments = (commentsResult.data ?? []) as any[]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const contracts = (contractsResult.data ?? []) as any[]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const tasks = (tasksResult.data ?? []) as any[]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const files = (filesResult.data ?? []) as any[]
+  const comments = commentsResult.data ?? []
+  const contracts = contractsResult.data ?? []
+  const tasks = tasksResult.data ?? []
+  const files = filesResult.data ?? []
 
   const ownerContact  = deal.owner_contact as PartyContact | null
   const clientContact = deal.client_contact as PartyContact | null
@@ -472,7 +467,9 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
               )
             })}
             {files.map(f => (
-              <a key={f.id} href={f.file_url} target="_blank" rel="noopener noreferrer" className="hp-block-item">
+              // file_url в схеме nullable: пустую ссылку не рендерим — раньше
+              // это скрывал каст к any, и в разметку уходил href={null}.
+              <a key={f.id} href={f.file_url ?? undefined} target="_blank" rel="noopener noreferrer" className="hp-block-item">
                 <Paperclip className="w-4 h-4 shrink-0 text-[var(--hp-sub)]" />
                 <span className="flex-1 min-w-0 truncate text-[var(--hp-ink)]">{f.file_name}</span>
                 <span className="shrink-0 text-[11.5px] text-[var(--hp-tertiary)]">

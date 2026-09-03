@@ -30,8 +30,9 @@ interface BaseContractOption { id: string; label: string }
 interface DealOption { id: string; label: string }
 
 interface ContractFormProps {
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- action: (prevState: any, formData: FormData) => Promise<{ error?: string }>
+ // Предыдущее состояние из useActionState форме не нужно — она читает только
+ // ошибку из ответа.
+ action: (prevState: unknown, formData: FormData) => Promise<{ error?: string }>
  owners: PartyContact[]
  clients: PartyContact[]
  representativesByContact: Record<string, PartyRepresentative[]>

@@ -1,4 +1,21 @@
 import { createClient } from '@/lib/supabase/server'
+
+/**
+ * PostgREST отдаёт связь либо объектом, либо массивом — в зависимости от того,
+ * как выведена кратность. Раньше это сглаживалось кастом к any, и опечатка в
+ * имени поля не поймалась бы ни компилятором, ни глазами.
+ */
+function contractNumberOf(value: unknown): string | null {
+  const row = Array.isArray(value) ? value[0] : value
+  const number = (row as { contract_number?: unknown } | null)?.contract_number
+  return typeof number === 'string' ? number : null
+}
+
+function contactNameOf(value: unknown): string | null {
+  const row = Array.isArray(value) ? value[0] : value
+  const name = (row as { full_name?: unknown } | null)?.full_name
+  return typeof name === 'string' ? name : null
+}
 import { stagesOf, terminalStageOf } from '@/features/directions/config/directions'
 import {
  Users, Home, FileText, CheckSquare, TrendingUp,
@@ -213,8 +230,7 @@ export default async function DashboardPage() {
  className="flex items-center justify-between px-4 py-3 border transition-all"
  style={{ background: 'var(--hp-danger-tint)', borderColor: 'var(--hp-border)' }}>
  <div>
- {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
- <p className="text-xs font-bold text-foreground">{(p.contract as any)?.contract_number ?? 'Без договора'}</p>
+ <p className="text-xs font-bold text-foreground">{contractNumberOf(p.contract) ?? 'Без договора'}</p>
  <p className="text-xs text-muted-foreground mt-0.5">
  {p.due_date ? formatDate(p.due_date) : '—'}
  </p>
@@ -327,8 +343,7 @@ export default async function DashboardPage() {
  ) : (
  <div className="space-y-1">
  {recentDeals.map(d => {
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const clientName = (d.client_contact as any)?.full_name ?? (d.owner_contact as any)?.full_name
+ const clientName = contactNameOf(d.client_contact) ?? contactNameOf(d.owner_contact)
  return (
  <Link key={d.id} href={`/deals/${d.id}`}
  className="flex items-center justify-between p-2.5 hover:bg-background transition-colors group">

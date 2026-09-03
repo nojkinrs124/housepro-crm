@@ -5,6 +5,16 @@ import { DEAL_TYPE_LABELS as dealTypeLabels } from '@/features/deals/config/deal
 // по умолчанию скрывает завершённые/отменённые (чтобы не создавать новые договоры под
 // них), но если договор УЖЕ был привязан к такой сделке, её нужно показать в списке —
 // иначе при сохранении формы связь молча потеряется (в select её просто не будет).
+/**
+ * Связанная строка из ответа PostgREST: он отдаёт связь либо объектом, либо
+ * массивом, в зависимости от того, как вывелась кратность. Раньше это
+ * сглаживалось кастом к any, и опечатка в имени поля не поймалась бы.
+ */
+function relatedRow<T>(value: unknown): T | null {
+  const row = Array.isArray(value) ? value[0] : value
+  return (row ?? null) as T | null
+}
+
 export async function getContractFormData(excludeContractId?: string, currentDealId?: string) {
   const supabase = await createClient()
 
@@ -66,8 +76,7 @@ export async function getContractFormData(excludeContractId?: string, currentDea
   const baseContracts = (rawBaseContracts ?? [])
     .filter((c) => c.id !== excludeContractId)
     .map((c) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const property = c.property as any
+      const property = relatedRow<{ address?: string | null }>(c.property)
       const addressPart = property?.address ? ` — ${property.address}` : ''
       const endPart = c.end_date ? ` (до ${new Date(c.end_date).toLocaleDateString('ru-RU')})` : ''
       return { id: c.id, label: `${c.contract_number || `№${c.id.slice(0, 8)}`}${addressPart}${endPart}` }
@@ -82,8 +91,7 @@ export async function getContractFormData(excludeContractId?: string, currentDea
   const defaultCompanyProfileId = companyProfiles.find((p) => p.isDefault)?.id ?? companyProfiles[0]?.id ?? ''
 
   const deals = (rawDeals ?? []).map((d) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const property = d.property as any
+    const property = relatedRow<{ title?: string | null }>(d.property)
     const addressPart = property?.title ? ` — ${property.title}` : ''
     const amountPart = d.amount ? ` (${Number(d.amount).toLocaleString('ru-RU')} ₽)` : ''
     return { id: d.id as string, label: `${dealTypeLabels[d.deal_type] ?? d.deal_type}${addressPart}${amountPart}` }

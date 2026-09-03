@@ -22,18 +22,43 @@ export default async function PublicCollectionPage({ params }: { params: Promise
  }
  if (!col) notFound()
 
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- const collection = col as any
+ // Форма ответа задаётся select'ом выше; описываем ровно те поля, которые
+ // страница читает. Раньше тут стоял каст к any, и опечатка в имени поля не
+ // поймалась бы ни компилятором, ни глазами — публичная страница просто
+ // показала бы пустоту.
+ interface CollectionProperty {
+   id: string
+   title: string
+   address: string | null
+   deal_type: string
+   price: number | null
+   area: number | null
+   rooms: number | null
+   floor: number | null
+   total_floors: number | null
+   description: string | null
+   latitude: number | null
+   longitude: number | null
+ }
+ interface CollectionItem {
+   sort_order: number | null
+   agent_note: string | null
+   property: CollectionProperty | null
+ }
+ interface CollectionRow {
+   id: string
+   title: string
+   created_at: string | null
+   items: CollectionItem[] | null
+ }
+ const collection = col as unknown as CollectionRow
 
  // Карта появляется, только если у объектов есть координаты: у старых записей
  // их нет, и пустая серая плашка вместо карты выглядела бы поломкой.
  const mapPoints: MapPoint[] = (collection.items ?? [])
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- .map((item: any) => item.property)
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- .filter((p: any) => p?.latitude && p?.longitude)
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
- .map((p: any) => ({
+ .map(item => item.property)
+ .filter((p): p is CollectionProperty => Boolean(p?.latitude && p?.longitude))
+ .map(p => ({
  id: p.id,
  latitude: Number(p.latitude),
  longitude: Number(p.longitude),
@@ -69,7 +94,7 @@ export default async function PublicCollectionPage({ params }: { params: Promise
  <div className="text-center space-y-2">
  <h1 className="text-2xl font-bold text-foreground">{collection.title}</h1>
  <p className="text-muted-foreground text-sm">
- {collection.items?.length ?? 0} объектов · {new Date(collection.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}
+ {collection.items?.length ?? 0} объектов{collection.created_at && ` · ${new Date(collection.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}`}
  </p>
  </div>
 
@@ -87,14 +112,7 @@ export default async function PublicCollectionPage({ params }: { params: Promise
  </div>
  ) : (
  <div className="grid gap-5 sm:grid-cols-2">
- {collection.items?.map((item: {
- agent_note?: string
- property: {
- id: string; title: string; address?: string; deal_type?: string
- price?: number; area?: number; rooms?: number
- floor?: number; total_floors?: number; description?: string
- }
- }) => {
+ {collection.items?.map((item) => {
  const p = item.property
  if (!p) return null
  return (

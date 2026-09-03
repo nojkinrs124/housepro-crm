@@ -19,6 +19,7 @@ import { requirePermission } from '@/lib/permissions'
 import { dispatchWebhook } from '@/lib/webhooks'
 import { advanceDealStage } from '@/lib/deal-automation'
 import { CONTRACT_TYPES } from '@/features/contracts/config/contract-types'
+import type { Update } from '@/types/database'
 import {
   validateSchemeFields,
   schemeFields,
@@ -133,8 +134,10 @@ async function resolvePlanTerms(
   return { terms }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function createContractAction(_prevState: any, formData: FormData) {
+/** Предыдущее состояние из useActionState — обработчику не нужно. */
+type PrevState = unknown
+
+export async function createContractAction(_prevState: PrevState, formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -190,8 +193,7 @@ export async function createContractAction(_prevState: any, formData: FormData) 
   redirect(`/contracts/${contract.id}`)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function updateContractAction(id: string, _prevState: any, formData: FormData) {
+export async function updateContractAction(id: string, _prevState: PrevState, formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -253,7 +255,7 @@ export async function updateContractAction(id: string, _prevState: any, formData
   await writeAuditLog({
     userId: user.id, orgId,
     action: 'update', entityType: 'contract',
-    entityId: id, entityLabel: (current as any)?.number ?? 'Договор',
+    entityId: id, entityLabel: current?.contract_number ?? 'Договор',
   })
 
   revalidatePath('/contracts')
@@ -347,12 +349,23 @@ export async function restoreContractVersionAction(contractId: string, versionId
     if (versionError) return { error: `Не удалось сохранить версию: ${versionError.message}` }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { id: _id, created_at: _ca, updated_at: _ua, organization_id: _oid, ...restoreData } = version.version_data as any
+  // version_data — снимок строки договора в jsonb. Служебные поля из него
+  // исключаем: восстанавливаем содержимое, а не тождество записи.
+  const snapshot = (version.version_data ?? {}) as Record<string, unknown>
+  const { id: _id, created_at: _ca, updated_at: _ua, organization_id: _oid, ...rest } = snapshot
+  // Снимок пришёл из jsonb, и его форма компилятору неизвестна. Сужаем к типу
+  // строки договора одним осознанным приведением вместо каста всего к any:
+  // так лишние ключи хотя бы не расползаются по коду.
+  const restoreData = rest as Update<'contracts'>
+
+  // Без updated_at: такой колонки у contracts нет. Раньше она сюда писалась,
+  // PostgREST отвергал запрос, и восстановление версии договора не работало
+  // вовсе — компилятор этого не видел из-за каста снимка к any.
+  const restorePayload: Update<'contracts'> = restoreData
 
   const { error } = await supabase
     .from('contracts')
-    .update({ ...restoreData, updated_at: new Date().toISOString() })
+    .update(restorePayload)
     .eq('id', contractId)
 
   if (error) return { error: error.message }
