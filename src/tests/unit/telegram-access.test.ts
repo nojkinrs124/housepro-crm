@@ -66,9 +66,9 @@ describe('ownsIntent', () => {
 describe('воронка лида в боте', () => {
   it('не содержит статусов, которых нет в базе', async () => {
     const { LEAD_PIPELINE, LEAD_STATUS_VALUES } = await import('@/features/leads/config/lead-statuses')
-    // До 04.09.2026 у бота была своя копия воронки со статусом `meeting`, которого
-    // нет ни в базе, ни в вебе: кнопка «следующий статус» записала бы его в
-    // leads.status, и лид пропал бы с доски.
+    // До 04.09.2026 у бота была своя копия воронки со статусом `meeting`,
+    // которого нет ни в базе, ни в вебе: CHECK его не пропускал, и кнопка
+    // «следующий статус» отвечала отказом вместо перевода лида.
     for (const status of LEAD_PIPELINE) {
       expect(LEAD_STATUS_VALUES).toContain(status)
     }
