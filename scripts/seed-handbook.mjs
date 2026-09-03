@@ -6,16 +6,29 @@
  * статья ищется по slug и обновляется, так что повторный запуск после правки
  * файлов просто освежает тексты, а не плодит дубли.
  *
+ * Правку, сделанную в самой CRM, не затирает. Раньше затирал молча: писал body
+ * из файла поверх чего угодно, и правка исчезала без следа. Теперь при каждом
+ * посеве сохраняется отпечаток файла (`source_hash`), и если текущий текст
+ * статьи ему не соответствует — значит её правили в интерфейсе, и сеятель
+ * такую статью пропускает и говорит об этом вслух.
+ *
+ * `--force` перезаписывает и расхождения: нужен, когда файл признан
+ * источником правды и правку в CRM решили выбросить осознанно.
+ *
  * Входит обычным пользователем (учётка из .env.e2e) и пишет от его имени —
  * RLS сама ограничивает запись его организацией. Service-role ключ не нужен и
  * в .env.local его нет.
  */
 
+import { createHash } from 'node:crypto'
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { createClient } from '@supabase/supabase-js'
 
 const DIR = 'docs/handbook'
+const FORCE = process.argv.includes('--force')
+
+const sha = text => createHash('sha256').update(text, 'utf8').digest('hex')
 
 // Файл → рубрика в базе знаний. README не заливаем: его роль — оглавление
 // репозитория, в CRM оглавление рисует сам раздел.
@@ -110,6 +123,7 @@ function summaryOf(body) {
 const files = readdirSync(DIR).filter(f => f.endsWith('.md') && f !== 'README.md').sort()
 let created = 0
 let updated = 0
+const skipped = []
 
 for (const org of orgs) {
   for (const [index, file] of files.entries()) {
@@ -125,16 +139,33 @@ for (const org of orgs) {
       sort_order: index,
       is_published: true,
       updated_at: new Date().toISOString(),
+      source_hash: sha(body),
+      // Посев из файла — это и есть проверка текста: главу только что писал
+      // человек, глядя на текущий интерфейс.
+      reviewed_at: new Date().toISOString(),
     }
 
     const { data: existing } = await supabase
       .from('knowledge_articles')
-      .select('id')
+      .select('id, body, source_hash')
       .eq('organization_id', org.id)
       .eq('slug', slug)
       .maybeSingle()
 
     if (existing) {
+      // Правили ли статью в CRM после последнего посева. У статей, посеянных
+      // до появления отпечатка, его нет — тогда сравниваем тексты напрямую:
+      // расхождение считаем правкой в интерфейсе, чтобы не потерять её на
+      // первом же запуске новой версии сеятеля.
+      const editedInCrm = existing.source_hash
+        ? sha(existing.body ?? '') !== existing.source_hash
+        : (existing.body ?? '') !== body
+
+      if (editedInCrm && !FORCE) {
+        skipped.push(`${org.name} / ${slug}`)
+        continue
+      }
+
       const { error } = await supabase.from('knowledge_articles').update(row).eq('id', existing.id)
       if (error) { console.error(`${org.name} / ${slug}: ${error.message}`); process.exit(1) }
       updated += 1
@@ -146,4 +177,12 @@ for (const org of orgs) {
   }
 }
 
-console.log(`Готово: создано ${created}, обновлено ${updated}`)
+console.log(`Готово: создано ${created}, обновлено ${updated}, пропущено ${skipped.length}`)
+
+if (skipped.length > 0) {
+  console.log('')
+  console.log('Пропущены — эти статьи правили в самой CRM, файл их не перезаписал:')
+  for (const s of skipped) console.log(`  • ${s}`)
+  console.log('')
+  console.log('Перенести правку в docs/handbook/ вручную, либо выбросить её: npm run seed:handbook -- --force')
+}

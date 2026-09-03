@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { buttonVariants } from '@/components/ui/button'
 import { KnowledgeList, type ArticleRow } from '@/features/knowledge/components/KnowledgeList'
 import { can, toUserRole } from '@/lib/permissions'
+import { freshnessOf } from '@/features/knowledge/services/freshness'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,27 +24,38 @@ export default async function KnowledgePage() {
 
   const query = supabase
     .from('knowledge_articles')
-    .select('id, slug, title, category, summary, is_published, updated_at')
+    .select('id, slug, title, category, summary, is_published, updated_at, reviewed_at, review_period_months')
     .order('sort_order')
     .order('title')
 
   const { data } = canEdit ? await query : await query.eq('is_published', true)
 
-  const articles: ArticleRow[] = (data ?? []).map(a => ({
-    id: a.id,
-    slug: a.slug,
-    title: a.title,
-    category: a.category,
-    summary: a.summary,
-    isPublished: a.is_published,
-    updatedAt: a.updated_at,
-  }))
+  // Свежесть считаем на сервере: иначе у клиента и сервера разъедется «сегодня»
+  // и React ругнётся на несовпадение разметки при гидратации.
+  const articles: ArticleRow[] = (data ?? []).map(a => {
+    const fresh = freshnessOf(a.reviewed_at, a.review_period_months)
+    return {
+      id: a.id,
+      slug: a.slug,
+      title: a.title,
+      category: a.category,
+      summary: a.summary,
+      isPublished: a.is_published,
+      updatedAt: a.updated_at,
+      freshness: fresh.kind,
+      freshnessLabel: fresh.label,
+    }
+  })
+
+  const stale = articles.filter(a => a.freshness === 'stale' || a.freshness === 'never').length
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="База знаний"
-        subtitle={`${articles.length} инструкций`}
+        subtitle={stale > 0
+          ? `${articles.length} инструкций · ${stale} требуют проверки`
+          : `${articles.length} инструкций`}
         actions={canEdit ? (
           <Link href="/knowledge/new" className={buttonVariants({ size: 'sm' })}>
             <Plus style={{ width: 16, height: 16 }} />

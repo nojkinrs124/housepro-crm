@@ -63,6 +63,11 @@
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop-readme.mjs\"",
             "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop-handbook.mjs\"",
+            "timeout": 15
           }
         ]
       }

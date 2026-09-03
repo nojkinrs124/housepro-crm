@@ -14,7 +14,7 @@ export default async function EditArticlePage({ params }: { params: Promise<{ sl
 
   const [{ data: article }, { data: profile }] = await Promise.all([
     supabase.from('knowledge_articles')
-      .select('id, slug, title, category, summary, body, sort_order, is_published')
+      .select('id, slug, title, category, summary, body, sort_order, is_published, review_period_months')
       .eq('slug', slug)
       .maybeSingle(),
     supabase.from('users').select('role').eq('id', user.id).maybeSingle(),

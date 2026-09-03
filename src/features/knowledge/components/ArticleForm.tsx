@@ -17,6 +17,7 @@ export interface ArticleDefaults {
   body?: string
   sort_order?: number
   is_published?: boolean
+  review_period_months?: number
 }
 
 /**
@@ -51,7 +52,7 @@ export function ArticleForm({
             placeholder="Как принять объект в управление" className="hp-input" />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="space-y-1.5">
             <label className="hp-label" htmlFor="category">Рубрика</label>
             <input id="category" name="category" list="knowledge-categories"
@@ -65,6 +66,17 @@ export function ArticleForm({
             <input id="sort_order" name="sort_order" type="number" defaultValue={defaults.sort_order ?? 0}
               className="hp-input" />
           </div>
+          <div className="space-y-1.5">
+            <label className="hp-label" htmlFor="review_period_months">Перечитывать раз в</label>
+            <select id="review_period_months" name="review_period_months"
+              defaultValue={String(defaults.review_period_months ?? 6)} className="hp-input">
+              <option value="3">3 месяца</option>
+              <option value="6">6 месяцев</option>
+              <option value="12">год</option>
+              <option value="24">2 года</option>
+            </select>
+          </div>
+
           <div className="space-y-1.5">
             <span className="hp-label">Видимость</span>
             <label className="flex items-center gap-2 h-10 text-sm text-[var(--hp-ink)]">

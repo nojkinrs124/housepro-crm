@@ -1,10 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { BookOpen, EyeOff } from 'lucide-react'
+import { BookOpen, EyeOff, AlertTriangle } from 'lucide-react'
 import { RegistryToolbar } from '@/components/layout/RegistryToolbar'
 import { useRegistryFilters } from '@/hooks/useRegistryFilters'
 import { formatDateCompact } from '@/lib/utils'
+import type { Freshness } from '@/features/knowledge/services/freshness'
 
 export interface ArticleRow {
   id: string
@@ -14,6 +15,8 @@ export interface ArticleRow {
   summary: string | null
   isPublished: boolean
   updatedAt: string | null
+  freshness: Freshness
+  freshnessLabel: string
 }
 
 /**
@@ -27,11 +30,23 @@ export function KnowledgeList({ articles, canEdit }: { articles: ArticleRow[]; c
   const { search, setSearch, filtered, toolbarFilters, reset } = useRegistryFilters(articles, {
     storageKey: 'knowledge',
     haystack: a => [a.title, a.summary, a.category].filter(Boolean).join(' '),
-    filters: [{
-      key: 'category',
-      options: [{ value: 'all', label: 'Рубрика: все' }, ...categories.map(c => ({ value: c, label: c }))],
-      field: a => a.category,
-    }],
+    filters: [
+      {
+        key: 'category',
+        options: [{ value: 'all', label: 'Рубрика: все' }, ...categories.map(c => ({ value: c, label: c }))],
+        field: a => a.category,
+      },
+      {
+        key: 'freshness',
+        options: [
+          { value: 'all', label: 'Актуальность: любая' },
+          { value: 'stale', label: 'Требуют проверки' },
+        ],
+        // Просроченные и ни разу не проверенные — одна корзина: и то и другое
+        // означает «этому тексту нельзя верить не глядя».
+        field: a => (a.freshness === 'stale' || a.freshness === 'never' ? 'stale' : 'ok'),
+      },
+    ],
   })
 
   const grouped = categories
@@ -68,6 +83,12 @@ export function KnowledgeList({ articles, canEdit }: { articles: ArticleRow[]; c
                       <span className="block truncate text-[11.5px] text-[var(--hp-sub)]">{article.summary}</span>
                     )}
                   </span>
+                  {(article.freshness === 'stale' || article.freshness === 'never') && (
+                    <span className="shrink-0 inline-flex items-center gap-1 text-[11.5px] text-[var(--hp-danger)]">
+                      <AlertTriangle className="w-3 h-3" />
+                      {article.freshnessLabel}
+                    </span>
+                  )}
                   {!article.isPublished && canEdit && (
                     <span className="shrink-0 inline-flex items-center gap-1 text-[11.5px] text-[var(--hp-warn)]">
                       <EyeOff className="w-3 h-3" />
