@@ -7,6 +7,8 @@ import {
 } from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { getSettlementScheme } from '@/features/plans/config/settlement'
+import { PortalAccessPanel } from '@/features/portal/components/PortalAccessPanel'
+import { maskPhone } from '@/lib/signing'
 import { ReadinessPanel } from '@/components/layout/ReadinessPanel'
 import { isActiveRentContract } from '@/features/contracts/config/contract-types'
 import { checkProperty } from '@/lib/readiness'
@@ -50,6 +52,15 @@ export default async function ManagementDetailPage({ params }: { params: Promise
     .eq('property_id', id)
     .is('ended_at', null)
     .maybeSingle()
+
+  const [{ data: portalAccesses }, { data: portalContacts }] = await Promise.all([
+    supabase.from('portal_access')
+      .select('id, role, phone, last_login_at, contact:contacts(full_name, company_name)')
+      .eq('property_id', id).is('revoked_at', null),
+    supabase.from('contacts')
+      .select('id, full_name, company_name, phone, role')
+      .in('role', ['owner', 'client', 'both']).order('full_name'),
+  ])
 
   const { data: property } = await supabase
     .from('properties')
@@ -264,6 +275,30 @@ export default async function ManagementDetailPage({ params }: { params: Promise
             )
           })}
         </div>
+      )}
+
+      {/* Доступ собственника и арендатора в личный кабинет */}
+      {engagement && (
+        <PortalAccessPanel
+          propertyId={id}
+          engagementId={engagement.id}
+          accesses={(portalAccesses ?? []).map(a => {
+            const contact = Array.isArray(a.contact) ? a.contact[0] : a.contact
+            return {
+              id: a.id,
+              role: a.role,
+              contactName: contact ? (contact.company_name || contact.full_name) : 'Контакт',
+              phoneMasked: maskPhone(a.phone),
+              lastLoginAt: a.last_login_at,
+            }
+          })}
+          owners={(portalContacts ?? [])
+            .filter(c => c.role === 'owner' || c.role === 'both')
+            .map(c => ({ id: c.id, label: c.company_name || c.full_name, hasPhone: Boolean(c.phone) }))}
+          tenants={(portalContacts ?? [])
+            .filter(c => c.role === 'client' || c.role === 'both')
+            .map(c => ({ id: c.id, label: c.company_name || c.full_name, hasPhone: Boolean(c.phone) }))}
+        />
       )}
 
       <ReadinessPanel issues={issues} />

@@ -28,6 +28,7 @@ const DASHBOARD_ROUTES = [
   '/search',
   '/showings', '/showings/new',
   '/tasks', '/tasks/new',
+  '/requests',
   '/settings', '/settings/api', '/settings/audit', '/settings/avito',
   '/settings/plans', '/settings/plans/new',
   '/settings/billing', '/settings/company', '/settings/company/new',

@@ -2950,6 +2950,151 @@ export type Database = {
           },
         ]
       }
+      portal_access: {
+        Row: {
+          contact_id: string
+          contract_id: string | null
+          engagement_id: string | null
+          granted_at: string
+          granted_by: string | null
+          id: string
+          last_login_at: string | null
+          organization_id: string
+          phone: string
+          property_id: string | null
+          revoked_at: string | null
+          role: string
+        }
+        Insert: {
+          contact_id: string
+          contract_id?: string | null
+          engagement_id?: string | null
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          last_login_at?: string | null
+          organization_id: string
+          phone: string
+          property_id?: string | null
+          revoked_at?: string | null
+          role: string
+        }
+        Update: {
+          contact_id?: string
+          contract_id?: string | null
+          engagement_id?: string | null
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          last_login_at?: string | null
+          organization_id?: string
+          phone?: string
+          property_id?: string | null
+          revoked_at?: string | null
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_access_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_access_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_access_engagement_id_fkey"
+            columns: ["engagement_id"]
+            isOneToOne: false
+            referencedRelation: "management_engagements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_access_granted_by_fkey"
+            columns: ["granted_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_access_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_access_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portal_otp: {
+        Row: {
+          attempts: number
+          channel: string
+          code_hash: string
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          issued_by: string | null
+          organization_id: string
+          phone: string
+          token: string
+        }
+        Insert: {
+          attempts?: number
+          channel: string
+          code_hash: string
+          consumed_at?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          issued_by?: string | null
+          organization_id: string
+          phone: string
+          token: string
+        }
+        Update: {
+          attempts?: number
+          channel?: string
+          code_hash?: string
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          issued_by?: string | null
+          organization_id?: string
+          phone?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portal_otp_issued_by_fkey"
+            columns: ["issued_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "portal_otp_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       properties: {
         Row: {
           address: string
@@ -3295,6 +3440,103 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_requests: {
+        Row: {
+          category: string
+          closed_at: string | null
+          contact_id: string
+          created_at: string
+          description: string
+          engagement_id: string | null
+          id: string
+          organization_id: string
+          photo_urls: string[] | null
+          property_id: string
+          reject_reason: string | null
+          status: string
+          task_id: string | null
+          transaction_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          closed_at?: string | null
+          contact_id: string
+          created_at?: string
+          description: string
+          engagement_id?: string | null
+          id?: string
+          organization_id: string
+          photo_urls?: string[] | null
+          property_id: string
+          reject_reason?: string | null
+          status?: string
+          task_id?: string | null
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          closed_at?: string | null
+          contact_id?: string
+          created_at?: string
+          description?: string
+          engagement_id?: string | null
+          id?: string
+          organization_id?: string
+          photo_urls?: string[] | null
+          property_id?: string
+          reject_reason?: string | null
+          status?: string
+          task_id?: string | null
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_requests_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_requests_engagement_id_fkey"
+            columns: ["engagement_id"]
+            isOneToOne: false
+            referencedRelation: "management_engagements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_requests_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_requests_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_requests_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "accounting_transactions"
             referencedColumns: ["id"]
           },
         ]
