@@ -25,27 +25,51 @@ function parseAmount(raw: unknown): number | null {
 type Client = Awaited<ReturnType<typeof createClient>>
 
 /**
- * Объект операции: явно выбранный в форме, иначе — объект её договора.
+ * Объект операции и обслуживание, к которому она относится.
  *
- * Раздел «Управление» считает доходность по property_id, а до появления этой
- * колонки объект у платежа доставался только через договор — расходы без
- * договора (коммуналка, ремонт) не относились ни к какому объекту.
+ * Объект — явно выбранный в форме, иначе объект её договора. Раздел
+ * «Управление» считает доходность по property_id, а до появления этой колонки
+ * объект у платежа доставался только через договор — расходы без договора
+ * (коммуналка, ремонт) не относились ни к какому объекту.
+ *
+ * Обслуживание — действующее по этому объекту. Взаиморасчёт с собственником
+ * читает операции строго по engagement_id, и до 05.09.2026 из бухгалтерии туда
+ * не приходило ничего: колонка не заполнялась вовсе, engagement_id был пуст у
+ * всех 32 операций. Деньги при этом были видны в «Доходе за месяц» на карточке
+ * объекта (там счёт по property_id) и не видны в сальдо — расхождение, которое
+ * невозможно объяснить человеку.
  */
-async function resolvePropertyId(
+async function resolvePropertyLinks(
   supabase: Client,
   propertyId: string | null,
   contractId: string | null,
-): Promise<{ property_id?: string }> {
-  if (propertyId) return { property_id: propertyId }
-  if (!contractId) return {}
+): Promise<{ property_id?: string; engagement_id: string | null }> {
+  let resolved = propertyId || null
 
-  const { data } = await supabase
-    .from('contracts')
-    .select('property_id')
-    .eq('id', contractId)
+  if (!resolved && contractId) {
+    const { data } = await supabase
+      .from('contracts')
+      .select('property_id')
+      .eq('id', contractId)
+      .maybeSingle()
+    resolved = data?.property_id ?? null
+  }
+
+  if (!resolved) return { engagement_id: null }
+
+  const { data: engagement } = await supabase
+    .from('management_engagements')
+    .select('id')
+    .eq('property_id', resolved)
+    .is('ended_at', null)
     .maybeSingle()
 
-  return data?.property_id ? { property_id: data.property_id } : {}
+  return { property_id: resolved, engagement_id: engagement?.id ?? null }
+}
+
+/** За чей счёт расход: от этого зависит, уменьшит он выплату собственнику или доход агентства. */
+function parseBorneBy(raw: FormDataEntryValue | null): 'agency' | 'owner' | null {
+  return raw === 'agency' || raw === 'owner' ? raw : null
 }
 
 // ─── Stats ────────────────────────────────────────────────────────────────────
@@ -219,7 +243,10 @@ export async function createTransactionAction(_prevState: unknown, formData: For
     ...(employeeId  && { employee_id:     employeeId }),
     // Объект берём из формы, а если не выбран — наследуем от договора:
     // доходность объекта в управлении считается именно по этой колонке.
-    ...(await resolvePropertyId(supabase, propertyId, contractId)),
+    // Вместе с объектом подхватывается его обслуживание — иначе операция не
+    // попадёт во взаиморасчёт с собственником.
+    ...(await resolvePropertyLinks(supabase, propertyId, contractId)),
+    borne_by: parseBorneBy(formData.get('borne_by')),
   }
 
   const { data, error } = await supabase
@@ -281,6 +308,9 @@ export async function createContractPaymentAction(
     status: 'planned' as AccountingTransactionStatus,
     contract_id: contractId,
     deal_id: contract?.deal_id ?? null,
+    // Объект и обслуживание берутся из договора: без них начисление не видно
+    // ни в доходности объекта, ни во взаиморасчёте с собственником.
+    ...(await resolvePropertyLinks(supabase, null, contractId)),
     created_by: user.id,
     organization_id: orgId,
     ...(dueDate && { due_date: dueDate }),
@@ -332,7 +362,8 @@ export async function updateTransactionAction(id: string, _prevState: unknown, f
     contact_id:     contactId   || null,
     employee_id:    employeeId  || null,
     property_id:    null,
-    ...(await resolvePropertyId(supabase, propertyId, contractId)),
+    ...(await resolvePropertyLinks(supabase, propertyId, contractId)),
+    borne_by:       parseBorneBy(formData.get('borne_by')),
   }
 
   const { error } = await supabase

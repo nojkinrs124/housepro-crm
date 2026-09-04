@@ -15,6 +15,11 @@ interface Props {
  employees: Pick<User, 'id' | 'full_name'>[]
  contacts: Pick<Contact, 'id' | 'full_name' | 'company_name' | 'client_type'>[]
  properties: Pick<Property, 'id' | 'title' | 'address'>[]
+ /**
+  * Объекты, по которым есть действующее обслуживание. Для них операция едет во
+  * взаиморасчёт с собственником, и у расхода появляется вопрос «за чей счёт».
+  */
+ managedPropertyIds?: string[]
  /** Предвыбранный объект — со страницы объекта в управлении */
  defaultPropertyId?: string
  /** Предвыбранный договор — например «начислить аренду» из карточки управления */
@@ -41,7 +46,7 @@ function contactLabel(c: Pick<Contact, 'full_name' | 'company_name' | 'client_ty
  return c.client_type === 'legal_entity' && c.company_name ? c.company_name : c.full_name
 }
 
-export function TransactionForm({ transaction, categories, contracts, deals, employees, contacts, properties, defaultPropertyId, defaultContractId }: Props) {
+export function TransactionForm({ transaction, categories, contracts, deals, employees, contacts, properties, managedPropertyIds = [], defaultPropertyId, defaultContractId }: Props) {
  const isEdit = Boolean(transaction)
  const action = transaction
  ? updateTransactionAction.bind(null, transaction.id)
@@ -52,6 +57,12 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
  const [type, setType] = useState<'income' | 'expense'>(transaction?.type ?? 'income')
  const [categoryId, setCategoryId] = useState(transaction?.category_id ?? '')
  const [amountRaw, setAmountRaw] = useState(transaction ? String(transaction.amount) : '')
+ const [propertyId, setPropertyId] = useState(transaction?.property_id ?? defaultPropertyId ?? '')
+
+ // Объект в управлении — операция попадёт во взаиморасчёт с собственником.
+ // Расход при этом обязан сказать, за чей он счёт: за счёт собственника он
+ // уменьшает выплату ему, за счёт агентства — его собственный доход.
+ const managed = propertyId !== '' && managedPropertyIds.includes(propertyId)
 
  const visibleCategories = useMemo(
  () => categories.filter(c => c.type === type),
@@ -234,18 +245,38 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
  <label className="block text-sm font-semibold text-foreground">Объект</label>
  <select
  name="property_id"
- defaultValue={transaction?.property_id ?? defaultPropertyId ?? ''}
+ value={propertyId}
+ onChange={e => setPropertyId(e.target.value)}
  className={selectCls}
  >
  <option value="">— по договору —</option>
  {properties.map(p => (
- <option key={p.id} value={p.id}>{p.title || p.address || p.id.slice(0, 8)}</option>
+ <option key={p.id} value={p.id}>
+ {p.title || p.address || p.id.slice(0, 8)}
+ {managedPropertyIds.includes(p.id) ? ' · в управлении' : ''}
+ </option>
  ))}
  </select>
  <p className="text-xs text-muted-foreground">
- Пусто — объект возьмётся из договора. Нужен разделу «Управление»: по нему считается доходность объекта.
+ {managed
+ ? 'Объект в управлении: операция войдёт во взаиморасчёт с собственником — в доход, расход и остаток к выплате.'
+ : 'Пусто — объект возьмётся из договора. Нужен разделу «Управление»: по нему считается доходность объекта.'}
  </p>
  </div>
+
+ {managed && type === 'expense' && (
+ <div className="space-y-1.5">
+ <label className="block text-sm font-semibold text-foreground">За чей счёт</label>
+ <select name="borne_by" defaultValue={transaction?.borne_by ?? 'agency'} className={selectCls}>
+ <option value="agency">Агентства</option>
+ <option value="owner">Собственника</option>
+ </select>
+ <p className="text-xs text-muted-foreground">
+ За счёт собственника — расход вычтется из того, что мы ему должны. За счёт
+ агентства — уменьшит наш доход по объекту.
+ </p>
+ </div>
+ )}
  <div className="space-y-1.5">
  <label className="block text-sm font-semibold text-foreground">Договор</label>
  <select

@@ -44,6 +44,12 @@ export interface SettlementResult {
   tenantPayments: number
   /** Вознаграждение агентства за период. */
   agencyFee: number
+  /**
+   * Вознаграждение за управление, заведённое отдельной операцией (категория
+   * «Управление объектом»). Это деньги агентства: долю собственника оно не
+   * уменьшает, потому что приходит не из платежа арендатора.
+   */
+  managementFee: number
   /** Расходы, отнесённые на собственника. */
   ownerExpenses: number
   /** Расходы за счёт агентства. */
@@ -116,7 +122,7 @@ export function calcSettlement(
   asOf: string = new Date().toISOString().slice(0, 10),
 ): SettlementResult {
   const empty: SettlementResult = {
-    tenantPayments: 0, agencyFee: 0, ownerExpenses: 0, agencyExpenses: 0,
+    tenantPayments: 0, agencyFee: 0, managementFee: 0, ownerExpenses: 0, agencyExpenses: 0,
     paidToOwner: 0, ownerObligation: 0, balance: 0, agencyResult: 0, obligationMonths: 0,
   }
 
@@ -133,6 +139,7 @@ export function calcSettlement(
   const ownerExpenses = money(sum(done, o => o.type === 'expense' && o.borneBy === 'owner' && o.categoryCode !== 'owner_payout'))
   const agencyExpenses = money(sum(done, o => o.type === 'expense' && o.borneBy === 'agency'))
   const paidToOwner = money(sum(done, o => o.type === 'expense' && o.categoryCode === 'owner_payout'))
+  const managementFee = money(sum(done, o => o.type === 'income' && o.categoryCode === 'management_fee'))
 
   if (terms.scheme === 'percent') {
     const rate = Number(terms.rate ?? 0)
@@ -143,12 +150,13 @@ export function calcSettlement(
     return {
       tenantPayments,
       agencyFee,
+      managementFee,
       ownerExpenses,
       agencyExpenses,
       paidToOwner,
       ownerObligation,
       balance: money(ownerObligation - paidToOwner),
-      agencyResult: money(agencyFee - agencyExpenses),
+      agencyResult: money(agencyFee + managementFee - agencyExpenses),
       obligationMonths: 0,
     }
   }
@@ -165,6 +173,7 @@ export function calcSettlement(
     // Вознаграждения как отдельной величины при фиксированной схеме нет:
     // агентство зарабатывает разницу, и она уже в agencyResult.
     agencyFee: 0,
+    managementFee,
     ownerExpenses,
     agencyExpenses,
     paidToOwner,
@@ -172,7 +181,7 @@ export function calcSettlement(
     // Расходы за счёт собственника уменьшают то, что мы ему должны: агентство
     // потратило за него, а не сверх обязательства.
     balance: money(ownerObligation - paidToOwner - ownerExpenses),
-    agencyResult: money(tenantPayments - ownerObligation - agencyExpenses),
+    agencyResult: money(tenantPayments + managementFee - ownerObligation - agencyExpenses),
     obligationMonths: months,
   }
 }

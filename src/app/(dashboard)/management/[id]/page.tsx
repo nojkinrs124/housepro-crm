@@ -23,6 +23,9 @@ import {
   toPropertyManagementDefaults,
 } from '@/features/contracts/utils/property-management-data'
 import { formatAmount, formatDateCompact, formatDeadline } from '@/lib/utils'
+import { OwnerPayoutBlock } from '@/features/management/components/OwnerPayoutForm'
+import { calcSettlement } from '@/features/management/services/settlement.service'
+import { loadSettlementOperations } from '@/features/management/data/settlement.data'
 
 export const dynamic = 'force-dynamic'
 
@@ -48,10 +51,26 @@ export default async function ManagementDetailPage({ params }: { params: Promise
   // акт приёма и всё, что считается по объекту.
   const { data: engagement } = await supabase
     .from('management_engagements')
-    .select('id, status, settlement_scheme, owner_contact_id, contract_id, notes, started_at, handover:property_handovers(completed_at)')
+    .select('id, status, settlement_scheme, rate, owner_fixed_amount, owner_payout_day, owner_contact_id, contract_id, notes, started_at, handover:property_handovers(completed_at)')
     .eq('property_id', id)
     .is('ended_at', null)
     .maybeSingle()
+
+  // Сальдо с собственником считается здесь же: «сколько я ему должен» — первый
+  // вопрос по объекту в управлении, и держать ответ за переходом на отдельную
+  // страницу значит не отвечать на него вовсе.
+  const settlement = engagement?.settlement_scheme
+    ? calcSettlement(
+        {
+          scheme: engagement.settlement_scheme as 'percent' | 'fixed',
+          rate: engagement.rate,
+          ownerFixedAmount: engagement.owner_fixed_amount,
+          ownerPayoutDay: engagement.owner_payout_day,
+          startedAt: engagement.started_at,
+        },
+        await loadSettlementOperations(supabase, engagement.id),
+      )
+    : null
 
   const [{ data: portalAccesses }, { data: portalContacts }] = await Promise.all([
     supabase.from('portal_access')
@@ -322,6 +341,39 @@ export default async function ManagementDetailPage({ params }: { params: Promise
           },
         ]}
       />
+
+      {engagement && settlement && !settlement.error && (
+        <div className="hp-block">
+          <div className="hp-block-header flex items-center justify-between gap-2">
+            <span>Взаиморасчёт с собственником</span>
+            <Link href={`/management/${id}/settlement`}
+              className="text-[12.5px] font-semibold text-[var(--hp-sub)] hover:text-[var(--hp-ink)] transition-colors">
+              Подробно
+            </Link>
+          </div>
+          <OwnerPayoutBlock
+            engagementId={engagement.id}
+            balance={settlement.balance}
+            ownerName={ownerName}
+          />
+          <div className="hp-block-row">
+            <span className="label">Поступило от арендатора</span>
+            <span className="value">{formatAmount(settlement.tenantPayments)} ₽</span>
+          </div>
+          <div className="hp-block-row">
+            <span className="label">
+              {settlement.agencyResult < 0 ? 'Убыток агентства' : 'Заработано агентством'}
+            </span>
+            <span className={`value ${settlement.agencyResult < 0 ? 'text-[var(--hp-danger)]' : ''}`}>
+              {formatAmount(Math.abs(settlement.agencyResult))} ₽
+            </span>
+          </div>
+          <div className="hp-block-row">
+            <span className="label">Уже выплачено собственнику</span>
+            <span className="value">{formatAmount(settlement.paidToOwner)} ₽</span>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 space-y-4">

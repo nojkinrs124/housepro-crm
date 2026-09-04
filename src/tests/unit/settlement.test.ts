@@ -69,6 +69,34 @@ describe('calcSettlement — схема «процент»', () => {
   })
 })
 
+describe('calcSettlement — вознаграждение за управление', () => {
+  it('процентная схема: доход агентства растёт, доля собственника — нет', () => {
+    const terms = { scheme: 'percent' as const, rate: 10, ownerFixedAmount: null, ownerPayoutDay: null, startedAt: '2026-08-01' }
+    const result = calcSettlement(terms, [
+      op('income', 'tenant_payment', 50000),
+      op('income', 'management_fee', 4000, '2026-09-06'),
+    ], '2026-09-30')
+
+    expect(result.managementFee).toBe(4000)
+    // Собственнику причитается ровно то же, что и без этой операции.
+    expect(result.ownerObligation).toBe(45000)
+    expect(result.agencyResult).toBe(9000)
+  })
+
+  it('фиксированная схема: вознаграждение уменьшает убыток за простой', () => {
+    const terms = {
+      scheme: 'fixed' as const, rate: null, ownerFixedAmount: 40000,
+      ownerPayoutDay: 5, startedAt: '2026-08-01',
+    }
+    const result = calcSettlement(terms, [
+      op('income', 'management_fee', 4000, '2026-09-06'),
+    ], '2026-09-30')
+
+    expect(result.obligationMonths).toBe(2)
+    expect(result.agencyResult).toBe(-76000)
+  })
+})
+
 describe('calcSettlement — схема «фиксированная выплата»', () => {
   const terms = {
     scheme: 'fixed' as const, rate: null,

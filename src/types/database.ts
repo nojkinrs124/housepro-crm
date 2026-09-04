@@ -429,6 +429,10 @@ export interface AccountingTransaction {
   contact_id?: string
   employee_id?: string
   property_id?: string
+  /** Обслуживание объекта: по нему операция попадает во взаиморасчёт с собственником. */
+  engagement_id?: string | null
+  /** За чей счёт расход — от этого зависит, чей результат он уменьшает. */
+  borne_by?: 'agency' | 'owner' | null
   recurring_rule_id?: string
   legacy_payment_id?: string
   created_at: string

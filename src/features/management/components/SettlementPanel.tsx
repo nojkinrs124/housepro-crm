@@ -5,9 +5,9 @@ import { toast } from 'sonner'
 import { ArrowDownLeft, ArrowUpRight, Wrench } from 'lucide-react'
 import {
   registerTenantPaymentAction,
-  payOwnerAction,
   addExpenseAction,
 } from '@/features/management/actions/settlement.actions'
+import { OwnerPayoutForm } from '@/features/management/components/OwnerPayoutForm'
 
 type Form = 'payment' | 'payout' | 'expense' | null
 
@@ -40,7 +40,6 @@ export function SettlementPanel({
 }) {
   const [open, setOpen] = useState<Form>(null)
   const [pending, start] = useTransition()
-  const [advance, setAdvance] = useState(false)
   const [borneBy, setBorneBy] = useState<'agency' | 'owner'>('agency')
   const today = new Date().toISOString().slice(0, 10)
 
@@ -60,7 +59,6 @@ export function SettlementPanel({
       else {
         toast.success(okText)
         setOpen(null)
-        setAdvance(false)
       }
     })
   }
@@ -118,40 +116,7 @@ export function SettlementPanel({
       )}
 
       {open === 'payout' && (
-        <form action={run(payOwnerAction, 'Выплата проведена')} className="space-y-3">
-          <input type="hidden" name="engagement_id" value={engagementId} />
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-            <div className="space-y-1.5">
-              <label className={lbl}>Сумма, ₽</label>
-              <input name="amount" type="number" min="0" step="0.01" required
-                placeholder={balance > 0 ? String(balance) : '0'} className={inp} />
-            </div>
-            <div className="space-y-1.5">
-              <label className={lbl}>Дата</label>
-              <input name="date" type="date" max={today} defaultValue={today} className={inp} />
-            </div>
-            <div className="space-y-1.5">
-              <label className={lbl}>Период с</label>
-              <input name="period_start" type="date" className={inp} />
-            </div>
-            <div className="space-y-1.5">
-              <label className={lbl}>по</label>
-              <input name="period_end" type="date" className={inp} />
-            </div>
-          </div>
-          <label className="flex items-center gap-2 text-sm text-[var(--hp-ink)]">
-            <input type="checkbox" name="as_advance" checked={advance}
-              onChange={e => setAdvance(e.target.checked)} className="w-4 h-4 accent-[var(--hp-accent)]" />
-            Это аванс — выплата больше текущего сальдо
-          </label>
-          <p className="text-xs text-[var(--hp-sub)]">
-            Сальдо сейчас: {balance.toLocaleString('ru-RU')} ₽. Больше этой суммы без пометки
-            «аванс» провести нельзя — иначе след денег теряется
-          </p>
-          <button type="submit" disabled={pending} className="hp-btn-primary">
-            {pending ? 'Проводим…' : 'Провести выплату'}
-          </button>
-        </form>
+        <OwnerPayoutForm engagementId={engagementId} balance={balance} onDone={() => setOpen(null)} />
       )}
 
       {open === 'expense' && (
