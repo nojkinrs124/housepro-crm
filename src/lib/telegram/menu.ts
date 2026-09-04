@@ -5,6 +5,7 @@ import {
   buildLeadsScreen,
   buildDealsScreen,
   buildFinanceScreen,
+  buildManagementScreen,
   buildTasksScreen,
   buildPropertiesScreen,
   buildContactsScreen,
@@ -24,6 +25,7 @@ export type MenuScreen =
   | 'crm_properties'
   | 'crm_contacts'
   | 'crm_payments'
+  | 'crm_management'
   | 'crm_tasks'
   | 'channel'
   | 'channel_posts'
@@ -114,8 +116,9 @@ function crmScreen(role: BotRole): ScreenContent {
   if (role === 'admin') {
     keyboard.push([
       { text: '💰 Деньги', callback_data: 'nav:crm_payments' },
-      { text: '🔎 Анализ рынка', callback_data: 'nav:multiagent' },
+      { text: '🏢 Управление', callback_data: 'nav:crm_management' },
     ])
+    keyboard.push([{ text: '🔎 Анализ рынка', callback_data: 'nav:multiagent' }])
   }
   keyboard.push([BACK_TO_ROOT])
 
@@ -219,6 +222,8 @@ async function buildScreen(screen: MenuScreen, orgId: string, role: BotRole, pag
       return buildContactsScreen(orgId, page)
     case 'crm_payments':
       return buildFinanceScreen(orgId, page)
+    case 'crm_management':
+      return buildManagementScreen(orgId, page)
     case 'crm_tasks':
       return buildTasksScreen(orgId, page)
     case 'multiagent':

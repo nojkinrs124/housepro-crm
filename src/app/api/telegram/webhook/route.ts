@@ -25,6 +25,7 @@ import {
   advanceLeadStatus,
   advanceDealStatus,
   markTransactionPaid,
+  payOwnerFromBot,
   markTaskDone,
   snoozeTaskToTomorrow,
   buildPropertySearchResult,
@@ -469,7 +470,7 @@ async function sendMainMenu(actor: BotActor) {
   await showMenuScreen(actor.chatId, actor.orgId, 'root', actor.role)
 }
 
-const NAV_SCREENS: MenuScreen[] = ['root', 'today', 'crm', 'crm_leads', 'crm_deals', 'crm_properties', 'crm_contacts', 'crm_payments', 'crm_tasks', 'channel', 'channel_posts', 'channel_schedule', 'channel_rubrics', 'multiagent', 'settings', 'settings_users']
+const NAV_SCREENS: MenuScreen[] = ['root', 'today', 'crm', 'crm_leads', 'crm_deals', 'crm_properties', 'crm_contacts', 'crm_payments', 'crm_management', 'crm_tasks', 'channel', 'channel_posts', 'channel_schedule', 'channel_rubrics', 'multiagent', 'settings', 'settings_users']
 
 // Навигация верхнеуровневого меню: nav:<screen>[:<страница>] — перерисовывает "экран"
 // в том же сообщении. Номер страницы нужен кнопке «⬇ Ещё» в длинных списках.
@@ -848,6 +849,7 @@ const CRM_ACTION_SCREEN: Record<string, MenuScreen> = {
   leadnext: 'crm_leads',
   dealnext: 'crm_deals',
   paypaid: 'crm_payments',
+  ownerpay: 'crm_management',
   taskdone: 'crm_tasks',
   tasksnooze: 'crm_tasks',
 }
@@ -857,15 +859,19 @@ async function handleCrmQuickAction(action: string, entityId: string, actor: Bot
   // Быстрые действия меняют данные CRM — их достаточно уровня сотрудника,
   // но не постороннего.
   if (!isAtLeastMember(actor.role)) return
+  // Выплата собственнику — движение живых денег, это раздел владельца.
+  if (action === 'ownerpay' && actor.role !== 'admin') return denyAdmin(chatId)
 
   let result: { error?: string } = {}
   if (action === 'leadnext') result = await advanceLeadStatus(orgId, entityId)
   else if (action === 'dealnext') result = await advanceDealStatus(orgId, entityId)
   else if (action === 'paypaid') result = await markTransactionPaid(orgId, entityId)
+  else if (action === 'ownerpay') result = await payOwnerFromBot(orgId, entityId)
   else if (action === 'taskdone') result = await markTaskDone(orgId, entityId)
   else if (action === 'tasksnooze') result = await snoozeTaskToTomorrow(orgId, entityId)
 
   if (result.error) await sendMessage(chatId, `⚠️ Не получилось: ${result.error}`)
+  else if (action === 'ownerpay') await sendMessage(chatId, '✅ Выплата собственнику записана.')
   await showMenuScreen(chatId, orgId, CRM_ACTION_SCREEN[action], actor.role, messageId)
 }
 
@@ -965,7 +971,10 @@ async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_
 
   if (action === 'nav') return handleNavCallback(arg, actor, messageId)
   if (action === 'set' || action === 'deluser') return handleSettingsAction(action, arg, actor, messageId)
-  if (action === 'leadnext' || action === 'dealnext' || action === 'paypaid' || action === 'taskdone' || action === 'tasksnooze') {
+  if (
+    action === 'leadnext' || action === 'dealnext' || action === 'paypaid'
+    || action === 'ownerpay' || action === 'taskdone' || action === 'tasksnooze'
+  ) {
     return handleCrmQuickAction(action, arg, actor, messageId)
   }
   if (action === 'prop' || action === 'cont' || action === 'money') {

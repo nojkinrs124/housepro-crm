@@ -7,6 +7,11 @@ import { TASK_PRIORITY_LABELS } from '@/features/tasks/config/task-priorities'
 import { stagesOf, stageLabel } from '@/features/directions/config/directions'
 import { collectDealFacts, canMoveStage } from '@/features/directions/services/transitions'
 import { likeFilterValue } from '@/features/telegram/services/parsing'
+import {
+  calcSettlement,
+  type SettlementOperation,
+  type SettlementResult,
+} from '@/features/management/services/settlement.service'
 
 const BACK_TO_CRM: InlineKeyboardButton = { text: '⬅ CRM', callback_data: 'nav:crm' }
 
@@ -486,4 +491,199 @@ export async function snoozeTaskToTomorrow(orgId: string, taskId: string): Promi
     .eq('id', taskId)
     .eq('organization_id', orgId)
   return { error: error?.message }
+}
+
+// --- Объекты в управлении ---
+
+/**
+ * Сальдо по обслуживанию: тем же расчётом, что и в вебе.
+ *
+ * Второй расчёт в боте разошёлся бы с первым при первой же правке условий, а
+ * ошибка здесь — это неверная выплата живыми деньгами.
+ */
+async function loadEngagementBalances(
+  orgId: string,
+  engagementIds: string[],
+): Promise<Map<string, SettlementResult>> {
+  const supabaseAdmin = getSupabaseAdmin()
+  const result = new Map<string, SettlementResult>()
+  if (engagementIds.length === 0) return result
+
+  const [{ data: terms }, { data: ops }] = await Promise.all([
+    supabaseAdmin
+      .from('management_engagements')
+      .select('id, settlement_scheme, rate, owner_fixed_amount, owner_payout_day, started_at, ended_at')
+      .eq('organization_id', orgId)
+      .in('id', engagementIds),
+    supabaseAdmin
+      .from('accounting_transactions')
+      .select('engagement_id, type, status, amount, date, borne_by, category:accounting_categories(code)')
+      .eq('organization_id', orgId)
+      .in('engagement_id', engagementIds),
+  ])
+
+  const byEngagement = new Map<string, SettlementOperation[]>()
+  for (const t of ops ?? []) {
+    if (!t.engagement_id) continue
+    const category = Array.isArray(t.category) ? t.category[0] : t.category
+    const list = byEngagement.get(t.engagement_id) ?? []
+    list.push({
+      type: t.type as 'income' | 'expense',
+      status: t.status,
+      categoryCode: category?.code ?? null,
+      amount: Number(t.amount || 0),
+      date: t.date,
+      borneBy: (t.borne_by as 'agency' | 'owner' | null) ?? null,
+    })
+    byEngagement.set(t.engagement_id, list)
+  }
+
+  for (const term of terms ?? []) {
+    result.set(term.id, calcSettlement(
+      {
+        scheme: term.settlement_scheme as 'percent' | 'fixed' | null,
+        rate: term.rate,
+        ownerFixedAmount: term.owner_fixed_amount,
+        ownerPayoutDay: term.owner_payout_day,
+        startedAt: term.started_at,
+        endedAt: term.ended_at,
+      },
+      byEngagement.get(term.id) ?? [],
+    ))
+  }
+
+  return result
+}
+
+/**
+ * Объекты в управлении: сколько должны собственнику и кнопка «я перевёл».
+ *
+ * Деньги собственнику переводят с телефона и в дороге, а отметить перевод
+ * можно было только в вебе — до следующего захода в CRM выплата висела
+ * незаписанной, и сальдо врало.
+ */
+export async function buildManagementScreen(orgId: string, page = 0): Promise<ScreenContent> {
+  const supabaseAdmin = getSupabaseAdmin()
+  const [from, to] = rangeOf(page)
+
+  const { data: engagements, count } = await supabaseAdmin
+    .from('management_engagements')
+    .select('id, property_id, owner_contact_id, settlement_scheme', { count: 'exact' })
+    .eq('organization_id', orgId)
+    .is('ended_at', null)
+    .order('started_at', { ascending: false })
+    .range(from, to)
+
+  const keyboard: InlineKeyboardButton[][] = []
+
+  if (!engagements || engagements.length === 0) {
+    keyboard.push([BACK_TO_CRM])
+    return {
+      text: '🏢 <b>Объекты в управлении</b>\n\nНи одного объекта не принято в управление.',
+      keyboard,
+    }
+  }
+
+  const propertyIds = engagements.map(e => e.property_id).filter((v): v is string => Boolean(v))
+  const ownerIds = engagements.map(e => e.owner_contact_id).filter((v): v is string => Boolean(v))
+
+  const [{ data: properties }, { data: owners }, balances] = await Promise.all([
+    supabaseAdmin.from('properties').select('id, title, address').in('id', propertyIds),
+    ownerIds.length
+      ? supabaseAdmin.from('contacts').select('id, full_name, company_name').in('id', ownerIds)
+      : Promise.resolve({ data: [] as { id: string; full_name: string; company_name: string | null }[] }),
+    loadEngagementBalances(orgId, engagements.map(e => e.id)),
+  ])
+
+  const propertyById = new Map((properties ?? []).map(p => [p.id, p]))
+  const ownerById = new Map((owners ?? []).map(o => [o.id, o]))
+
+  const lines: string[] = []
+  for (const e of engagements) {
+    const property = e.property_id ? propertyById.get(e.property_id) : null
+    const owner = e.owner_contact_id ? ownerById.get(e.owner_contact_id) : null
+    const label = property?.title || property?.address || `Объект №${String(e.property_id).slice(0, 8)}`
+    const ownerName = owner ? (owner.company_name || owner.full_name) : null
+    const settlement = balances.get(e.id)
+
+    if (!settlement || settlement.error) {
+      lines.push(`• <b>${label}</b> — схема расчёта не выбрана, сальдо не посчитать`)
+      if (e.property_id) keyboard.push([openInCrmButton(`/management/${e.property_id}/terms`)])
+      continue
+    }
+
+    const balance = settlement.balance
+    const state = balance > 0
+      ? `к выплате <b>${moneyRu(balance)} ₽</b>`
+      : balance < 0
+        ? `долг собственника ${moneyRu(-balance)} ₽`
+        : 'расчёты закрыты'
+    lines.push(`• <b>${label}</b> — ${state}${ownerName ? ` · ${ownerName}` : ''}`)
+
+    const row: InlineKeyboardButton[] = []
+    if (balance > 0) {
+      row.push({ text: `💸 Выплатил ${moneyRu(balance)} ₽`, callback_data: `ownerpay:${e.id}` })
+    }
+    if (e.property_id) row.push(openInCrmButton(`/management/${e.property_id}`))
+    if (row.length) keyboard.push(row)
+  }
+
+  keyboard.push(...pageFooter('crm_management', page, count ?? engagements.length))
+  keyboard.push([BACK_TO_CRM])
+
+  return { text: `🏢 <b>Объекты в управлении</b>\n\n${lines.join('\n')}`, keyboard }
+}
+
+/**
+ * Отметка выплаты собственнику из бота.
+ *
+ * Проводится ровно на сальдо и только когда оно положительное: аванс — это
+ * решение с ценой, и принимать его нажатием одной кнопки в дороге нельзя.
+ * Сумма считается на момент нажатия, а не берётся из текста кнопки: пока
+ * сообщение висит в чате, сальдо могло измениться.
+ */
+export async function payOwnerFromBot(orgId: string, engagementId: string): Promise<{ error?: string }> {
+  const supabaseAdmin = getSupabaseAdmin()
+
+  const { data: engagement } = await supabaseAdmin
+    .from('management_engagements')
+    .select('id, property_id, owner_contact_id')
+    .eq('id', engagementId)
+    .eq('organization_id', orgId)
+    .is('ended_at', null)
+    .maybeSingle()
+
+  if (!engagement) return { error: 'обслуживание не найдено' }
+  if (!engagement.owner_contact_id) return { error: 'у объекта не указан собственник' }
+
+  const settlement = (await loadEngagementBalances(orgId, [engagementId])).get(engagementId)
+  if (!settlement) return { error: 'обслуживание не найдено' }
+  if (settlement.error) return { error: settlement.error }
+  if (settlement.balance <= 0) {
+    return { error: 'к выплате сейчас ничего не начислено. Аванс отмечают в CRM — там видно, за что' }
+  }
+
+  const { data: category } = await supabaseAdmin
+    .from('accounting_categories')
+    .select('id')
+    .eq('code', 'owner_payout')
+    .maybeSingle()
+
+  const { error } = await supabaseAdmin.from('accounting_transactions').insert({
+    type: 'expense',
+    status: 'completed',
+    amount: settlement.balance,
+    date: new Date().toISOString().slice(0, 10),
+    paid_at: new Date().toISOString(),
+    description: 'Выплата собственнику (из Telegram)',
+    category_id: category?.id ?? null,
+    engagement_id: engagementId,
+    property_id: engagement.property_id,
+    contact_id: engagement.owner_contact_id,
+    payment_method: 'bank',
+    organization_id: orgId,
+  })
+  if (error) return { error: error.message }
+
+  return {}
 }
