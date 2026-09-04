@@ -4065,6 +4065,14 @@ export type Database = {
         }
       }
       get_user_org_id: { Args: never; Returns: string }
+      import_client_request: {
+        Args: { p_contact: Json; p_lead: Json; p_org_id: string }
+        Returns: Json
+      }
+      import_property_extract: {
+        Args: { p_org_id: string; p_owner?: Json; p_property: Json }
+        Returns: Json
+      }
       import_rental_contract: {
         Args: {
           p_deal: Json

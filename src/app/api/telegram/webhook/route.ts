@@ -81,7 +81,7 @@ const SYSTEM_PROMPT = `Ты — ассистент внутри Telegram-бот�
 
 Для ВСЕХ мутирующих действий (add_transaction, update_deal_status, generate_contract, create_lead,
 create_property, update_property_status, create_contact, update_contact, import_rental_contract,
-create_task, complete_task)
+import_client_request, import_property_extract, create_task, complete_task)
 НЕ считай, что действие уже выполнено — система сама покажет пользователю подтверждение и выполнит
 действие только после его согласия.
 
@@ -110,13 +110,26 @@ create_contact/create_property по отдельности, потому что 
 за один атомарный вызов. Если в документе не хватает каких-то полей — передай только то, что есть,
 остальное можно дополнить позже через update_contact/update_property_status.
 
-Пользователь может прислать фото, голосовое, PDF или DOCX документ:
-- Фото чека/квитанции — определи сумму, дату, назначение, предложи add_transaction.
-- PDF/DOCX (договор аренды, выписка ЕГРН и т.п.) — внимательно прочитай содержимое, определи,
-  какие сущности там описаны (стороны договора, объект, условия), и предложи подходящее действие —
-  чаще всего import_rental_contract, если документ описывает сделку между двумя сторонами по объекту.
-  Если документ не про сделку (например, просто выписка ЕГРН на один объект без сторон) —
-  предложи create_property и/или update_property_status по ситуации.
+Пользователь регулярно присылает документы, чтобы занести их содержимое в CRM. Это основной
+сценарий работы с вложениями — не отвечай на документ пересказом, а всегда предлагай конкретное
+действие. Разбирай так:
+- Фото чека/квитанции/расписки — сумма, дата, назначение → add_transaction.
+- Выписка ЕГРН, свидетельство о праве собственности, договор дарения/приватизации и другие
+  правоустанавливающие документы (признаки: кадастровый номер, «правообладатель», «вид права»,
+  «ограничения и обременения») → import_property_extract. Вычитывай кадастровый номер, адрес,
+  площади, этаж, год, вид права и обременения, а правообладателя передавай как owner — объект и
+  собственник заведутся связанными. deal_type в таких документах нет: не выдумывай его, оставь
+  пустым, если пользователь не сказал, аренда это или продажа.
+- Договор аренды/найма или купли-продажи, где есть ДВЕ стороны и объект → import_rental_contract
+  (создаст собственника, второго участника, объект и сделку разом).
+- Любой другой документ с данными обратившегося человека — анкета, заявление, заявка, скан
+  паспорта, договор оказания услуг → import_client_request: создаст контакт и лид одним действием.
+  Это поведение по умолчанию, если документ не подошёл под пункты выше и в нём есть человек.
+  Не вызывай для этого create_contact и create_lead по отдельности.
+- Если в одном документе есть и человек, и объект (например, анкета собственника с описанием
+  квартиры) — вызови оба инструмента в одном ответе, система соберёт их в одно подтверждение.
+- Чего в документе нет — не выдумывай: передавай только вычитанные поля, остальное дополняется
+  потом через update_contact/update_property_status.
 - Всегда явно проговаривай в подтверждении, что именно нашёл в документе, прежде чем создавать.
 
 У тебя есть история последних сообщений в этом чате — используй её для контекста
@@ -167,6 +180,8 @@ const HELP_TEXT = `<b>HousePro CRM — бот-ассистент</b>
 • Поставь задачу позвонить клиенту завтра
 • Создай трёх лидов: ... (несколько сразу — одним подтверждением)
 • Пришли договор аренды PDF/DOCX — сам заведу собственника, арендатора, объект и сделку, всё связав
+• Пришли анкету, заявление или скан паспорта — заведу контакт и лид по нему
+• Пришли выписку ЕГРН или свидетельство о собственности — заведу объект и его собственника
 
 Просто напиши или пришли файл.
 
@@ -774,8 +789,9 @@ async function handleChannelCallback(action: string, postId: string, actor: BotA
         newText = await generateRubricDraft(settings, rubric)
       }
       const newPostId = await createDraftRow(post.organization_id, post.rubric, post.scheduled_for, { rubricId: rubric.id })
-      const ctaType = post.rubric === 'adhoc' ? 'none' : 'dm_admin'
-      await sendDraftForReview(post.organization_id, newPostId, post.rubric, newText, ctaType)
+      // CTA-ссылка есть в каждом посте, включая разовые: пост без неё не приносит
+      // обращений, а для читателя это единственный способ выйти на агентство.
+      await sendDraftForReview(post.organization_id, newPostId, post.rubric, newText, 'dm_admin')
     } catch (e) {
       await sendMessage(chatId, `⚠️ Не удалось перегенерировать: ${e instanceof Error ? e.message : 'ошибка'}`)
     }
@@ -973,7 +989,7 @@ async function handleAdhocPostCommand(chatId: number, orgId: string, topic: stri
     if (!rubric) throw new Error('рубрика «adhoc» не найдена в БД')
     const text = await generateRubricDraft(settings, rubric, topic)
     const postId = await createDraftRow(orgId, 'adhoc', null, { rubricId: rubric.id })
-    await sendDraftForReview(orgId, postId, 'adhoc', text, 'none')
+    await sendDraftForReview(orgId, postId, 'adhoc', text, 'dm_admin')
   } catch (e) {
     await sendMessage(chatId, `⚠️ Не удалось сгенерировать пост: ${e instanceof Error ? e.message : 'ошибка'}`)
   } finally {
@@ -1130,8 +1146,12 @@ export async function POST(request: Request) {
       const caption = message.caption?.trim()
       const prompt =
         caption ||
-        'Это документ (договор, выписка ЕГРН и т.п.). Внимательно прочитай и определи, какие ' +
-          'сущности он описывает, предложи подходящее действие в CRM.'
+        'Это документ для занесения в CRM. Внимательно прочитай его целиком и определи тип: ' +
+          'правоустанавливающий документ на недвижимость (выписка ЕГРН, свидетельство) — заводи ' +
+          'объект через import_property_extract; договор между двумя сторонами по объекту — ' +
+          'import_rental_contract; документ с данными обратившегося человека (анкета, заявление, ' +
+          'заявка, паспорт) — import_client_request, то есть контакт и лид. Перечисли, что нашёл, ' +
+          'и предложи действие.'
 
       await sendChatAction(chatId, 'typing')
 

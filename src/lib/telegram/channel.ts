@@ -16,6 +16,16 @@ const RUBRIC_LABEL_FALLBACK: Record<ChannelRubric, string> = {
   adhoc: '✍️ Разовый пост',
 }
 
+// Текст кликабельной ссылки в конце поста. Ведут все в одно место (личка админа),
+// разный только глагол: под оффером логично «написать», под аналитикой и кейсом —
+// «узнать больше», иначе призыв не совпадает с тем, что человек только что прочитал.
+const CTA_LABEL: Record<ChannelRubric, string> = {
+  analytics: '👉 Узнать больше',
+  case: '👉 Хочу так же — написать',
+  cta: '👉 Написать напрямую',
+  adhoc: '👉 Узнать больше',
+}
+
 export interface ChannelSettings {
   organization_id: string
   channel_chat_id: string | null
@@ -36,12 +46,20 @@ export interface ChannelSettings {
   timezone: string
 }
 
-// dm_admin — ведёт прямо в личку к Руслану. Используется для ВСЕХ CTA на данный момент.
+// dm_admin — ведёт прямо в личку к Руслану. Используется во ВСЕХ постах: ссылка-CTA
+// обязательна в каждом, включая разовые (раньше они уходили с cta_type='none' и
+// читателю некуда было нажать).
 // bot_qualifier — задел на будущее: мягкий контент должен вести в личку к отдельному
 // боту-квалификатору (без доступа к CRM-инструментам). Пока такого бота нет — использовать
 // bot_qualifier нельзя, это привело бы к тому, что случайный человек с канала мог бы писать
 // ГЛАВНОМУ CRM-боту, у которого есть доступ к клиентской базе (решение от 23.07.2026).
-async function resolveCtaLine(orgId: string, postId: string, settings: ChannelSettings, ctaType: ChannelCtaType): Promise<string> {
+async function resolveCtaLine(
+  orgId: string,
+  postId: string,
+  settings: ChannelSettings,
+  ctaType: ChannelCtaType,
+  rubric: ChannelRubric
+): Promise<string> {
   if (ctaType === 'none') return ''
 
   const destination =
@@ -61,7 +79,7 @@ async function resolveCtaLine(orgId: string, postId: string, settings: ChannelSe
     return ''
   }
 
-  const label = ctaType === 'dm_admin' ? '👉 Написать напрямую' : '👉 Узнать подробнее'
+  const label = CTA_LABEL[rubric] ?? '👉 Узнать больше'
 
   // Переиспользуем уже существующую ссылку этого поста (если она уже создавалась при
   // первой отправке на утверждение), а не плодим новую при каждой правке текста/картинки —
@@ -74,7 +92,10 @@ async function resolveCtaLine(orgId: string, postId: string, settings: ChannelSe
     .maybeSingle()
 
   const trackedUrl = existing ? `${siteUrlFromEnv()}/r/${existing.code}` : await createChannelLink(orgId, postId, destination, label)
-  return `\n\n<b>${label}:</b> ${trackedUrl}`
+  // Ссылка именно замаскированная (<a href>), а не голый URL: в ленте канала /r/9f3a1c2b
+  // выглядит спамом и по нему не кликают, плюс каждый лишний символ съедает лимит
+  // подписи к фото в 1024.
+  return `\n\n<a href="${trackedUrl}">${label}</a>`
 }
 
 function siteUrlFromEnv(): string {
@@ -231,7 +252,7 @@ export async function sendDraftForReview(
   }
 
   const rubricRow = await getRubricByKey(orgId, rubric)
-  const ctaLine = await resolveCtaLine(orgId, postId, settings, ctaType)
+  const ctaLine = await resolveCtaLine(orgId, postId, settings, ctaType, rubric)
   const fullText = `${text}${ctaLine}`
 
   const imageUrl = await generateAndStoreImage(postId, rubric, text, rubricRow?.image_style_override ?? undefined)
@@ -319,7 +340,13 @@ export async function applyManualEdit(postId: string, newBodyText: string): Prom
   const settings = await getChannelSettings(post.organization_id)
   if (!settings?.admin_telegram_user_id) return { error: 'admin_telegram_user_id не настроен' }
 
-  const ctaLine = await resolveCtaLine(post.organization_id, postId, settings, post.cta_type as ChannelCtaType)
+  const ctaLine = await resolveCtaLine(
+    post.organization_id,
+    postId,
+    settings,
+    post.cta_type as ChannelCtaType,
+    post.rubric as ChannelRubric
+  )
   const fullText = `${newBodyText.trim()}${ctaLine}`
 
   await supabaseAdmin.from('channel_posts').update({ draft_text: fullText, updated_at: new Date().toISOString() }).eq('id', postId)
