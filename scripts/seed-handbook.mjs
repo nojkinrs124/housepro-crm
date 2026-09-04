@@ -124,6 +124,7 @@ const files = readdirSync(DIR).filter(f => f.endsWith('.md') && f !== 'README.md
 let created = 0
 let updated = 0
 const skipped = []
+const unknown = []
 
 for (const org of orgs) {
   for (const [index, file] of files.entries()) {
@@ -153,16 +154,19 @@ for (const org of orgs) {
       .maybeSingle()
 
     if (existing) {
-      // Правили ли статью в CRM после последнего посева. У статей, посеянных
-      // до появления отпечатка, его нет — тогда сравниваем тексты напрямую:
-      // расхождение считаем правкой в интерфейсе, чтобы не потерять её на
-      // первом же запуске новой версии сеятеля.
-      const editedInCrm = existing.source_hash
-        ? sha(existing.body ?? '') !== existing.source_hash
-        : (existing.body ?? '') !== body
-
-      if (editedInCrm && !FORCE) {
-        skipped.push(`${org.name} / ${slug}`)
+      if (existing.source_hash) {
+        // Отпечаток есть — вопрос решается точно: текст в базе не совпадает с
+        // тем, что писал сеятель, значит статью правили в интерфейсе.
+        if (sha(existing.body ?? '') !== existing.source_hash && !FORCE) {
+          skipped.push(`${org.name} / ${slug}`)
+          continue
+        }
+      } else if ((existing.body ?? '') !== body && !FORCE) {
+        // Отпечатка нет — статья посеяна старой версией сеятеля. Отличить
+        // «файл с тех пор правили» от «статью правили в CRM» невозможно:
+        // сравнивать не с чем. Пропускаем и говорим об этом честно, вместо
+        // того чтобы обвинять человека в правке, которой могло не быть.
+        unknown.push(`${org.name} / ${slug}`)
         continue
       }
 
@@ -177,7 +181,9 @@ for (const org of orgs) {
   }
 }
 
-console.log(`Готово: создано ${created}, обновлено ${updated}, пропущено ${skipped.length}`)
+console.log(
+  `Готово: создано ${created}, обновлено ${updated}, пропущено ${skipped.length + unknown.length}`
+)
 
 if (skipped.length > 0) {
   console.log('')
@@ -185,4 +191,15 @@ if (skipped.length > 0) {
   for (const s of skipped) console.log(`  • ${s}`)
   console.log('')
   console.log('Перенести правку в docs/handbook/ вручную, либо выбросить её: npm run seed:handbook -- --force')
+}
+
+if (unknown.length > 0) {
+  console.log('')
+  console.log('Пропущены — текст в базе отличается от файла, но чья это правка, определить нечем:')
+  for (const s of unknown) console.log(`  • ${s}`)
+  console.log('')
+  console.log('Эти статьи посеяны до появления отпечатка. Сверьте текст в CRM с файлом:')
+  console.log('  • совпадает по смыслу (правил только файл) → npm run seed:handbook -- --force')
+  console.log('  • в CRM есть чужие правки → перенесите их в docs/handbook/ и запустите снова')
+  console.log('Отпечаток проставится при первом же успешном обновлении, и дальше вопрос решается точно.')
 }

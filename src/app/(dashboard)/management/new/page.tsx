@@ -7,7 +7,10 @@ import { can, toUserRole } from '@/lib/permissions'
 
 export const dynamic = 'force-dynamic'
 
-/** Договор считается основанием, только когда он подписан или уже оформлен. */
+/** Отменённый договор основанием быть не может — в отличие от черновика. */
+const UNUSABLE_CONTRACT_STATUSES = ['cancelled']
+
+/** Статусы, при которых договор уже является полноценным основанием. */
 const SIGNED_STATUSES = ['generated', 'signed', 'completed']
 
 /**
@@ -40,9 +43,6 @@ export default async function StartEngagementPage({
         .in('role', ['owner', 'both']).order('full_name'),
       supabase.from('service_plans').select('id, title, rate')
         .eq('is_active', true).contains('directions', ['management']).order('sort_order'),
-      // Берём договоры управления любого статуса: если все они черновики,
-      // человеку надо сказать именно это, а не «договоров нет» — иначе он
-      // пойдёт оформлять третий поверх двух существующих.
       supabase.from('contracts')
         .select('id, contract_number, start_date, property_id, status')
         .in('contract_type', ['property_management', 'sublease'])
@@ -60,13 +60,18 @@ export default async function StartEngagementPage({
       ownerContactId: p.owner_id,
     }))
 
-  const signed = (contracts ?? []).filter(c => SIGNED_STATUSES.includes(c.status))
-  const draftsOnly = signed.length === 0 && (contracts ?? []).length > 0
+  // Черновик допустим: договор часто существует на бумаге раньше, чем в CRM.
+  // Но в списке он подписан как черновик, и раздел потом покажет «подпись
+  // договора» в недостающем — чтобы это не потерялось.
+  const usable = (contracts ?? []).filter(c => !UNUSABLE_CONTRACT_STATUSES.includes(c.status))
 
-  const contractOptions = signed.map(c => ({
+  const contractOptions = usable.map(c => ({
     id: c.id,
     propertyId: c.property_id,
-    label: `${c.contract_number || `№${c.id.slice(0, 8)}`}${c.start_date ? ` от ${c.start_date}` : ''}`,
+    label:
+      `${c.contract_number || `№${c.id.slice(0, 8)}`}` +
+      `${c.start_date ? ` от ${c.start_date}` : ''}` +
+      `${SIGNED_STATUSES.includes(c.status) ? '' : ' · черновик'}`,
   }))
 
   const terms: EngagementTerms = {
@@ -94,22 +99,15 @@ export default async function StartEngagementPage({
       {contractOptions.length === 0 ? (
         <div className="hp-card p-5 space-y-2">
           <p className="text-sm font-semibold text-[var(--hp-ink)]">
-            {draftsOnly
-              ? `Договоры управления есть (${(contracts ?? []).length}), но все в статусе «Черновик»`
-              : 'Нет ни одного договора управления'}
+            Нет ни одного договора управления
           </p>
           <p className="text-[12.5px] text-[var(--hp-sub)]">
-            {draftsOnly
-              ? 'Черновик — это ещё не основание: по нему нет ни сроков, ни обязательств. ' +
-                'Откройте договор, сформируйте его и переведите в «Сформирован» или «Подписан» — ' +
-                'после этого объект можно принять.'
-              : 'Управление без договора — работа без основания: от него берутся сроки, обязательства ' +
-                'и ставка вознаграждения. Оформите договор управления или субаренды по объекту.'}
+            Управление без договора — работа без основания: от него берутся сроки, обязательства
+            и ставка вознаграждения. Оформите договор управления или субаренды по объекту —
+            принимать можно и по черновику, подписать успеете позже.
           </p>
           <div className="flex flex-wrap gap-2 shrink-0 pt-1">
-            <Link href={draftsOnly ? '/contracts' : '/contracts/new'} className="hp-btn-primary">
-              {draftsOnly ? 'К договорам' : 'Оформить договор'}
-            </Link>
+            <Link href="/contracts/new" className="hp-btn-primary">Оформить договор</Link>
             <Link href="/management" className="hp-btn-secondary">Назад</Link>
           </div>
         </div>

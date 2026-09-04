@@ -23,7 +23,17 @@ function num(v: FormDataEntryValue | null): number | null {
 
 /** Типы договоров, которыми оформляется управление объектом. */
 const MANAGEMENT_CONTRACT_TYPES = ['property_management', 'sublease']
-const SIGNED_STATUSES = ['generated', 'signed', 'completed']
+
+/**
+ * Отменённый договор основанием быть не может — в отличие от черновика.
+ *
+ * Требование подписи здесь стояло до 04.09.2026 и оказалось строже жизни: у
+ * агентства договор существует на бумаге, а в CRM висит черновиком, и принять
+ * объект было нельзя вовсе. Черновик теперь допустим, но не молча: раздел
+ * показывает «договор не подписан» в списке недостающего, пока статус не
+ * сменят.
+ */
+const UNUSABLE_CONTRACT_STATUSES = ['cancelled']
 
 /**
  * Заведение объекта в управлении после подписания договора.
@@ -80,8 +90,8 @@ export async function startEngagementAction(formData: FormData): Promise<Result>
   if (!MANAGEMENT_CONTRACT_TYPES.includes(contract.contract_type)) {
     return { error: 'Выбранный договор не является договором управления или субаренды' }
   }
-  if (!SIGNED_STATUSES.includes(contract.status)) {
-    return { error: 'Договор управления ещё не подписан — принимать объект рано' }
+  if (UNUSABLE_CONTRACT_STATUSES.includes(contract.status)) {
+    return { error: 'Договор отменён — принимать объект по нему нельзя' }
   }
 
   // Уже действующее обслуживание по объекту означало бы два взаиморасчёта по

@@ -150,6 +150,10 @@ export async function collectManagement(supabase: Client): Promise<ManagementRow
     if (!engagement.owner_contact_id) missingTerms.push('собственник')
     if (!engagement.settlement_scheme) missingTerms.push('схема расчёта')
     if (!engagement.contract_id) missingTerms.push('договор управления')
+    // Принять объект можно и по черновику — договор часто существует на бумаге
+    // раньше, чем в CRM. Но пропасть из виду это не должно: по неподписанному
+    // договору нет ни сроков, ни обязательств, на которые можно сослаться.
+    else if (contract && contract.status === 'draft') missingTerms.push('подпись договора')
     if (!handover?.completed_at) missingTerms.push('акт приёма')
 
     return {
