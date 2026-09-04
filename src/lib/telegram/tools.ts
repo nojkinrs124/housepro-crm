@@ -583,10 +583,17 @@ export const TOOL_DEFINITIONS = [
     type: 'function',
     function: {
       name: 'list_overdue_payments',
-      description: 'Список неоплаченных/просроченных/частично оплаченных платежей. Read-only.',
+      description:
+        'Начисления, которые ждут оплаты: по умолчанию только те, срок которых уже наступил или прошёл. ' +
+        'Read-only.',
       parameters: {
         type: 'object',
-        properties: { status: { type: 'string', enum: ['pending', 'overdue', 'partial', 'paid', 'cancelled'] } },
+        properties: {
+          include_future: {
+            type: 'boolean',
+            description: 'true — показать и будущие начисления, а не только просроченные',
+          },
+        },
       },
     },
   },
@@ -686,9 +693,12 @@ export async function dispatchReadOnlyTool(name: string, args: Record<string, un
       return callApi(`/api/v1/tasks?${params.toString()}`)
     }
     case 'list_overdue_payments': {
-      const params = new URLSearchParams()
-      if (args.status) params.set('status', String(args.status))
-      return callApi(`/api/v1/payments?${params.toString()}`)
+      // Реестр начислений — accounting_transactions: legacy-таблица payments не
+      // пополняется с переезда бухгалтерии, и запрос в неё отвечал «всё чисто»
+      // при любом числе реальных просрочек.
+      const params = new URLSearchParams({ status: 'planned', type: 'income', limit: '20' })
+      if (!args.include_future) params.set('due_before', new Date().toISOString().slice(0, 10))
+      return callApi(`/api/v1/accounting/transactions?${params.toString()}`)
     }
     case 'get_finance_chart': {
       const { sendPhoto, sendChatAction } = await import('@/lib/telegram/api')

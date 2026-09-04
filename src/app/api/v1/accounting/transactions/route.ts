@@ -35,11 +35,17 @@ export async function GET(request: Request) {
   const categoryId = searchParams.get('category_id')
   const dateFrom   = searchParams.get('date_from')   // YYYY-MM-DD
   const dateTo     = searchParams.get('date_to')
+  // Начисления: status=planned + срок оплаты. Без этих фильтров вопрос «что
+  // просрочено» приходилось задавать legacy-таблице payments, куда приложение
+  // не пишет с переезда бухгалтерии.
+  const status     = searchParams.get('status')      // planned | completed | cancelled
+  const dueBefore  = searchParams.get('due_before')  // YYYY-MM-DD
+  const dueAfter   = searchParams.get('due_after')
 
   let query = supabaseAdmin
     .from('accounting_transactions')
     .select(
-      'id, type, amount, category_id, date, description, status, payment_method, deal_id, contract_id, contact_id, created_at',
+      'id, type, amount, category_id, date, due_date, description, status, payment_method, deal_id, contract_id, contact_id, created_at',
       { count: 'exact' }
     )
     .eq('organization_id', auth.orgId)
@@ -50,6 +56,9 @@ export async function GET(request: Request) {
   if (categoryId) query = query.eq('category_id', categoryId)
   if (dateFrom) query = query.gte('date', dateFrom)
   if (dateTo) query = query.lte('date', dateTo)
+  if (status) query = query.eq('status', status)
+  if (dueBefore) query = query.lte('due_date', dueBefore)
+  if (dueAfter) query = query.gte('due_date', dueAfter)
 
   const { data, error, count } = await query
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

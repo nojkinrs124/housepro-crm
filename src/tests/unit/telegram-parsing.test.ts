@@ -182,3 +182,44 @@ describe('parseImageStyle', () => {
     expect(parseImageStyle(' тёплые тона ')).toBe('тёплые тона')
   })
 })
+
+describe('parseTimezone', () => {
+  it('смещение переводится в Etc/GMT с обратным знаком', async () => {
+    const { parseTimezone } = await import('@/features/telegram/services/parsing')
+    // POSIX: Etc/GMT-7 — это UTC+7, и ошибиться здесь руками проще всего
+    expect(parseTimezone('UTC+7')).toEqual({ ok: true, value: 'Etc/GMT-7' })
+    expect(parseTimezone('+3')).toEqual({ ok: true, value: 'Etc/GMT-3' })
+    expect(parseTimezone('utc-5')).toEqual({ ok: true, value: 'Etc/GMT+5' })
+  })
+
+  it('имя зоны принимается как есть', async () => {
+    const { parseTimezone } = await import('@/features/telegram/services/parsing')
+    expect(parseTimezone('Europe/Moscow')).toEqual({ ok: true, value: 'Europe/Moscow' })
+    expect(parseTimezone(' Asia/Krasnoyarsk ')).toEqual({ ok: true, value: 'Asia/Krasnoyarsk' })
+  })
+
+  it('несуществующая зона и пустой ввод — отказ с объяснением', async () => {
+    const { parseTimezone } = await import('@/features/telegram/services/parsing')
+    const bad = parseTimezone('Мордор/Барад-Дур')
+    expect(bad.ok).toBe(false)
+    if (!bad.ok) expect(bad.error).toContain('Мордор')
+
+    const huge = parseTimezone('UTC+30')
+    expect(huge.ok).toBe(false)
+
+    expect(parseTimezone('  ').ok).toBe(false)
+  })
+})
+
+describe('likeFilterValue', () => {
+  it('адрес с запятой не разваливает условие or=', async () => {
+    const { likeFilterValue } = await import('@/features/telegram/services/parsing')
+    expect(likeFilterValue('Ленина, 10')).toBe('"%Ленина, 10%"')
+  })
+
+  it('кавычки и слэши из ввода убираются', async () => {
+    const { likeFilterValue } = await import('@/features/telegram/services/parsing')
+    expect(likeFilterValue('дом "У реки"')).toBe('"%дом  У реки%"')
+    expect(likeFilterValue(' Иванов ')).toBe('"%Иванов%"')
+  })
+})

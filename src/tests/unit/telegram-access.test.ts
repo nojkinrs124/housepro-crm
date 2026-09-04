@@ -97,7 +97,11 @@ describe('canOpenScreen', () => {
     const { canOpenScreen } = await import('@/features/telegram/services/access')
     expect(canOpenScreen('member', 'crm_leads')).toBe(true)
     expect(canOpenScreen('member', 'crm_tasks')).toBe(true)
-    expect(canOpenScreen('member', 'help')).toBe(true)
+    expect(canOpenScreen('member', 'crm_properties')).toBe(true)
+    expect(canOpenScreen('member', 'crm_contacts')).toBe(true)
+    expect(canOpenScreen('member', 'today')).toBe(true)
+    // деньги показывают оборот агентства целиком — это дело владельца
+    expect(canOpenScreen('member', 'crm_payments')).toBe(false)
     // промпты рубрик задают то, что бот пишет в публичный канал
     expect(canOpenScreen('member', 'channel_rubrics')).toBe(false)
     // а здесь правится список тех, у кого вообще есть доступ

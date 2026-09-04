@@ -181,3 +181,50 @@ export function parseImageStyle(text: string): string | null {
   const trimmed = text.trim()
   return trimmed === '-' || trimmed === '' ? null : trimmed
 }
+
+/**
+ * Часовой пояс организации из живого ввода.
+ *
+ * Принимаем и IANA-имя (`Europe/Moscow`), и привычное «UTC+7» / «+7»: в чате
+ * человек пишет смещение, а не идентификатор базы tz. Смещение переводится в
+ * `Etc/GMT∓N` — там знак намеренно обратный (POSIX), и именно на этом легко
+ * ошибиться руками: Etc/GMT-7 это UTC+7.
+ */
+export function parseTimezone(raw: string): Parsed<string> {
+  const text = raw.trim()
+  if (!text) return { ok: false, error: 'Пустой ввод. Напиши, например: <code>Europe/Moscow</code> или <code>UTC+7</code>' }
+
+  const offset = text.match(/^(?:utc|gmt|мск|msk)?\s*([+-])\s*(\d{1,2})$/i)
+  if (offset) {
+    const hours = Number(offset[2])
+    if (hours > 14) return { ok: false, error: `Смещение UTC${offset[1]}${hours} не существует.` }
+    // POSIX-знак в Etc/GMT обратный: UTC+7 → Etc/GMT-7.
+    const zone = `Etc/GMT${offset[1] === '+' ? '-' : '+'}${hours}`
+    return { ok: true, value: zone }
+  }
+
+  try {
+    new Intl.DateTimeFormat('ru-RU', { timeZone: text })
+    return { ok: true, value: text }
+  } catch {
+    return {
+      ok: false,
+      error:
+        `Не знаю такого часового пояса: «${text}». Напиши смещение (<code>UTC+7</code>) ` +
+        'или имя зоны (<code>Europe/Moscow</code>, <code>Asia/Krasnoyarsk</code>).',
+    }
+  }
+}
+
+/**
+ * Значение для `ilike` внутри `.or(...)` PostgREST.
+ *
+ * Условия в `or=` разделяются запятыми, поэтому поисковый запрос вроде
+ * «Ленина, 10» без кавычек разъезжается на два битых условия и запрос падает —
+ * а адрес с запятой человек пишет первым делом. Значение в двойных кавычках
+ * запятую переживает; сами кавычки и обратные слэши из ввода убираем, внутри
+ * закавыченной строки они и ломают разбор.
+ */
+export function likeFilterValue(raw: string): string {
+  return `"%${raw.replace(/["\\]/g, ' ').trim()}%"`
+}

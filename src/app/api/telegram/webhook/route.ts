@@ -18,9 +18,18 @@ import {
   addAllowedUser,
   removeAllowedUser,
   setAddUserAwaiting,
+  setTimezone,
   type MenuScreen,
 } from '@/lib/telegram/menu'
-import { advanceLeadStatus, advanceDealStatus, markPaymentPaid, markTaskDone } from '@/lib/telegram/crm-menu'
+import {
+  advanceLeadStatus,
+  advanceDealStatus,
+  markTransactionPaid,
+  markTaskDone,
+  snoozeTaskToTomorrow,
+  buildPropertySearchResult,
+  buildContactSearchResult,
+} from '@/lib/telegram/crm-menu'
 import { transcribeAudio } from '@/lib/telegram/stt'
 import { extractTextFromDocx } from '@/lib/telegram/docx-reader'
 import {
@@ -64,7 +73,15 @@ import {
   canOpenScreen,
   type BotActor,
 } from '@/features/telegram/services/access'
-import { parseCallbackData, parseAddUserInput, parseScheduleSlot, parseRubricInput, parseImageNote, parseImageStyle } from '@/features/telegram/services/parsing'
+import {
+  parseCallbackData,
+  parseAddUserInput,
+  parseScheduleSlot,
+  parseRubricInput,
+  parseImageNote,
+  parseImageStyle,
+  parseTimezone,
+} from '@/features/telegram/services/parsing'
 
 // Node runtime (по умолчанию) — ОБЯЗАТЕЛЬНО, не ставить `export const runtime = 'edge'`.
 // pizzip/docxtemplater — Node-only, в Edge runtime не заработают.
@@ -186,7 +203,9 @@ const HELP_TEXT = `<b>HousePro CRM — бот-ассистент</b>
 Просто напиши или пришли файл.
 
 <b>Меню</b>
-• /menu — главное меню с разделами: CRM, Канал, Мультиагент, Настройки.
+• /menu — главное меню: ⚡ Сегодня (что горит), 📋 CRM, 📢 Канал, ⚙️ Настройки.
+• В CRM — лиды, сделки, объекты, контакты, задачи, деньги и анализ рынка.
+  Списки длиннее пяти записей листаются кнопкой «⬇ Ещё».
 
 <b>Канал (контент-ассистент)</b>
 • По расписанию сам присылаю черновики постов на утверждение (пн — аналитика, ср — кейс, пт — оффер).
@@ -447,21 +466,24 @@ async function handleUserTurn(actor: BotActor, content: MessageContent) {
 }
 
 async function sendMainMenu(actor: BotActor) {
-  await showMenuScreen(actor.chatId, actor.orgId, 'root', HELP_TEXT, actor.role)
+  await showMenuScreen(actor.chatId, actor.orgId, 'root', actor.role)
 }
 
-const NAV_SCREENS: MenuScreen[] = ['root', 'crm', 'crm_leads', 'crm_deals', 'crm_payments', 'crm_tasks', 'channel', 'channel_posts', 'channel_schedule', 'channel_rubrics', 'multiagent', 'settings', 'settings_users', 'help']
+const NAV_SCREENS: MenuScreen[] = ['root', 'today', 'crm', 'crm_leads', 'crm_deals', 'crm_properties', 'crm_contacts', 'crm_payments', 'crm_tasks', 'channel', 'channel_posts', 'channel_schedule', 'channel_rubrics', 'multiagent', 'settings', 'settings_users']
 
-// Навигация верхнеуровневого меню: nav:<screen> — просто перерисовывает "экран" в том же сообщении.
-async function handleNavCallback(screen: string, actor: BotActor, messageId: number | undefined) {
+// Навигация верхнеуровневого меню: nav:<screen>[:<страница>] — перерисовывает "экран"
+// в том же сообщении. Номер страницы нужен кнопке «⬇ Ещё» в длинных списках.
+async function handleNavCallback(arg: string, actor: BotActor, messageId: number | undefined) {
   const { chatId, orgId } = actor
+  const [screen, pageRaw] = arg.split(':')
+  const page = Math.max(0, Number(pageRaw) || 0)
   if (!NAV_SCREENS.includes(screen as MenuScreen)) return
   if (!canOpenScreen(actor.role, screen)) return denyAdmin(chatId)
   const settings = await getChannelSettings(orgId)
   // Навигация по меню = отказ от любого незавершённого текстового ввода (добавление слота,
   // правка промпта/картинки и т.п.) — иначе застрявший awaiting_intent потом глотает команды.
   if (settings?.awaiting_intent) await setAwaitingIntent(orgId, null)
-  await showMenuScreen(chatId, orgId, screen as MenuScreen, HELP_TEXT, actor.role, messageId)
+  await showMenuScreen(chatId, orgId, screen as MenuScreen, actor.role, messageId, page)
 }
 
 // Действия внутри раздела "Настройки": set:pause / set:resume / set:adduser, а также deluser:<id>.
@@ -471,12 +493,12 @@ async function handleSettingsAction(action: string, arg: string | undefined, act
 
   if (action === 'set' && arg === 'pause') {
     await setSchedulePaused(orgId, true)
-    await showMenuScreen(chatId, orgId, 'settings', HELP_TEXT, actor.role, messageId)
+    await showMenuScreen(chatId, orgId, 'settings', actor.role, messageId)
     return
   }
   if (action === 'set' && arg === 'resume') {
     await setSchedulePaused(orgId, false)
-    await showMenuScreen(chatId, orgId, 'settings', HELP_TEXT, actor.role, messageId)
+    await showMenuScreen(chatId, orgId, 'settings', actor.role, messageId)
     return
   }
   if (action === 'set' && arg === 'adduser') {
@@ -488,9 +510,19 @@ async function handleSettingsAction(action: string, arg: string | undefined, act
     )
     return
   }
+  if (action === 'set' && arg === 'timezone') {
+    await setAwaitingIntent(orgId, 'set_timezone', actor.telegramUserId)
+    await sendMessage(
+      chatId,
+      '🌍 Пришли часовой пояс одним сообщением: смещение (<code>UTC+7</code>) или имя зоны ' +
+        '(<code>Europe/Moscow</code>, <code>Asia/Krasnoyarsk</code>).\n\n' +
+        'От него зависит, в котором часу приходят черновики по расписанию.'
+    )
+    return
+  }
   if (action === 'deluser' && arg) {
     await removeAllowedUser(orgId, arg)
-    await showMenuScreen(chatId, orgId, 'settings_users', HELP_TEXT, actor.role, messageId)
+    await showMenuScreen(chatId, orgId, 'settings_users', actor.role, messageId)
     return
   }
 }
@@ -523,7 +555,7 @@ async function tryHandleAddUserInput(actor: BotActor, text: string, forwardFromI
   } else {
     await sendMessage(chatId, `✅ Добавлено: ${label || telegramUserId} (${telegramUserId})`)
   }
-  await showMenuScreen(chatId, orgId, 'settings_users', HELP_TEXT, actor.role)
+  await showMenuScreen(chatId, orgId, 'settings_users', actor.role)
   return true
 }
 
@@ -563,12 +595,12 @@ async function handleScheduleAction(action: string, arg: string, actor: BotActor
     const slots = await getScheduleWithRubrics(orgId)
     const slot = slots.find((s) => s.id === arg)
     if (slot) await toggleScheduleSlot(arg, !slot.enabled)
-    await showMenuScreen(chatId, orgId, 'channel_schedule', HELP_TEXT, actor.role, messageId)
+    await showMenuScreen(chatId, orgId, 'channel_schedule', actor.role, messageId)
     return
   }
   if (action === 'chscheddel') {
     await deleteScheduleSlot(arg)
-    await showMenuScreen(chatId, orgId, 'channel_schedule', HELP_TEXT, actor.role, messageId)
+    await showMenuScreen(chatId, orgId, 'channel_schedule', actor.role, messageId)
     return
   }
   if (action === 'chschedadd') {
@@ -596,7 +628,7 @@ async function handleRubricAction(action: string, rubricId: string, actor: BotAc
   if (action === 'chrubtoggle') {
     const rubric = await getRubricById(rubricId)
     if (rubric) await toggleRubricActive(rubricId, !rubric.active)
-    await showMenuScreen(chatId, orgId, 'channel_rubrics', HELP_TEXT, actor.role, messageId)
+    await showMenuScreen(chatId, orgId, 'channel_rubrics', actor.role, messageId)
     return
   }
   if (action === 'chrubedit') {
@@ -670,7 +702,7 @@ async function tryHandleScheduleOrRubricInput(actor: BotActor, text: string): Pr
     } else {
       await sendMessage(chatId, `✅ Слот добавлен: ${dayLabel} ${time} — ${rubric.label}`)
     }
-    await showMenuScreen(chatId, orgId, 'channel_schedule', HELP_TEXT, actor.role)
+    await showMenuScreen(chatId, orgId, 'channel_schedule', actor.role)
     return true
   }
 
@@ -688,7 +720,7 @@ async function tryHandleScheduleOrRubricInput(actor: BotActor, text: string): Pr
     } else {
       await sendMessage(chatId, `✅ Рубрика «${label}» добавлена.`)
     }
-    await showMenuScreen(chatId, orgId, 'channel_rubrics', HELP_TEXT, actor.role)
+    await showMenuScreen(chatId, orgId, 'channel_rubrics', actor.role)
     return true
   }
 
@@ -701,7 +733,7 @@ async function tryHandleScheduleOrRubricInput(actor: BotActor, text: string): Pr
     } else {
       await sendMessage(chatId, '✅ Промпт рубрики обновлён.')
     }
-    await showMenuScreen(chatId, orgId, 'channel_rubrics', HELP_TEXT, actor.role)
+    await showMenuScreen(chatId, orgId, 'channel_rubrics', actor.role)
     return true
   }
 
@@ -715,7 +747,7 @@ async function tryHandleScheduleOrRubricInput(actor: BotActor, text: string): Pr
     } else {
       await sendMessage(chatId, value ? '✅ Стиль картинки для рубрики обновлён.' : '✅ Стиль картинки сброшен на общий.')
     }
-    await showMenuScreen(chatId, orgId, 'channel_rubrics', HELP_TEXT, actor.role)
+    await showMenuScreen(chatId, orgId, 'channel_rubrics', actor.role)
     return true
   }
 
@@ -817,6 +849,7 @@ const CRM_ACTION_SCREEN: Record<string, MenuScreen> = {
   dealnext: 'crm_deals',
   paypaid: 'crm_payments',
   taskdone: 'crm_tasks',
+  tasksnooze: 'crm_tasks',
 }
 
 async function handleCrmQuickAction(action: string, entityId: string, actor: BotActor, messageId: number | undefined) {
@@ -828,11 +861,55 @@ async function handleCrmQuickAction(action: string, entityId: string, actor: Bot
   let result: { error?: string } = {}
   if (action === 'leadnext') result = await advanceLeadStatus(orgId, entityId)
   else if (action === 'dealnext') result = await advanceDealStatus(orgId, entityId)
-  else if (action === 'paypaid') result = await markPaymentPaid(orgId, entityId)
+  else if (action === 'paypaid') result = await markTransactionPaid(orgId, entityId)
   else if (action === 'taskdone') result = await markTaskDone(orgId, entityId)
+  else if (action === 'tasksnooze') result = await snoozeTaskToTomorrow(orgId, entityId)
 
   if (result.error) await sendMessage(chatId, `⚠️ Не получилось: ${result.error}`)
-  await showMenuScreen(chatId, orgId, CRM_ACTION_SCREEN[action], HELP_TEXT, actor.role, messageId)
+  await showMenuScreen(chatId, orgId, CRM_ACTION_SCREEN[action], actor.role, messageId)
+}
+
+/**
+ * Кнопки, которым нужен ввод текстом (поиск по объектам и контактам) или
+ * готовый инструмент ассистента (график, запись операции).
+ *
+ * Запись операции намеренно не заводит собственную форму: текст уходит в
+ * обычный диалог, где add_transaction уже умеет разобрать «5000 бензин» и
+ * спросить подтверждение. Вторая форма для того же действия разошлась бы
+ * с первой.
+ */
+async function handleCrmSearchAction(action: string, arg: string, actor: BotActor) {
+  const { chatId, orgId } = actor
+  if (!isAtLeastMember(actor.role)) return
+
+  if (action === 'prop' && arg === 'find') {
+    await setAwaitingIntent(orgId, 'find_property', actor.telegramUserId)
+    await sendMessage(chatId, '🔎 Пришли адрес или его часть — покажу подходящие объекты.')
+    return
+  }
+  if (action === 'cont' && arg === 'find') {
+    await setAwaitingIntent(orgId, 'find_contact', actor.telegramUserId)
+    await sendMessage(chatId, '🔎 Пришли имя, часть имени или телефон — найду контакт.')
+    return
+  }
+
+  // Деньги — раздел владельца.
+  if (actor.role !== 'admin') return denyAdmin(chatId)
+
+  if (action === 'money' && arg === 'add') {
+    await setAwaitingIntent(orgId, 'add_money', actor.telegramUserId)
+    await sendMessage(
+      chatId,
+      '➕ Напиши операцию одной строкой, например:\n' +
+        '<code>расход 5000 бензин</code>\n<code>приход 45000 аренда Ленина 10</code>\n\n' +
+        'Покажу, что понял, и спрошу подтверждение.'
+    )
+    return
+  }
+  if (action === 'money' && arg === 'chart') {
+    const { dispatchReadOnlyTool } = await import('@/lib/telegram/tools')
+    await dispatchReadOnlyTool('get_finance_chart', { months: 6 }, { chatId })
+  }
 }
 
 async function handleChannelListAction(action: string, postId: string, actor: BotActor, messageId: number | undefined) {
@@ -845,7 +922,7 @@ async function handleChannelListAction(action: string, postId: string, actor: Bo
   } else if (action === 'chlistreject') {
     await rejectPost(postId)
   }
-  await showMenuScreen(chatId, orgId, 'channel_posts', HELP_TEXT, actor.role, messageId)
+  await showMenuScreen(chatId, orgId, 'channel_posts', actor.role, messageId)
 }
 
 async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_query']>) {
@@ -888,8 +965,11 @@ async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_
 
   if (action === 'nav') return handleNavCallback(arg, actor, messageId)
   if (action === 'set' || action === 'deluser') return handleSettingsAction(action, arg, actor, messageId)
-  if (action === 'leadnext' || action === 'dealnext' || action === 'paypaid' || action === 'taskdone') {
+  if (action === 'leadnext' || action === 'dealnext' || action === 'paypaid' || action === 'taskdone' || action === 'tasksnooze') {
     return handleCrmQuickAction(action, arg, actor, messageId)
+  }
+  if (action === 'prop' || action === 'cont' || action === 'money') {
+    return handleCrmSearchAction(action, arg, actor)
   }
   if (action === 'chlistpub' || action === 'chlistreject') return handleChannelListAction(action, arg, actor, messageId)
   if (action === 'chpub' || action === 'chregen' || action === 'chreject' || action === 'chregenimg') {
@@ -999,6 +1079,60 @@ async function handleAdhocPostCommand(chatId: number, orgId: string, topic: stri
 
 // Возвращает true, если сообщение было перехвачено под нужды канала (правка/меню/кейс/пост)
 // и НЕ должно попадать в обычный CRM-диалог с моделью.
+/**
+ * Текст, которого ждут кнопки раздела CRM: поиск объекта, поиск контакта,
+ * запись операции, часовой пояс.
+ *
+ * Отдельно от `tryHandleChannelInput`, потому что тот пускает только владельца:
+ * поиск по базе — работа сотрудника, и запирать её незачем.
+ */
+async function tryHandleCrmInput(actor: BotActor, text: string): Promise<boolean> {
+  const { chatId, orgId } = actor
+  const settings = await getChannelSettings(orgId)
+  const intent = settings?.awaiting_intent
+  if (!intent) return false
+  if (!['find_property', 'find_contact', 'add_money', 'set_timezone'].includes(intent)) return false
+  // Состояние ожидания одно на организацию: без проверки владельца чужой текст
+  // попадал бы в чужую форму (та же причина, что у формы добавления пользователя).
+  if (!ownsIntent(actor.telegramUserId, settings?.awaiting_intent_user_id)) return false
+
+  if (intent === 'find_property' || intent === 'find_contact') {
+    await setAwaitingIntent(orgId, null)
+    const result =
+      intent === 'find_property'
+        ? await buildPropertySearchResult(orgId, text.trim())
+        : await buildContactSearchResult(orgId, text.trim())
+    await sendMessage(chatId, result.text, { inlineKeyboard: result.keyboard })
+    return true
+  }
+
+  if (intent === 'add_money') {
+    if (actor.role !== 'admin') return false
+    await setAwaitingIntent(orgId, null)
+    // В обычный диалог: add_transaction уже умеет разобрать сумму и назначение
+    // и показать подтверждение. Своего разбора здесь нет намеренно.
+    await handleUserTurn(actor, `Запиши операцию в бухгалтерию: ${text.trim()}`)
+    return true
+  }
+
+  if (intent === 'set_timezone') {
+    if (actor.role !== 'admin') return false
+    const parsed = parseTimezone(text)
+    if (!parsed.ok) {
+      await sendMessage(chatId, `⚠️ ${parsed.error}`)
+      return true
+    }
+    await setAwaitingIntent(orgId, null)
+    const result = await setTimezone(orgId, parsed.value)
+    if (result.error) await sendMessage(chatId, `⚠️ Не удалось сохранить: ${result.error}`)
+    else await sendMessage(chatId, `🌍 Часовой пояс: <code>${parsed.value}</code>`)
+    await showMenuScreen(chatId, orgId, 'settings', actor.role)
+    return true
+  }
+
+  return false
+}
+
 async function tryHandleChannelInput(
   actor: BotActor,
   text: string,
@@ -1123,7 +1257,9 @@ export async function POST(request: Request) {
       const { base64 } = await downloadTelegramFile(message.voice.file_id)
       const transcript = await transcribeAudio(base64, 'ogg')
       await sendMessage(chatId, `🎤 <i>${transcript}</i>`)
-      if (!(await tryHandleChannelInput(actor, transcript))) {
+      // Голосом отвечают на те же кнопки, что и текстом: «найди Иванова»,
+      // «расход пять тысяч бензин».
+      if (!(await tryHandleCrmInput(actor, transcript)) && !(await tryHandleChannelInput(actor, transcript))) {
         await handleUserTurn(actor, transcript)
       }
     } else if (message.photo && message.photo.length > 0) {
@@ -1186,6 +1322,8 @@ export async function POST(request: Request) {
         await sendMainMenu(actor)
       } else if (await tryHandleAddUserInput(actor, text, forwardFrom?.id, forwardFrom?.first_name || forwardFrom?.username)) {
         // перехвачено — ID добавлен в allowlist
+      } else if (await tryHandleCrmInput(actor, text)) {
+        // перехвачено — поиск, операция или часовой пояс
       } else if (await tryHandleScheduleOrRubricInput(actor, text)) {
         // перехвачено — добавлен слот расписания или обновлён промпт рубрики
       } else if (!(await tryHandleChannelInput(actor, text, message.reply_to_message?.message_id))) {
