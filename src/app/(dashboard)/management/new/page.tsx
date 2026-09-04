@@ -40,10 +40,12 @@ export default async function StartEngagementPage({
         .in('role', ['owner', 'both']).order('full_name'),
       supabase.from('service_plans').select('id, title, rate')
         .eq('is_active', true).contains('directions', ['management']).order('sort_order'),
+      // Берём договоры управления любого статуса: если все они черновики,
+      // человеку надо сказать именно это, а не «договоров нет» — иначе он
+      // пойдёт оформлять третий поверх двух существующих.
       supabase.from('contracts')
         .select('id, contract_number, start_date, property_id, status')
         .in('contract_type', ['property_management', 'sublease'])
-        .in('status', SIGNED_STATUSES)
         .order('start_date', { ascending: false, nullsFirst: false }),
     ])
 
@@ -58,7 +60,10 @@ export default async function StartEngagementPage({
       ownerContactId: p.owner_id,
     }))
 
-  const contractOptions = (contracts ?? []).map(c => ({
+  const signed = (contracts ?? []).filter(c => SIGNED_STATUSES.includes(c.status))
+  const draftsOnly = signed.length === 0 && (contracts ?? []).length > 0
+
+  const contractOptions = signed.map(c => ({
     id: c.id,
     propertyId: c.property_id,
     label: `${c.contract_number || `№${c.id.slice(0, 8)}`}${c.start_date ? ` от ${c.start_date}` : ''}`,
@@ -89,15 +94,22 @@ export default async function StartEngagementPage({
       {contractOptions.length === 0 ? (
         <div className="hp-card p-5 space-y-2">
           <p className="text-sm font-semibold text-[var(--hp-ink)]">
-            Нет ни одного подписанного договора управления
+            {draftsOnly
+              ? `Договоры управления есть (${(contracts ?? []).length}), но все в статусе «Черновик»`
+              : 'Нет ни одного договора управления'}
           </p>
           <p className="text-[12.5px] text-[var(--hp-sub)]">
-            Управление без договора — работа без основания: от него берутся сроки, обязательства и
-            ставка вознаграждения. Оформите договор управления или субаренды по объекту, подпишите
-            его — и объект можно будет принять.
+            {draftsOnly
+              ? 'Черновик — это ещё не основание: по нему нет ни сроков, ни обязательств. ' +
+                'Откройте договор, сформируйте его и переведите в «Сформирован» или «Подписан» — ' +
+                'после этого объект можно принять.'
+              : 'Управление без договора — работа без основания: от него берутся сроки, обязательства ' +
+                'и ставка вознаграждения. Оформите договор управления или субаренды по объекту.'}
           </p>
           <div className="flex flex-wrap gap-2 shrink-0 pt-1">
-            <Link href="/contracts/new" className="hp-btn-primary">Оформить договор</Link>
+            <Link href={draftsOnly ? '/contracts' : '/contracts/new'} className="hp-btn-primary">
+              {draftsOnly ? 'К договорам' : 'Оформить договор'}
+            </Link>
             <Link href="/management" className="hp-btn-secondary">Назад</Link>
           </div>
         </div>
