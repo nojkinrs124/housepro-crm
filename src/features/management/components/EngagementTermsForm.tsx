@@ -9,8 +9,23 @@ import { updateEngagementTermsAction, startEngagementAction } from '@/features/m
 
 interface Option { id: string; label: string }
 
+/** Условия, уже записанные в договоре управления, — источник подстановки при приёме. */
+export interface ContractTerms {
+  ownerContactId: string | null
+  planId: string | null
+  settlementScheme: string | null
+  rate: number | null
+  ownerFixedAmount: number | null
+  ownerPayoutDay: number | null
+  startDate: string | null
+}
+
 /** Договор со ссылкой на объект — чтобы список сужался под выбранный объект. */
-export interface ContractOption extends Option { propertyId: string | null }
+export interface ContractOption extends Option {
+  propertyId: string | null
+  /** Есть только на приёме: страница правки условий подставлять ничего не должна. */
+  terms?: ContractTerms
+}
 
 /** Объект, который можно принять: с подставляемым собственником, если он известен. */
 export interface PropertyOption extends Option { ownerContactId: string | null }
@@ -29,6 +44,17 @@ export interface EngagementTerms {
   notes: string | null
 }
 
+/** Договор объекта, если он там единственный: тогда подставлять его безопасно. */
+function soleContractFor(contracts: ContractOption[], propertyId: string): ContractOption | null {
+  if (!propertyId) return null
+  const matching = contracts.filter(c => c.propertyId === propertyId)
+  return matching.length === 1 ? matching[0] : null
+}
+
+function numText(v: number | null | undefined): string {
+  return v === null || v === undefined ? '' : String(v)
+}
+
 /**
  * Условия расчёта с собственником — и при приёме объекта, и при правке.
  *
@@ -39,6 +65,11 @@ export interface EngagementTerms {
  * Клиентский, потому что набор полей зависит от схемы: у процентной это ставка
  * удержания, у фиксированной — сумма выплаты и день, когда обязательство
  * наступает. Показывать всё сразу значит приглашать заполнить лишнее.
+ *
+ * Поля при приёме подставляются из выбранного договора: собственник, тариф,
+ * схема расчёта, ставка и дата — всё это в договоре уже заполнено, и просить
+ * человека набрать то же самое второй раз значит гарантированно получить
+ * расхождение между договором и взаиморасчётом.
  */
 export function EngagementTermsForm({
   terms,
@@ -61,11 +92,30 @@ export function EngagementTermsForm({
 }) {
   const router = useRouter()
   const [pending, start] = useTransition()
-  const [scheme, setScheme] = useState(terms.settlementScheme ?? 'percent')
 
   const isNew = terms.id === null
+
+  // Переход с карточки объекта уже несёт объект — значит и договор по нему
+  // подставляется сразу, а не после лишнего клика по тому же значению.
+  const preset = isNew ? soleContractFor(contracts, defaultPropertyId)?.terms ?? null : null
+
   const [propertyId, setPropertyId] = useState(defaultPropertyId)
-  const [ownerId, setOwnerId] = useState(terms.ownerContactId ?? '')
+  const [contractId, setContractId] = useState(
+    terms.contractId ?? (preset ? soleContractFor(contracts, defaultPropertyId)!.id : ''),
+  )
+  const [ownerId, setOwnerId] = useState(
+    terms.ownerContactId
+      ?? preset?.ownerContactId
+      ?? properties.find(p => p.id === defaultPropertyId)?.ownerContactId
+      ?? '',
+  )
+  const [planId, setPlanId] = useState(terms.planId ?? preset?.planId ?? '')
+  const [scheme, setScheme] = useState(terms.settlementScheme ?? preset?.settlementScheme ?? 'percent')
+  const [rate, setRate] = useState(numText(terms.rate ?? preset?.rate))
+  const [fixedAmount, setFixedAmount] = useState(numText(terms.ownerFixedAmount ?? preset?.ownerFixedAmount))
+  const [payoutDay, setPayoutDay] = useState(numText(terms.ownerPayoutDay ?? preset?.ownerPayoutDay ?? 5))
+  const [startedAt, setStartedAt] = useState(preset?.startDate?.slice(0, 10) || terms.startedAt)
+  const [prefilled, setPrefilled] = useState(Boolean(preset))
 
   // Договоры сужаются под выбранный объект: договор управления по чужой
   // квартире экшен всё равно отвергнет, но лучше его и не показывать.
@@ -73,10 +123,40 @@ export function EngagementTermsForm({
     ? contracts.filter(c => c.propertyId === propertyId)
     : contracts
 
+  /**
+   * Подстановка условий договора. Правку существующего обслуживания не трогает:
+   * там условия уже согласованы и могли намеренно разойтись с договором.
+   */
+  function pickContract(id: string) {
+    setContractId(id)
+    if (!isNew) return
+
+    const t = contracts.find(c => c.id === id)?.terms
+    setPrefilled(Boolean(t))
+    if (!t) return
+
+    if (t.ownerContactId) setOwnerId(t.ownerContactId)
+    if (t.planId) setPlanId(t.planId)
+    if (t.settlementScheme) setScheme(t.settlementScheme)
+    if (t.rate !== null) setRate(String(t.rate))
+    if (t.ownerFixedAmount !== null) setFixedAmount(String(t.ownerFixedAmount))
+    if (t.ownerPayoutDay !== null) setPayoutDay(String(t.ownerPayoutDay))
+    if (t.startDate) setStartedAt(t.startDate.slice(0, 10))
+  }
+
   function pickProperty(id: string) {
     setPropertyId(id)
     const owner = properties.find(p => p.id === id)?.ownerContactId
     if (owner) setOwnerId(owner)
+
+    // Договор от прошлого объекта нужно сбросить: он уходит из списка, но
+    // остался бы выбранным и ушёл бы в экшен.
+    const sole = soleContractFor(contracts, id)
+    if (sole) pickContract(sole.id)
+    else {
+      setContractId('')
+      setPrefilled(false)
+    }
   }
 
   const inp = 'hp-input'
@@ -111,7 +191,8 @@ export function EngagementTermsForm({
               {properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
             </select>
             <p className="text-xs text-[var(--hp-sub)]">
-              Показаны объекты, по которым ещё нет действующего обслуживания
+              Показаны объекты, по которым ещё нет действующего обслуживания. Условия
+              подставятся из договора управления по объекту
             </p>
           </div>
         )}
@@ -132,14 +213,15 @@ export function EngagementTermsForm({
           <div className="space-y-1.5">
             <label className={lbl} htmlFor="started_at">Обслуживание с</label>
             <input id="started_at" name="started_at" type="date" required
-              defaultValue={terms.startedAt} className={inp} />
+              value={startedAt} onChange={e => setStartedAt(e.target.value)} className={inp} />
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <label className={lbl} htmlFor="plan_id">Тариф</label>
-            <select id="plan_id" name="plan_id" defaultValue={terms.planId ?? ''} className={inp}>
+            <select id="plan_id" name="plan_id" value={planId}
+              onChange={e => setPlanId(e.target.value)} className={inp}>
               <option value="">Не выбран</option>
               {plans.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
             </select>
@@ -151,7 +233,7 @@ export function EngagementTermsForm({
           <div className="space-y-1.5">
             <label className={lbl} htmlFor="contract_id">Договор управления</label>
             <select id="contract_id" name="contract_id" required={isNew}
-              defaultValue={terms.contractId ?? ''} className={inp}>
+              value={contractId} onChange={e => pickContract(e.target.value)} className={inp}>
               <option value="">Не выбран</option>
               {visibleContracts.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
             </select>
@@ -159,7 +241,9 @@ export function EngagementTermsForm({
               <p className="text-xs text-[var(--hp-sub)]">
                 {propertyId && visibleContracts.length === 0
                   ? 'По этому объекту нет договора управления — сначала оформите его в разделе «Договоры»'
-                  : 'Принять можно и по черновику: пока договор не подписан, раздел будет показывать это в недостающем'}
+                  : prefilled
+                    ? 'Условия ниже подставлены из договора — поправьте, если на деле договорились иначе'
+                    : 'Принять можно и по черновику: пока договор не подписан, раздел будет показывать это в недостающем'}
               </p>
             )}
           </div>
@@ -192,19 +276,20 @@ export function EngagementTermsForm({
           <div className="space-y-1.5 sm:max-w-xs">
             <label className={lbl} htmlFor="rate">Удержание агентства, %</label>
             <input id="rate" name="rate" type="number" step="0.01" min="0" max="100" required
-              defaultValue={terms.rate ?? ''} placeholder="10" className={inp} />
+              value={rate} onChange={e => setRate(e.target.value)} placeholder="10" className={inp} />
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className={lbl} htmlFor="owner_fixed_amount">Выплата собственнику, ₽/мес</label>
               <input id="owner_fixed_amount" name="owner_fixed_amount" type="number" min="0" required
-                defaultValue={terms.ownerFixedAmount ?? ''} placeholder="40 000" className={inp} />
+                value={fixedAmount} onChange={e => setFixedAmount(e.target.value)}
+                placeholder="40 000" className={inp} />
             </div>
             <div className="space-y-1.5">
               <label className={lbl} htmlFor="owner_payout_day">День выплаты</label>
               <input id="owner_payout_day" name="owner_payout_day" type="number" min="1" max="28" required
-                defaultValue={terms.ownerPayoutDay ?? 5} className={inp} />
+                value={payoutDay} onChange={e => setPayoutDay(e.target.value)} className={inp} />
               <p className="text-xs text-[var(--hp-sub)]">
                 Обязательство наступает в этот день, заплатил арендатор или нет
               </p>
