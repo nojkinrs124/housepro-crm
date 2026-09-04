@@ -209,3 +209,41 @@ describe('checkTransaction — просроченное «Запланирова
     expect(issues).toHaveLength(0)
   })
 })
+
+describe('объект с типом сделки «Управление»', () => {
+  const base = { id: 'p1', owner_id: 'c1', latitude: 1, longitude: 2, description: 'есть', price: 1000 }
+
+  it('без принятого обслуживания предупреждает и ведёт на приём', () => {
+    // Жалоба 04.09.2026: поставил тип сделки «Управление», объект в разделе
+    // не появился, и ничто об этом не сказало.
+    const issues = checkProperty(
+      { ...base, deal_type: 'management' },
+      { hasActiveEngagement: false },
+    )
+    const issue = issues.find(i => i.id === 'property.engagement')
+    expect(issue).toBeDefined()
+    expect(issue?.href).toBe('/management/new?property_id=p1')
+  })
+
+  it('с принятым обслуживанием молчит', () => {
+    const issues = checkProperty(
+      { ...base, deal_type: 'management' },
+      { hasActiveEngagement: true },
+    )
+    expect(issues.find(i => i.id === 'property.engagement')).toBeUndefined()
+  })
+
+  it('к объекту с другим типом сделки правило не применяется', () => {
+    const issues = checkProperty(
+      { ...base, deal_type: 'rent' },
+      { hasActiveEngagement: false },
+    )
+    expect(issues.find(i => i.id === 'property.engagement')).toBeUndefined()
+  })
+
+  it('без сведения об обслуживании не гадает', () => {
+    // контекст не передали — правило молчит, а не пугает зря
+    const issues = checkProperty({ ...base, deal_type: 'management' })
+    expect(issues.find(i => i.id === 'property.engagement')).toBeUndefined()
+  })
+})

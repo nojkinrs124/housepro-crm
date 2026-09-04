@@ -85,7 +85,16 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
  // Договор аренды и статус объекта расходятся чаще всего: статус переставить
  // забывают, и сданный объект продолжает висеть в рекламе.
  const hasActiveRentContract = (contracts ?? []).some(c => isActiveRentContract(c))
- const issues = checkProperty(p, { hasActiveRentContract })
+
+ // Объект в управлении — отдельная сущность, а не тип сделки в карточке
+ const { data: engagement } = await supabase
+   .from('management_engagements')
+   .select('id')
+   .eq('property_id', id)
+   .is('ended_at', null)
+   .maybeSingle()
+
+ const issues = checkProperty(p, { hasActiveRentContract, hasActiveEngagement: !!engagement })
 
  const Bool = ({ val, label }: { val: boolean | null; label: string }) => (
  <div className="flex items-center justify-between py-1.5">

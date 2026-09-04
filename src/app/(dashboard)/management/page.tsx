@@ -35,7 +35,7 @@ export default async function ManagementPage() {
         title="Объекты в управлении"
         subtitle={`${rows.length} объектов в доверительном управлении`}
         actions={
-          <Link href="/properties/new?deal_type=management" className={buttonVariants({ size: 'sm' })}>
+          <Link href="/management/new" className={buttonVariants({ size: 'sm' })}>
             <Plus style={{ width: 16, height: 16 }} />
             Принять объект
           </Link>
@@ -61,9 +61,11 @@ export default async function ManagementPage() {
           </div>
           <p className="text-[var(--hp-ink)] font-semibold">Объектов в управлении нет</p>
           <p className="text-[var(--hp-sub)] text-sm mt-1">
-            Объект попадает сюда, если у него тип сделки «Управление» или оформлен договор управления
+            Объект попадает сюда после приёма в управление — по подписанному договору
+            управления или субаренды. Тип сделки «Управление» в карточке объекта сам по
+            себе объект сюда не приводит: у обслуживания свои условия расчёта и свой срок
           </p>
-          <Link href="/properties/new?deal_type=management" className="hp-btn-primary mt-5">
+          <Link href="/management/new" className="hp-btn-primary mt-5">
             <Plus style={{ width: 16, height: 16 }} />
             Принять объект в управление
           </Link>

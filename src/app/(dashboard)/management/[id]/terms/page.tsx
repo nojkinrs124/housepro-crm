@@ -68,6 +68,7 @@ export default async function EngagementTermsPage({ params }: { params: Promise<
         }))}
         contracts={(contracts ?? []).map(c => ({
           id: c.id,
+          propertyId: id,
           label: `${c.contract_number || `№${c.id.slice(0, 8)}`}${c.start_date ? ` от ${c.start_date}` : ''}`,
         }))}
         backHref={`/management/${id}`}

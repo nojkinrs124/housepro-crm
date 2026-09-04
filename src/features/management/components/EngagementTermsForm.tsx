@@ -5,12 +5,19 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { SETTLEMENT_SCHEMES } from '@/features/plans/config/settlement'
-import { updateEngagementTermsAction } from '@/features/management/actions/engagements.actions'
+import { updateEngagementTermsAction, startEngagementAction } from '@/features/management/actions/engagements.actions'
 
 interface Option { id: string; label: string }
 
+/** Договор со ссылкой на объект — чтобы список сужался под выбранный объект. */
+export interface ContractOption extends Option { propertyId: string | null }
+
+/** Объект, который можно принять: с подставляемым собственником, если он известен. */
+export interface PropertyOption extends Option { ownerContactId: string | null }
+
 export interface EngagementTerms {
-  id: string
+  /** Пусто при приёме нового объекта — записи ещё нет. */
+  id: string | null
   ownerContactId: string | null
   planId: string | null
   contractId: string | null
@@ -23,7 +30,11 @@ export interface EngagementTerms {
 }
 
 /**
- * Условия расчёта с собственником.
+ * Условия расчёта с собственником — и при приёме объекта, и при правке.
+ *
+ * Одна форма на два случая намеренно: поля те же, а вторая почти такая же
+ * форма разошлась бы с первой при первой же правке — ровно так расходились
+ * словари статусов, пока у них не появился единый источник.
  *
  * Клиентский, потому что набор полей зависит от схемы: у процентной это ставка
  * удержания, у фиксированной — сумма выплаты и день, когда обязательство
@@ -34,42 +45,82 @@ export function EngagementTermsForm({
   owners,
   plans,
   contracts,
+  properties = [],
+  defaultPropertyId = '',
   backHref,
 }: {
   terms: EngagementTerms
   owners: Option[]
   plans: Option[]
-  contracts: Option[]
+  contracts: ContractOption[]
+  /** Только для приёма: из чего выбирать объект. */
+  properties?: PropertyOption[]
+  /** Объект, подставленный переходом с его карточки. */
+  defaultPropertyId?: string
   backHref: string
 }) {
   const router = useRouter()
   const [pending, start] = useTransition()
   const [scheme, setScheme] = useState(terms.settlementScheme ?? 'percent')
 
+  const isNew = terms.id === null
+  const [propertyId, setPropertyId] = useState(defaultPropertyId)
+  const [ownerId, setOwnerId] = useState(terms.ownerContactId ?? '')
+
+  // Договоры сужаются под выбранный объект: договор управления по чужой
+  // квартире экшен всё равно отвергнет, но лучше его и не показывать.
+  const visibleContracts = isNew && propertyId
+    ? contracts.filter(c => c.propertyId === propertyId)
+    : contracts
+
+  function pickProperty(id: string) {
+    setPropertyId(id)
+    const owner = properties.find(p => p.id === id)?.ownerContactId
+    if (owner) setOwnerId(owner)
+  }
+
   const inp = 'hp-input'
   const lbl = 'hp-label'
 
   function submit(formData: FormData) {
     start(async () => {
-      const res = await updateEngagementTermsAction(formData)
-      if (res.error) toast.error(res.error)
-      else {
-        toast.success('Условия обслуживания сохранены')
-        router.push(backHref)
+      const res = isNew
+        ? await startEngagementAction(formData)
+        : await updateEngagementTermsAction(formData)
+      if (res.error) {
+        toast.error(res.error)
+        return
       }
+      toast.success(isNew ? 'Объект принят в управление' : 'Условия обслуживания сохранены')
+      router.push(isNew && propertyId ? `/management/${propertyId}` : backHref)
+      router.refresh()
     })
   }
 
   return (
     <form action={submit} className="space-y-4">
-      <input type="hidden" name="id" value={terms.id} />
+      {terms.id && <input type="hidden" name="id" value={terms.id} />}
 
       <div className="hp-card p-5 space-y-4">
+        {isNew && (
+          <div className="space-y-1.5">
+            <label className={lbl} htmlFor="property_id">Объект</label>
+            <select id="property_id" name="property_id" required value={propertyId}
+              onChange={e => pickProperty(e.target.value)} className={inp}>
+              <option value="">Не выбран</option>
+              {properties.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
+            </select>
+            <p className="text-xs text-[var(--hp-sub)]">
+              Показаны объекты, по которым ещё нет действующего обслуживания
+            </p>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <label className={lbl} htmlFor="owner_contact_id">Собственник</label>
             <select id="owner_contact_id" name="owner_contact_id" required
-              defaultValue={terms.ownerContactId ?? ''} className={inp}>
+              value={ownerId} onChange={e => setOwnerId(e.target.value)} className={inp}>
               <option value="">Не выбран</option>
               {owners.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
             </select>
@@ -99,10 +150,18 @@ export function EngagementTermsForm({
 
           <div className="space-y-1.5">
             <label className={lbl} htmlFor="contract_id">Договор управления</label>
-            <select id="contract_id" name="contract_id" defaultValue={terms.contractId ?? ''} className={inp}>
+            <select id="contract_id" name="contract_id" required={isNew}
+              defaultValue={terms.contractId ?? ''} className={inp}>
               <option value="">Не выбран</option>
-              {contracts.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+              {visibleContracts.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
             </select>
+            {isNew && (
+              <p className="text-xs text-[var(--hp-sub)]">
+                {propertyId && visibleContracts.length === 0
+                  ? 'По этому объекту нет подписанного договора управления — сначала оформите его в разделе «Договоры»'
+                  : 'Управление без подписанного договора — работа без основания: от договора берутся сроки и обязательства'}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -161,7 +220,9 @@ export function EngagementTermsForm({
 
       <div className="flex flex-wrap gap-2 shrink-0">
         <button type="submit" disabled={pending} className="hp-btn-primary">
-          {pending ? 'Сохраняем…' : 'Сохранить условия'}
+          {pending
+            ? (isNew ? 'Принимаем…' : 'Сохраняем…')
+            : (isNew ? 'Принять в управление' : 'Сохранить условия')}
         </button>
         <Link href={backHref} className="hp-btn-secondary">Отмена</Link>
       </div>

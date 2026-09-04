@@ -54,6 +54,8 @@ export interface PropertyReadinessInput {
 export interface PropertyReadinessContext {
   /** Есть ли по объекту действующий договор аренды/найма */
   hasActiveRentContract?: boolean
+  /** Заведено ли по объекту действующее обслуживание (management_engagements) */
+  hasActiveEngagement?: boolean
 }
 
 export function checkProperty(
@@ -70,6 +72,22 @@ export function checkProperty(
       missing: 'Не указан собственник',
       effect: 'В управлении и в отчёте собственник будет пустым, договор подписывать не с кем',
       href: edit,
+    })
+  }
+
+  // Тип сделки «Управление» в карточке и объект в управлении — разные вещи, и
+  // это неочевидно: человек ставит тип и ждёт объект в разделе. Раздел читает
+  // `management_engagements`, а туда попадают только принятые объекты — со
+  // своим договором, собственником и схемой расчёта.
+  if (p.deal_type === 'management' && ctx.hasActiveEngagement === false) {
+    issues.push({
+      id: 'property.engagement',
+      level: 'warn',
+      missing: 'Объект не принят в управление',
+      effect:
+        'В разделе «Объекты в управлении» его не будет: нет ни договора, ни схемы расчёта ' +
+        'с собственником, ни акта приёма — считать и отчитываться не по чему',
+      href: `/management/new?property_id=${p.id}`,
     })
   }
 
