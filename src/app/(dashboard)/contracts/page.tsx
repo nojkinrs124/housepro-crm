@@ -5,24 +5,26 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { buttonVariants } from '@/components/ui/button'
 import { isId } from '@/lib/utils'
 import { ContractsView, type ContractRow } from '@/features/contracts/components/ContractsView'
+import { getContractTypeConfig } from '@/features/contracts/config/contract-types'
 
 export default async function ContractsPage() {
   const supabase = await createClient()
 
   const { data: contracts, error } = await supabase
     .from('contracts')
-    .select('id, contract_number, contract_type, status, amount, client_contact_id, property_id, created_at')
+    .select('id, contract_number, contract_type, status, amount, client_contact_id, owner_contact_id, property_id, created_at')
     .order('created_at', { ascending: false })
     .limit(500)
 
   const contactIds = [...new Set([
     ...(contracts?.map(c => c.client_contact_id).filter(isId) ?? []),
+    ...(contracts?.map(c => c.owner_contact_id).filter(isId) ?? []),
   ])]
   const propertyIds = [...new Set(contracts?.map(c => c.property_id).filter(isId) ?? [])]
 
   const [{ data: contactsData }, { data: propertiesData }] = await Promise.all([
     contactIds.length > 0
-      ? supabase.from('contacts').select('id, full_name').in('id', contactIds)
+      ? supabase.from('contacts').select('id, full_name, company_name').in('id', contactIds)
       : Promise.resolve({ data: [] }),
     propertyIds.length > 0
       ? supabase.from('properties').select('id, address, title').in('id', propertyIds)
@@ -36,7 +38,16 @@ export default async function ContractsPage() {
   const propertyMap = Object.fromEntries((propertiesData ?? []).map(p => [p.id, p]))
 
   const rows: ContractRow[] = (contracts ?? []).map(c => {
-    const clientId = c.client_contact_id
+    // Вторую сторону называет справочник типов: у аренды и продажи это клиент,
+    // у управления и агентского договора с собственником — собственник (первой
+    // стороной там стоит агентство). Раньше читался только client_contact_id, и
+    // у всех договоров управления колонка была пуста.
+    // Тип неизвестен (остался от удалённого) — берём то, что заполнено.
+    const party2 = getContractTypeConfig(c.contract_type)?.party2Role
+      ?? (c.client_contact_id ? 'client' : 'owner')
+    const role = party2 === 'owner' ? 'owner' as const : 'client' as const
+    const counterpartyId = role === 'owner' ? c.owner_contact_id : c.client_contact_id
+    const counterparty = counterpartyId ? clientMap[counterpartyId] : null
     const property = c.property_id ? propertyMap[c.property_id] : null
     return {
       id: c.id,
@@ -44,7 +55,8 @@ export default async function ContractsPage() {
       contractType: c.contract_type,
       status: c.status,
       amount: c.amount === null ? null : Number(c.amount),
-      clientName: (clientId ? clientMap[clientId]?.full_name : null) ?? null,
+      counterpartyName: counterparty?.company_name || counterparty?.full_name || null,
+      counterpartyRole: role,
       propertyLabel: property?.title ?? property?.address ?? null,
       createdAt: c.created_at,
     }

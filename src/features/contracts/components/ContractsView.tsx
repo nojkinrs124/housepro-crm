@@ -16,7 +16,9 @@ export interface ContractRow {
   contractType: string
   status: string
   amount: number | null
-  clientName: string | null
+  /** Вторая сторона договора: у аренды это клиент, у управления — собственник. */
+  counterpartyName: string | null
+  counterpartyRole: 'client' | 'owner' | null
   propertyLabel: string | null
   createdAt: string | null
 }
@@ -45,7 +47,7 @@ const TYPE_OPTIONS = [
 export function ContractsView({ contracts }: { contracts: ContractRow[] }) {
   const { search, setSearch, filtered, toolbarFilters, reset } = useRegistryFilters(contracts, {
     storageKey: 'contracts',
-    haystack: c => [c.number, c.clientName, c.propertyLabel].filter(Boolean).join(' '),
+    haystack: c => [c.number, c.counterpartyName, c.propertyLabel].filter(Boolean).join(' '),
     filters: [
       { key: 'status', options: STATUS_OPTIONS, field: c => c.status },
       { key: 'type',   options: TYPE_OPTIONS,   field: c => c.contractType },
@@ -68,8 +70,19 @@ export function ContractsView({ contracts }: { contracts: ContractRow[] }) {
       cell: c => CONTRACT_TYPE_LABELS[c.contractType] ?? c.contractType,
     },
     {
-      key: 'client', title: 'Клиент', cellClass: 'max-w-[200px]',
-      cell: c => <span className="block truncate">{c.clientName ?? <span className="text-[var(--hp-tertiary)]">—</span>}</span>,
+      // Колонка была «Клиент» и читала только client_contact_id — у договоров
+      // управления вторая сторона это собственник, и колонка пустовала всегда.
+      key: 'client', title: 'Клиент / Собственник', cellClass: 'max-w-[200px]',
+      cell: c => c.counterpartyName
+        ? (
+          <>
+            <span className="block truncate">{c.counterpartyName}</span>
+            <span className="block truncate text-[12.5px] text-[var(--hp-tertiary)]">
+              {c.counterpartyRole === 'owner' ? 'Собственник' : 'Клиент'}
+            </span>
+          </>
+        )
+        : <span className="text-[var(--hp-tertiary)]">—</span>,
     },
     {
       key: 'property', title: 'Объект', cellClass: 'sub max-w-[220px]', headClass: 'hidden md:table-cell',
