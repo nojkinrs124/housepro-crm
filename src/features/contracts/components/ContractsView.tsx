@@ -82,7 +82,14 @@ export function ContractsView({ contracts }: { contracts: ContractRow[] }) {
             </span>
           </>
         )
-        : <span className="text-[var(--hp-tertiary)]">—</span>,
+        : (
+          // Прочерк читался как «здесь ничего и не должно быть», а это дыра в
+          // данных: без стороны договор не сгенерировать и не подписать.
+          <span className="hp-badge hp-badge-warn whitespace-nowrap"
+            title="Сторона договора не заполнена — откройте договор и укажите её">
+            {c.counterpartyRole === 'owner' ? 'Нет собственника' : 'Нет клиента'}
+          </span>
+        ),
     },
     {
       key: 'property', title: 'Объект', cellClass: 'sub max-w-[220px]', headClass: 'hidden md:table-cell',
