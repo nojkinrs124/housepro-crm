@@ -1,4 +1,6 @@
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { rateLimit } from '@/lib/rate-limit'
+import { clientIp } from '@/lib/utils'
 import { addMinutes, buildCalendar, type CalendarEvent } from '@/lib/calendar/ics'
 import { getSiteUrl } from '@/lib/telegram/site-url'
 
@@ -45,12 +47,18 @@ interface TaskRow {
   priority: string
 }
 
-export async function GET(_request: Request, context: { params: Promise<{ token: string }> }) {
+export async function GET(request: Request, context: { params: Promise<{ token: string }> }) {
   const { token } = await context.params
 
   if (!token || token.length < 16) {
     return new Response('Not found', { status: 404 })
   }
+
+  // Единственная защита фида — секретность токена, значит его будут перебирать.
+  // Календарь опрашивает подписку раз в несколько часов, так что живому клиенту
+  // тридцати запросов в минуту хватает с большим запасом.
+  const rl = await rateLimit(`ical:${clientIp(request)}`, { limit: 30, windowSeconds: 60 })
+  if (!rl.success) return new Response('Too many requests', { status: 429 })
 
   // Календари ходят сюда без авторизации; на любой сбой отвечаем 404,
   // а не 500 — иначе подписка в Google Calendar показывает ошибку сервера.

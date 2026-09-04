@@ -3,7 +3,7 @@ import { Search, User, Home, TrendingUp, FileText, CheckSquare } from 'lucide-re
 import Link from 'next/link'
 import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { formatDate } from '@/lib/utils'
+import { formatDate, likeFilterValue } from '@/lib/utils'
 import { DEAL_TYPE_LABELS as dealTypeLabels } from '@/features/deals/config/deal-stages'
 
 export default async function SearchPage({
@@ -27,7 +27,7 @@ export default async function SearchPage({
  }
 
  const supabase = await createClient()
- const like = `%${query}%`
+ const like = likeFilterValue(query)
 
  const [
  { data: contacts },
@@ -40,7 +40,7 @@ export default async function SearchPage({
  supabase.from('properties').select('id, title, address').or(`title.ilike.${like},address.ilike.${like}`).limit(5),
  supabase.from('deals').select('id, deal_type, status, amount, created_at').limit(3),
  supabase.from('contracts').select('id, contract_number, contract_type, status').or(`contract_number.ilike.${like}`).limit(5),
- supabase.from('tasks').select('id, title, status, priority').ilike('title', like).limit(5),
+ supabase.from('tasks').select('id, title, status, priority').ilike('title', `%${query}%`).limit(5),
  ])
 
  const total = (contacts?.length ?? 0) + (properties?.length ?? 0) + (deals?.length ?? 0) + (contracts?.length ?? 0) + (tasks?.length ?? 0)

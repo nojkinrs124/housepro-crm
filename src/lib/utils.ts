@@ -132,3 +132,31 @@ export function normalizePhone(phone: string | null | undefined): string | null 
 export function isId(value: string | null | undefined): value is string {
   return typeof value === 'string' && value !== ''
 }
+
+/**
+ * Значение для `ilike` внутри `.or(...)` PostgREST.
+ *
+ * Условия в `or=` разделяются запятыми, поэтому пользовательский запрос
+ * подставленный в шаблон голым — это не только «Ленина, 10» разъезжается на два
+ * битых условия, но и способ дописать в фильтр свои условия (`x,role.eq.admin`).
+ * Значение в двойных кавычках запятую переживает; сами кавычки и обратные слэши
+ * из ввода убираем — внутри закавыченной строки они и ломают разбор.
+ *
+ * Жил в src/features/telegram/services/parsing.ts, пока не выяснилось, что то же
+ * самое нужно поиску по CRM и внешнему API.
+ */
+export function likeFilterValue(raw: string): string {
+  return `"%${raw.replace(/["\\]/g, ' ').trim()}%"`
+}
+
+/**
+ * IP клиента за прокси Vercel.
+ *
+ * Нужен там, где запрос не авторизован и считать частоту больше не по чему:
+ * публичная форма заявки, подписные фиды по секретному токену.
+ */
+export function clientIp(request: Request): string {
+  const forwarded = request.headers.get('x-forwarded-for')
+  if (forwarded) return forwarded.split(',')[0]!.trim()
+  return request.headers.get('x-real-ip')?.trim() || 'unknown'
+}

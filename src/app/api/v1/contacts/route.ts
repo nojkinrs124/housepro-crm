@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { authenticateApiKey, hasScope } from '@/lib/api-auth'
+import { likeFilterValue } from '@/lib/utils'
 
 // КРИТИЧНО: этот роут отдаёт данные, специфичные для конкретной организации/пользователя
 // (RLS или ручная фильтрация по organization_id). Next.js по умолчанию может закэшировать
@@ -41,7 +42,8 @@ export async function GET(request: Request) {
     .range(offset, offset + limit - 1)
 
   if (search) {
-    query = query.or(`phone.ilike.%${search}%,full_name.ilike.%${search}%,telegram.ilike.%${search}%`)
+    const like = likeFilterValue(search)
+    query = query.or(`phone.ilike.${like},full_name.ilike.${like},telegram.ilike.${like}`)
   }
 
   const { data, error, count } = await query

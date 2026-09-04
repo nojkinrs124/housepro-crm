@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { rateLimit } from '@/lib/rate-limit'
-import { normalizePhone } from '@/lib/utils'
+import { normalizePhone, clientIp } from '@/lib/utils'
 import { notifyNewLead } from '@/lib/telegram/notify-lead'
 import { consentFields } from '@/lib/consent'
 
@@ -53,12 +53,6 @@ const LeadRequestSchema = z.object({
    */
   consent: z.literal(true, { message: 'Нужно согласие на обработку персональных данных' }),
 })
-
-function clientIp(request: Request): string {
-  const forwarded = request.headers.get('x-forwarded-for')
-  if (forwarded) return forwarded.split(',')[0]!.trim()
-  return request.headers.get('x-real-ip')?.trim() || 'unknown'
-}
 
 function json(body: unknown, status: number) {
   return new Response(JSON.stringify(body), {

@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { rateLimitSearch } from '@/lib/rate-limit'
+import { likeFilterValue } from '@/lib/utils'
 import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
 
 export interface SearchResult {
@@ -30,18 +31,21 @@ export async function searchAction(query: string): Promise<SearchResults> {
     if (!rl.success) return empty
   }
   const q = query.trim()
+  // Значение уходит в or=(...): без экранирования запятая в запросе роняет фильтр,
+  // а точка с условием — дописывает в него своё.
+  const like = likeFilterValue(q)
 
   const [contactsRes, propertiesRes, contractsRes, tasksRes] = await Promise.all([
     supabase
       .from('contacts')
       .select('id, full_name, phone, role, status')
-      .or(`full_name.ilike.%${q}%,phone.ilike.%${q}%`)
+      .or(`full_name.ilike.${like},phone.ilike.${like}`)
       .limit(5),
 
     supabase
       .from('properties')
       .select('id, title, address, property_type, status')
-      .or(`title.ilike.%${q}%,address.ilike.%${q}%`)
+      .or(`title.ilike.${like},address.ilike.${like}`)
       .limit(5),
 
     supabase

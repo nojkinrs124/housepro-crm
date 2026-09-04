@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { createHmac, randomBytes } from 'crypto'
+import { rateLimit } from '@/lib/rate-limit'
 
 // API-ключи (hp_<48 hex>, 192 бита энтропии) хешируются HMAC-SHA256 с
 // server-side pepper, а не голым SHA-256. Ключи — не пароли (их нельзя
@@ -53,6 +54,16 @@ export async function authenticateApiKey(request: Request): Promise<ApiAuthResul
 
   if (key.expires_at && new Date(key.expires_at) < new Date()) {
     return { error: 'API key expired', status: 401 }
+  }
+
+  // Ограничение частоты — здесь, а не в каждом роуте /api/v1/*: это единственная
+  // точка, через которую внешний API вообще проходит, и её нельзя забыть добавить
+  // в новом роуте. Считаем по организации, а не по ключу: ключей у неё может быть
+  // несколько, а защищаем мы базу, а не ключ. Роуты уже отдают auth.error со своим
+  // статусом — 429 доезжает до клиента без правок в них.
+  const rl = await rateLimit(`api:${key.organization_id}`, { limit: 120, windowSeconds: 60 })
+  if (!rl.success) {
+    return { error: 'Too many requests. Limit: 120 requests per minute.', status: 429 }
   }
 
   // Fire-and-forget last_used_at update

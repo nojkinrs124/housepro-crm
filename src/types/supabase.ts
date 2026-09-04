@@ -4083,6 +4083,7 @@ export type Database = {
         }
         Returns: Json
       }
+      is_org_admin: { Args: never; Returns: boolean }
       normalize_phone_digits: { Args: { phone: string }; Returns: string }
     }
     Enums: {

@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { rateLimit } from '@/lib/rate-limit'
+import { clientIp } from '@/lib/utils'
 import type { Property } from '@/types/database'
 
 // Публичный роут — его опрашивает робот Авито (Автозагрузка), без авторизации.
@@ -25,6 +27,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
   if (!token || !/^[a-f0-9]{32}$/i.test(token)) {
     return new NextResponse('Not found', { status: 404 })
   }
+
+  // Фид открыт всем, кто знает токен, — значит токен будут перебирать. Робот
+  // Авито ходит по расписанию, ему тридцати запросов в минуту хватает.
+  const rl = await rateLimit(`avito-feed:${clientIp(request)}`, { limit: 30, windowSeconds: 60 })
+  if (!rl.success) return new NextResponse('Too many requests', { status: 429 })
 
   const supabase = await createClient()
 
