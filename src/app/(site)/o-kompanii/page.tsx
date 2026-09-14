@@ -218,6 +218,9 @@ export default async function AboutPage() {
                 fill
                 sizes="(min-width: 1024px) 360px, 100vw"
                 className="object-cover"
+                // Кадр горизонтальный, человек правее центра — при квадратном кропе
+                // держим фокус на лице, а не на светильнике слева
+                style={{ objectPosition: '68% center' }}
                 priority
               />
             </div>
