@@ -1,5 +1,6 @@
 'use client'
 
+import { LEAD_SOURCE_LABELS } from '@/features/leads/config/lead-sources'
 import Link from 'next/link'
 import { Phone } from 'lucide-react'
 import { PROPERTY_PURPOSE_LABELS as dealTypeLabels } from '@/features/properties/config/purpose'
@@ -23,15 +24,10 @@ export interface LeadRow {
   created_at: string | null
 }
 
-export const LEAD_SOURCE_LABELS: Record<string, string> = {
-  avito: 'Авито',
-  cian: 'Циан',
-  website: 'Сайт',
-  referral: 'Рекомендация',
-  instagram: 'Instagram',
-  phone: 'Телефон',
-  other: 'Другое',
-}
+// Единый справочник источников (config/lead-sources.ts): локальная копия
+// успела разойтись с доской и Telegram-уведомлением и не знала источников
+// страниц сайта. Реэкспорт — чтобы не менять импорт в LeadsViewSwitcher.
+export { LEAD_SOURCE_LABELS }
 
 function budgetOf(lead: LeadRow): string | null {
   const parts = [lead.budget_min, lead.budget_max].filter(v => v !== null && v !== undefined)

@@ -25,4 +25,11 @@ export const SITE_NAV: { href: string; label: string }[] = [
   { href: '/kontakty', label: 'Контакты' },
 ]
 
+/** Страницы раздела «Услуги» — в подвале отдельной колонкой, в шапке только хаб. */
+export const SITE_SERVICES_NAV: { href: string; label: string }[] = [
+  { href: '/uslugi/sdat-kvartiru', label: 'Сдать квартиру' },
+  { href: '/uslugi/snyat-kvartiru', label: 'Снять квартиру' },
+  { href: '/uslugi/prodat-kupit', label: 'Продать или купить' },
+]
+
 export const WORKING_HOURS = 'Пн–Сб, 9:00–20:00'

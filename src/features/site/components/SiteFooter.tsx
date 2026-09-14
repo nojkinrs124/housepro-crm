@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Phone, Mail, MapPin } from 'lucide-react'
-import { SITE_BRAND, SITE_NAV, WORKING_HOURS } from '@/features/site/config'
+import { SITE_BRAND, SITE_NAV, SITE_SERVICES_NAV, WORKING_HOURS } from '@/features/site/config'
 
 interface Props {
   phone: string
@@ -17,7 +17,7 @@ export function SiteFooter({ phone, phoneHref, email, address, legalName, inn }:
   return (
     <footer className="border-t mt-20" style={{ borderColor: 'var(--hp-border)', background: 'var(--hp-surface)' }}>
       <div className="max-w-[1180px] mx-auto px-4 sm:px-6 py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10">
           <div className="min-w-0">
             <p
               className="text-[19px] font-bold tracking-tight"
@@ -37,6 +37,25 @@ export function SiteFooter({ phone, phoneHref, email, address, legalName, inn }:
             </p>
             <ul className="mt-3 space-y-2">
               {SITE_NAV.map(item => (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className="text-[13.5px] font-medium transition-colors hover:opacity-70"
+                    style={{ color: 'var(--hp-ink)' }}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.09em]" style={{ color: 'var(--hp-sub)' }}>
+              Услуги
+            </p>
+            <ul className="mt-3 space-y-2">
+              {SITE_SERVICES_NAV.map(item => (
                 <li key={item.href}>
                   <Link
                     href={item.href}

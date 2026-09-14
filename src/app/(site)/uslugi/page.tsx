@@ -1,171 +1,111 @@
 import type { Metadata } from 'next'
-import { Check, KeyRound, Building2, ShieldCheck, Search, Handshake, Scale } from 'lucide-react'
-import { LeadForm } from '@/features/site/components/LeadForm'
+import Link from 'next/link'
+import { ArrowRight, Check, Handshake, KeyRound, Search } from 'lucide-react'
+import { ANALYTICS_EVENTS, analyticsAttrs } from '@/features/site/uslugi/analytics'
+import { formatRub } from '@/features/site/uslugi/calc'
+import {
+  SALE_PRICING,
+  TARIFFS,
+  USLUGI,
+  USLUGI_ANCHORS,
+  USLUGI_CONTACTS,
+  USLUGI_LEAD_SOURCES,
+  USLUGI_ROUTES,
+} from '@/features/site/uslugi/config'
+import { UslugiLeadForm } from '@/features/site/uslugi/components/UslugiLeadForm'
+
+/**
+ * Хаб раздела «Услуги»: три карточки-ссылки на страницы услуг, блок «Что
+ * одинаково в любой услуге» и форма заявки для тех, кто не понял, что ему нужно.
+ *
+ * Тексты — дословно из docs/uslugi/uslugi-ostalnye-stranicy-texts.md (раздел 1),
+ * числа — только из config.ts. Серверный компонент: интерактивность — внутри
+ * UslugiLeadForm.
+ */
 
 export const metadata: Metadata = {
-  title: 'Тарифы для собственников — ХаусПро, Красноярск',
+  title: 'Услуги агентства недвижимости ХаусПро в Красноярске — аренда, продажа, управление',
   description:
-    'Три тарифа сдачи квартиры в аренду: разовый подбор нанимателя, ежемесячное управление и управление с полной защитой. Что входит в каждый тариф и сколько это стоит.',
+    'Сдать, снять, продать или купить квартиру в Красноярске. Тарифы и стоимость каждой услуги названы заранее. Работаем по договору, проверяем документы, фиксируем состояние актом.',
 }
 
-interface FeatureGroup {
-  label?: string
-  items: string[]
-}
-
-interface Tariff {
+interface ServiceCard {
   Icon: typeof KeyRound
-  slug: string
-  eyebrow: string
+  href: string
   title: string
-  lead: string
-  priceValue: string
-  priceNote: string
-  badge?: string
-  groups: FeatureGroup[]
-  highlighted?: boolean
+  text: string
+  /** Жирная строка цены; null — блок цены не выводится (значение не задано в конфиге) */
+  price: string | null
+  linkLabel: string
 }
 
-// Тариф 2 хранится отдельно, чтобы его полный список можно было буквально
-// подставить в тариф 3 (по просьбе: «Премиум» показывает весь набор
-// «Управления», а не только ссылку на него).
-const UPRAVLENIE_FEATURES = [
-  'Смена арендаторов: заселение и выселение',
-  'Плановая проверка состояния квартиры',
-  'Поиск нового арендатора при смене нанимателя',
-  'Генеральная уборка между нанимателями',
-  'Мелкий ремонт за наш счёт — до 5 000 ₽ (смесители, электрика и подобное)',
-  'Полная отчётность по сдаче',
-  'Стабильные переводы арендной платы собственнику',
-  'Решение любых вопросов по квартире и с арендаторами',
-]
-
-const TARIFFS: Tariff[] = [
+const SERVICES: ServiceCard[] = [
   {
     Icon: KeyRound,
-    slug: 'agent',
-    eyebrow: 'Тариф 1',
-    title: 'Агент по недвижимости',
-    lead: 'Разовая сделка: находим и заселяем нанимателя, дальше вы работаете с ним сами.',
-    priceValue: '25%',
-    priceNote: 'от суммы сделки, разово при заселении',
-    badge: 'Первая сделка — бесплатно',
-    groups: [
-      {
-        items: [
-          'Размещение рекламы объекта на площадках',
-          'Поиск потенциальных арендаторов',
-          'Проверка арендатора по всем доступным базам',
-          'Гарантия надёжности арендатора',
-          'Подготовка документов: договор, акт и сопутствующие бумаги',
-          'Заселение арендатора, передача ключей',
-        ],
-      },
-    ],
+    href: USLUGI_ROUTES.sdatKvartiru,
+    title: 'Сдать квартиру',
+    text:
+      'Находим и проверяем нанимателя, оформляем договор и акт, дальше — по тарифу: от разового подбора до полного управления с гарантией платежа.',
+    price: `От ${TARIFFS.upravlenie.percent}% в месяц. Первая сделка — бесплатно.`,
+    linkLabel: 'Подробнее и калькулятор дохода',
   },
-  {
-    Icon: Building2,
-    slug: 'upravlenie',
-    eyebrow: 'Тариф 2',
-    title: 'Управление',
-    lead: 'Вы получаете деньги за аренду, мы занимаемся квартирой и арендаторами.',
-    priceValue: '10%',
-    priceNote: 'от ежемесячного платежа',
-    highlighted: true,
-    groups: [
-      { label: 'Всё из тарифа «Агент», плюс:', items: UPRAVLENIE_FEATURES },
-    ],
-  },
-  {
-    Icon: ShieldCheck,
-    slug: 'upravlenie-premium',
-    eyebrow: 'Тариф 3',
-    title: 'Управление Премиум',
-    lead: 'Максимальная защита объекта — вы не думаете о квартире вообще.',
-    priceValue: '15%',
-    priceNote: 'от ежемесячного платежа',
-    groups: [
-      { label: 'Из тарифа «Управление»:', items: UPRAVLENIE_FEATURES },
-      {
-        label: 'Дополнительно в «Управление Премиум»:',
-        items: [
-          'Полная страховка квартиры — затопление, порча имущества и другие риски',
-          'Все вопросы с управляющей компанией берём на себя',
-          'Выезд на объект для решения проблем в любое время, включая ночь и выходные',
-          'Персональный менеджер на связи 24/7',
-          'Ежегодный пересмотр ставки аренды по рынку, чтобы доход не отставал от рынка',
-        ],
-      },
-    ],
-  },
-]
-
-interface OtherService {
-  Icon: typeof Search
-  slug: string
-  title: string
-  lead: string
-  price: string
-}
-
-const OTHER_SERVICES: OtherService[] = [
   {
     Icon: Search,
-    slug: 'snyat',
+    href: USLUGI_ROUTES.snyatKvartiru,
     title: 'Снять квартиру',
-    lead: 'Подбор жилья под ваш бюджет и район, включая варианты, которых нет в открытом доступе.',
-    price: 'Комиссия обсуждается до начала подбора и фиксируется в договоре.',
+    text:
+      'Подбираем жильё под бюджет и район, включая квартиры, которых нет в открытом доступе. Проверяем документы собственника до внесения залога.',
+    price: `${USLUGI.tenantCommissionPercent}% от месячной ставки, один раз при заселении.`,
+    linkLabel: 'Подробнее',
   },
   {
     Icon: Handshake,
-    slug: 'prodazha',
-    title: 'Продажа и покупка',
-    lead: 'Сопровождение сделки купли-продажи: от оценки и подготовки до регистрации перехода права.',
-    price: 'Стоимость зависит от объекта, называется до подписания договора.',
-  },
-  {
-    Icon: Scale,
-    slug: 'soprovozhdenie',
-    title: 'Юридическое сопровождение сделки',
-    lead: 'Объект вы нашли сами, но не хотите подписывать документы вслепую — берём на себя правовую часть.',
-    price: 'Фиксированная стоимость за сделку, известна заранее.',
+    href: USLUGI_ROUTES.prodatKupit,
+    title: 'Продать или купить',
+    text:
+      'Ведём сделку целиком: оценка, реклама, показы, проверка второй стороны, расчёты и регистрация перехода права.',
+    price: SALE_PRICING
+      ? `${SALE_PRICING.percent}% от стоимости объекта плюс ${formatRub(SALE_PRICING.fixedRub)}.`
+      : null,
+    linkLabel: 'Подробнее',
   },
 ]
 
-export default function ServicesPage() {
+const COMMON_POINTS = [
+  'Работаем по договору с агентством — обязанности и комиссия зафиксированы текстом',
+  'Проверяем документы до того, как вы отдадите деньги',
+  'Состояние объекта фиксируем актом с описью и фото',
+  'Комиссию называем до начала работы, доплат «за оформление» не бывает',
+]
+
+const LEAD_FOOTNOTE = `Перезвоним в течение ${USLUGI.callback.withinMinutes} минут. ${USLUGI.callback.workingHours}.`
+
+export default function UslugiHubPage() {
   return (
-    <div className="max-w-[1180px] mx-auto px-4 sm:px-6 py-10 sm:py-14">
-      <header className="max-w-[720px]">
-        <h1
-          className="text-[30px] sm:text-[40px] font-bold tracking-tight leading-tight"
-          style={{ color: 'var(--hp-ink)' }}
-        >
-          Тарифы для собственников
-        </h1>
-        <p className="mt-4 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
-          Три тарифа сдачи квартиры в аренду — от разового подбора нанимателя до полного
-          управления объектом. Каждый тариф фиксируется в договоре: что именно входит
-          и сколько это стоит, известно заранее.
-        </p>
-      </header>
-
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
-        {TARIFFS.map(({ Icon, slug, eyebrow, title, lead, priceValue, priceNote, badge, groups, highlighted }) => (
-          <section
-            key={slug}
-            id={slug}
-            className="p-5 sm:p-6 flex flex-col h-full scroll-mt-20"
-            style={{
-              background: 'var(--hp-surface)',
-              border: `1px solid ${highlighted ? 'var(--hp-accent)' : 'var(--hp-border)'}`,
-              borderRadius: 'var(--hp-radius)',
-            }}
+    <>
+      {/* ── Первый экран: заголовок и три карточки ─────────────────────── */}
+      <section className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-10 sm:pt-14">
+        <header className="max-w-[720px]">
+          <h1
+            className="text-[30px] sm:text-[40px] font-bold tracking-tight leading-tight"
+            style={{ color: 'var(--hp-ink)' }}
           >
-            {highlighted && (
-              <span className="hp-badge hp-badge-good self-start mb-3">Оптимальный выбор</span>
-            )}
+            Услуги ХаусПро
+          </h1>
+          <p className="mt-4 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+            Выберите, что вам нужно. На каждой странице написано, что именно мы делаем и сколько это
+            стоит — цену называем до начала работы, а не в день подписания.
+          </p>
+        </header>
 
-            <div className="flex items-center gap-3">
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
+          {SERVICES.map(({ Icon, href, title, text, price, linkLabel }) => (
+            <Link
+              key={href}
+              href={href}
+              className="hp-card hp-card-hover flex flex-col h-full p-5 sm:p-6"
+              {...analyticsAttrs(ANALYTICS_EVENTS.hubCardClick, { target: href })}
+            >
               <div
                 className="w-10 h-10 flex items-center justify-center shrink-0 border"
                 style={{
@@ -174,141 +114,107 @@ export default function ServicesPage() {
                   borderRadius: 'var(--hp-radius)',
                 }}
               >
-                <Icon style={{ width: 18, height: 18, color: 'var(--hp-ink)' }} />
-              </div>
-              <span className="text-[11px] font-bold tracking-widest uppercase" style={{ color: 'var(--hp-tertiary)' }}>
-                {eyebrow}
-              </span>
-            </div>
-
-            <h2 className="mt-3 text-[21px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
-              {title}
-            </h2>
-            <p className="mt-2 text-[14px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
-              {lead}
-            </p>
-
-            <div className="mt-5 pt-5 border-t" style={{ borderColor: 'var(--hp-border-soft)' }}>
-              {badge && (
-                <span className="hp-badge hp-badge-warn mb-2">{badge}</span>
-              )}
-              <div className="flex items-baseline gap-2">
-                <span
-                  className="text-[34px] font-bold tracking-tight"
-                  style={{ fontFamily: "'Source Serif 4', Georgia, serif", color: 'var(--hp-ink)' }}
-                >
-                  {priceValue}
-                </span>
-                <span className="text-[13px] font-medium" style={{ color: 'var(--hp-sub)' }}>
-                  {priceNote}
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-5 flex-1 space-y-4">
-              {groups.map((group, i) => (
-                <div key={group.label ?? i}>
-                  {group.label && (
-                    <p className="text-[12.5px] font-semibold mb-2.5" style={{ color: 'var(--hp-accent)' }}>
-                      {group.label}
-                    </p>
-                  )}
-                  <ul className="space-y-2.5">
-                    {group.items.map(item => (
-                      <li key={item} className="flex items-start gap-2.5 text-[13.5px] leading-relaxed" style={{ color: 'var(--hp-ink)' }}>
-                        <Check style={{ width: 15, height: 15, marginTop: 2, color: 'var(--hp-accent)', flexShrink: 0 }} />
-                        <span className="break-words">{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-
-            <a
-              href="#zayavka"
-              className={highlighted ? 'hp-btn-primary justify-center mt-6' : 'hp-btn-secondary justify-center mt-6'}
-            >
-              Оставить заявку
-            </a>
-          </section>
-        ))}
-      </div>
-
-      <div className="mt-12">
-        <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
-          Другие услуги
-        </h2>
-        <p className="mt-2 text-[14px] leading-relaxed max-w-[640px]" style={{ color: 'var(--hp-sub)' }}>
-          Если вы не сдаёте, а ищете квартиру, продаёте, покупаете или просто хотите проверить
-          сделку — этим тоже занимаемся.
-        </p>
-
-        <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-4 items-stretch">
-          {OTHER_SERVICES.map(({ Icon, slug, title, lead, price }) => (
-            <section
-              key={slug}
-              id={slug}
-              className="p-4 sm:p-5 flex flex-col h-full scroll-mt-20 border"
-              style={{
-                background: 'var(--hp-surface)',
-                borderColor: 'var(--hp-border)',
-                borderRadius: 'var(--hp-radius)',
-              }}
-            >
-              <div
-                className="w-9 h-9 flex items-center justify-center shrink-0 border"
-                style={{
-                  background: 'var(--hp-neutral-tint)',
-                  borderColor: 'var(--hp-border)',
-                  borderRadius: 'var(--hp-radius)',
-                }}
-              >
-                <Icon style={{ width: 16, height: 16, color: 'var(--hp-ink)' }} />
+                <Icon aria-hidden="true" style={{ width: 18, height: 18, color: 'var(--hp-ink)' }} />
               </div>
 
-              <h3 className="mt-3 text-[16px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
+              <h2 className="mt-4 text-[21px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
                 {title}
-              </h3>
-              <p className="mt-1.5 text-[13.5px] leading-relaxed flex-1" style={{ color: 'var(--hp-sub)' }}>
-                {lead}
+              </h2>
+              <p className="mt-2 text-[14px] leading-relaxed flex-1" style={{ color: 'var(--hp-sub)' }}>
+                {text}
               </p>
-              <p className="mt-3 pt-3 text-[12.5px] leading-relaxed border-t" style={{ borderColor: 'var(--hp-border-soft)', color: 'var(--hp-tertiary)' }}>
-                {price}
-              </p>
-              <a
-                href="#zayavka"
-                className="hp-btn-secondary justify-center mt-4"
+
+              {price && (
+                <p
+                  className="mt-4 pt-4 text-[14px] font-bold leading-relaxed border-t"
+                  style={{ borderColor: 'var(--hp-border-soft)', color: 'var(--hp-ink)' }}
+                >
+                  {price}
+                </p>
+              )}
+
+              <span
+                className="mt-4 text-[13.5px] font-semibold inline-flex items-center gap-1.5"
+                style={{ color: 'var(--hp-accent)' }}
               >
-                Оставить заявку
-              </a>
-            </section>
+                {linkLabel}
+                <ArrowRight aria-hidden="true" style={{ width: 14, height: 14 }} />
+              </span>
+            </Link>
           ))}
         </div>
-      </div>
+      </section>
 
-      <section
-        id="zayavka"
-        className="mt-10 border p-5 sm:p-8 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] gap-8 scroll-mt-20"
-        style={{
-          background: 'var(--hp-surface)',
-          borderColor: 'var(--hp-border)',
-          borderRadius: 'var(--hp-radius)',
-        }}
-      >
-        <div className="min-w-0">
-          <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
-            Не знаете, какой тариф подойдёт?
-          </h2>
-          <p className="mt-3 text-[15px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
-            Опишите квартиру и ситуацию своими словами — агент подскажет подходящий тариф
-            и посчитает стоимость. Консультация до заключения договора бесплатная.
-          </p>
-        </div>
-        <div className="min-w-0">
-          <LeadForm submitLabel="Отправить заявку" />
+      {/* ── Что одинаково в любой услуге ───────────────────────────────── */}
+      <section className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-16 sm:pt-20">
+        <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
+          Что одинаково в любой услуге
+        </h2>
+        <div
+          className="mt-6 border p-5 sm:p-6"
+          style={{
+            background: 'var(--hp-surface)',
+            borderColor: 'var(--hp-border)',
+            borderRadius: 'var(--hp-radius)',
+          }}
+        >
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+            {COMMON_POINTS.map(point => (
+              <li
+                key={point}
+                className="flex items-start gap-2.5 text-[14px] leading-relaxed"
+                style={{ color: 'var(--hp-ink)' }}
+              >
+                <Check
+                  aria-hidden="true"
+                  style={{ width: 16, height: 16, marginTop: 3, color: 'var(--hp-accent)', flexShrink: 0 }}
+                />
+                <span className="break-words">{point}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
-    </div>
+
+      {/* ── Заявка ─────────────────────────────────────────────────────── */}
+      <section id={USLUGI_ANCHORS.lead} className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-16 sm:pt-20 pb-4 scroll-mt-20">
+        <div
+          className="border p-5 sm:p-8 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] gap-8"
+          style={{
+            background: 'var(--hp-surface)',
+            borderColor: 'var(--hp-border)',
+            borderRadius: 'var(--hp-radius)',
+          }}
+        >
+          <div className="min-w-0">
+            <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
+              Оставить заявку
+            </h2>
+            <p className="mt-3 text-[15px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+              Не поняли, что вам нужно? Опишите ситуацию одной строкой — агент подскажет. Консультация
+              бесплатная.
+            </p>
+            <div className="mt-5 flex flex-col sm:flex-row gap-3">
+              <a
+                href={USLUGI_CONTACTS.phoneHref}
+                className="hp-btn-secondary h-11 justify-center"
+                {...analyticsAttrs(ANALYTICS_EVENTS.phoneClick)}
+              >
+                Позвонить {USLUGI_CONTACTS.phone}
+              </a>
+            </div>
+          </div>
+
+          <div className="min-w-0">
+            <UslugiLeadForm
+              source={USLUGI_LEAD_SOURCES.hub}
+              page={USLUGI_ROUTES.hub}
+              submitLabel="Оставить заявку"
+              footnote={LEAD_FOOTNOTE}
+            />
+          </div>
+        </div>
+      </section>
+    </>
   )
 }

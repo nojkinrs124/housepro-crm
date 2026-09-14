@@ -4,6 +4,16 @@ import { rateLimit } from '@/lib/rate-limit'
 import { normalizePhone, clientIp } from '@/lib/utils'
 import { notifyNewLead } from '@/lib/telegram/notify-lead'
 import { consentFields } from '@/lib/consent'
+import type { Json } from '@/types/supabase'
+import {
+  DISTRICTS,
+  ROOMS_NUMBER,
+  ROOMS_OPTIONS,
+  TARIFF_IDS,
+  USLUGI_LEAD_SOURCES,
+} from '@/features/site/uslugi/config'
+import { calculateIncome } from '@/features/site/uslugi/calc'
+import { describeLeadContext, type UslugiLeadContext } from '@/features/site/uslugi/lead-context'
 
 /**
  * Приём заявок с публичного сайта «ХаусПро».
@@ -16,6 +26,8 @@ import { consentFields } from '@/lib/consent'
  */
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+const PUBLIC_LEAD_SOURCES = ['website', ...Object.values(USLUGI_LEAD_SOURCES)] as const
 
 const LeadRequestSchema = z.object({
   name: z.string().trim().min(2, 'Укажите имя').max(120, 'Слишком длинное имя'),
@@ -52,7 +64,71 @@ const LeadRequestSchema = z.object({
    * политики доказывает, что человек согласие давал.
    */
   consent: z.literal(true, { message: 'Нужно согласие на обработку персональных данных' }),
+  /**
+   * Источник лида — только из allowlist. Значение с сайта не доверяем
+   * вслепую: иначе форму можно использовать, чтобы писать в CRM любые метки.
+   */
+  source: z.enum(PUBLIC_LEAD_SOURCES).optional(),
+  /** Путь страницы, с которой ушла заявка — для metadata */
+  page: z.string().trim().max(120).optional().or(z.literal('')),
+  /**
+   * Контекст со страниц раздела «Услуги»: тариф, район, комнатность, ставка.
+   * Суммы калькулятора сюда не принимаем — пересчитываем из ставки на сервере.
+   */
+  context: z
+    .object({
+      intent: z.enum(['tariff', 'calculator', 'document_sample', 'sticky_bar', 'hero']).optional(),
+      tariffId: z.enum(TARIFF_IDS as [string, ...string[]]).optional(),
+      district: z.enum(DISTRICTS).optional(),
+      rooms: z.enum(ROOMS_OPTIONS.map(o => o.key) as [string, ...string[]]).optional(),
+      rate: z.number().int().min(0).max(10_000_000).optional(),
+      documentId: z.string().trim().max(60).optional(),
+    })
+    .strict()
+    .optional(),
 })
+
+/**
+ * Собирает из контекста страницы: комментарий (текст для агента), колонки
+ * лида (район/комнаты/ставка — их показывают доска и карточка лида) и
+ * структурный metadata для аналитики. Суммы считаются здесь заново.
+ */
+function buildLeadContext(
+  ctx: UslugiLeadContext | undefined,
+  page: string | undefined,
+  source: string,
+  message: string | undefined
+) {
+  const contextLines = ctx ? describeLeadContext(ctx) : []
+  const commentParts = [message?.trim() || null]
+  if (contextLines.length) commentParts.push(['— Со страницы сайта —', ...contextLines].join('\n'))
+  const comment = commentParts.filter(Boolean).join('\n\n') || null
+
+  const isRentPage = source === USLUGI_LEAD_SOURCES.sdatKvartiru || source === USLUGI_LEAD_SOURCES.snyat
+
+  const metadata: Json | null =
+    ctx || page
+      ? {
+          page: page || null,
+          intent: ctx?.intent ?? null,
+          tariffId: ctx?.tariffId ?? null,
+          district: ctx?.district ?? null,
+          rooms: ctx?.rooms ?? null,
+          rate: ctx?.rate ?? null,
+          documentId: ctx?.documentId ?? null,
+          calc: ctx?.rate ? (calculateIncome(ctx.rate) as unknown as Json) : null,
+        }
+      : null
+
+  return {
+    comment,
+    metadata,
+    district: ctx?.district ?? null,
+    rooms: ctx?.rooms ? ROOMS_NUMBER[ctx.rooms] : null,
+    budget_min: ctx?.rate && ctx.rate > 0 ? ctx.rate : null,
+    deal_type: isRentPage ? 'rent' : source === USLUGI_LEAD_SOURCES.prodat ? 'sale' : null,
+  }
+}
 
 function json(body: unknown, status: number) {
   return new Response(JSON.stringify(body), {
@@ -87,7 +163,7 @@ export async function POST(request: Request) {
     return json({ error: parsed.error.issues[0]?.message ?? 'Проверьте заполнение формы' }, 400)
   }
 
-  const { name, phone, email, message, property_id, company } = parsed.data
+  const { name, phone, email, message, property_id, company, source, page, context } = parsed.data
 
   // Honeypot заполнен — это бот. Отвечаем как при успехе, чтобы не подсказывать.
   if (company) return json({ ok: true }, 200)
@@ -140,6 +216,13 @@ export async function POST(request: Request) {
   }
 
   const normalizedPhone = normalizePhone(phone)
+  const leadSource = source ?? 'website'
+  const fromPage = buildLeadContext(
+    context as UslugiLeadContext | undefined,
+    page || undefined,
+    leadSource,
+    message
+  )
 
   const { data: insertedLead, error } = await supabase
     .from('leads')
@@ -148,9 +231,14 @@ export async function POST(request: Request) {
       full_name: name,
       phone: normalizedPhone,
       email: email || null,
-      comment: message || null,
+      comment: fromPage.comment,
+      district: fromPage.district,
+      rooms: fromPage.rooms,
+      budget_min: fromPage.budget_min,
+      deal_type: fromPage.deal_type,
+      metadata: fromPage.metadata,
       property_id: resolvedPropertyId,
-      source: 'website',
+      source: leadSource,
       status: 'new',
       // Отметка согласия: время + версия политики, с которой согласился человек.
       ...consentFields('site_form'),
@@ -166,7 +254,7 @@ export async function POST(request: Request) {
   // Не должно блокировать ответ посетителю сайта надолго и не должно ронять
   // заявку при сбое Telegram — notifyNewLead сама гасит любые исключения.
   await notifyNewLead(organizationId, {
-    id: insertedLead.id, full_name: name, phone: normalizedPhone, source: 'website',
+    id: insertedLead.id, full_name: name, phone: normalizedPhone, source: leadSource,
   })
 
   return json({ ok: true }, 201)

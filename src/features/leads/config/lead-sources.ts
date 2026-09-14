@@ -16,6 +16,13 @@ export const LEAD_SOURCES = [
   { value: 'cian',     label: 'ЦИАН' },
   { value: 'domclick', label: 'Домклик' },
   { value: 'website',  label: 'Сайт' },
+  // Страницы раздела «Услуги» — свой источник у каждой, чтобы считать
+  // конверсию по страницам. Значения — USLUGI_LEAD_SOURCES в
+  // src/features/site/uslugi/config.ts.
+  { value: 'site_uslugi',         label: 'Сайт · Услуги' },
+  { value: 'site_sdat_kvartiru',  label: 'Сайт · Сдать квартиру' },
+  { value: 'site_snyat',          label: 'Сайт · Снять квартиру' },
+  { value: 'site_prodat',         label: 'Сайт · Продать или купить' },
   { value: 'whatsapp', label: 'WhatsApp' },
   { value: 'telegram', label: 'Telegram' },
   { value: 'call',     label: 'Звонок' },

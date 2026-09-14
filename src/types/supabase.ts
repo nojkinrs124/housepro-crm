@@ -2403,6 +2403,7 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          metadata: Json | null
           next_contact_at: string | null
           organization_id: string
           phone: string | null
@@ -2432,6 +2433,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          metadata?: Json | null
           next_contact_at?: string | null
           organization_id: string
           phone?: string | null
@@ -2461,6 +2463,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          metadata?: Json | null
           next_contact_at?: string | null
           organization_id?: string
           phone?: string | null
