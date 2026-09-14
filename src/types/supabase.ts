@@ -4088,6 +4088,13 @@ export type Database = {
       }
       is_org_admin: { Args: never; Returns: boolean }
       normalize_phone_digits: { Args: { phone: string }; Returns: string }
+      public_site_stats: {
+        Args: never
+        Returns: {
+          closed_deals: number
+          objects_in_management: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

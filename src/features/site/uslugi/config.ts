@@ -200,6 +200,12 @@ export const TRUST = {
   sinceYear: 2019,
   /** «Больше 250 закрытых сделок» */
   closedDeals: 250,
+  /**
+   * Квартир в управлении сейчас — базовое значение со слов заказчика.
+   * Страница «О компании» показывает большее из этого числа и живого счётчика
+   * CRM (public_site_stats): когда CRM догонит, цифра начнёт расти сама.
+   */
+  objectsInManagement: 30,
   legalName: 'Ножкин Руслан Сергеевич',
   inn: '2465337113',
   address: FALLBACK_CONTACTS.address,
@@ -313,6 +319,7 @@ export const DEFAULT_ROOMS: RoomsKey = 'r2'
  */
 export const USLUGI_LEAD_SOURCES = {
   hub: 'site_uslugi',
+  about: 'site_o_kompanii',
   sdatKvartiru: 'site_sdat_kvartiru',
   snyat: 'site_snyat',
   prodat: 'site_prodat',
@@ -327,6 +334,7 @@ export const USLUGI_ROUTES = {
   sdatKvartiru: '/uslugi/sdat-kvartiru',
   snyatKvartiru: '/uslugi/snyat-kvartiru',
   prodatKupit: '/uslugi/prodat-kupit',
+  about: '/o-kompanii',
 } as const
 
 /** Якоря на странице «Сдать квартиру» — общие для кнопок, липкой панели и форм */

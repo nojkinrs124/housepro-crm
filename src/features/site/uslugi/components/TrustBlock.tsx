@@ -13,12 +13,12 @@ import { Testimonials } from './Testimonials'
 interface Props {
   /** id секции для якорных ссылок */
   id?: string
+  /**
+   * Живые цифры из CRM (fetchSiteStats). Без них — базовые значения из TRUST;
+   * страница передаёт их, чтобы блок рос вместе с данными, а не с константой.
+   */
+  stats?: { closedDeals: number; objectsInManagement: number }
 }
-
-const STATS = [
-  { label: 'В недвижимости', value: `с ${TRUST.sinceYear} года` },
-  { label: 'Закрытых сделок', value: `больше ${TRUST.closedDeals}` },
-]
 
 const POINTS = [
   {
@@ -35,7 +35,15 @@ const POINTS = [
   },
 ]
 
-export function TrustBlock({ id }: Props) {
+export function TrustBlock({ id, stats }: Props) {
+  const closedDeals = stats?.closedDeals ?? TRUST.closedDeals
+  const objectsInManagement = stats?.objectsInManagement ?? TRUST.objectsInManagement
+  const STATS = [
+    { label: 'В недвижимости', value: `с ${TRUST.sinceYear} года` },
+    { label: 'Закрытых сделок', value: `больше ${closedDeals}` },
+    { label: 'Квартир в управлении', value: String(objectsInManagement) },
+  ]
+
   return (
     <section id={id} className="scroll-mt-20 pt-16 sm:pt-20">
       <div className="max-w-[1180px] mx-auto px-4 sm:px-6">

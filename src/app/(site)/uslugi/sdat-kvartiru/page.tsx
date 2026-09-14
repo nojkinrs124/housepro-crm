@@ -19,6 +19,7 @@ import { SDAT_WHAT_IF } from '@/features/site/uslugi/components/what-if-sdat'
 import { TrustBlock } from '@/features/site/uslugi/components/TrustBlock'
 import { UslugiLeadForm } from '@/features/site/uslugi/components/UslugiLeadForm'
 import { StickyMobileBar } from '@/features/site/uslugi/components/StickyMobileBar'
+import { fetchSiteStats } from '@/features/site/lib/stats'
 
 export const metadata: Metadata = {
   title: 'Сдать квартиру в аренду в Красноярске — тарифы и доверительное управление | ХаусПро',
@@ -39,7 +40,8 @@ function objectsPhrase(n: number): string {
  * Порядок экранов — строго по docs/uslugi/sdat-kvartiru-texts.md; секции —
  * готовые компоненты, здесь только первый экран и форма заявки.
  */
-export default function SdatKvartiruPage() {
+export default async function SdatKvartiruPage() {
+  const stats = await fetchSiteStats()
   return (
     <>
       {/* ── Экран 1: заголовок + калькулятор ─────────────────────────── */}
@@ -101,7 +103,7 @@ export default function SdatKvartiruPage() {
       <WhatIf id="chto-esli" items={SDAT_WHAT_IF} />
 
       {/* ── Экран 8: доверие + слот отзывов ──────────────────────────── */}
-      <TrustBlock id="komanda" />
+      <TrustBlock id="komanda" stats={stats} />
 
       {/* ── Экран 9: заявка ──────────────────────────────────────────── */}
       <section

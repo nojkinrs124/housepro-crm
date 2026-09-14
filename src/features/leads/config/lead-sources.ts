@@ -23,6 +23,7 @@ export const LEAD_SOURCES = [
   { value: 'site_sdat_kvartiru',  label: 'Сайт · Сдать квартиру' },
   { value: 'site_snyat',          label: 'Сайт · Снять квартиру' },
   { value: 'site_prodat',         label: 'Сайт · Продать или купить' },
+  { value: 'site_o_kompanii',     label: 'Сайт · О компании' },
   { value: 'whatsapp', label: 'WhatsApp' },
   { value: 'telegram', label: 'Telegram' },
   { value: 'call',     label: 'Звонок' },
