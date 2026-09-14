@@ -8,6 +8,8 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { PropertyPhotosManager } from '@/features/properties/components/PropertyPhotosManager'
 import { DadataSuggestInput } from '@/components/forms/DadataSuggestInput'
 import { ContactSelectField } from '@/features/contacts/components/ContactSelectField'
+import { CopyListingButton, GenerateListingButton } from '@/features/properties/components/GenerateListingButton'
+import { propertyListingFacts } from '@/lib/ai/listing/facts'
 
 export default async function EditPropertyPage({ params }: { params: Promise<{ id: string }> }) {
  const { id } = await params
@@ -40,6 +42,45 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
  <div className="hp-card p-6 space-y-4">
  <h2 className="font-semibold text-foreground">Фотографии</h2>
  <PropertyPhotosManager propertyId={id} initialPhotos={p.photo_urls ?? []} />
+ </div>
+
+ {/* Объявление — генерируется из сохранённых данных объекта + вводных агента.
+ Вне формы намеренно: у кнопок модалки type=button, но вложенный <dialog>
+ внутри <form> всё равно ловил бы Enter из textarea как submit формы. */}
+ <div className="hp-card p-6 space-y-4">
+ <div className="flex items-start justify-between gap-4 flex-wrap">
+ <div>
+ <h2 className="font-semibold text-foreground">Объявление</h2>
+ <p className="text-xs text-muted-foreground mt-1">
+ Текст для Авито из данных карточки и ваших заметок. Использует сохранённые данные объекта —
+ если меняли поля ниже, сначала нажмите «Сохранить изменения».
+ </p>
+ </div>
+ <div className="flex gap-2 flex-wrap shrink-0">
+ {p.listing_text && <CopyListingButton title={p.listing_title} text={p.listing_text} />}
+ <GenerateListingButton
+ propertyId={id}
+ facts={propertyListingFacts(p)}
+ initialRawInput={p.listing_raw_input ?? ''}
+ />
+ </div>
+ </div>
+ {p.listing_text ? (
+ <div className="hp-block">
+ <div className="hp-block-header flex items-center justify-between gap-3 flex-wrap">
+ <span>{p.listing_title ?? 'Без заголовка'}</span>
+ {p.listing_generated_at && (
+ <span className="normal-case tracking-normal font-normal">
+ {new Date(p.listing_generated_at).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' })}
+ {p.listing_model ? ` · ${p.listing_model}` : ''}
+ </span>
+ )}
+ </div>
+ <p className="px-4 py-3 text-sm text-foreground leading-relaxed whitespace-pre-wrap break-words">{p.listing_text}</p>
+ </div>
+ ) : (
+ <p className="text-sm text-muted-foreground">Объявление ещё не сгенерировано.</p>
+ )}
  </div>
 
  <ServerActionForm action={boundAction} className="space-y-4">

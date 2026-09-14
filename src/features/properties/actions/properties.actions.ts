@@ -3,8 +3,12 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { z } from 'zod'
 import { getSessionContext, requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
+import { rateLimitMutation } from '@/lib/rate-limit'
+import { writeAuditLog } from '@/lib/audit'
+import { LISTING_BODY_MAX, LISTING_TITLE_MAX } from '@/lib/ai/listing/facts'
 
 function extractPropertyFields(formData: FormData) {
   return {
@@ -156,4 +160,65 @@ export async function deletePropertyAction(id: string) {
 
   revalidatePath('/properties')
   redirect('/properties')
+}
+
+// Сгенерированное объявление — результат кнопки «Сгенерировать объявление»
+// (см. GenerateListingButton). Текст мог быть поправлен руками в модалке,
+// поэтому лимиты здесь мягче формата модели: заголовок и тело проверяем
+// на пустоту и разумный максимум, а не на точные 50/3000.
+const ListingSchema = z.object({
+  title: z.string().trim().min(1, 'Заголовок пуст').max(LISTING_TITLE_MAX * 3, 'Заголовок слишком длинный'),
+  text: z.string().trim().min(1, 'Текст объявления пуст').max(LISTING_BODY_MAX * 2, 'Текст объявления слишком длинный'),
+  rawInput: z.string().max(8000).default(''),
+  model: z.string().max(200).nullable().default(null),
+})
+
+export async function saveListingTextAction(propertyId: string, input: z.input<typeof ListingSchema>) {
+  const ctx = await getSessionContext()
+  if (!ctx.ok) return { error: ctx.error }
+  const { supabase, user, orgId } = ctx
+
+  const permError = await requirePermission(user.id, 'properties', 'update')
+  if (permError) return permError
+
+  const rl = await rateLimitMutation(user.id, 'listing_text')
+  if (!rl.success) return { error: 'Слишком много запросов, попробуйте через минуту' }
+
+  const parsed = ListingSchema.safeParse(input)
+  if (!parsed.success) return { error: parsed.error.issues[0].message }
+
+  const { data: property } = await supabase
+    .from('properties')
+    .select('id, title')
+    .eq('id', propertyId)
+    .eq('organization_id', orgId)
+    .single()
+  if (!property) return { error: 'Объект не найден' }
+
+  const { error } = await supabase
+    .from('properties')
+    .update({
+      listing_title: parsed.data.title,
+      listing_text: parsed.data.text,
+      listing_raw_input: parsed.data.rawInput || null,
+      listing_model: parsed.data.model,
+      listing_generated_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', propertyId)
+  if (error) return { error: error.message }
+
+  await writeAuditLog({
+    userId: user.id,
+    orgId,
+    action: 'update',
+    entityType: 'property',
+    entityId: propertyId,
+    entityLabel: property.title,
+    changes: { listing_title: { old: null, new: parsed.data.title } },
+  })
+
+  revalidatePath(`/properties/${propertyId}`)
+  revalidatePath(`/properties/${propertyId}/edit`)
+  return { success: true }
 }

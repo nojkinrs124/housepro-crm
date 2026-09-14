@@ -7,6 +7,8 @@ interface QuickCreateModalProps {
  title: string
  onClose: () => void
  children: React.ReactNode
+ /** `lg` — для окон с длинным текстом (генератор объявления); по умолчанию узкая форма. */
+ size?: 'md' | 'lg'
 }
 
 /**
@@ -20,7 +22,7 @@ interface QuickCreateModalProps {
  * Все модальные окна проекта проходят через этот компонент: своя вёрстка
  * оверлея = ещё одно окно без клавиатуры и фокуса.
  */
-export function QuickCreateModal({ title, onClose, children }: QuickCreateModalProps) {
+export function QuickCreateModal({ title, onClose, children, size = 'md' }: QuickCreateModalProps) {
  const ref = useRef<HTMLDialogElement>(null)
 
  useEffect(() => {
@@ -39,7 +41,7 @@ export function QuickCreateModal({ title, onClose, children }: QuickCreateModalP
  // он мелькнул бы полноэкранным блоком: `flex` перебивает display:none.
  className="hidden open:flex m-0 w-full h-full max-w-none max-h-none bg-transparent p-4 items-center justify-center backdrop:bg-black/40 backdrop:backdrop-blur-sm"
  >
- <div className="w-full max-w-md bg-[var(--hp-surface)] border border-[var(--hp-border-soft)] max-h-[90vh] overflow-y-auto">
+ <div className={`w-full ${size === 'lg' ? 'max-w-3xl' : 'max-w-md'} bg-[var(--hp-surface)] border border-[var(--hp-border-soft)] max-h-[90vh] overflow-y-auto`}>
  <div className="flex items-center justify-between px-5 py-4 border-b border-border">
  <h3 className="font-semibold text-foreground">{title}</h3>
  <button

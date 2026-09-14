@@ -3149,6 +3149,11 @@ export type Database = {
           kitchen_area: number | null
           land_area: number | null
           latitude: number | null
+          listing_generated_at: string | null
+          listing_model: string | null
+          listing_raw_input: string | null
+          listing_text: string | null
+          listing_title: string | null
           living_area: number | null
           longitude: number | null
           management_fee: number | null
@@ -3200,6 +3205,11 @@ export type Database = {
           kitchen_area?: number | null
           land_area?: number | null
           latitude?: number | null
+          listing_generated_at?: string | null
+          listing_model?: string | null
+          listing_raw_input?: string | null
+          listing_text?: string | null
+          listing_title?: string | null
           living_area?: number | null
           longitude?: number | null
           management_fee?: number | null
@@ -3251,6 +3261,11 @@ export type Database = {
           kitchen_area?: number | null
           land_area?: number | null
           latitude?: number | null
+          listing_generated_at?: string | null
+          listing_model?: string | null
+          listing_raw_input?: string | null
+          listing_text?: string | null
+          listing_title?: string | null
           living_area?: number | null
           longitude?: number | null
           management_fee?: number | null
@@ -4037,6 +4052,11 @@ export type Database = {
           kitchen_area: number | null
           land_area: number | null
           latitude: number | null
+          listing_generated_at: string | null
+          listing_model: string | null
+          listing_raw_input: string | null
+          listing_text: string | null
+          listing_title: string | null
           living_area: number | null
           longitude: number | null
           management_fee: number | null

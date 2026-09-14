@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { DeletePropertyButton } from '@/features/properties/components/DeletePropertyButton'
 import { AvitoPublishToggle } from '@/features/avito/components/AvitoPublishToggle'
 import { SitePublishToggle } from '@/features/properties/components/SitePublishToggle'
+import { CopyListingButton } from '@/features/properties/components/GenerateListingButton'
 import {
  ArrowLeft, Home, MapPin, DollarSign, Ruler, Edit,
  Layers, Calendar, Wifi, Droplets, Flame, Car,
@@ -313,6 +314,18 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
  <div className="hp-card p-5">
  <h2 className="font-semibold text-foreground mb-3">Описание</h2>
  <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{p.description}</p>
+ </div>
+ )}
+
+ {/* Сгенерированное объявление — кнопка «Сгенерировать объявление» на странице редактирования */}
+ {p.listing_text && (
+ <div className="hp-card p-5">
+ <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+ <h2 className="font-semibold text-foreground">Объявление</h2>
+ <CopyListingButton title={p.listing_title} text={p.listing_text} />
+ </div>
+ {p.listing_title && <p className="font-semibold text-foreground mb-2">{p.listing_title}</p>}
+ <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap break-words">{p.listing_text}</p>
  </div>
  )}
 
