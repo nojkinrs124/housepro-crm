@@ -16,7 +16,8 @@
  * Только сервер: файл тянет S3-клиент и `createClient` из `supabase/server`.
  */
 
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
+import { S3Client, PutObjectCommand, DeleteObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 export const SUPABASE_PHOTO_BUCKET = 'property-photos'
@@ -71,6 +72,9 @@ export function yandexPublicUrl(cfg: Pick<YandexConfig, 'endpoint' | 'bucket'>, 
   return `${cfg.endpoint}/${cfg.bucket}/${path}`
 }
 
+/** Год кэша: имя файла содержит timestamp, содержимое по одному URL не меняется. */
+export const PHOTO_CACHE_CONTROL = 'public, max-age=31536000, immutable'
+
 export interface UploadResult {
   url?: string
   error?: string
@@ -95,8 +99,7 @@ export async function uploadPhoto(
         Key: path,
         Body: body,
         ContentType: contentType,
-        // Год кэша: имя файла содержит timestamp, содержимое по одному URL не меняется
-        CacheControl: 'public, max-age=31536000, immutable',
+        CacheControl: PHOTO_CACHE_CONTROL,
       }))
     } catch (e) {
       return { error: `Ошибка загрузки: ${e instanceof Error ? e.message : String(e)}` }
@@ -110,6 +113,61 @@ export async function uploadPhoto(
   if (error) return { error: `Ошибка загрузки: ${error.message}` }
   const { data } = supabase.storage.from(SUPABASE_PHOTO_BUCKET).getPublicUrl(path)
   return { url: data.publicUrl }
+}
+
+export interface PresignedUpload {
+  /** Куда браузер шлёт PUT с телом файла */
+  uploadUrl: string
+  /** Заголовки, которые вошли в подпись — браузер обязан отправить их ровно такими */
+  headers: Record<string, string>
+  /** Публичный URL, который ляжет в photo_urls после подтверждения */
+  publicUrl: string
+  path: string
+}
+
+/**
+ * Подписанная ссылка для загрузки браузером напрямую в Яндекс, минуя Vercel:
+ * нет лимита тела Server Action, файлы идут параллельно, трафик не гоняется
+ * через США. Для драйвера supabase — null, там остаётся путь через сервер.
+ * Ссылка живёт 10 минут; в подпись входят Content-Type и Cache-Control.
+ */
+export async function presignPhotoUpload(path: string, contentType: string): Promise<PresignedUpload | null> {
+  if (photoStorageDriver() !== 'yandex') return null
+  const cfg = yandexConfig()
+  const uploadUrl = await getSignedUrl(
+    s3Client(cfg),
+    new PutObjectCommand({ Bucket: cfg.bucket, Key: path, ContentType: contentType, CacheControl: PHOTO_CACHE_CONTROL }),
+    { expiresIn: 600 },
+  )
+  return {
+    uploadUrl,
+    headers: { 'Content-Type': contentType, 'Cache-Control': PHOTO_CACHE_CONTROL },
+    publicUrl: yandexPublicUrl(cfg, path),
+    path,
+  }
+}
+
+/**
+ * Есть ли объект в Яндексе. Подтверждение прямой загрузки верит не браузеру,
+ * а хранилищу: в photo_urls попадает только то, что реально лежит в бакете.
+ * Возвращает размер, чтобы отсечь пустой или подменённый после подписи файл.
+ */
+export async function yandexPhotoSize(path: string): Promise<number | null> {
+  const cfg = yandexConfig()
+  try {
+    const head = await s3Client(cfg).send(new HeadObjectCommand({ Bucket: cfg.bucket, Key: path }))
+    return head.ContentLength ?? 0
+  } catch {
+    return null
+  }
+}
+
+/** Публичный URL → путь внутри бакета Яндекса, или null если это не наш URL. */
+export function yandexPathFromUrl(url: string): string | null {
+  if (!process.env.YC_S3_BUCKET) return null
+  const cfg = yandexConfig()
+  const prefix = `${cfg.endpoint}/${cfg.bucket}/`
+  return url.startsWith(prefix) && url.length > prefix.length ? url.slice(prefix.length) : null
 }
 
 /**
@@ -128,11 +186,9 @@ export async function removePhotoByUrl(supabase: SupabaseClient, url: string): P
   // Ключи Яндекса могут быть заданы и при драйвере supabase (например, откат
   // после переноса) — файл в Яндексе всё равно надо удалить, раз он наш.
   if (!process.env.YC_S3_BUCKET || !process.env.YC_S3_KEY_ID || !process.env.YC_S3_SECRET) return
-  const cfg = yandexConfig()
-  const prefix = `${cfg.endpoint}/${cfg.bucket}/`
-  if (!url.startsWith(prefix)) return
-  const key = url.slice(prefix.length)
+  const key = yandexPathFromUrl(url)
   if (!key) return
+  const cfg = yandexConfig()
   try {
     await s3Client(cfg).send(new DeleteObjectCommand({ Bucket: cfg.bucket, Key: key }))
   } catch {
