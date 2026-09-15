@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { revalidateSiteForProperty } from '@/features/site/lib/revalidate'
 import { requirePermission } from '@/lib/permissions'
 import { validateUploadedFile } from '@/lib/validate-file'
 import {
@@ -78,6 +79,7 @@ export async function uploadPropertyPhotoAction(propertyId: string, formData: Fo
 
   revalidatePath(`/properties/${propertyId}`)
   revalidatePath(`/properties/${propertyId}/edit`)
+  revalidateSiteForProperty(propertyId)
   return { success: true, url: uploaded.url }
 }
 
@@ -110,6 +112,7 @@ export async function deletePropertyPhotoAction(propertyId: string, url: string)
 
   revalidatePath(`/properties/${propertyId}`)
   revalidatePath(`/properties/${propertyId}/edit`)
+  revalidateSiteForProperty(propertyId)
   return { success: true }
 }
 
@@ -142,6 +145,7 @@ export async function setPropertyCoverPhotoAction(propertyId: string, url: strin
 
   revalidatePath(`/properties/${propertyId}`)
   revalidatePath(`/properties/${propertyId}/edit`)
+  revalidateSiteForProperty(propertyId)
   return { success: true }
 }
 
@@ -217,6 +221,7 @@ export async function confirmPhotoUploadAction(propertyId: string, publicUrl: st
 
   revalidatePath(`/properties/${propertyId}`)
   revalidatePath(`/properties/${propertyId}/edit`)
+  revalidateSiteForProperty(propertyId)
   return { success: true, url: publicUrl }
 }
 
@@ -250,5 +255,6 @@ export async function reorderPropertyPhotosAction(propertyId: string, urls: stri
 
   revalidatePath(`/properties/${propertyId}`)
   revalidatePath(`/properties/${propertyId}/edit`)
+  revalidateSiteForProperty(propertyId)
   return { success: true }
 }

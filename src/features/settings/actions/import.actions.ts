@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import type { Insert } from '@/types/database'
 import { revalidatePath } from 'next/cache'
+import { revalidateSiteForProperty } from '@/features/site/lib/revalidate'
 import { requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
 import { rateLimitMutation } from '@/lib/rate-limit'
@@ -253,6 +254,7 @@ export async function runImportAction(
   })
 
   revalidatePath(`/${entity}`)
+  if (entity === 'properties') revalidateSiteForProperty()
 
   return {
     success: inserted > 0,

@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { revalidateSiteForProperty } from '@/features/site/lib/revalidate'
 import { redirect } from 'next/navigation'
 import { getSessionContext } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
@@ -208,6 +209,7 @@ export async function completeDealAction(
       .eq('id', deal.property_id)
     if (!propertyError) {
       created.push(nextPropertyStatus === 'sold' ? 'объект помечен проданным' : 'объект помечен сданным')
+      revalidateSiteForProperty(deal.property_id)
     }
   }
 

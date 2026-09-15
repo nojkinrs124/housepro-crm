@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidateSiteForProperty } from '@/features/site/lib/revalidate'
 import { createClient } from '@supabase/supabase-js'
 import { authenticateApiKey, hasScope } from '@/lib/api-auth'
 
@@ -88,6 +89,7 @@ export async function POST(request: Request) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  revalidateSiteForProperty(data.id)
   return NextResponse.json({ data }, { status: 201 })
 }
 
@@ -134,5 +136,6 @@ export async function PATCH(request: Request) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  revalidateSiteForProperty(propertyId)
   return NextResponse.json({ data })
 }

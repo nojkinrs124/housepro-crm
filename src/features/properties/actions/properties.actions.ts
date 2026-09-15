@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { revalidateSiteForProperty } from '@/features/site/lib/revalidate'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
@@ -91,6 +92,7 @@ export async function createPropertyAction(formData: FormData) {
   if (error) return { error: error.message }
 
   revalidatePath('/properties')
+  revalidateSiteForProperty(property.id)
   redirect(`/properties/${property.id}`)
 }
 
@@ -118,6 +120,7 @@ export async function createPropertyQuickAction(formData: FormData) {
   if (error) return { error: error.message }
 
   revalidatePath('/properties')
+  revalidateSiteForProperty(property.id)
   return { data: property }
 }
 
@@ -144,6 +147,7 @@ export async function updatePropertyAction(id: string, formData: FormData) {
 
   revalidatePath('/properties')
   revalidatePath(`/properties/${id}`)
+  revalidateSiteForProperty(id)
   redirect(`/properties/${id}`)
 }
 
@@ -159,6 +163,7 @@ export async function deletePropertyAction(id: string) {
   if (error) return { error: error.message }
 
   revalidatePath('/properties')
+  revalidateSiteForProperty(id)
   redirect('/properties')
 }
 
@@ -225,6 +230,6 @@ export async function saveListingTextAction(propertyId: string, input: z.input<t
 
   revalidatePath(`/properties/${propertyId}`)
   revalidatePath(`/properties/${propertyId}/edit`)
-  revalidatePath(`/catalog/${propertyId}`)
+  revalidateSiteForProperty(propertyId)
   return { success: true, description }
 }
