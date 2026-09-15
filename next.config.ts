@@ -3,6 +3,13 @@ import { withSentryConfig } from '@sentry/nextjs'
 
 const nextConfig: NextConfig = {
   typescript: { ignoreBuildErrors: false },
+  experimental: {
+    // Фото объектов уходят через Server Action по одному файлу; лимит по
+    // умолчанию 1 МБ режет любой снимок с телефона (2–8 МБ) ещё до нашего
+    // кода — «Body exceeded 1 MB limit». Экшен сам ограничивает файл 10 МБ,
+    // здесь запас на multipart-обвязку.
+    serverActions: { bodySizeLimit: '12mb' },
+  },
   images: {
     remotePatterns: [
       {

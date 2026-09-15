@@ -16,6 +16,8 @@ interface Props {
 }
 
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+// Дублирует MAX_PHOTO_SIZE экшена: отсеять на клиенте дешевле, чем гонять 20 МБ на сервер ради отказа
+const MAX_PHOTO_SIZE = 10 * 1024 * 1024
 
 export function PropertyPhotosManager({ propertyId, initialPhotos }: Props) {
  const [photos, setPhotos] = useState<string[]>(initialPhotos)
@@ -27,22 +29,36 @@ export function PropertyPhotosManager({ propertyId, initialPhotos }: Props) {
 
  async function uploadFiles(files: FileList | File[]) {
  const list = Array.from(files)
- const valid = list.filter(f => ACCEPTED_TYPES.includes(f.type))
- const rejected = list.length - valid.length
+ const typed = list.filter(f => ACCEPTED_TYPES.includes(f.type))
+ const rejected = list.length - typed.length
  if (rejected > 0) toast.error(`${rejected} файл(ов) пропущено — разрешены только JPG, PNG, WEBP`)
+ const valid = typed.filter(f => f.size <= MAX_PHOTO_SIZE)
+ const tooBig = typed.length - valid.length
+ if (tooBig > 0) toast.error(`${tooBig} файл(ов) пропущено — больше 10 МБ`)
  if (valid.length === 0) return
 
  setUploadingCount(valid.length)
  for (const file of valid) {
  const formData = new FormData()
  formData.append('file', file)
+ try {
  const res = await uploadPropertyPhotoAction(propertyId, formData)
  if (res && 'error' in res && res.error) {
  toast.error(`${file.name}: ${res.error}`)
  } else if (res && 'url' in res && res.url) {
  setPhotos(prev => [...prev, res.url as string])
  }
+ } catch (e) {
+ // Экшен не дошёл до нашего кода (413 от Next, обрыв сети) — промис
+ // отклоняется, а не возвращает { error }. Без catch счётчик зависал
+ // на «осталось N» и остальные файлы не грузились.
+ const message = e instanceof Error && /body|413|limit/i.test(e.message)
+ ? 'файл слишком большой для загрузки'
+ : 'не удалось загрузить, попробуйте ещё раз'
+ toast.error(`${file.name}: ${message}`)
+ } finally {
  setUploadingCount(prev => Math.max(0, prev - 1))
+ }
  }
  }
 
