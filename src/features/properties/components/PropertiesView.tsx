@@ -33,10 +33,13 @@ export interface PropertyRow {
   avito_publish: boolean | null
   avito_status: string | null
   site_publish: boolean | null
+  /** Первое фото объекта; null — в карточке будет заглушка по типу */
+  cover_url: string | null
 }
 
 type ViewMode = 'cards' | 'list'
 
+// Заглушки только для объектов без фото — с фото карточка показывает обложку
 const PLACEHOLDERS: Record<string, string> = {
   apartment:  'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=600&h=360&fit=crop&auto=format',
   house:      'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600&h=360&fit=crop&auto=format',
@@ -170,7 +173,8 @@ export function PropertiesView({ properties }: { properties: PropertyRow[] }) {
                 className="group block hp-card overflow-hidden">
                 <div className="relative h-52 overflow-hidden bg-[var(--hp-neutral-tint)]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={PLACEHOLDERS[property.property_type] ?? PLACEHOLDERS.apartment} alt={property.title}
+                  <img src={property.cover_url ?? PLACEHOLDERS[property.property_type] ?? PLACEHOLDERS.apartment} alt={property.title}
+                    loading="lazy"
                     className="w-full h-full object-cover" />
                   <div className="absolute top-3 left-3">
                     <span className={`hp-badge ${status.badgeCls}`}>{status.label}</span>

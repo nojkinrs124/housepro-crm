@@ -10,16 +10,18 @@ export default async function PropertiesPage() {
 
   const { data, error } = await supabase
     .from('properties')
-    .select('id, title, property_type, deal_type, address, price, area, rooms, status, floor, total_floors, avito_publish, avito_status, site_publish')
+    .select('id, title, property_type, deal_type, address, price, area, rooms, status, floor, total_floors, avito_publish, avito_status, site_publish, photo_urls')
     .order('created_at', { ascending: false })
     .limit(500)
 
   if (error) console.error('Properties error:', error.message)
 
-  const properties: PropertyRow[] = (data ?? []).map(p => ({
+  const properties: PropertyRow[] = (data ?? []).map(({ photo_urls, ...p }) => ({
     ...p,
     price: p.price === null ? null : Number(p.price),
     area: p.area === null ? null : Number(p.area),
+    // Первое фото — обложка, тот же порядок, что уходит на площадки
+    cover_url: photo_urls?.[0] ?? null,
   }))
 
   const publishedCount = properties.filter(p => p.avito_publish).length
