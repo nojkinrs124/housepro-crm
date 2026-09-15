@@ -7,8 +7,9 @@
  * CI на GitHub при этом зелёный. 01.09.2026 на диагностику этого ушёл час:
  * три пуша подряд не создали ни одного деплоя.
  *
- * Всё, что нужно чаще суток, живёт в GitHub Actions — образец:
- * .github/workflows/channel-heartbeat.yml, .github/workflows/avito-messenger.yml
+ * Всё, что нужно чаще суток, запускает pg_cron в Supabase через
+ * public.call_vercel_cron(path) — образец: supabase/migrations/20260915_pg_cron_frequent_jobs.sql.
+ * GitHub Actions не подходит: с 27.08.2026 schedule-запуски троттлятся до 2–9 в сутки.
  *
  * CLI: node scripts/checks/vercel-cron.mjs
  */
@@ -48,7 +49,7 @@ export function checkVercelCron() {
       problems.push(
         `${rel(VERCEL_JSON)}: крон "${cron.path}" — расписание "${cron.schedule}" чаще одного раза в сутки. ` +
           `На тарифе Hobby Vercel отвергнет конфигурацию и МОЛЧА отбросит весь деплой (ни успешного, ни упавшего в списке). ` +
-          `Перенести в GitHub Actions по образцу .github/workflows/channel-heartbeat.yml`
+          `Перенести в pg_cron по образцу supabase/migrations/20260915_pg_cron_frequent_jobs.sql`
       )
     }
   }

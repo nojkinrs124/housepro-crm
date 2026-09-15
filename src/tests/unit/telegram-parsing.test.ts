@@ -198,6 +198,14 @@ describe('parseTimezone', () => {
     expect(parseTimezone(' Asia/Krasnoyarsk ')).toEqual({ ok: true, value: 'Asia/Krasnoyarsk' })
   })
 
+  it('город без региона — зона подбирается сама', async () => {
+    const { parseTimezone } = await import('@/features/telegram/services/parsing')
+    // Ровно так пользователь и ответил боту 15.09.2026 — «Krasnoyarsk», без Asia/
+    expect(parseTimezone('Krasnoyarsk')).toEqual({ ok: true, value: 'Asia/Krasnoyarsk' })
+    expect(parseTimezone('moscow')).toEqual({ ok: true, value: 'Europe/Moscow' })
+    expect(parseTimezone('Novosibirsk')).toEqual({ ok: true, value: 'Asia/Novosibirsk' })
+  })
+
   it('несуществующая зона и пустой ввод — отказ с объяснением', async () => {
     const { parseTimezone } = await import('@/features/telegram/services/parsing')
     const bad = parseTimezone('Мордор/Барад-Дур')

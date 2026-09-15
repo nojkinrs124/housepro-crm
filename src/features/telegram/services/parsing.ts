@@ -203,16 +203,27 @@ export function parseTimezone(raw: string): Parsed<string> {
     return { ok: true, value: zone }
   }
 
+  // Город без региона («Krasnoyarsk», «moscow») — подбираем зону IANA сами:
+  // пользователь не обязан помнить, что Красноярск лежит в Asia/, а Москва в Europe/.
+  const city = text.charAt(0).toUpperCase() + text.slice(1).toLowerCase()
+  const candidates = text.includes('/') ? [text] : [text, `Europe/${city}`, `Asia/${city}`]
+  for (const zone of candidates) {
+    if (isValidTimezone(zone)) return { ok: true, value: zone }
+  }
+  return {
+    ok: false,
+    error:
+      `Не знаю такого часового пояса: «${text}». Напиши смещение (<code>UTC+7</code>) ` +
+      'или имя зоны (<code>Europe/Moscow</code>, <code>Asia/Krasnoyarsk</code>).',
+  }
+}
+
+function isValidTimezone(zone: string): boolean {
   try {
-    new Intl.DateTimeFormat('ru-RU', { timeZone: text })
-    return { ok: true, value: text }
+    new Intl.DateTimeFormat('ru-RU', { timeZone: zone })
+    return true
   } catch {
-    return {
-      ok: false,
-      error:
-        `Не знаю такого часового пояса: «${text}». Напиши смещение (<code>UTC+7</code>) ` +
-        'или имя зоны (<code>Europe/Moscow</code>, <code>Asia/Krasnoyarsk</code>).',
-    }
+    return false
   }
 }
 

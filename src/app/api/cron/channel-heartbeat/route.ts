@@ -16,10 +16,13 @@ export const dynamic = 'force-dynamic'
 
 const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const
 
-// Heartbeat-крон: вызывается ВНЕШНИМ планировщиком (GitHub Actions, .github/workflows/
-// channel-heartbeat.yml) каждые ~15 минут, а не встроенным кроном Vercel — на Hobby-плане
-// Vercel крон ограничен 1 разом в сутки, что не даёт делать несколько слотов расписания
-// в день (решение от 15.08.2026, см. discussion). Заменяет старый /api/cron/channel-draft.
+// Heartbeat-крон: вызывается ВНЕШНИМ планировщиком — pg_cron в Supabase (джоб
+// channel-heartbeat → public.call_vercel_cron, миграция 20260915_pg_cron_frequent_jobs)
+// каждые 15 минут, а не встроенным кроном Vercel — на Hobby-плане Vercel крон ограничен
+// 1 разом в сутки, что не даёт делать несколько слотов расписания в день. До 15.09.2026
+// дёргался из GitHub Actions, но с 27.08 GitHub троттлил schedule-запуски до 2–9 в сутки
+// с интервалом 3–6 часов — окно слота не попадало ни разу, посты не выходили.
+// Заменяет старый /api/cron/channel-draft.
 //
 // Логика: для каждого включённого слота на СЕГОДНЯ (channel_schedule) — если текущее
 // локальное время попало в окно [send_time_local, send_time_local + 30 мин) и по этому
@@ -60,8 +63,8 @@ export async function GET(request: Request) {
 
     const [h, m] = slot.send_time_local.split(':').map(Number)
     const slotMinutes = h * 60 + m
-    // Окно 30 минут вперёд от времени слота — запас под задержку GitHub Actions
-    // (их cron не гарантирует точность до минуты, может опоздать).
+    // Окно 30 минут вперёд от времени слота — при шаге планировщика в 15 минут это
+    // две попытки на слот: запас под холодный старт или упавший запрос.
     if (nowMinutes < slotMinutes || nowMinutes >= slotMinutes + 30) continue
 
     if (await hasPostForSchedule(slot.id, scheduledFor)) continue

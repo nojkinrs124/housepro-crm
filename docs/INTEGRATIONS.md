@@ -198,15 +198,26 @@ Apple-календарь как «календарь по URL».
 | `/api/cron/daily-digest` | 06:00 | Утренний дайджест админу в Telegram |
 | `/api/cron/payment-reminders` | 07:00 | Письма о предстоящих и просроченных платежах |
 | `/api/cron/generate-recurring-transactions` | 03:00 | Периодические операции бухгалтерии |
-| `/api/cron/avito-messenger` | каждые 15 мин | Сообщения с Авито → лиды (**через GitHub Actions**, не Vercel) |
+| `/api/cron/avito-messenger` | каждые 15 мин | Сообщения с Авито → лиды (**через pg_cron**, не Vercel) |
+| `/api/cron/channel-heartbeat` | каждые 15 мин | Слоты расписания Telegram-канала → черновики админу (**через pg_cron**, не Vercel) |
 | `/api/cron/channel-weekly-summary` | вс 12:00 | Недельная сводка по Telegram-каналу |
 
 **Ограничение тарифа Hobby:** встроенный крон Vercel запускается не чаще раза в
 сутки. Расписание чаще суточного Vercel отвергает при валидации `vercel.json` и
 **молча отбрасывает весь деплой** — в списке деплоев не появляется даже упавшего.
-Поэтому частые задачи (`channel-heartbeat`, `avito-messenger`) вынесены в GitHub
-Actions: там cron каждые 15 минут бесплатен. Секреты — `CHANNEL_CRON_SECRET`
-(равен `CRON_SECRET` из Vercel) и `CHANNEL_SITE_URL`.
+Поэтому частые задачи (`channel-heartbeat`, `avito-messenger`) запускает pg_cron
+в Supabase: джобы с теми же именами вызывают `public.call_vercel_cron(path)`, которая
+делает `net.http_get` на прод с заголовком `Authorization: Bearer <CRON_SECRET>`
+(миграция `20260915_pg_cron_frequent_jobs.sql`). Секрет берётся из Supabase Vault
+под именем `channel_cron_secret`; пока его там нет, джобы пишут warning и запрос
+не делают. Завести один раз в SQL-редакторе:
+`select vault.create_secret('<CRON_SECRET из Vercel>', 'channel_cron_secret');`
+Состояние — `select * from cron.job_run_details order by start_time desc limit 20;`,
+ответы прода — `select * from net._http_response order by created desc limit 20;`.
+
+До 15.09.2026 эти задачи жили в GitHub Actions, но с 27.08.2026 GitHub троттлит
+schedule-запуски: вместо 96 в сутки — 2–9 с интервалом 3–6 часов, и 30-минутное окно
+heartbeat не попадало ни в один слот. Воркфлоу удалены, обратно не возвращать.
 
 ---
 

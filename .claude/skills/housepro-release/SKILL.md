@@ -84,8 +84,10 @@ git push origin main
   Тариф Hobby разрешает крон не чаще раза в сутки; более частое выражение Vercel
   отвергает при валидации и **молча отбрасывает весь деплой**. Текст ошибки виден
   только вручную: Vercel → Deployments → «…» → Create Deployment → выбрать ветку.
-  Всё, что нужно чаще суток, живёт в GitHub Actions (`channel-heartbeat.yml`,
-  `avito-messenger.yml`). Это же проверяет шаг «vercel.json — кроны» в `npm run check`.
+  Всё, что нужно чаще суток, запускает pg_cron в Supabase (джобы `channel-heartbeat`,
+  `avito-messenger` → `public.call_vercel_cron`, секрет в Vault `channel_cron_secret`).
+  Не GitHub Actions — там schedule троттлится. Это же проверяет шаг «vercel.json — кроны»
+  в `npm run check`.
 - Прод — **https://housepro24.vercel.app** (не `housepro.vercel.app`, тот занят чужим
   приложением).
 - CI на GitHub гоняет тот же `npm run check` — но «зелёный CI на странице PR» уже
