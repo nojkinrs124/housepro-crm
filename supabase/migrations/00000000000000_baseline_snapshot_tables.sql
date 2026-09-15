@@ -531,706 +531,706 @@ create sequence if not exists public.contract_number_seq;
 
 -- ─── Primary keys ────────────────────────────────────────────────────────
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'organizations_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'organizations_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."organizations" add constraint "organizations_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'users_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'users_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."users" add constraint "users_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'organization_members_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'organization_members_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."organization_members" add constraint "organization_members_pkey" primary key ("organization_id", "user_id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'owners_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'owners_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."owners" add constraint "owners_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'clients_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'clients_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."clients" add constraint "clients_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'contacts_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'contacts_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."contacts" add constraint "contacts_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'contact_representatives_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'contact_representatives_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."contact_representatives" add constraint "contact_representatives_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'properties_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'properties_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."properties" add constraint "properties_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'contracts_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'contracts_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."contracts" add constraint "contracts_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'contract_versions_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'contract_versions_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."contract_versions" add constraint "contract_versions_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'files_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'files_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."files" add constraint "files_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'tasks_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'tasks_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."tasks" add constraint "tasks_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'payments_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'payments_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."payments" add constraint "payments_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'logs_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'logs_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."logs" add constraint "logs_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'document_templates_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'document_templates_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."document_templates" add constraint "document_templates_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'leads_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'leads_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."leads" add constraint "leads_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'lead_activities_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'lead_activities_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."lead_activities" add constraint "lead_activities_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'deals_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'deals_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."deals" add constraint "deals_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'deal_comments_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'deal_comments_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."deal_comments" add constraint "deal_comments_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'company_settings_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'company_settings_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."company_settings" add constraint "company_settings_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'notifications_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'notifications_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."notifications" add constraint "notifications_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'accounting_categories_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'accounting_categories_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."accounting_categories" add constraint "accounting_categories_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'accounting_recurring_rules_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'accounting_recurring_rules_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."accounting_recurring_rules" add constraint "accounting_recurring_rules_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'accounting_transactions_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'accounting_transactions_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."accounting_transactions" add constraint "accounting_transactions_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'audit_logs_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'audit_logs_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."audit_logs" add constraint "audit_logs_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'showings_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'showings_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."showings" add constraint "showings_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'property_collections_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'property_collections_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."property_collections" add constraint "property_collections_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'collection_items_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'collection_items_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."collection_items" add constraint "collection_items_pkey" primary key ("collection_id", "property_id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'api_keys_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'api_keys_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."api_keys" add constraint "api_keys_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'webhook_endpoints_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'webhook_endpoints_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."webhook_endpoints" add constraint "webhook_endpoints_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'bot_pending_actions_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'bot_pending_actions_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."bot_pending_actions" add constraint "bot_pending_actions_pkey" primary key ("id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'bot_conversations_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'bot_conversations_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."bot_conversations" add constraint "bot_conversations_pkey" primary key ("telegram_chat_id");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'bot_allowed_users_pkey') then
+  if not exists (select 1 from pg_constraint where conname = 'bot_allowed_users_pkey' and connamespace = 'public'::regnamespace) then
     alter table public."bot_allowed_users" add constraint "bot_allowed_users_pkey" primary key ("telegram_user_id");
   end if;
 end $$;
 
 -- ─── Unique constraints ──────────────────────────────────────────────────
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'organizations_slug_key') then
+  if not exists (select 1 from pg_constraint where conname = 'organizations_slug_key' and connamespace = 'public'::regnamespace) then
     alter table public."organizations" add constraint "organizations_slug_key" unique ("slug");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'users_email_key') then
+  if not exists (select 1 from pg_constraint where conname = 'users_email_key' and connamespace = 'public'::regnamespace) then
     alter table public."users" add constraint "users_email_key" unique ("email");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'contracts_contract_number_key') then
+  if not exists (select 1 from pg_constraint where conname = 'contracts_contract_number_key' and connamespace = 'public'::regnamespace) then
     alter table public."contracts" add constraint "contracts_contract_number_key" unique ("contract_number");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'property_collections_share_token_key') then
+  if not exists (select 1 from pg_constraint where conname = 'property_collections_share_token_key' and connamespace = 'public'::regnamespace) then
     alter table public."property_collections" add constraint "property_collections_share_token_key" unique ("share_token");
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'api_keys_key_hash_key') then
+  if not exists (select 1 from pg_constraint where conname = 'api_keys_key_hash_key' and connamespace = 'public'::regnamespace) then
     alter table public."api_keys" add constraint "api_keys_key_hash_key" unique ("key_hash");
   end if;
 end $$;
 
 -- ─── Foreign keys ────────────────────────────────────────────────────────
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'users_id_fkey') then
-    alter table public."users" add constraint "users_id_fkey" foreign key ("id") references auth.users(id);
+  if not exists (select 1 from pg_constraint where conname = 'users_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."users" add constraint "users_id_fkey" foreign key ("id") references auth.users(id) on delete cascade;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'users_organization_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'users_organization_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."users" add constraint "users_organization_id_fkey" foreign key ("organization_id") references public.organizations(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'organization_members_organization_id_fkey') then
-    alter table public."organization_members" add constraint "organization_members_organization_id_fkey" foreign key ("organization_id") references public.organizations(id);
+  if not exists (select 1 from pg_constraint where conname = 'organization_members_organization_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."organization_members" add constraint "organization_members_organization_id_fkey" foreign key ("organization_id") references public.organizations(id) on delete cascade;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'organization_members_user_id_fkey') then
-    alter table public."organization_members" add constraint "organization_members_user_id_fkey" foreign key ("user_id") references auth.users(id);
+  if not exists (select 1 from pg_constraint where conname = 'organization_members_user_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."organization_members" add constraint "organization_members_user_id_fkey" foreign key ("user_id") references auth.users(id) on delete cascade;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'clients_manager_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'clients_manager_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."clients" add constraint "clients_manager_id_fkey" foreign key ("manager_id") references public.users(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'contacts_organization_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'contacts_organization_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."contacts" add constraint "contacts_organization_id_fkey" foreign key ("organization_id") references public.organizations(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'contact_representatives_contact_id_fkey') then
-    alter table public."contact_representatives" add constraint "contact_representatives_contact_id_fkey" foreign key ("contact_id") references public.contacts(id);
+  if not exists (select 1 from pg_constraint where conname = 'contact_representatives_contact_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."contact_representatives" add constraint "contact_representatives_contact_id_fkey" foreign key ("contact_id") references public.contacts(id) on delete cascade;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'properties_owner_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'properties_owner_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."properties" add constraint "properties_owner_id_fkey" foreign key ("owner_id") references public.owners(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'properties_manager_id_fkey') then
-    alter table public."properties" add constraint "properties_manager_id_fkey" foreign key ("manager_id") references public.users(id);
+  if not exists (select 1 from pg_constraint where conname = 'properties_manager_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."properties" add constraint "properties_manager_id_fkey" foreign key ("manager_id") references public.users(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'properties_organization_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'properties_organization_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."properties" add constraint "properties_organization_id_fkey" foreign key ("organization_id") references public.organizations(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'contracts_owner_contact_id_fkey') then
-    alter table public."contracts" add constraint "contracts_owner_contact_id_fkey" foreign key ("owner_contact_id") references public.contacts(id);
+  if not exists (select 1 from pg_constraint where conname = 'contracts_owner_contact_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."contracts" add constraint "contracts_owner_contact_id_fkey" foreign key ("owner_contact_id") references public.contacts(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'contracts_organization_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'contracts_organization_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."contracts" add constraint "contracts_organization_id_fkey" foreign key ("organization_id") references public.organizations(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'contracts_company_profile_id_fkey') then
-    alter table public."contracts" add constraint "contracts_company_profile_id_fkey" foreign key ("company_profile_id") references public.company_settings(id);
+  if not exists (select 1 from pg_constraint where conname = 'contracts_company_profile_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."contracts" add constraint "contracts_company_profile_id_fkey" foreign key ("company_profile_id") references public.company_settings(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'contracts_base_contract_id_fkey') then
-    alter table public."contracts" add constraint "contracts_base_contract_id_fkey" foreign key ("base_contract_id") references public.contracts(id);
+  if not exists (select 1 from pg_constraint where conname = 'contracts_base_contract_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."contracts" add constraint "contracts_base_contract_id_fkey" foreign key ("base_contract_id") references public.contracts(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'contracts_owner_representative_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'contracts_owner_representative_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."contracts" add constraint "contracts_owner_representative_id_fkey" foreign key ("owner_representative_id") references public.contact_representatives(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'contracts_client_representative_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'contracts_client_representative_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."contracts" add constraint "contracts_client_representative_id_fkey" foreign key ("client_representative_id") references public.contact_representatives(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'contracts_client_contact_id_fkey') then
-    alter table public."contracts" add constraint "contracts_client_contact_id_fkey" foreign key ("client_contact_id") references public.contacts(id);
+  if not exists (select 1 from pg_constraint where conname = 'contracts_client_contact_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."contracts" add constraint "contracts_client_contact_id_fkey" foreign key ("client_contact_id") references public.contacts(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'contracts_owner_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'contracts_owner_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."contracts" add constraint "contracts_owner_id_fkey" foreign key ("owner_id") references public.owners(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'contracts_manager_id_fkey') then
-    alter table public."contracts" add constraint "contracts_manager_id_fkey" foreign key ("manager_id") references public.users(id);
+  if not exists (select 1 from pg_constraint where conname = 'contracts_manager_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."contracts" add constraint "contracts_manager_id_fkey" foreign key ("manager_id") references public.users(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'contracts_property_id_fkey') then
-    alter table public."contracts" add constraint "contracts_property_id_fkey" foreign key ("property_id") references public.properties(id);
+  if not exists (select 1 from pg_constraint where conname = 'contracts_property_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."contracts" add constraint "contracts_property_id_fkey" foreign key ("property_id") references public.properties(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'contracts_client_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'contracts_client_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."contracts" add constraint "contracts_client_id_fkey" foreign key ("client_id") references public.clients(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'contract_versions_contract_id_fkey') then
-    alter table public."contract_versions" add constraint "contract_versions_contract_id_fkey" foreign key ("contract_id") references public.contracts(id);
+  if not exists (select 1 from pg_constraint where conname = 'contract_versions_contract_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."contract_versions" add constraint "contract_versions_contract_id_fkey" foreign key ("contract_id") references public.contracts(id) on delete cascade;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'contract_versions_created_by_fkey') then
-    alter table public."contract_versions" add constraint "contract_versions_created_by_fkey" foreign key ("created_by") references public.users(id);
+  if not exists (select 1 from pg_constraint where conname = 'contract_versions_created_by_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."contract_versions" add constraint "contract_versions_created_by_fkey" foreign key ("created_by") references public.users(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'files_organization_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'files_organization_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."files" add constraint "files_organization_id_fkey" foreign key ("organization_id") references public.organizations(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'files_uploaded_by_fkey') then
-    alter table public."files" add constraint "files_uploaded_by_fkey" foreign key ("uploaded_by") references public.users(id);
+  if not exists (select 1 from pg_constraint where conname = 'files_uploaded_by_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."files" add constraint "files_uploaded_by_fkey" foreign key ("uploaded_by") references public.users(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'files_property_id_fkey') then
-    alter table public."files" add constraint "files_property_id_fkey" foreign key ("property_id") references public.properties(id);
+  if not exists (select 1 from pg_constraint where conname = 'files_property_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."files" add constraint "files_property_id_fkey" foreign key ("property_id") references public.properties(id) on delete cascade;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'files_client_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'files_client_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."files" add constraint "files_client_id_fkey" foreign key ("client_id") references public.clients(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'files_contract_id_fkey') then
-    alter table public."files" add constraint "files_contract_id_fkey" foreign key ("contract_id") references public.contracts(id);
+  if not exists (select 1 from pg_constraint where conname = 'files_contract_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."files" add constraint "files_contract_id_fkey" foreign key ("contract_id") references public.contracts(id) on delete cascade;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'tasks_owner_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'tasks_owner_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."tasks" add constraint "tasks_owner_id_fkey" foreign key ("owner_id") references public.owners(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'tasks_assigned_to_fkey') then
-    alter table public."tasks" add constraint "tasks_assigned_to_fkey" foreign key ("assigned_to") references public.users(id);
+  if not exists (select 1 from pg_constraint where conname = 'tasks_assigned_to_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."tasks" add constraint "tasks_assigned_to_fkey" foreign key ("assigned_to") references public.users(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'tasks_organization_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'tasks_organization_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."tasks" add constraint "tasks_organization_id_fkey" foreign key ("organization_id") references public.organizations(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'tasks_lead_id_fkey') then
-    alter table public."tasks" add constraint "tasks_lead_id_fkey" foreign key ("lead_id") references public.leads(id);
+  if not exists (select 1 from pg_constraint where conname = 'tasks_lead_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."tasks" add constraint "tasks_lead_id_fkey" foreign key ("lead_id") references public.leads(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'tasks_created_by_fkey') then
-    alter table public."tasks" add constraint "tasks_created_by_fkey" foreign key ("created_by") references public.users(id);
+  if not exists (select 1 from pg_constraint where conname = 'tasks_created_by_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."tasks" add constraint "tasks_created_by_fkey" foreign key ("created_by") references public.users(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'tasks_client_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'tasks_client_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."tasks" add constraint "tasks_client_id_fkey" foreign key ("client_id") references public.clients(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'tasks_payment_id_fkey') then
-    alter table public."tasks" add constraint "tasks_payment_id_fkey" foreign key ("payment_id") references public.payments(id);
+  if not exists (select 1 from pg_constraint where conname = 'tasks_payment_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."tasks" add constraint "tasks_payment_id_fkey" foreign key ("payment_id") references public.payments(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'tasks_contract_id_fkey') then
-    alter table public."tasks" add constraint "tasks_contract_id_fkey" foreign key ("contract_id") references public.contracts(id);
+  if not exists (select 1 from pg_constraint where conname = 'tasks_contract_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."tasks" add constraint "tasks_contract_id_fkey" foreign key ("contract_id") references public.contracts(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'tasks_property_id_fkey') then
-    alter table public."tasks" add constraint "tasks_property_id_fkey" foreign key ("property_id") references public.properties(id);
+  if not exists (select 1 from pg_constraint where conname = 'tasks_property_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."tasks" add constraint "tasks_property_id_fkey" foreign key ("property_id") references public.properties(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'tasks_deal_id_fkey') then
-    alter table public."tasks" add constraint "tasks_deal_id_fkey" foreign key ("deal_id") references public.deals(id);
+  if not exists (select 1 from pg_constraint where conname = 'tasks_deal_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."tasks" add constraint "tasks_deal_id_fkey" foreign key ("deal_id") references public.deals(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'payments_organization_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'payments_organization_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."payments" add constraint "payments_organization_id_fkey" foreign key ("organization_id") references public.organizations(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'payments_contract_id_fkey') then
-    alter table public."payments" add constraint "payments_contract_id_fkey" foreign key ("contract_id") references public.contracts(id);
+  if not exists (select 1 from pg_constraint where conname = 'payments_contract_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."payments" add constraint "payments_contract_id_fkey" foreign key ("contract_id") references public.contracts(id) on delete cascade;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'payments_created_by_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'payments_created_by_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."payments" add constraint "payments_created_by_fkey" foreign key ("created_by") references public.users(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'logs_user_id_fkey') then
-    alter table public."logs" add constraint "logs_user_id_fkey" foreign key ("user_id") references public.users(id);
+  if not exists (select 1 from pg_constraint where conname = 'logs_user_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."logs" add constraint "logs_user_id_fkey" foreign key ("user_id") references public.users(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'logs_organization_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'logs_organization_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."logs" add constraint "logs_organization_id_fkey" foreign key ("organization_id") references public.organizations(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'document_templates_organization_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'document_templates_organization_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."document_templates" add constraint "document_templates_organization_id_fkey" foreign key ("organization_id") references public.organizations(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'document_templates_created_by_fkey') then
-    alter table public."document_templates" add constraint "document_templates_created_by_fkey" foreign key ("created_by") references public.users(id);
+  if not exists (select 1 from pg_constraint where conname = 'document_templates_created_by_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."document_templates" add constraint "document_templates_created_by_fkey" foreign key ("created_by") references public.users(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'leads_assigned_to_fkey') then
-    alter table public."leads" add constraint "leads_assigned_to_fkey" foreign key ("assigned_to") references public.users(id);
+  if not exists (select 1 from pg_constraint where conname = 'leads_assigned_to_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."leads" add constraint "leads_assigned_to_fkey" foreign key ("assigned_to") references public.users(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'leads_property_id_fkey') then
-    alter table public."leads" add constraint "leads_property_id_fkey" foreign key ("property_id") references public.properties(id);
+  if not exists (select 1 from pg_constraint where conname = 'leads_property_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."leads" add constraint "leads_property_id_fkey" foreign key ("property_id") references public.properties(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'leads_organization_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'leads_organization_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."leads" add constraint "leads_organization_id_fkey" foreign key ("organization_id") references public.organizations(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'lead_activities_user_id_fkey') then
-    alter table public."lead_activities" add constraint "lead_activities_user_id_fkey" foreign key ("user_id") references public.users(id);
+  if not exists (select 1 from pg_constraint where conname = 'lead_activities_user_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."lead_activities" add constraint "lead_activities_user_id_fkey" foreign key ("user_id") references public.users(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'lead_activities_organization_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'lead_activities_organization_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."lead_activities" add constraint "lead_activities_organization_id_fkey" foreign key ("organization_id") references public.organizations(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'lead_activities_lead_id_fkey') then
-    alter table public."lead_activities" add constraint "lead_activities_lead_id_fkey" foreign key ("lead_id") references public.leads(id);
+  if not exists (select 1 from pg_constraint where conname = 'lead_activities_lead_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."lead_activities" add constraint "lead_activities_lead_id_fkey" foreign key ("lead_id") references public.leads(id) on delete cascade;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'deals_owner_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'deals_owner_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."deals" add constraint "deals_owner_id_fkey" foreign key ("owner_id") references public.owners(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'deals_manager_id_fkey') then
-    alter table public."deals" add constraint "deals_manager_id_fkey" foreign key ("manager_id") references public.users(id);
+  if not exists (select 1 from pg_constraint where conname = 'deals_manager_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."deals" add constraint "deals_manager_id_fkey" foreign key ("manager_id") references public.users(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'deals_property_id_fkey') then
-    alter table public."deals" add constraint "deals_property_id_fkey" foreign key ("property_id") references public.properties(id);
+  if not exists (select 1 from pg_constraint where conname = 'deals_property_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."deals" add constraint "deals_property_id_fkey" foreign key ("property_id") references public.properties(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'deals_client_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'deals_client_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."deals" add constraint "deals_client_id_fkey" foreign key ("client_id") references public.clients(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'deals_owner_representative_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'deals_owner_representative_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."deals" add constraint "deals_owner_representative_id_fkey" foreign key ("owner_representative_id") references public.contact_representatives(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'deals_lead_id_fkey') then
-    alter table public."deals" add constraint "deals_lead_id_fkey" foreign key ("lead_id") references public.leads(id);
+  if not exists (select 1 from pg_constraint where conname = 'deals_lead_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."deals" add constraint "deals_lead_id_fkey" foreign key ("lead_id") references public.leads(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'deals_organization_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'deals_organization_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."deals" add constraint "deals_organization_id_fkey" foreign key ("organization_id") references public.organizations(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'deals_client_contact_id_fkey') then
-    alter table public."deals" add constraint "deals_client_contact_id_fkey" foreign key ("client_contact_id") references public.contacts(id);
+  if not exists (select 1 from pg_constraint where conname = 'deals_client_contact_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."deals" add constraint "deals_client_contact_id_fkey" foreign key ("client_contact_id") references public.contacts(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'deals_client_representative_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'deals_client_representative_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."deals" add constraint "deals_client_representative_id_fkey" foreign key ("client_representative_id") references public.contact_representatives(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'deals_owner_contact_id_fkey') then
-    alter table public."deals" add constraint "deals_owner_contact_id_fkey" foreign key ("owner_contact_id") references public.contacts(id);
+  if not exists (select 1 from pg_constraint where conname = 'deals_owner_contact_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."deals" add constraint "deals_owner_contact_id_fkey" foreign key ("owner_contact_id") references public.contacts(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'deal_comments_deal_id_fkey') then
-    alter table public."deal_comments" add constraint "deal_comments_deal_id_fkey" foreign key ("deal_id") references public.deals(id);
+  if not exists (select 1 from pg_constraint where conname = 'deal_comments_deal_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."deal_comments" add constraint "deal_comments_deal_id_fkey" foreign key ("deal_id") references public.deals(id) on delete cascade;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'deal_comments_organization_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'deal_comments_organization_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."deal_comments" add constraint "deal_comments_organization_id_fkey" foreign key ("organization_id") references public.organizations(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'deal_comments_author_id_fkey') then
-    alter table public."deal_comments" add constraint "deal_comments_author_id_fkey" foreign key ("author_id") references public.users(id);
+  if not exists (select 1 from pg_constraint where conname = 'deal_comments_author_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."deal_comments" add constraint "deal_comments_author_id_fkey" foreign key ("author_id") references public.users(id) on delete cascade;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'company_settings_organization_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'company_settings_organization_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."company_settings" add constraint "company_settings_organization_id_fkey" foreign key ("organization_id") references public.organizations(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'notifications_user_id_fkey') then
-    alter table public."notifications" add constraint "notifications_user_id_fkey" foreign key ("user_id") references public.users(id);
+  if not exists (select 1 from pg_constraint where conname = 'notifications_user_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."notifications" add constraint "notifications_user_id_fkey" foreign key ("user_id") references public.users(id) on delete cascade;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'notifications_organization_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'notifications_organization_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."notifications" add constraint "notifications_organization_id_fkey" foreign key ("organization_id") references public.organizations(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'accounting_categories_created_by_fkey') then
-    alter table public."accounting_categories" add constraint "accounting_categories_created_by_fkey" foreign key ("created_by") references auth.users(id);
+  if not exists (select 1 from pg_constraint where conname = 'accounting_categories_created_by_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."accounting_categories" add constraint "accounting_categories_created_by_fkey" foreign key ("created_by") references auth.users(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'accounting_categories_organization_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'accounting_categories_organization_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."accounting_categories" add constraint "accounting_categories_organization_id_fkey" foreign key ("organization_id") references public.organizations(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'accounting_recurring_rules_organization_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'accounting_recurring_rules_organization_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."accounting_recurring_rules" add constraint "accounting_recurring_rules_organization_id_fkey" foreign key ("organization_id") references public.organizations(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'accounting_recurring_rules_employee_id_fkey') then
-    alter table public."accounting_recurring_rules" add constraint "accounting_recurring_rules_employee_id_fkey" foreign key ("employee_id") references public.users(id);
+  if not exists (select 1 from pg_constraint where conname = 'accounting_recurring_rules_employee_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."accounting_recurring_rules" add constraint "accounting_recurring_rules_employee_id_fkey" foreign key ("employee_id") references public.users(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'accounting_recurring_rules_category_id_fkey') then
-    alter table public."accounting_recurring_rules" add constraint "accounting_recurring_rules_category_id_fkey" foreign key ("category_id") references public.accounting_categories(id);
+  if not exists (select 1 from pg_constraint where conname = 'accounting_recurring_rules_category_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."accounting_recurring_rules" add constraint "accounting_recurring_rules_category_id_fkey" foreign key ("category_id") references public.accounting_categories(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'accounting_recurring_rules_created_by_fkey') then
-    alter table public."accounting_recurring_rules" add constraint "accounting_recurring_rules_created_by_fkey" foreign key ("created_by") references auth.users(id);
+  if not exists (select 1 from pg_constraint where conname = 'accounting_recurring_rules_created_by_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."accounting_recurring_rules" add constraint "accounting_recurring_rules_created_by_fkey" foreign key ("created_by") references auth.users(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'accounting_transactions_category_id_fkey') then
-    alter table public."accounting_transactions" add constraint "accounting_transactions_category_id_fkey" foreign key ("category_id") references public.accounting_categories(id);
+  if not exists (select 1 from pg_constraint where conname = 'accounting_transactions_category_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."accounting_transactions" add constraint "accounting_transactions_category_id_fkey" foreign key ("category_id") references public.accounting_categories(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'accounting_transactions_contact_id_fkey') then
-    alter table public."accounting_transactions" add constraint "accounting_transactions_contact_id_fkey" foreign key ("contact_id") references public.contacts(id);
+  if not exists (select 1 from pg_constraint where conname = 'accounting_transactions_contact_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."accounting_transactions" add constraint "accounting_transactions_contact_id_fkey" foreign key ("contact_id") references public.contacts(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'accounting_transactions_contract_id_fkey') then
-    alter table public."accounting_transactions" add constraint "accounting_transactions_contract_id_fkey" foreign key ("contract_id") references public.contracts(id);
+  if not exists (select 1 from pg_constraint where conname = 'accounting_transactions_contract_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."accounting_transactions" add constraint "accounting_transactions_contract_id_fkey" foreign key ("contract_id") references public.contracts(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'accounting_transactions_deal_id_fkey') then
-    alter table public."accounting_transactions" add constraint "accounting_transactions_deal_id_fkey" foreign key ("deal_id") references public.deals(id);
+  if not exists (select 1 from pg_constraint where conname = 'accounting_transactions_deal_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."accounting_transactions" add constraint "accounting_transactions_deal_id_fkey" foreign key ("deal_id") references public.deals(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'accounting_transactions_employee_id_fkey') then
-    alter table public."accounting_transactions" add constraint "accounting_transactions_employee_id_fkey" foreign key ("employee_id") references public.users(id);
+  if not exists (select 1 from pg_constraint where conname = 'accounting_transactions_employee_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."accounting_transactions" add constraint "accounting_transactions_employee_id_fkey" foreign key ("employee_id") references public.users(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'accounting_transactions_recurring_rule_id_fkey') then
-    alter table public."accounting_transactions" add constraint "accounting_transactions_recurring_rule_id_fkey" foreign key ("recurring_rule_id") references public.accounting_recurring_rules(id);
+  if not exists (select 1 from pg_constraint where conname = 'accounting_transactions_recurring_rule_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."accounting_transactions" add constraint "accounting_transactions_recurring_rule_id_fkey" foreign key ("recurring_rule_id") references public.accounting_recurring_rules(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'accounting_transactions_created_by_fkey') then
-    alter table public."accounting_transactions" add constraint "accounting_transactions_created_by_fkey" foreign key ("created_by") references auth.users(id);
+  if not exists (select 1 from pg_constraint where conname = 'accounting_transactions_created_by_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."accounting_transactions" add constraint "accounting_transactions_created_by_fkey" foreign key ("created_by") references auth.users(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'accounting_transactions_organization_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'accounting_transactions_organization_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."accounting_transactions" add constraint "accounting_transactions_organization_id_fkey" foreign key ("organization_id") references public.organizations(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'audit_logs_organization_id_fkey') then
-    alter table public."audit_logs" add constraint "audit_logs_organization_id_fkey" foreign key ("organization_id") references public.organizations(id);
+  if not exists (select 1 from pg_constraint where conname = 'audit_logs_organization_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."audit_logs" add constraint "audit_logs_organization_id_fkey" foreign key ("organization_id") references public.organizations(id) on delete cascade;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'audit_logs_user_id_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'audit_logs_user_id_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."audit_logs" add constraint "audit_logs_user_id_fkey" foreign key ("user_id") references auth.users(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'showings_property_id_fkey') then
-    alter table public."showings" add constraint "showings_property_id_fkey" foreign key ("property_id") references public.properties(id);
+  if not exists (select 1 from pg_constraint where conname = 'showings_property_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."showings" add constraint "showings_property_id_fkey" foreign key ("property_id") references public.properties(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'showings_lead_id_fkey') then
-    alter table public."showings" add constraint "showings_lead_id_fkey" foreign key ("lead_id") references public.leads(id);
+  if not exists (select 1 from pg_constraint where conname = 'showings_lead_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."showings" add constraint "showings_lead_id_fkey" foreign key ("lead_id") references public.leads(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'showings_deal_id_fkey') then
-    alter table public."showings" add constraint "showings_deal_id_fkey" foreign key ("deal_id") references public.deals(id);
+  if not exists (select 1 from pg_constraint where conname = 'showings_deal_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."showings" add constraint "showings_deal_id_fkey" foreign key ("deal_id") references public.deals(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'showings_created_by_fkey') then
-    alter table public."showings" add constraint "showings_created_by_fkey" foreign key ("created_by") references auth.users(id);
+  if not exists (select 1 from pg_constraint where conname = 'showings_created_by_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."showings" add constraint "showings_created_by_fkey" foreign key ("created_by") references auth.users(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'showings_agent_id_fkey') then
-    alter table public."showings" add constraint "showings_agent_id_fkey" foreign key ("agent_id") references auth.users(id);
+  if not exists (select 1 from pg_constraint where conname = 'showings_agent_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."showings" add constraint "showings_agent_id_fkey" foreign key ("agent_id") references auth.users(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'showings_contact_id_fkey') then
-    alter table public."showings" add constraint "showings_contact_id_fkey" foreign key ("contact_id") references public.contacts(id);
+  if not exists (select 1 from pg_constraint where conname = 'showings_contact_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."showings" add constraint "showings_contact_id_fkey" foreign key ("contact_id") references public.contacts(id) on delete set null;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'showings_organization_id_fkey') then
-    alter table public."showings" add constraint "showings_organization_id_fkey" foreign key ("organization_id") references public.organizations(id);
+  if not exists (select 1 from pg_constraint where conname = 'showings_organization_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."showings" add constraint "showings_organization_id_fkey" foreign key ("organization_id") references public.organizations(id) on delete cascade;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'property_collections_organization_id_fkey') then
-    alter table public."property_collections" add constraint "property_collections_organization_id_fkey" foreign key ("organization_id") references public.organizations(id);
+  if not exists (select 1 from pg_constraint where conname = 'property_collections_organization_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."property_collections" add constraint "property_collections_organization_id_fkey" foreign key ("organization_id") references public.organizations(id) on delete cascade;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'property_collections_created_by_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'property_collections_created_by_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."property_collections" add constraint "property_collections_created_by_fkey" foreign key ("created_by") references auth.users(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'property_collections_lead_id_fkey') then
-    alter table public."property_collections" add constraint "property_collections_lead_id_fkey" foreign key ("lead_id") references public.leads(id);
+  if not exists (select 1 from pg_constraint where conname = 'property_collections_lead_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."property_collections" add constraint "property_collections_lead_id_fkey" foreign key ("lead_id") references public.leads(id) on delete cascade;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'collection_items_property_id_fkey') then
-    alter table public."collection_items" add constraint "collection_items_property_id_fkey" foreign key ("property_id") references public.properties(id);
+  if not exists (select 1 from pg_constraint where conname = 'collection_items_property_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."collection_items" add constraint "collection_items_property_id_fkey" foreign key ("property_id") references public.properties(id) on delete cascade;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'collection_items_collection_id_fkey') then
-    alter table public."collection_items" add constraint "collection_items_collection_id_fkey" foreign key ("collection_id") references public.property_collections(id);
+  if not exists (select 1 from pg_constraint where conname = 'collection_items_collection_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."collection_items" add constraint "collection_items_collection_id_fkey" foreign key ("collection_id") references public.property_collections(id) on delete cascade;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'api_keys_created_by_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'api_keys_created_by_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."api_keys" add constraint "api_keys_created_by_fkey" foreign key ("created_by") references auth.users(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'api_keys_organization_id_fkey') then
-    alter table public."api_keys" add constraint "api_keys_organization_id_fkey" foreign key ("organization_id") references public.organizations(id);
+  if not exists (select 1 from pg_constraint where conname = 'api_keys_organization_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."api_keys" add constraint "api_keys_organization_id_fkey" foreign key ("organization_id") references public.organizations(id) on delete cascade;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'webhook_endpoints_created_by_fkey') then
+  if not exists (select 1 from pg_constraint where conname = 'webhook_endpoints_created_by_fkey' and connamespace = 'public'::regnamespace) then
     alter table public."webhook_endpoints" add constraint "webhook_endpoints_created_by_fkey" foreign key ("created_by") references auth.users(id);
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'webhook_endpoints_organization_id_fkey') then
-    alter table public."webhook_endpoints" add constraint "webhook_endpoints_organization_id_fkey" foreign key ("organization_id") references public.organizations(id);
+  if not exists (select 1 from pg_constraint where conname = 'webhook_endpoints_organization_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."webhook_endpoints" add constraint "webhook_endpoints_organization_id_fkey" foreign key ("organization_id") references public.organizations(id) on delete cascade;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'bot_pending_actions_organization_id_fkey') then
-    alter table public."bot_pending_actions" add constraint "bot_pending_actions_organization_id_fkey" foreign key ("organization_id") references public.organizations(id);
+  if not exists (select 1 from pg_constraint where conname = 'bot_pending_actions_organization_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."bot_pending_actions" add constraint "bot_pending_actions_organization_id_fkey" foreign key ("organization_id") references public.organizations(id) on delete cascade;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'bot_conversations_organization_id_fkey') then
-    alter table public."bot_conversations" add constraint "bot_conversations_organization_id_fkey" foreign key ("organization_id") references public.organizations(id);
+  if not exists (select 1 from pg_constraint where conname = 'bot_conversations_organization_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."bot_conversations" add constraint "bot_conversations_organization_id_fkey" foreign key ("organization_id") references public.organizations(id) on delete cascade;
   end if;
 end $$;
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'bot_allowed_users_organization_id_fkey') then
-    alter table public."bot_allowed_users" add constraint "bot_allowed_users_organization_id_fkey" foreign key ("organization_id") references public.organizations(id);
+  if not exists (select 1 from pg_constraint where conname = 'bot_allowed_users_organization_id_fkey' and connamespace = 'public'::regnamespace) then
+    alter table public."bot_allowed_users" add constraint "bot_allowed_users_organization_id_fkey" foreign key ("organization_id") references public.organizations(id) on delete cascade;
   end if;
 end $$;

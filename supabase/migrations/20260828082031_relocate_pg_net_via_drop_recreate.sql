@@ -12,5 +12,5 @@
 --    registered in, so schema-qualified calls keep working);
 --  - a live test net.http_post(...) call against httpbin.org succeeded.
 
-drop extension pg_net cascade;
+drop extension if exists pg_net cascade;
 create extension pg_net schema extensions;

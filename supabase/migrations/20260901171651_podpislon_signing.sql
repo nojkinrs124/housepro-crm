@@ -40,7 +40,7 @@ alter table public.contract_signatures
   add column if not exists "consent_version" text;
 
 do $$ begin
-  if not exists (select 1 from pg_constraint where conname = 'contract_signatures_provider_check') then
+  if not exists (select 1 from pg_constraint where conname = 'contract_signatures_provider_check' and connamespace = 'public'::regnamespace) then
     alter table public.contract_signatures add constraint contract_signatures_provider_check
       check (provider = any (array['internal'::text, 'podpislon'::text]));
   end if;
