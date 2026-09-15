@@ -75,6 +75,9 @@ export default async function HomePage() {
               Смотреть объекты
               <ArrowRight style={{ width: 15, height: 15 }} />
             </Link>
+            <Link href="/uslugi" className="hp-btn-secondary h-11 justify-center">
+              Услуги и комиссия
+            </Link>
             <a href={contacts.phoneHref} className="hp-btn-secondary h-11 justify-center">
               Позвонить {contacts.phone}
             </a>
