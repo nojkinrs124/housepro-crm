@@ -36,6 +36,9 @@ loadE2eEnv()
  */
 export default defineConfig({
   testDir: './e2e',
+  // Смоук /simplify-ux живёт в отдельном конфиге и ходит только в изолированный
+  // Supabase — боевой прогон его не трогает.
+  testIgnore: ['**/smoke/**'],
   timeout: 60_000,
   retries: 1,
   reporter: [['list'], ['html', { open: 'never' }], ['json', { outputFile: 'e2e-results.json' }]],

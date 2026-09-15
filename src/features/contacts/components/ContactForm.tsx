@@ -108,7 +108,7 @@ export function ContactForm({ action, defaults = {}, backHref, submitLabel }: Co
         <h2 className="font-semibold text-[var(--hp-ink)]">Основные данные</h2>
         <div>
           <label className={labelCls}>{clientType === 'legal_entity' ? 'Контактное лицо (ФИО) *' : 'Полное имя *'}</label>
-          <input type="text" name="full_name" required defaultValue={defaults.full_name ?? ''}
+          <input type="text" name="full_name" data-testid="contact-full-name" required defaultValue={defaults.full_name ?? ''}
             placeholder={clientType === 'legal_entity' ? 'Иванов Иван Иванович' : 'Иван Иванович Иванов'}
             className={inputCls} />
         </div>
@@ -150,6 +150,7 @@ export function ContactForm({ action, defaults = {}, backHref, submitLabel }: Co
             <input
               type="tel"
               name="phone"
+              data-testid="contact-phone"
               defaultValue={defaults.phone ?? ''}
               placeholder="+7 (999) 123-45-67"
               className={inputCls}
@@ -344,7 +345,7 @@ export function ContactForm({ action, defaults = {}, backHref, submitLabel }: Co
       </div>
 
       <div className="flex items-center gap-3">
-        <button type="submit" disabled={isPending}
+        <button type="submit" data-testid="contact-submit" disabled={isPending}
           className="px-6 py-2.5 rounded-[var(--hp-radius)] text-white font-semibold transition-colors text-sm bg-[var(--hp-accent)] hover:bg-[var(--hp-accent-hover)] disabled:opacity-60 disabled:cursor-not-allowed">
           {isPending ? 'Сохранение…' : submitLabel}
         </button>

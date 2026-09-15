@@ -70,6 +70,7 @@ function LoginFormInner() {
         <input
           {...register('email')}
           id="email"
+          data-testid="login-email"
           type="email"
           placeholder="agent@housepro.ru"
           autoComplete="email"
@@ -93,6 +94,7 @@ function LoginFormInner() {
           <input
             {...register('password')}
             id="password"
+            data-testid="login-password"
             type={showPassword ? 'text' : 'password'}
             placeholder="••••••••"
             autoComplete="current-password"
@@ -114,7 +116,7 @@ function LoginFormInner() {
         )}
       </div>
 
-      <button type="submit" disabled={isPending} className="hp-btn-primary w-full justify-center disabled:opacity-60 disabled:cursor-not-allowed">
+      <button type="submit" data-testid="login-submit" disabled={isPending} className="hp-btn-primary w-full justify-center disabled:opacity-60 disabled:cursor-not-allowed">
         {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
         {isPending ? 'Вход...' : 'Войти'}
       </button>

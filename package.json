@@ -1,6 +1,6 @@
 {
   "name": "housepro-crm",
-  "version": "2.18.1",
+  "version": "2.18.2",
   "private": true,
   "license": "MIT",
   "scripts": {
@@ -12,6 +12,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
+    "test:smoke": "playwright test -c playwright.smoke.config.ts",
+    "e2e:branch-env": "node scripts/e2e/write-branch-env.mjs",
     "check": "node scripts/pre-push-check.mjs",
     "check:design": "node scripts/checks/design-tokens.mjs",
     "check:design:baseline": "node scripts/checks/design-tokens.mjs --baseline",

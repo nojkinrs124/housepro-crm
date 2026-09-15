@@ -185,7 +185,7 @@ export function DealFormBody({
       <div className="hp-card p-5 space-y-3">
         <h2 className="hp-h2">Примечания</h2>
         <textarea
-          name="notes" rows={3} defaultValue={d.notes ?? ''}
+          name="notes" data-testid="deal-notes" rows={3} defaultValue={d.notes ?? ''}
           placeholder="Детали сделки, договорённости, что обсуждается…"
           className="w-full px-4 py-2.5 rounded-[var(--hp-radius)] border border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-ink)] placeholder:text-[var(--hp-tertiary)] text-sm outline-none focus:border-[var(--hp-ink)] transition-colors resize-none"
         />

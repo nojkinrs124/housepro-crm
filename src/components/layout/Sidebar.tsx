@@ -201,6 +201,7 @@ function SidebarContent({
             <form action={logout}>
               <button
                 type="submit"
+                data-testid="logout-button"
                 className="w-full flex items-center gap-3 px-3 py-1.5 text-sm rounded-[var(--hp-radius)] transition-colors duration-150 font-medium text-[var(--hp-sub)] hover:text-[var(--hp-danger)] hover:bg-[var(--hp-danger-tint)] focus:outline-none focus-visible:bg-[var(--hp-danger-tint)] focus-visible:text-[var(--hp-danger)]"
               >
                 <LogOut style={{ width: 15, height: 15 }} className="shrink-0" />
@@ -233,6 +234,7 @@ function SidebarContent({
             <form action={logout}>
               <button
                 type="submit"
+                data-testid="logout-button"
                 title="Выйти"
                 className="w-full flex items-center justify-center p-1.5 rounded-[var(--hp-radius)] transition-colors duration-150 text-[var(--hp-sub)] hover:text-[var(--hp-danger)] hover:bg-[var(--hp-danger-tint)] focus:outline-none focus-visible:bg-[var(--hp-danger-tint)] focus-visible:text-[var(--hp-danger)]"
               >

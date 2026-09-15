@@ -45,7 +45,7 @@ export default async function NewTaskPage({
  <label className="text-sm font-medium text-foreground">
  Название <span className="text-destructive">*</span>
  </label>
- <input name="title" required placeholder="Позвонить клиенту по договору"
+ <input name="title" data-testid="task-title" required placeholder="Позвонить клиенту по договору"
  className="w-full h-10 px-4 border border-input bg-background text-foreground text-sm outline-none focus:border-[var(--hp-ink)] transition-all" />
  </div>
 
@@ -121,7 +121,7 @@ export default async function NewTaskPage({
  </div>
 
  <div className="flex items-center gap-3">
- <button type="submit"
+ <button type="submit" data-testid="task-submit"
  className="flex items-center gap-2 px-6 py-2.5 text-white text-sm font-bold transition-all" style={{ background: 'var(--hp-accent)', }}>
  <CheckSquare className="w-4 h-4" />
  Создать задачу

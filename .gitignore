@@ -49,3 +49,8 @@ e2e-results.json
 # (отпечаток последней зелёной проверки; design-baseline.json, наоборот, коммитим —
 #  без него CI посчитает легаси-нарушения новыми)
 .claude/.check-stamp.json
+
+# смоук /simplify-ux: свой distDir и отчёты
+.next-smoke/
+playwright-report-smoke/
+test-results-smoke/

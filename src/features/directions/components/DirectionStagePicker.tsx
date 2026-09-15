@@ -33,7 +33,7 @@ export function DirectionStagePicker({
           {DIRECTIONS.map(d => (
             <label key={d.value} className={radioCls}>
               <input
-                type="radio" name="deal_type" value={d.value}
+                type="radio" name="deal_type" value={d.value} data-testid={`deal-direction-${d.value}`}
                 checked={selected === d.value}
                 onChange={() => setSelected(d.value)}
                 className="w-4 h-4 shrink-0 accent-[var(--hp-accent)]"

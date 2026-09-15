@@ -3,6 +3,10 @@ import { withSentryConfig } from '@sentry/nextjs'
 
 const nextConfig: NextConfig = {
   typescript: { ignoreBuildErrors: false },
+  // Смоук-тесты поднимают свой Next рядом с рабочим dev-сервером; Next 16 держит
+  // lock в distDir, поэтому у смоука он свой (playwright.smoke.config.ts задаёт
+  // NEXT_DIST_DIR=.next-smoke). В обычной работе переменной нет — остаётся .next.
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   experimental: {
     // Фото объектов уходят через Server Action по одному файлу; лимит по
     // умолчанию 1 МБ режет любой снимок с телефона (2–8 МБ) ещё до нашего

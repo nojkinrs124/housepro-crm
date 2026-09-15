@@ -354,6 +354,20 @@ begin
 end;
 $function$;
 
+-- ─── Триггер профиля при регистрации ───────────────────────────────────────
+-- В baseline оставлен комментарием («создаётся вручную через Dashboard»), на проде
+-- он есть. Без него auth-пользователь не получает строку в public.users и не
+-- может войти в CRM. apply_migration на проде может не иметь прав на схему auth —
+-- поэтому ошибка прав глотается, локально CLI работает суперпользователем.
+do $$ begin
+  if not exists (select 1 from pg_trigger where tgname = 'on_auth_user_created' and tgrelid = 'auth.users'::regclass) then
+    create trigger on_auth_user_created after insert on auth.users
+      for each row execute function public.handle_new_user();
+  end if;
+exception when insufficient_privilege then
+  raise notice 'on_auth_user_created: нет прав на auth.users, триггер нужно создать вручную';
+end $$;
+
 -- ─── Что НЕ воспроизводится намеренно ──────────────────────────────────────
 -- cron.job «check-overdue-daily-telegram» (06:00, net.http_post на Edge Function
 -- check-overdue боевого проекта). В локальной/dev-базе такой job стучался бы

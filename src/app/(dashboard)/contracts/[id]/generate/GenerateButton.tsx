@@ -23,6 +23,7 @@ export function GenerateButton({ contractId }: { contractId: string }) {
  return (
  <div className="flex items-center gap-3 flex-wrap">
  <button
+ data-testid="contract-generate"
  onClick={handleGenerate}
  disabled={state === 'loading'}
  className="flex items-center gap-2 px-5 py-2.5 text-white text-sm font-bold transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
@@ -37,7 +38,7 @@ export function GenerateButton({ contractId }: { contractId: string }) {
 
  {state === 'success' && result.docxUrl && (
  <div className="flex items-center gap-3">
- <div className="flex items-center gap-1.5 text-sm text-[var(--hp-good)] bg-[var(--hp-good-tint)] border border-[var(--hp-border)] px-3 py-2">
+ <div data-testid="contract-generate-success" className="flex items-center gap-1.5 text-sm text-[var(--hp-good)] bg-[var(--hp-good-tint)] border border-[var(--hp-border)] px-3 py-2">
  <CheckCircle2 className="w-4 h-4" />
  Версия {result.version} создана!
  </div>

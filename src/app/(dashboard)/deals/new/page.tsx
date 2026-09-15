@@ -75,7 +75,7 @@ export default async function NewDealPage({
         />
 
         <div className="flex items-center gap-3 pt-1">
-          <button type="submit" className="hp-btn-primary">
+          <button type="submit" data-testid="deal-submit" className="hp-btn-primary">
             <TrendingUp className="w-4 h-4" />
             Создать сделку
           </button>

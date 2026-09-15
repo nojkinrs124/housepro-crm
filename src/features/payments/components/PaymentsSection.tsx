@@ -96,7 +96,7 @@ export async function PaymentsSection({ contractId }: { contractId: string }) {
  const sc = statusConfig[statusKey] ?? statusConfig.planned
 
  return (
- <div key={t.id} className="flex items-center gap-3 p-3 hover:bg-accent/40 transition-colors group">
+ <div key={t.id} data-testid="payment-row" data-transaction-id={t.id} data-status={t.status} className="flex items-center gap-3 p-3 hover:bg-accent/40 transition-colors group">
  <Link href={`/accounting/transactions/${t.id}`} className="flex-1 min-w-0">
  <div className="flex items-center gap-2">
  <p className="text-sm font-semibold text-foreground">{fmt(Number(t.amount))}</p>

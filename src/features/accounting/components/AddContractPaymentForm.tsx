@@ -22,6 +22,7 @@ export function AddContractPaymentForm({ contractId }: { contractId: string }) {
  if (!open) {
  return (
  <button
+ data-testid="payment-add-open"
  onClick={() => setOpen(true)}
  className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 font-medium transition-colors"
  >
@@ -45,7 +46,7 @@ export function AddContractPaymentForm({ contractId }: { contractId: string }) {
  <div className="space-y-1">
  <label className="text-xs text-muted-foreground">Сумма, ₽ *</label>
  <input
- name="amount" type="number" min="1" step="0.01" required placeholder="50 000"
+ name="amount" data-testid="payment-amount" type="number" min="1" step="0.01" required placeholder="50 000"
  className="w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all"
  />
  </div>
@@ -74,6 +75,7 @@ export function AddContractPaymentForm({ contractId }: { contractId: string }) {
  </div>
  )}
  <button
+ data-testid="payment-submit"
  type="submit" disabled={isPending}
  className="ml-auto flex items-center gap-2 px-4 py-2 text-white text-sm font-bold disabled:opacity-60 disabled:hover:translate-y-0 transition-all"
  style={{ background: 'var(--hp-accent)', }}

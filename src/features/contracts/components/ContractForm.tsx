@@ -134,7 +134,7 @@ export function ContractForm({
  return (
  <label key={t.value}
  className="flex items-center gap-3 p-3 border border-[var(--hp-border)] cursor-pointer transition-colors hover:bg-[var(--hp-neutral-tint)] has-[:checked]:border-[var(--hp-accent)] has-[:checked]:bg-[var(--hp-accent-tint)] text-sm">
- <input type="radio" name="contract_type" value={t.value}
+ <input type="radio" name="contract_type" value={t.value} data-testid={`contract-type-${t.value}`}
  checked={selectedType === t.value}
  onChange={() => setSelectedType(t.value)}
  className="shrink-0" style={{ accentColor: 'var(--hp-accent)' }} />
@@ -154,7 +154,7 @@ export function ContractForm({
  return (
  <label key={t.value}
  className="flex items-center gap-3 p-3 border border-[var(--hp-border)] cursor-pointer transition-colors hover:bg-[var(--hp-neutral-tint)] has-[:checked]:border-[var(--hp-accent)] has-[:checked]:bg-[var(--hp-accent-tint)] text-sm">
- <input type="radio" name="contract_type" value={t.value}
+ <input type="radio" name="contract_type" value={t.value} data-testid={`contract-type-${t.value}`}
  checked={selectedType === t.value}
  onChange={() => setSelectedType(t.value)}
  className="shrink-0" style={{ accentColor: 'var(--hp-accent)' }} />
@@ -435,13 +435,13 @@ export function ContractForm({
  {/* Примечания */}
  <div className="hp-card p-5 space-y-3">
  <h2 className={h2}>Примечания</h2>
- <textarea name="notes" rows={3} placeholder="Дополнительные условия..."
+ <textarea name="notes" data-testid="contract-notes" rows={3} placeholder="Дополнительные условия..."
  defaultValue={defaults.notes ?? ''}
  className="w-full px-4 py-3 border border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-ink)] text-sm outline-none focus:border-[var(--hp-ink)] resize-none" />
  </div>
 
  <div className="flex items-center gap-3">
- <button type="submit" disabled={isPending}
+ <button type="submit" data-testid="contract-submit" disabled={isPending}
  className="flex items-center gap-2 px-6 py-2.5 bg-[var(--hp-accent)] text-white text-sm font-semibold hover:bg-[var(--hp-accent-hover)] transition-colors disabled:opacity-60">
  <FileText className="w-4 h-4" />
  {isPending ? 'Сохранение...' : submitLabel}

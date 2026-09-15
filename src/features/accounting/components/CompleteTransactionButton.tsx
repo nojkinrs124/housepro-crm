@@ -16,6 +16,8 @@ export function CompleteTransactionButton({ transactionId, status }: Props) {
 
  return (
  <button
+ data-testid="payment-complete"
+ data-transaction-id={transactionId}
  onClick={() => startTransition(async () => { await completeTransactionAction(transactionId) })}
  disabled={isPending}
  title="Отметить оплаченным"

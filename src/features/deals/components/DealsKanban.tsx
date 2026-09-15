@@ -136,6 +136,9 @@ export function DealsKanbanBoard({ deals: initialDeals }: { deals: KanbanDeal[] 
                   return (
                     <div
                       key={col.value}
+                      data-testid="kanban-column"
+                      data-direction={direction.value}
+                      data-stage={col.value}
                       className="w-[82vw] sm:w-72 md:w-[248px] flex flex-col rounded-[var(--hp-radius)] border transition-colors"
                       style={{
                         scrollSnapAlign: 'start',
@@ -171,6 +174,8 @@ export function DealsKanbanBoard({ deals: initialDeals }: { deals: KanbanDeal[] 
                             return (
                               <div
                                 key={deal.id}
+                                data-testid="kanban-card"
+                                data-deal-id={deal.id}
                                 draggable
                                 onDragStart={(e) => handleDragStart(e, deal)}
                                 onDragEnd={handleDragEnd}
