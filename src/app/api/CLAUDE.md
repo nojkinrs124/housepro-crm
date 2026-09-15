@@ -13,7 +13,8 @@
   подпись не сойдётся.
 - **Кроны** (`/api/cron/*`) — сверять `CRON_SECRET`. Расписание в `vercel.json` только
   суточное и реже; чаще — pg_cron в Supabase через `public.call_vercel_cron(path)`
-  (образец — миграция `20260915_pg_cron_frequent_jobs.sql`). GitHub Actions для этого
+  (образец — миграция `20260915_pg_cron_frequent_jobs.sql`), а в роуте — `isCronAuthorized`
+  из `src/lib/cron-auth.ts`: он принимает и `CRON_SECRET`, и секрет pg_cron из Vault. GitHub Actions для этого
   не годится: с 27.08.2026 schedule-запуски троттлятся до 2–9 в сутки.
 - **Секреты** — предпочтительно через `src/lib/env.ts`. Правило не абсолютное: на
   02.09.2026 в проекте 70 прямых обращений к `process.env` в ~30 файлах, и все законны

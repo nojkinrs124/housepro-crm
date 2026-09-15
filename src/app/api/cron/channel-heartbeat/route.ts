@@ -11,6 +11,7 @@ import {
 } from '@/lib/telegram/channel'
 import { generateRubricDraft } from '@/lib/telegram/channel-generate'
 import { sendMessage } from '@/lib/telegram/api'
+import { isCronAuthorized } from '@/lib/cron-auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,11 +30,7 @@ const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const
 // слоту сегодня ещё ничего не отправлялось — сгенерировать черновик (или запросить
 // надиктовку, если рубрика requires_input).
 export async function GET(request: Request) {
-  const auth = request.headers.get('authorization')
-  const url = new URL(request.url)
-  const querySecret = url.searchParams.get('secret')
-  const ok = process.env.CRON_SECRET && (auth === `Bearer ${process.env.CRON_SECRET}` || querySecret === process.env.CRON_SECRET)
-  if (!ok) {
+  if (!(await isCronAuthorized(request))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

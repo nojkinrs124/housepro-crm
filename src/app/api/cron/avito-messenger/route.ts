@@ -8,6 +8,7 @@ import {
   AvitoApiError,
 } from '@/features/avito/services/avito-api.service'
 import { logCommunication } from '@/lib/communications/log'
+import { isCronAuthorized } from '@/lib/cron-auth'
 
 export const dynamic = 'force-dynamic'
 
@@ -59,12 +60,7 @@ async function ensureToken(settings: AvitoSettingsRow): Promise<string | null> {
 }
 
 export async function GET(request: Request) {
-  const auth = request.headers.get('authorization')
-  const querySecret = new URL(request.url).searchParams.get('secret')
-  const ok =
-    process.env.CRON_SECRET &&
-    (auth === `Bearer ${process.env.CRON_SECRET}` || querySecret === process.env.CRON_SECRET)
-  if (!ok) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!(await isCronAuthorized(request))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const supabase = getSupabaseAdmin()
   const { data } = await supabase

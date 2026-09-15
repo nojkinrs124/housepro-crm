@@ -208,10 +208,11 @@ Apple-календарь как «календарь по URL».
 Поэтому частые задачи (`channel-heartbeat`, `avito-messenger`) запускает pg_cron
 в Supabase: джобы с теми же именами вызывают `public.call_vercel_cron(path)`, которая
 делает `net.http_get` на прод с заголовком `Authorization: Bearer <CRON_SECRET>`
-(миграция `20260915_pg_cron_frequent_jobs.sql`). Секрет берётся из Supabase Vault
-под именем `channel_cron_secret`; пока его там нет, джобы пишут warning и запрос
-не делают. Завести один раз в SQL-редакторе:
-`select vault.create_secret('<CRON_SECRET из Vercel>', 'channel_cron_secret');`
+(миграция `20260915_pg_cron_frequent_jobs.sql`). Секрет `channel_cron_secret`
+сгенерирован самим Postgres и лежит в Supabase Vault — руками его никуда не переносят:
+эти два эндпоинта сверяют Bearer с ним через RPC `get_pg_cron_secret()` под
+service_role (`src/lib/cron-auth.ts`, миграция `20260915_pg_cron_secret_selfcontained.sql`).
+`CRON_SECRET` из Vercel они тоже принимают — для ручного вызова.
 Состояние — `select * from cron.job_run_details order by start_time desc limit 20;`,
 ответы прода — `select * from net._http_response order by created desc limit 20;`.
 

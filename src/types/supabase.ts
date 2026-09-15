@@ -4016,6 +4016,10 @@ export type Database = {
       }
     }
     Functions: {
+      call_vercel_cron: {
+        Args: { path: string; timeout_ms?: number }
+        Returns: undefined
+      }
       check_expiring_contracts: { Args: never; Returns: undefined }
       check_overdue_payments: { Args: never; Returns: undefined }
       get_avito_feed_contact_phone: {
@@ -4087,6 +4091,7 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      get_pg_cron_secret: { Args: never; Returns: string }
       get_user_org_id: { Args: never; Returns: string }
       import_client_request: {
         Args: { p_contact: Json; p_lead: Json; p_org_id: string }
