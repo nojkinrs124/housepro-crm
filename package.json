@@ -1,6 +1,6 @@
 {
   "name": "housepro-crm",
-  "version": "2.15.2",
+  "version": "2.16.0",
   "private": true,
   "license": "MIT",
   "scripts": {
@@ -24,11 +24,13 @@
     "check:any:baseline": "node scripts/checks/no-any.mjs --baseline",
     "db:types": "npx supabase gen types typescript --project-id zwclvcswvhjeqwxrkbte > src/types/supabase.ts.tmp && mv src/types/supabase.ts.tmp src/types/supabase.ts || (rm -f src/types/supabase.ts.tmp && echo 'gen types упал — supabase login или SUPABASE_ACCESS_TOKEN; src/types/supabase.ts не тронут' && exit 1)",
     "seed:handbook": "node --env-file=.env.local --env-file=.env.e2e scripts/seed-handbook.mjs",
+    "migrate:photos": "node --env-file=.env.local --env-file=.env.e2e scripts/migrate-photos-to-yandex.mjs",
     "version:patch": "npm version patch --no-git-tag-version",
     "version:minor": "npm version minor --no-git-tag-version",
     "version:major": "npm version major --no-git-tag-version"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1132.0",
     "@hookform/resolvers": "^5.9.1",
     "@pdf-lib/fontkit": "^1.1.1",
     "@sentry/nextjs": "^10.71.0",

@@ -14,6 +14,11 @@ const nextConfig: NextConfig = {
         hostname: '*.supabase.co',
         pathname: '/storage/v1/object/public/**',
       },
+      // Фото объектов в Yandex Object Storage (src/lib/storage/photo-storage.ts)
+      {
+        protocol: 'https',
+        hostname: 'storage.yandexcloud.net',
+      },
     ],
   },
 }

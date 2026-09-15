@@ -71,6 +71,8 @@
 
 - **Frontend:** Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4 (свои компоненты, без библиотеки UI)
 - **Backend:** Supabase (PostgreSQL + Auth + Storage), Row Level Security на уровне организации
+- **Фото объектов:** Yandex Object Storage (S3, серверы в РФ) через `src/lib/storage/photo-storage.ts`;
+  переключатель `STORAGE_DRIVER` возвращает на Supabase Storage без правок кода
 - **Оплата:** ЮKassa — платежи клиентов агентства
 - **Интеграции:** DaData (адреса и реквизиты), Яндекс.Карты, телефония (Манго/UIS/Zadarma),
   WhatsApp (Wazzup/Green API), Авито-мессенджер, фиды Авито/ЦИАН/Яндекс/Домклик

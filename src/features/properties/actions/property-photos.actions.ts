@@ -4,8 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requirePermission } from '@/lib/permissions'
 import { validateUploadedFile } from '@/lib/validate-file'
+import { uploadPhoto, removePhotoByUrl } from '@/lib/storage/photo-storage'
 
-const BUCKET = 'property-photos'
 const MAX_PHOTO_SIZE = 10 * 1024 * 1024 // 10 МБ — фото для Авито не нужно тяжелее
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 
@@ -40,14 +40,10 @@ export async function uploadPropertyPhotoAction(propertyId: string, formData: Fo
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
   const storagePath = `${propertyId}/${Date.now()}-${safeName}`
 
-  const { error: uploadError } = await supabase.storage
-    .from(BUCKET)
-    .upload(storagePath, buffer, { contentType: file.type, upsert: false })
+  const uploaded = await uploadPhoto(supabase, storagePath, buffer, file.type)
+  if (!uploaded.url) return { error: uploaded.error ?? 'Ошибка загрузки' }
 
-  if (uploadError) return { error: `Ошибка загрузки: ${uploadError.message}` }
-
-  const { data: publicUrlData } = supabase.storage.from(BUCKET).getPublicUrl(storagePath)
-  const newUrls = [...(property.photo_urls ?? []), publicUrlData.publicUrl]
+  const newUrls = [...(property.photo_urls ?? []), uploaded.url]
 
   const { error: dbError } = await supabase
     .from('properties')
@@ -55,13 +51,13 @@ export async function uploadPropertyPhotoAction(propertyId: string, formData: Fo
     .eq('id', propertyId)
 
   if (dbError) {
-    await supabase.storage.from(BUCKET).remove([storagePath])
+    await removePhotoByUrl(supabase, uploaded.url)
     return { error: `Ошибка записи: ${dbError.message}` }
   }
 
   revalidatePath(`/properties/${propertyId}`)
   revalidatePath(`/properties/${propertyId}/edit`)
-  return { success: true, url: publicUrlData.publicUrl }
+  return { success: true, url: uploaded.url }
 }
 
 export async function deletePropertyPhotoAction(propertyId: string, url: string) {
@@ -89,11 +85,7 @@ export async function deletePropertyPhotoAction(propertyId: string, url: string)
 
   if (error) return { error: error.message }
 
-  const marker = `/storage/v1/object/public/${BUCKET}/`
-  const storagePath = url.split(marker)[1]
-  if (storagePath) {
-    await supabase.storage.from(BUCKET).remove([storagePath])
-  }
+  await removePhotoByUrl(supabase, url)
 
   revalidatePath(`/properties/${propertyId}`)
   revalidatePath(`/properties/${propertyId}/edit`)
