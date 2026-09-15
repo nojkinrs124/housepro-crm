@@ -81,7 +81,10 @@ export function tariffCommissionLabel(t: TariffConfig): string {
 // ─── Условия ───────────────────────────────────────────────────────────────
 
 export const USLUGI = {
-  /** Комиссия нанимателя — страница «Снять квартиру» */
+  /**
+   * Комиссия нанимателя — страница «Снять квартиру». Нижняя граница: реальная
+   * зависит от объекта, поэтому на сайте всегда «от 25%» (tenantCommissionLabel).
+   */
   tenantCommissionPercent: 25,
 
   /** Первая сделка бесплатно: один объект на собственника, только при первом обращении */
@@ -152,6 +155,11 @@ export const USLUGI = {
     workingHours: WORKING_HOURS,
   },
 } as const
+
+/** «от 25%» — комиссия нанимателя одной формулировкой везде на сайте */
+export function tenantCommissionLabel(): string {
+  return `от ${USLUGI.tenantCommissionPercent}%`
+}
 
 // ─── Цены соседних страниц ─────────────────────────────────────────────────
 //

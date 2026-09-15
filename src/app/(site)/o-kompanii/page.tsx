@@ -18,6 +18,7 @@ import {
   USLUGI_ANCHORS,
   USLUGI_LEAD_SOURCES,
   USLUGI_ROUTES,
+  tenantCommissionLabel,
 } from '@/features/site/uslugi/config'
 import { WhatIf, type WhatIfItem } from '@/features/site/uslugi/components/WhatIf'
 import { UslugiLeadForm } from '@/features/site/uslugi/components/UslugiLeadForm'
@@ -94,7 +95,7 @@ function buildFaq(legalForm: keyof typeof LEGAL_FORM_COPY): WhatIfItem[] {
   const items: WhatIfItem[] = [
     {
       q: 'Сколько стоит ваша работа?',
-      a: `Для собственника — три тарифа: разовый подбор ${TARIFFS.podbor.percent}% один раз при заселении, управление ${TARIFFS.upravlenie.percent}% в месяц, премиум с гарантией платежа ${TARIFFS.premium.percent}% в месяц. Первая сделка бесплатно. Для нанимателя — ${USLUGI.tenantCommissionPercent}% от месячной ставки при заселении.${salePart}${legalPart} Все цифры — на страницах услуг, доплат «за оформление» в день подписания у нас нет.`,
+      a: `Для собственника — три тарифа: разовый подбор ${TARIFFS.podbor.percent}% один раз при заселении, управление ${TARIFFS.upravlenie.percent}% в месяц, премиум с гарантией платежа ${TARIFFS.premium.percent}% в месяц. Первая сделка бесплатно. Для нанимателя — ${tenantCommissionLabel()} от месячной ставки при заселении.${salePart}${legalPart} Все цифры — на страницах услуг, доплат «за оформление» в день подписания у нас нет.`,
     },
   ]
 

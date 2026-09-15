@@ -9,6 +9,7 @@ import {
   USLUGI_CONTACTS,
   USLUGI_LEAD_SOURCES,
   USLUGI_ROUTES,
+  tenantCommissionLabel,
 } from '@/features/site/uslugi/config'
 import { UslugiLeadForm } from '@/features/site/uslugi/components/UslugiLeadForm'
 import { WhatIf, type WhatIfItem } from '@/features/site/uslugi/components/WhatIf'
@@ -23,7 +24,7 @@ import { WhatIf, type WhatIfItem } from '@/features/site/uslugi/components/WhatI
 
 export const metadata: Metadata = {
   title: 'Снять квартиру в Красноярске — подбор с проверкой документов | ХаусПро',
-  description: `Подберём квартиру под бюджет и район, включая закрытую базу. Проверяем собственника до залога, составляем договор и акт с описью. Комиссия ${USLUGI.tenantCommissionPercent}%, платится после заселения.`,
+  description: `Подберём квартиру под бюджет и район, включая закрытую базу. Проверяем собственника до залога, составляем договор и акт с описью. Комиссия ${tenantCommissionLabel()}, платится после заселения.`,
 }
 
 const WHAT_WE_DO = [
@@ -166,7 +167,7 @@ export default function SnyatKvartiruPage() {
               className="text-[40px] font-bold tracking-tight leading-none"
               style={{ fontFamily: "'Source Serif 4', Georgia, serif", color: 'var(--hp-ink)' }}
             >
-              {USLUGI.tenantCommissionPercent}%
+              {tenantCommissionLabel()}
             </span>
             <strong className="text-[15px] font-bold" style={{ color: 'var(--hp-ink)' }}>
               от месячной ставки аренды, один раз при заселении.

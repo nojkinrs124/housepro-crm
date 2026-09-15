@@ -11,6 +11,7 @@ import {
   USLUGI_CONTACTS,
   USLUGI_LEAD_SOURCES,
   USLUGI_ROUTES,
+  tenantCommissionLabel,
 } from '@/features/site/uslugi/config'
 import { UslugiLeadForm } from '@/features/site/uslugi/components/UslugiLeadForm'
 
@@ -55,7 +56,7 @@ const SERVICES: ServiceCard[] = [
     title: 'Снять квартиру',
     text:
       'Подбираем жильё под бюджет и район, включая квартиры, которых нет в открытом доступе. Проверяем документы собственника до внесения залога.',
-    price: `${USLUGI.tenantCommissionPercent}% от месячной ставки, один раз при заселении.`,
+    price: `${tenantCommissionLabel()} от месячной ставки, один раз при заселении.`,
     linkLabel: 'Подробнее',
   },
   {
