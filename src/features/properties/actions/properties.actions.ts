@@ -195,9 +195,14 @@ export async function saveListingTextAction(propertyId: string, input: z.input<t
     .single()
   if (!property) return { error: 'Объект не найден' }
 
+  // Объявление живёт в description — его читают фиды площадок и карточка объекта.
+  // listing_* — журнал последней генерации (заголовок, вводные, модель).
+  const description = `${parsed.data.title}\n\n${parsed.data.text}`
+
   const { error } = await supabase
     .from('properties')
     .update({
+      description,
       listing_title: parsed.data.title,
       listing_text: parsed.data.text,
       listing_raw_input: parsed.data.rawInput || null,
@@ -220,5 +225,6 @@ export async function saveListingTextAction(propertyId: string, input: z.input<t
 
   revalidatePath(`/properties/${propertyId}`)
   revalidatePath(`/properties/${propertyId}/edit`)
-  return { success: true }
+  revalidatePath(`/catalog/${propertyId}`)
+  return { success: true, description }
 }

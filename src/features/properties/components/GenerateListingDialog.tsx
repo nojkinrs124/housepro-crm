@@ -124,7 +124,13 @@ export function GenerateListingDialog({ propertyId, facts, initialRawInput, onCl
       toast.error(res.error)
       return
     }
-    toast.success('Объявление сохранено')
+    // Поле «Описание» на странице — неконтролируемый textarea с defaultValue:
+    // router.refresh() подтянет новое значение из базы, но уже смонтированное
+    // поле его не перечитает. Подставляем в DOM, чтобы текст появился сразу
+    // и ушёл вместе с формой, если пользователь потом нажмёт «Сохранить».
+    const field = document.getElementById('property-description')
+    if (field instanceof HTMLTextAreaElement && 'description' in res) field.value = res.description
+    toast.success('Объявление вставлено в описание')
     router.refresh()
     onClose()
   }
@@ -210,7 +216,7 @@ export function GenerateListingDialog({ propertyId, facts, initialRawInput, onCl
               <div className="flex flex-wrap gap-2 shrink-0">
                 <button type="button" onClick={insert} disabled={saving} className="hp-btn-primary disabled:opacity-50">
                   {saving ? <Loader2 className="animate-spin" style={{ width: 14, height: 14 }} /> : <Check style={{ width: 14, height: 14 }} />}
-                  Вставить в объявление
+                  Вставить в описание
                 </button>
                 <button type="button" onClick={copy} className="hp-btn-secondary">
                   {copied ? <Check style={{ width: 14, height: 14 }} /> : <Copy style={{ width: 14, height: 14 }} />}
