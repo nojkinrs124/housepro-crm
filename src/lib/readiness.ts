@@ -158,6 +158,67 @@ export function checkProperty(
   return sortIssues(issues)
 }
 
+// ─── Обслуживание (объект в управлении) ───────────────────────────────────────
+
+export interface EngagementReadinessInput {
+  /** id объекта — из него строятся ссылки на условия и акт приёма */
+  propertyId: string
+  owner_contact_id?: string | null
+  settlement_scheme?: string | null
+  contract_id?: string | null
+  /** Закрыт ли акт приёма: дата закрытия или null, пока акт черновик */
+  handoverCompletedAt?: string | null
+}
+
+/**
+ * Что не заполнено в обслуживании. Пока нет собственника и схемы расчёта,
+ * взаиморасчёт и отчёт посчитать нельзя, и любые суммы на карточке будут
+ * неполными — поэтому эти пункты критичные, а не предупреждения.
+ */
+export function checkEngagement(e: EngagementReadinessInput): ReadinessIssue[] {
+  const issues: ReadinessIssue[] = []
+  const terms = `/management/${e.propertyId}/terms`
+
+  if (empty(e.owner_contact_id)) {
+    issues.push({
+      id: 'engagement.owner',
+      level: 'blocker',
+      missing: 'Не указан собственник обслуживания',
+      effect: 'Не с кем вести взаиморасчёт — сальдо и выплаты считать некому',
+      href: terms,
+    })
+  }
+  if (empty(e.settlement_scheme)) {
+    issues.push({
+      id: 'engagement.scheme',
+      level: 'blocker',
+      missing: 'Не выбрана схема расчёта',
+      effect: 'Не посчитать ни выплату собственнику, ни вознаграждение агентства',
+      href: terms,
+    })
+  }
+  if (empty(e.contract_id)) {
+    issues.push({
+      id: 'engagement.contract',
+      level: 'warn',
+      missing: 'Не привязан договор управления',
+      effect: 'Сроки, обязательства и состав услуг взять неоткуда',
+      href: terms,
+    })
+  }
+  if (empty(e.handoverCompletedAt)) {
+    issues.push({
+      id: 'engagement.handover',
+      level: 'warn',
+      missing: 'Не закрыт акт приёма',
+      effect: 'Нет начальных показаний и описи — расход по счётчикам считать не от чего',
+      href: `/management/${e.propertyId}/handover`,
+    })
+  }
+
+  return sortIssues(issues)
+}
+
 // ─── Контакт ──────────────────────────────────────────────────────────────────
 
 export interface ContactReadinessInput {

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   checkProperty,
+  checkEngagement,
   checkContact,
   checkLead,
   checkContract,
@@ -70,6 +71,34 @@ describe('checkProperty', () => {
       status: 'rented', deal_type: 'management',
     })
     expect(ids(issues)).toContain('property.management_fee')
+  })
+})
+
+describe('checkEngagement', () => {
+  it('без собственника и схемы — критично, ссылки ведут в условия', () => {
+    const issues = checkEngagement({ propertyId: 'p1' })
+    expect(ids(issues)).toEqual([
+      'engagement.owner', 'engagement.scheme', 'engagement.contract', 'engagement.handover',
+    ])
+    expect(issues[0].level).toBe('blocker')
+    expect(issues[0].href).toBe('/management/p1/terms')
+    expect(issues[3].href).toBe('/management/p1/handover')
+  })
+
+  it('настроенное обслуживание с закрытым актом — без замечаний', () => {
+    const issues = checkEngagement({
+      propertyId: 'p1', owner_contact_id: 'c1', settlement_scheme: 'percent',
+      contract_id: 'k1', handoverCompletedAt: '2026-09-01',
+    })
+    expect(issues).toEqual([])
+  })
+
+  it('незакрытый акт — предупреждение, а не блокер', () => {
+    const issues = checkEngagement({
+      propertyId: 'p1', owner_contact_id: 'c1', settlement_scheme: 'fixed', contract_id: 'k1',
+    })
+    expect(ids(issues)).toEqual(['engagement.handover'])
+    expect(issues[0].level).toBe('warn')
   })
 })
 
