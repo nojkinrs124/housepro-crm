@@ -126,7 +126,7 @@ export function DealFormBody({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <label className="hp-label">Сумма сделки, ₽</label>
-            <input name="amount" type="number" min="0" defaultValue={d.amount ?? ''} placeholder="38 500 000" className={inputCls} />
+            <input step="any" name="amount" type="number" min="0" defaultValue={d.amount ?? ''} placeholder="38 500 000" className={inputCls} />
           </div>
           <div className="space-y-1.5">
             <label className="hp-label">Комиссия агентства, ₽</label>
@@ -134,7 +134,7 @@ export function DealFormBody({
           </div>
           <div className="space-y-1.5">
             <label className="hp-label">Аванс / задаток, ₽</label>
-            <input name="advance_amount" type="number" min="0" defaultValue={d.advance_amount ?? ''} placeholder="500 000" className={inputCls} />
+            <input step="any" name="advance_amount" type="number" min="0" defaultValue={d.advance_amount ?? ''} placeholder="500 000" className={inputCls} />
           </div>
           <div className="space-y-1.5">
             <label className="hp-label">Первый взнос, ₽</label>
@@ -169,7 +169,7 @@ export function DealFormBody({
           </div>
           <div className="space-y-1.5">
             <label className="hp-label">Торг, ₽</label>
-            <input name="bargain_amount" type="number" min="0" defaultValue={d.bargain_amount ?? ''} placeholder="1 500 000" className={inputCls} />
+            <input step="any" name="bargain_amount" type="number" min="0" defaultValue={d.bargain_amount ?? ''} placeholder="1 500 000" className={inputCls} />
           </div>
           <div className="space-y-1.5">
             <label className="hp-label">Источник</label>

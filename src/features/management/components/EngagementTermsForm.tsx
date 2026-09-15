@@ -282,7 +282,7 @@ export function EngagementTermsForm({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className={lbl} htmlFor="owner_fixed_amount">Выплата собственнику, ₽/мес</label>
-              <input id="owner_fixed_amount" name="owner_fixed_amount" type="number" min="0" required
+              <input step="any" id="owner_fixed_amount" name="owner_fixed_amount" type="number" min="0" required
                 value={fixedAmount} onChange={e => setFixedAmount(e.target.value)}
                 placeholder="40 000" className={inp} />
             </div>

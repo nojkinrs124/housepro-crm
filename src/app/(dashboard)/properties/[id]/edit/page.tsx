@@ -288,15 +288,15 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
  <div>
  <label className={lbl}>Цена (₽)</label>
- <input type="number" name="price" defaultValue={p.price ?? ''} className={inp} />
+ <input step="any" type="number" name="price" defaultValue={p.price ?? ''} className={inp} />
  </div>
  <div>
  <label className={lbl}>Депозит (₽)</label>
- <input type="number" name="deposit" defaultValue={p.deposit ?? ''} className={inp} />
+ <input step="any" type="number" name="deposit" defaultValue={p.deposit ?? ''} className={inp} />
  </div>
  <div>
  <label className={lbl}>Комиссия управления (₽)</label>
- <input type="number" name="management_fee" defaultValue={p.management_fee ?? ''} className={inp} />
+ <input step="any" type="number" name="management_fee" defaultValue={p.management_fee ?? ''} className={inp} />
  </div>
  </div>
  <div>

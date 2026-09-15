@@ -240,15 +240,15 @@ export default async function NewPropertyPage({
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
  <div className="space-y-1.5">
  <label className={labelCls}>Цена продажи / аренды (₽)</label>
- <input name="price" type="number" placeholder="5 000 000" className={inputCls} />
+ <input step="any" name="price" type="number" placeholder="5 000 000" className={inputCls} />
  </div>
  <div className="space-y-1.5">
  <label className={labelCls}>Депозит (₽)</label>
- <input name="deposit" type="number" placeholder="50 000" className={inputCls} />
+ <input step="any" name="deposit" type="number" placeholder="50 000" className={inputCls} />
  </div>
  <div className="space-y-1.5">
  <label className={labelCls}>Комиссия управления (₽)</label>
- <input name="management_fee" type="number" placeholder="5 000" className={inputCls} />
+ <input step="any" name="management_fee" type="number" placeholder="5 000" className={inputCls} />
  </div>
  </div>
  </div>

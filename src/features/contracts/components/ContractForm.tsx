@@ -306,13 +306,13 @@ export function ContractForm({
  <div className="grid grid-cols-2 gap-4">
  <div className={`space-y-1.5 ${config.showDeposit ? '' : 'col-span-2'}`}>
  <label className={lbl}>{config.amountLabel}</label>
- <input name="amount" type="number" placeholder={config.amountPlaceholder ?? '50 000'}
+ <input step="any" name="amount" type="number" placeholder={config.amountPlaceholder ?? '50 000'}
  defaultValue={defaults.amount ?? ''} className={inp} />
  </div>
  {config.showDeposit && (
  <div className="space-y-1.5">
  <label className={lbl}>{config.depositLabel}</label>
- <input name="deposit" type="number" placeholder="50 000"
+ <input step="any" name="deposit" type="number" placeholder="50 000"
  defaultValue={defaults.deposit ?? ''} className={inp} />
  </div>
  )}
@@ -394,7 +394,7 @@ export function ContractForm({
  <div className="grid grid-cols-2 gap-4">
  <div className="space-y-1.5">
  <label className={lbl}>Выплата собственнику (₽/мес)</label>
- <input name="owner_fixed_amount" type="number" required
+ <input step="any" name="owner_fixed_amount" type="number" required
  defaultValue={defaults.owner_fixed_amount ?? ''} placeholder="40 000" className={inp} />
  </div>
  <div className="space-y-1.5">
