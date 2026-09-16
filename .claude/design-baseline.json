@@ -8,7 +8,6 @@
   "src/features/accounting/actions/accounting.actions.ts": 1,
   "src/features/accounting/actions/categories.actions.ts": 2,
   "src/features/accounting/components/AddContractPaymentForm.tsx": 1,
-  "src/features/accounting/components/TransactionForm.tsx": 3,
   "src/features/api-keys/components/ApiKeyRow.tsx": 1,
   "src/features/api-keys/components/CreateApiKeyForm.tsx": 1,
   "src/features/avito/components/AvitoFeedPanel.tsx": 3,

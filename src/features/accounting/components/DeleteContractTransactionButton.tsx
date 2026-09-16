@@ -11,7 +11,7 @@ export function DeleteContractTransactionButton({ transactionId }: { transaction
  return (
  <button
  onClick={() => {
- if (!confirm('Удалить платёж?')) return
+ if (!confirm('Удалить платёж? Он пропадёт из графика и из бухгалтерии — отменить нельзя.')) return
  startTransition(async () => {
  const res = await deleteTransactionAction(transactionId)
  if (res && 'error' in res) toast.error(res.error)

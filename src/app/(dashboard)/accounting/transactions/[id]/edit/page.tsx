@@ -44,7 +44,7 @@ export default async function EditTransactionPage({
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Редактировать транзакцию" backHref={`/accounting/transactions/${id}`} backLabel="Назад" />
+      <PageHeader title="Редактировать операцию" backHref={`/accounting/transactions/${id}`} backLabel="Назад" />
       <TransactionForm
         transaction={transaction}
         categories={categories}

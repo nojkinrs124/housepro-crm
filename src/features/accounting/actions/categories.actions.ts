@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import type { AccountingTransactionType } from '@/types/database'
 import { requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
+import { friendlyDbError } from '@/lib/errors'
 
 export async function createCategoryAction(_prevState: unknown, formData: FormData) {
   const supabase = await createClient()
@@ -29,7 +30,7 @@ export async function createCategoryAction(_prevState: unknown, formData: FormDa
     .from('accounting_categories')
     .insert({ name, type, color, icon, is_system: false, created_by: user.id, organization_id: orgId })
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'категорию' }) }
 
   revalidatePath('/accounting/categories')
   return { success: true }
@@ -62,7 +63,7 @@ export async function updateCategoryAction(id: string, formData: FormData) {
     .update({ name, color, icon })
     .eq('id', id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'категорию', verb: 'изменить' }) }
 
   revalidatePath('/accounting/categories')
   return { success: true }
@@ -94,7 +95,7 @@ export async function deleteCategoryAction(id: string) {
     .delete()
     .eq('id', id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'категорию', verb: 'удалить' }) }
 
   revalidatePath('/accounting/categories')
   return { success: true }

@@ -5,6 +5,8 @@ import type { AccountingTransaction } from '@/types/database'
 
 interface Props {
  transactions: AccountingTransaction[]
+ /** menu — пункт меню «…» на странице бухгалтерии */
+ variant?: 'button' | 'menu'
 }
 
 const TYPE_LABEL: Record<string, string> = { income: 'Доход', expense: 'Расход' }
@@ -19,7 +21,7 @@ function escapeCSV(v: unknown): string {
  return s
 }
 
-export function ExportCsvButton({ transactions }: Props) {
+export function ExportCsvButton({ transactions, variant = 'button' }: Props) {
  function handleExport() {
  const headers = ['Тип', 'Дата', 'Сумма', 'Категория', 'Статус', 'Способ оплаты', 'Договор', 'Сотрудник', 'Описание']
 
@@ -52,11 +54,13 @@ export function ExportCsvButton({ transactions }: Props) {
 
  return (
  <button
+ type="button"
  onClick={handleExport}
- className="flex items-center gap-2 px-4 py-2.5 hp-card text-sm font-semibold text-[var(--hp-ink)] hover:bg-[var(--hp-neutral-tint)] transition-all"
+ role={variant === 'menu' ? 'menuitem' : undefined}
+ className={variant === 'menu' ? 'hp-menu-item' : 'hp-btn-secondary'}
  >
  <Download className="w-4 h-4" />
- CSV
+ Выгрузить в CSV
  </button>
  )
 }

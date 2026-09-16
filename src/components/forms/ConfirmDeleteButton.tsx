@@ -1,10 +1,12 @@
 'use client'
 
 import { useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { Loader2, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
-type ActionResult = { error?: string } | void | undefined
+// Экшены возвращают либо { error }, либо { success } / ничего — важен только error.
+type ActionResult = { error?: string; success?: boolean } | void | undefined
 
 /**
  * Удаление записи с подтверждением — правило простоты №7: необратимое действие
@@ -21,6 +23,7 @@ type ActionResult = { error?: string } | void | undefined
  * как было в пяти старых Delete*Button.
  *
  * `variant="menu"` — пункт меню «…» (OverflowMenu), `"button"` — отдельная кнопка.
+ * `redirectTo` — куда уйти после успеха, если экшен сам не делает redirect.
  */
 export function ConfirmDeleteButton({
   action,
@@ -28,20 +31,27 @@ export function ConfirmDeleteButton({
   label = 'Удалить',
   variant = 'menu',
   testId = 'delete-button',
+  redirectTo,
 }: {
   action: () => Promise<ActionResult>
   confirmText: string
   label?: string
   variant?: 'menu' | 'button'
   testId?: string
+  redirectTo?: string
 }) {
   const [isPending, startTransition] = useTransition()
+  const router = useRouter()
 
   const handleClick = () => {
     if (!window.confirm(confirmText)) return
     startTransition(async () => {
       const res = await action()
-      if (res && 'error' in res && res.error) toast.error(res.error)
+      if (res && 'error' in res && res.error) {
+        toast.error(res.error)
+        return
+      }
+      if (redirectTo) router.push(redirectTo)
     })
   }
 

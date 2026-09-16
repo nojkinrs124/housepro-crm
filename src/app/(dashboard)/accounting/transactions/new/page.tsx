@@ -36,7 +36,7 @@ export default async function NewTransactionPage({
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Новая транзакция" backHref="/accounting" backLabel="Бухгалтерия" />
+      <PageHeader title="Новая операция" backHref="/accounting" backLabel="Бухгалтерия" />
       <TransactionForm
         categories={categories}
         contracts={contracts}

@@ -13,6 +13,7 @@ import type {
   AccountingStats,
   Update,
 } from '@/types/database'
+import { friendlyDbError } from '@/lib/errors'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -255,7 +256,7 @@ export async function createTransactionAction(_prevState: unknown, formData: For
     .select('id')
     .single()
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'операцию' }) }
 
   revalidatePath('/accounting')
   revalidatePath('/analytics')
@@ -318,7 +319,7 @@ export async function createContractPaymentAction(
     ...(!category && notes && { description: notes }),
   })
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'операцию' }) }
 
   revalidatePath(`/contracts/${contractId}`)
   revalidatePath('/accounting')
@@ -371,7 +372,7 @@ export async function updateTransactionAction(id: string, _prevState: unknown, f
     .update(payload)
     .eq('id', id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'операцию', verb: 'изменить' }) }
 
   revalidatePath('/accounting')
   revalidatePath(`/accounting/transactions/${id}`)
@@ -397,7 +398,7 @@ export async function deleteTransactionAction(id: string) {
     .delete()
     .eq('id', id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'операцию', verb: 'удалить' }) }
 
   revalidatePath('/accounting')
   if (existing?.contract_id) revalidatePath(`/contracts/${existing.contract_id}`)
@@ -425,7 +426,7 @@ export async function completeTransactionAction(id: string) {
     .select('id, contract_id, deal_id, type, amount')
     .single()
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'операцию' }) }
   if (!updated) return { error: 'Транзакция уже отмечена как проведённая' }
 
   // Автоматизация: доход по сделке отмечен оплаченным — сделка сама переходит на «Завершено».

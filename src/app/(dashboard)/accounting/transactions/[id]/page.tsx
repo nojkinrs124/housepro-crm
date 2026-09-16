@@ -1,7 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
-import { DeleteTransactionButton } from '@/features/accounting/components/DeleteTransactionButton'
-import { ArrowLeft, ArrowDownCircle, ArrowUpCircle, Pencil } from 'lucide-react'
+import { deleteTransactionAction } from '@/features/accounting/actions/accounting.actions'
+import { ConfirmDeleteButton } from '@/components/forms/ConfirmDeleteButton'
+import { RecordActions } from '@/components/layout/RecordActions'
+import { Pencil, FileText, TrendingUp, User, Users } from 'lucide-react'
+import { DEAL_TYPE_LABELS } from '@/features/deals/config/deal-stages'
+import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
 import Link from 'next/link'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { ReadinessPanel } from '@/components/layout/ReadinessPanel'
@@ -22,9 +26,9 @@ type TransactionDetail = Pick<
 }
 
 const STATUS_CFG: Record<string, { label: string; cls: string }> = {
- completed: { label: 'Выполнено', cls: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)] border border-[var(--hp-border)]' },
- planned: { label: 'Запланировано', cls: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)] border border-[var(--hp-border)]' },
- cancelled: { label: 'Отменено', cls: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)] border border-[var(--hp-border)]' },
+ completed: { label: 'Выполнено', cls: 'hp-badge-good' },
+ planned: { label: 'Запланировано', cls: 'hp-badge-warn' },
+ cancelled: { label: 'Отменено', cls: 'hp-badge-neutral' },
 }
 const METHOD_LABEL: Record<string, string> = {
  cash: 'Наличные', bank: 'Безналичный', card: 'Карта', other: 'Другое',
@@ -69,125 +73,100 @@ export default async function TransactionDetailPage({
  const sc = STATUS_CFG[t.status] ?? STATUS_CFG.completed
 
  return (
- <div className="space-y-6">
+ <div className="max-w-4xl mx-auto space-y-5">
  <PageHeader
+ crumbs={[{ label: 'Бухгалтерия', href: '/accounting' }, { label: isIncome ? 'Доход' : 'Расход' }]}
  title={`${isIncome ? '+' : '−'}${fmt(Number(t.amount))}`}
- subtitle={`${isIncome ? 'Доход' : 'Расход'} · ${fmtDate(t.date)}`}
- backHref="/accounting"
- backLabel="Бухгалтерия"
- iconBg={isIncome ? 'bg-[var(--hp-good-tint)]' : 'bg-[var(--hp-danger-tint)]'}
- iconBoxClassName="w-11 h-11"
- icon={
- isIncome
- ? <ArrowDownCircle className="w-6 h-6 text-[var(--hp-good)]" />
- : <ArrowUpCircle className="w-6 h-6 text-[var(--hp-danger)]" />
+ badges={
+ <span className="flex items-center gap-1.5 flex-wrap">
+ <span className={`hp-badge ${sc.cls}`}>{sc.label}</span>
+ <span className={`hp-badge ${isIncome ? 'hp-badge-good' : 'hp-badge-danger'}`}>{isIncome ? 'Доход' : 'Расход'}</span>
+ </span>
+ }
+ meta={
+ <>
+ <span>{fmtDate(t.date)}</span>
+ {t.category && (<><span className="sep">·</span><span>{t.category.name}</span></>)}
+ {t.payment_method && (<><span className="sep">·</span><span>{METHOD_LABEL[t.payment_method] ?? t.payment_method}</span></>)}
+ </>
  }
  actions={
- <>
- <Link
- href={`/accounting/transactions/${id}/edit`}
- className="flex items-center gap-2 px-4 py-2.5 hp-card text-sm font-semibold text-[var(--hp-ink)] hover:bg-[var(--hp-neutral-tint)] transition-all"
- >
+ <RecordActions
+ secondary={
+ <Link href={`/accounting/transactions/${id}/edit`} className="hp-btn-secondary">
  <Pencil className="w-4 h-4" />
  Редактировать
  </Link>
- <DeleteTransactionButton id={id} redirectAfter="/accounting" />
- </>
+ }
+ more={
+ <ConfirmDeleteButton
+ action={deleteTransactionAction.bind(null, id)}
+ confirmText="Удалить операцию? Она пропадёт из отчёта и доходности объекта — отменить нельзя."
+ label="Удалить операцию"
+ redirectTo="/accounting"
+ />
+ }
+ />
  }
  />
 
-
  <ReadinessPanel issues={issues} />
 
- <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
- {/* Main info */}
- <div
- className="lg:col-span-2 hp-card p-5"
- style={{ }}
- >
- <h2 className="font-bold text-foreground text-[15px] mb-4">Информация</h2>
- <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
- {[
- { label: 'Тип', value: isIncome ? 'Доход' : 'Расход' },
- { label: 'Сумма', value: fmt(Number(t.amount)) },
- { label: 'Дата', value: fmtDate(t.date) },
- t.due_date ? { label: 'Срок', value: fmtDate(t.due_date) } : null,
- t.payment_method ? { label: 'Способ оплаты', value: METHOD_LABEL[t.payment_method] ?? t.payment_method } : null,
- t.description ? { label: 'Описание', value: t.description } : null,
- ].filter(Boolean).map((item) => (
- <div key={item!.label}>
- <dt className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">{item!.label}</dt>
- <dd className="text-sm font-medium text-foreground">{item!.value}</dd>
+ <div className="grid lg:grid-cols-3 gap-4 items-start">
+ <div className="lg:col-span-2 space-y-4">
+ <div className="hp-block">
+ <div className="hp-block-header">Операция</div>
+ <div className="hp-block-grid">
+ <div className="hp-block-row"><span className="label">Сумма</span><span className={`value${isIncome ? ' good' : ' danger'}`}>{fmt(Number(t.amount))}</span></div>
+ <div className="hp-block-row"><span className="label">Дата</span><span className="value">{fmtDate(t.date)}</span></div>
+ <div className="hp-block-row"><span className="label">Срок оплаты</span><span className="value">{t.due_date ? fmtDate(t.due_date) : <span className="text-[var(--hp-tertiary)]">—</span>}</span></div>
+ <div className="hp-block-row"><span className="label">Способ оплаты</span><span className="value">{t.payment_method ? (METHOD_LABEL[t.payment_method] ?? t.payment_method) : <span className="text-[var(--hp-tertiary)]">—</span>}</span></div>
+ <div className="hp-block-row"><span className="label">Категория</span><span className="value">{t.category ? t.category.name : <span className="text-[var(--hp-tertiary)]">без категории</span>}</span></div>
+ <div className="hp-block-row"><span className="label">Создана</span><span className="value">{t.created_at ? fmtDate(t.created_at) : '—'}</span></div>
  </div>
- ))}
- </dl>
  </div>
-
- {/* Side info */}
- <div className="space-y-4">
- <div
- className="hp-card p-5"
- style={{ }}
- >
- <h2 className="font-bold text-foreground text-[15px] mb-3">Статус</h2>
- <span className={`text-sm font-semibold px-3 py-1.5 rounded-[var(--hp-radius-badge)] ${sc.cls}`}>{sc.label}</span>
- </div>
-
- {t.category && (
- <div
- className="hp-card p-5"
- style={{ }}
- >
- <h2 className="font-bold text-foreground text-[15px] mb-3">Категория</h2>
- <div className="flex items-center gap-2">
- <span className="w-3 h-3 rounded-full shrink-0" style={{ background: t.category.color }} />
- <span className="text-sm font-medium text-foreground">{t.category.name}</span>
- </div>
+ {t.description && (
+ <div className="hp-block">
+ <div className="hp-block-header">Описание</div>
+ <p className="px-[18px] py-3 text-sm text-[var(--hp-sub)] whitespace-pre-wrap leading-relaxed">{t.description}</p>
  </div>
  )}
-
- {(t.contract || t.deal || t.employee || t.contact) && (
- <div
- className="hp-card p-5"
- style={{ }}
- >
- <h2 className="font-bold text-foreground text-[15px] mb-3">Привязки</h2>
- <div className="space-y-2">
- {t.contract && (
- <div>
- <p className="text-xs text-muted-foreground font-medium mb-0.5">Договор</p>
- <Link href={`/contracts/${t.contract.id}`} className="text-sm font-medium text-[var(--hp-info)] hover:underline">
- №{t.contract.contract_number ?? t.contract.id.slice(0, 8)}
- </Link>
  </div>
+
+ <div className="space-y-4">
+ <div className="hp-block">
+ <div className="hp-block-header">Связано с</div>
+ {!(t.contract || t.deal || t.employee || t.contact) && (
+ <div className="hp-block-item text-[var(--hp-tertiary)]">Операция ни к чему не привязана</div>
+ )}
+ {t.contract && (
+ <Link href={`/contracts/${t.contract.id}`} className="hp-block-item">
+ <FileText className="w-4 h-4 shrink-0 text-[var(--hp-sub)]" />
+ <span className="flex-1 min-w-0">
+ <span className="block truncate text-[var(--hp-ink)] font-medium">{CONTRACT_TYPE_LABELS[t.contract.contract_type] ?? t.contract.contract_type}</span>
+ <span className="block text-[11.5px] text-[var(--hp-sub)]">{t.contract.contract_number ? `№ ${t.contract.contract_number}` : 'без номера'}</span>
+ </span>
+ </Link>
  )}
  {t.deal && (
- <div>
- <p className="text-xs text-muted-foreground font-medium mb-0.5">Сделка</p>
- <Link href={`/deals/${t.deal.id}`} className="text-sm font-medium text-[var(--hp-info)] hover:underline">
- {t.deal.deal_type} · {t.deal.id.slice(0, 8)}
+ <Link href={`/deals/${t.deal.id}`} className="hp-block-item">
+ <TrendingUp className="w-4 h-4 shrink-0 text-[var(--hp-sub)]" />
+ <span className="flex-1 min-w-0 truncate text-[var(--hp-ink)] font-medium">{DEAL_TYPE_LABELS[t.deal.deal_type] ?? t.deal.deal_type}</span>
  </Link>
- </div>
- )}
- {t.employee && (
- <div>
- <p className="text-xs text-muted-foreground font-medium mb-0.5">Сотрудник</p>
- <Link href={`/employees/${t.employee.id}`} className="text-sm font-medium text-foreground hover:text-[var(--hp-info)]">
- {t.employee.full_name}
- </Link>
- </div>
  )}
  {t.contact && (
- <div>
- <p className="text-xs text-muted-foreground font-medium mb-0.5">Контакт</p>
- <Link href={`/contacts/${t.contact.id}`} className="text-sm font-medium text-[var(--hp-info)] hover:underline">
- {t.contact.full_name}
+ <Link href={`/contacts/${t.contact.id}`} className="hp-block-item">
+ <User className="w-4 h-4 shrink-0 text-[var(--hp-sub)]" />
+ <span className="flex-1 min-w-0 truncate text-[var(--hp-ink)] font-medium">{t.contact.full_name}</span>
  </Link>
- </div>
+ )}
+ {t.employee && (
+ <Link href={`/employees/${t.employee.id}`} className="hp-block-item">
+ <Users className="w-4 h-4 shrink-0 text-[var(--hp-sub)]" />
+ <span className="flex-1 min-w-0 truncate text-[var(--hp-ink)] font-medium">{t.employee.full_name}</span>
+ </Link>
  )}
  </div>
- </div>
- )}
  </div>
  </div>
  </div>

@@ -215,7 +215,7 @@ export default async function ManagementDetailPage({ params }: { params: Promise
             </Link>
             <Link href={`/accounting/transactions/new?property_id=${id}`} className={buttonVariants({ size: 'sm' })}>
               <Plus style={{ width: 16, height: 16 }} />
-              Операция
+              Платёж
             </Link>
           </>
         }
@@ -231,7 +231,7 @@ export default async function ManagementDetailPage({ params }: { params: Promise
           {
             label: 'Просрочено',
             value: `${formatAmount(sum(overdue))} ₽`,
-            hint: overdue.length > 0 ? `${overdue.length} начислений` : 'нет',
+            hint: overdue.length > 0 ? `${overdue.length} просрочено` : 'нет',
             alert: overdue.length > 0,
           },
           {
@@ -292,7 +292,7 @@ export default async function ManagementDetailPage({ params }: { params: Promise
             {all.length === 0 ? (
               <div className="hp-block-item text-[var(--hp-tertiary)]">
                 <Wallet className="w-4 h-4 shrink-0" />
-                Операций по объекту нет
+                Платежей по объекту пока нет
               </div>
             ) : (
               <>
@@ -325,7 +325,7 @@ export default async function ManagementDetailPage({ params }: { params: Promise
             )}
             <Link href={`/accounting/transactions/new?property_id=${id}`} className="hp-block-item text-[var(--hp-accent)] font-semibold">
               <Plus className="w-4 h-4 shrink-0" />
-              Добавить операцию по объекту
+              Добавить платёж
             </Link>
             {/* Год аренды — это 12 одинаковых ручных форм: график разворачивает
                 договор в начисления разом, дальше крон payment-reminders сам

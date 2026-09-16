@@ -9,7 +9,7 @@ export function DeleteRecurringButton({ id }: { id: string }) {
  const [isPending, startTransition] = useTransition()
 
  function handleDelete() {
- if (!confirm('Удалить правило повторения? Уже созданные транзакции останутся.')) return
+ if (!confirm('Удалить правило повторения? Уже созданные операции останутся.')) return
  startTransition(async () => {
  const res = await deleteRecurringRuleAction(id)
  if (res && 'error' in res) toast.error(res.error)

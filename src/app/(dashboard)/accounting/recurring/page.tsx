@@ -51,7 +51,7 @@ export default async function RecurringPage() {
  <div className="space-y-6">
  <PageHeader
  title="Периодические операции"
- subtitle="Аренда офиса, зарплаты, подписки — автоматически создаются транзакции"
+ subtitle="Аренда офиса, зарплаты, подписки — операции создаются автоматически"
  backHref="/accounting"
  backLabel="Бухгалтерия"
  actions={

@@ -16,13 +16,13 @@ export function DeleteTransactionButton({ id, redirectAfter }: Props) {
  const router = useRouter()
 
  function handleDelete() {
- if (!confirm('Удалить транзакцию?')) return
+ if (!confirm('Удалить операцию? Она пропадёт из отчёта и доходности объекта — отменить нельзя.')) return
  startTransition(async () => {
  const res = await deleteTransactionAction(id)
  if (res && 'error' in res) {
  toast.error(res.error)
  } else {
- toast.success('Транзакция удалена')
+ toast.success('Операция удалена')
  router.push(redirectAfter ?? '/accounting')
  }
  })

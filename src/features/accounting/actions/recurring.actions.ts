@@ -6,6 +6,7 @@ import type { AccountingTransactionType, AccountingFrequency } from '@/types/dat
 import { requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
 import { generateDueRecurringTransactions } from '../services/recurring.service'
+import { friendlyDbError } from '@/lib/errors'
 
 function parseAmount(raw: unknown): number | null {
   const v = String(raw ?? '').replace(/\s/g, '').replace(',', '.')
@@ -55,7 +56,7 @@ export async function createRecurringRuleAction(_prevState: unknown, formData: F
     .select('id')
     .single()
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'правило' }) }
 
   // Generate first transaction if start_date is today or past
   const today = new Date().toISOString().slice(0, 10)
@@ -114,7 +115,7 @@ export async function updateRecurringRuleAction(id: string, _prevState: unknown,
     })
     .eq('id', id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'правило' }) }
 
   revalidatePath('/accounting/recurring')
   return { success: true }
@@ -133,7 +134,7 @@ export async function deleteRecurringRuleAction(id: string) {
     .delete()
     .eq('id', id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'правило', verb: 'удалить' }) }
 
   revalidatePath('/accounting/recurring')
   return { success: true }

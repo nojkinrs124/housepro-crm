@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ArrowDownCircle, ArrowUpCircle, Pencil } from 'lucide-react'
 import { TRANSACTION_STATUSES } from '@/features/registry/config/registries'
 import { RegistryToolbar } from '@/components/layout/RegistryToolbar'
+import { EmptyState } from '@/components/layout/EmptyState'
 import { RegistryTable, type RegistryColumn } from '@/features/registry/components/RegistryTable'
 import { BulkBar } from '@/features/registry/components/BulkBar'
 import { DeleteTransactionButton } from '@/features/accounting/components/DeleteTransactionButton'
@@ -141,13 +142,21 @@ export function TransactionsView({ transactions }: { transactions: TransactionRo
 
       <BulkBar registry="transactions" selection={selection} />
 
-      <RegistryTable
-        rows={filtered}
-        columns={columns}
-        href={t => `/accounting/transactions/${t.id}`}
-        selection={selection}
-        empty="Нет операций по выбранным фильтрам"
-      />
+      {filtered.length === 0 ? (
+        <EmptyState
+          title="Ничего не найдено"
+          description="По этим фильтрам операций нет — попробуйте их сбросить."
+          action={<button type="button" onClick={reset} className="hp-btn-secondary">Сбросить фильтры</button>}
+        />
+      ) : (
+        <RegistryTable
+          rows={filtered}
+          columns={columns}
+          href={t => `/accounting/transactions/${t.id}`}
+          selection={selection}
+          empty="Ничего не найдено"
+        />
+      )}
     </div>
   )
 }

@@ -9,7 +9,7 @@ export function DeleteCategoryButton({ id }: { id: string }) {
  const [isPending, startTransition] = useTransition()
 
  function handleDelete() {
- if (!confirm('Удалить категорию? Транзакции без категории не потеряются.')) return
+ if (!confirm('Удалить категорию? Операции без категории не потеряются.')) return
  startTransition(async () => {
  const res = await deleteCategoryAction(id)
  if (res && 'error' in res) toast.error(res.error)

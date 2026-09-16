@@ -136,7 +136,7 @@ export async function completeDealAction(
   if (withSchedule && needsSchedule(contractType)) {
     const periodicity = (formData.get('periodicity') as SchedulePeriodicity) ?? 'monthly'
     if (!VALID_PERIODICITY.includes(periodicity)) {
-      return { error: `Недопустимая периодичность: ${periodicity}` }
+      return { error: 'Выберите периодичность из списка — раз в месяц, квартал или год' }
     }
 
     const items = amount
