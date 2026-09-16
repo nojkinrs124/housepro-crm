@@ -8,6 +8,7 @@ import { rateLimitCreate } from '@/lib/rate-limit'
 import { requireOrgId } from '@/lib/org'
 import { writeAuditLog } from '@/lib/audit'
 import { requirePermission } from '@/lib/permissions'
+import { friendlyDbError } from '@/lib/errors'
 
 function parseContact(formData: FormData) {
   return ContactSchema.safeParse(Object.fromEntries(formData))
@@ -39,7 +40,7 @@ export async function createContactAction(_prevState: unknown, formData: FormDat
     .select()
     .single()
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'контакт' }) }
 
   await writeAuditLog({
     userId: user.id, orgId,
@@ -76,7 +77,7 @@ export async function updateContactAction(contactId: string, _prevState: unknown
     .update({ ...parsed.data, updated_at: new Date().toISOString() })
     .eq('id', contactId)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'контакт' }) }
 
   await writeAuditLog({
     userId: user.id, orgId,
@@ -100,7 +101,7 @@ export async function deleteContactAction(contactId: string) {
   if (permError) return permError
 
   const { error } = await supabase.from('contacts').delete().eq('id', contactId)
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'контакт', verb: 'удалить' }) }
 
   if (orgId) {
     await writeAuditLog({
@@ -142,7 +143,7 @@ export async function createContactQuickAction(formData: FormData) {
     .select('id, full_name, phone, role, client_type')
     .single()
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'контакт' }) }
 
   await writeAuditLog({
     userId: user.id, orgId,
@@ -175,7 +176,7 @@ export async function addRepresentativeAction(formData: FormData) {
   if (permError) return permError
 
   const { error } = await supabase.from('contact_representatives').insert(parsed.data)
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'представителя' }) }
 
   revalidatePath(`/contacts/${parsed.data.contact_id}`)
   redirect(`/contacts/${parsed.data.contact_id}`)
@@ -190,7 +191,7 @@ export async function deleteRepresentativeAction(representativeId: string, conta
   if (permError) return permError
 
   const { error } = await supabase.from('contact_representatives').delete().eq('id', representativeId)
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'представителя', verb: 'удалить' }) }
 
   revalidatePath(`/contacts/${contactId}`)
 }

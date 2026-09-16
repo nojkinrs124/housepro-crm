@@ -7,6 +7,7 @@ import { requirePermission } from '@/lib/permissions'
 import { rateLimitMutation } from '@/lib/rate-limit'
 import { writeAuditLog } from '@/lib/audit'
 import { normalizePhone } from '@/lib/utils'
+import { friendlyDbError } from '@/lib/errors'
 
 /**
  * Таблицы и колонки, которые ссылаются на contacts.id.
@@ -122,7 +123,7 @@ export async function findDuplicateContactsAction(): Promise<{ error?: string; g
     .is('merged_into', null)
     .limit(5000)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'контакт' }) }
 
   const rows = (data ?? []) as (ContactRow & { merged_into: string | null })[]
 
@@ -241,7 +242,7 @@ export async function mergeContactsAction(
       .from('contacts')
       .update({ ...patch, updated_at: new Date().toISOString() })
       .eq('id', primaryId)
-    if (error) return { error: `Не удалось обновить основную карточку: ${error.message}` }
+    if (error) return { error: friendlyDbError(error, { entity: 'основную карточку', verb: 'изменить' }) }
   }
 
   // 2. Перепривязываем связи.

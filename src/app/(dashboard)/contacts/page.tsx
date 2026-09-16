@@ -6,6 +6,7 @@ import { ContactsViewSwitcher } from '@/features/contacts/components/ContactsVie
 import type { ContactMeta } from '@/features/contacts/components/ContactsRegistry'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { StatStrip } from '@/components/layout/StatStrip'
+import { EmptyState } from '@/components/layout/EmptyState'
 import { buttonVariants } from '@/components/ui/button'
 import { formatAmount } from '@/lib/utils'
 
@@ -84,16 +85,13 @@ export default async function ContactsPage() {
         subtitle={`${total} ${total === 1 ? 'контакт' : 'контактов'} в базе`}
         actions={
           <>
-            <Link
-              href="/contacts/duplicates"
-              className="flex items-center gap-2 px-4 py-2 border border-[var(--hp-border)] rounded-[var(--hp-radius)] text-sm font-medium text-[var(--hp-ink)] hover:border-[var(--hp-sub)] transition-colors whitespace-nowrap"
-            >
+            <Link href="/contacts/duplicates" className={buttonVariants({ variant: 'secondary', size: 'sm' })}>
               <CopyCheck style={{ width: 16, height: 16 }} />
               Дубли
             </Link>
-            <Link href="/contacts/new" className={buttonVariants({ size: 'lg' })}>
+            <Link href="/contacts/new" className={buttonVariants({ size: 'sm' })}>
               <Plus style={{ width: 16, height: 16 }} />
-              Добавить контакт
+              Новый контакт
             </Link>
           </>
         }
@@ -128,17 +126,13 @@ export default async function ContactsPage() {
       )}
 
       {total === 0 ? (
-        <div className="hp-card hp-empty">
-          <div className="w-16 h-16 rounded-[var(--hp-radius)] flex items-center justify-center mx-auto mb-4 bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)]">
-            <Users style={{ width: 28, height: 28, color: 'var(--hp-sub)' }} />
-          </div>
-          <p className="text-[var(--hp-ink)] font-bold text-lg">Контактов ещё нет</p>
-          <p className="text-[var(--hp-sub)] text-sm mt-1">Добавьте первый контакт в базу</p>
-          <Link href="/contacts/new" className="hp-btn-primary mt-5">
-            <Plus style={{ width: 16, height: 16 }} />
-            Добавить контакт
-          </Link>
-        </div>
+        <EmptyState
+          icon={<Users className="w-5 h-5 text-[var(--hp-sub)]" />}
+          title="Контактов пока нет"
+          description="Контакт — это клиент или собственник: имя и телефон, чтобы из него завести сделку. Добавьте первого, и он появится в базе."
+          actionHref="/contacts/new"
+          actionLabel="Новый контакт"
+        />
       ) : (
         <ContactsViewSwitcher contacts={list} meta={meta} />
       )}

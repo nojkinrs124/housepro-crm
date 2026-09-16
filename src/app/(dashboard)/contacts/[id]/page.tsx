@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
-import { ArrowLeft, Phone, Mail, MapPin, Edit, MessageCircle, CheckSquare, TrendingUp, FileText, Plus, Building2 } from 'lucide-react'
-import { DeleteContactButton } from '@/features/contacts/components/DeleteContactButton'
+import { Phone, Mail, MapPin, Edit, MessageCircle, CheckSquare, TrendingUp, FileText, Plus, Building2 } from 'lucide-react'
+import { deleteContactAction } from '@/features/contacts/actions/contacts.actions'
+import { RecordActions } from '@/components/layout/RecordActions'
+import { ConfirmDeleteButton } from '@/components/forms/ConfirmDeleteButton'
+import { CONTACT_SOURCE_LABELS } from '@/features/contacts/config/contact-sources'
 import { RepresentativesPanel } from '@/features/contacts/components/RepresentativesPanel'
 import { CounterpartyCheckPanel } from '@/features/contacts/components/CounterpartyCheckPanel'
 import Link from 'next/link'
@@ -9,9 +12,8 @@ import type { Contact } from '@/types/database'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { ReadinessPanel } from '@/components/layout/ReadinessPanel'
 import { checkContact } from '@/lib/readiness'
-import { CommunicationTimeline } from '@/features/communications/components/CommunicationTimeline'
 import { DEAL_TYPE_LABELS as dealTypeLabels, DEAL_STATUS_LABELS as dealStatusLabels } from '@/features/deals/config/deal-stages'
-import { formatDate } from '@/lib/utils'
+import { formatDate, formatAmount, formatDeadline } from '@/lib/utils'
 
 const roleLabels: Record<string, string> = {
   client: 'Клиент',
@@ -24,12 +26,6 @@ const statusLabels: Record<string, { label: string; badgeCls: string }> = {
   active:   { label: 'Активный',   badgeCls: 'hp-badge-good' },
   vip:      { label: 'VIP',        badgeCls: 'hp-badge-warn' },
   inactive: { label: 'Неактивный', badgeCls: 'hp-badge-neutral' },
-}
-
-const sourceLabels: Record<string, string> = {
-  avito: 'Avito', cian: 'ЦИАН', domclick: 'Домклик',
-  instagram: 'Instagram', vk: 'VK', telegram: 'Telegram',
-  whatsapp: 'WhatsApp', phone: 'Звонок', referral: 'Рекомендация', other: 'Другое',
 }
 
 const taskStatusLabels: Record<string, string> = {
@@ -85,19 +81,33 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
           </span>
         }
         actions={
-          <>
-            <Link href={`/tasks/new?client_id=${id}`}
-              className="flex items-center gap-2 px-3 py-2 border border-[var(--hp-border)] rounded-[var(--hp-radius)] text-sm font-medium text-[var(--hp-ink)] hover:border-[var(--hp-sub)] transition-colors whitespace-nowrap">
-              <Plus className="w-4 h-4" />
-              Задача
-            </Link>
-            <Link href={`/contacts/${id}/edit`}
-              className="flex items-center gap-2 px-4 py-2 text-white rounded-[var(--hp-radius)] text-sm font-semibold transition-colors whitespace-nowrap bg-[var(--hp-accent)] hover:bg-[var(--hp-accent-hover)]">
-              <Edit className="w-4 h-4" />
-              Редактировать
-            </Link>
-            <DeleteContactButton contactId={id} />
-          </>
+          <RecordActions
+            primary={
+              <Link href={`/deals/new?contact_id=${id}`} className="hp-btn-primary" data-testid="contact-new-deal">
+                <TrendingUp className="w-4 h-4" />
+                Новая сделка
+              </Link>
+            }
+            secondary={
+              <Link href={`/contacts/${id}/edit`} className="hp-btn-secondary" data-testid="contact-edit">
+                <Edit className="w-4 h-4" />
+                Редактировать
+              </Link>
+            }
+            more={
+              <>
+                <Link href={`/contracts/new?contact_id=${id}`} className="hp-menu-item" role="menuitem">
+                  <FileText className="w-4 h-4" />
+                  Создать договор
+                </Link>
+                <ConfirmDeleteButton
+                  action={deleteContactAction.bind(null, id)}
+                  confirmText={`Удалить контакт «${c.full_name}»? Сделки и договоры останутся, но потеряют связь с ним. Отменить нельзя.`}
+                  label="Удалить контакт"
+                />
+              </>
+            }
+          />
         }
       />
 
@@ -165,13 +175,6 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
                 <div className="hp-block-row">
                   <span className="label">Кем выдан</span>
                   <span className="value">{c.passport_issued_by}</span>
-                </div>
-              )}
-              {/* Legacy field */}
-              {!hasPassport && c.passport && (
-                <div className="hp-block-row">
-                  <span className="label">Паспорт</span>
-                  <span className="value">{c.passport}</span>
                 </div>
               )}
             </div>
@@ -273,71 +276,64 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
             />
           )}
 
-          {/* Deals */}
-          <div className="bg-[var(--hp-surface)] border border-[var(--hp-border)] rounded-[var(--hp-radius)] p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold text-foreground flex items-center gap-2">
-                <TrendingUp className="w-4 h-4" />
-                Сделки
-              </h2>
-              <Link href={`/deals/new?contact_id=${id}`}
-                className="text-xs text-primary hover:underline">+ Новая сделка</Link>
-            </div>
+          {/* Сделки — создание только главной кнопкой в шапке (одно действие — один способ) */}
+          <div className="hp-block">
+            <div className="hp-block-header">Сделки</div>
             {!deals || deals.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Сделок нет</p>
-            ) : (
-              <div className="space-y-2">
-                {deals.map(deal => (
-                  <Link key={deal.id} href={`/deals/${deal.id}`}
-                    className="flex items-center justify-between p-3 rounded-[var(--hp-radius)] hover:bg-accent/50 transition">
-                    <div>
-                      <p className="text-sm font-medium text-foreground">
-                        {dealTypeLabels[deal.deal_type] ?? deal.deal_type}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{dealStatusLabels[deal.status] ?? deal.status}</p>
-                    </div>
-                    <div className="text-right">
-                      {deal.amount && (
-                        <p className="text-sm font-semibold text-foreground">{Number(deal.amount).toLocaleString('ru-RU')} ₽</p>
-                      )}
-                      <p className="text-xs text-muted-foreground">{formatDate(deal.created_at)}</p>
-                    </div>
-                  </Link>
-                ))}
+              <div className="hp-block-item text-[var(--hp-tertiary)]">
+                <TrendingUp className="w-4 h-4 shrink-0" />
+                Сделок пока нет
               </div>
+            ) : (
+              deals.map(deal => (
+                <Link key={deal.id} href={`/deals/${deal.id}`} className="hp-block-item">
+                  <span className="flex-1 min-w-0">
+                    <span className="block truncate text-[var(--hp-ink)] font-medium">{dealTypeLabels[deal.deal_type] ?? deal.deal_type}</span>
+                    <span className="block text-[11.5px] text-[var(--hp-sub)]">{dealStatusLabels[deal.status] ?? deal.status}</span>
+                  </span>
+                  <span className="shrink-0 text-right">
+                    {deal.amount && <span className="block text-sm font-semibold text-[var(--hp-ink)]">{formatAmount(deal.amount)} ₽</span>}
+                    <span className="block text-[11.5px] text-[var(--hp-tertiary)]">{formatDate(deal.created_at)}</span>
+                  </span>
+                </Link>
+              ))
             )}
           </div>
 
-          {/* Tasks */}
-          <div className="bg-[var(--hp-surface)] border border-[var(--hp-border)] rounded-[var(--hp-radius)] p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold text-foreground flex items-center gap-2">
-                <CheckSquare className="w-4 h-4" />
-                Задачи
-              </h2>
-              <Link href={`/tasks/new?client_id=${id}`}
-                className="text-xs text-primary hover:underline">+ Задача</Link>
+          {/* Задачи */}
+          <div className="hp-block">
+            <div className="hp-block-header flex items-center justify-between">
+              <span>Задачи</span>
+              <Link href={`/tasks/new?contact_id=${id}`}
+                className="flex items-center gap-1 normal-case tracking-normal text-[11px] font-semibold text-[var(--hp-sub)] hover:text-[var(--hp-ink)] transition-colors">
+                <Plus className="w-3 h-3" />
+                Задача
+              </Link>
             </div>
             {!tasks || tasks.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Задач нет</p>
+              <div className="hp-block-item text-[var(--hp-tertiary)]">
+                <CheckSquare className="w-4 h-4 shrink-0" />
+                Задач пока нет
+              </div>
             ) : (
-              <div className="space-y-2">
-                {tasks.map(task => (
-                  <Link key={task.id} href={`/tasks/${task.id}`}
-                    className="flex items-center justify-between p-3 rounded-[var(--hp-radius)] bg-muted/30 hover:bg-accent/50 transition">
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{task.title}</p>
-                      <p className="text-xs text-muted-foreground">{taskStatusLabels[task.status] ?? task.status}</p>
-                    </div>
-                    {task.deadline && (
-                      <p className="text-xs text-muted-foreground">{new Date(task.deadline).toLocaleDateString('ru-RU')}</p>
+              tasks.map(task => {
+                const dl = formatDeadline(task.deadline)
+                return (
+                  <Link key={task.id} href={`/tasks/${task.id}`} className="hp-block-item">
+                    <span className="flex-1 min-w-0">
+                      <span className="block truncate text-[var(--hp-ink)]">{task.title}</span>
+                      <span className="block text-[11.5px] text-[var(--hp-sub)]">{taskStatusLabels[task.status] ?? task.status}</span>
+                    </span>
+                    {dl && (
+                      <span className={`shrink-0 text-[12px] font-medium ${dl.overdue && task.status !== 'done' ? 'text-[var(--hp-danger)]' : 'text-[var(--hp-sub)]'}`}>
+                        {dl.label}
+                      </span>
                     )}
                   </Link>
-                ))}
-              </div>
+                )
+              })
             )}
           </div>
-
         </div>
 
         {/* Right column */}
@@ -353,7 +349,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
             {c.source && (
               <div className="hp-block-row">
                 <span className="label">Источник</span>
-                <span className="value">{sourceLabels[c.source] ?? c.source}</span>
+                <span className="value">{CONTACT_SOURCE_LABELS[c.source] ?? c.source}</span>
               </div>
             )}
             <div className="hp-block-row">
@@ -362,9 +358,6 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
             </div>
           </div>
 
-          {/* Лента общения: звонки из АТС, WhatsApp, письма и ручные заметки. */}
-          <CommunicationTimeline contactId={id} phone={c.phone ?? null} />
-
           {c.comment && (
             <div className="hp-block">
               <div className="hp-block-header">Комментарий</div>
@@ -372,18 +365,6 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
             </div>
           )}
 
-          <div className="bg-[var(--hp-surface)] border border-[var(--hp-border)] rounded-[var(--hp-radius)] p-4 space-y-2">
-            <Link href={`/deals/new?contact_id=${id}`}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-[var(--hp-radius)] text-sm font-medium hover:bg-primary/20 transition">
-              <TrendingUp className="w-4 h-4" />
-              Создать сделку
-            </Link>
-            <Link href={`/contracts/new?contact_id=${id}`}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-border rounded-[var(--hp-radius)] text-sm font-medium hover:bg-accent transition">
-              <FileText className="w-4 h-4" />
-              Создать договор
-            </Link>
-          </div>
         </div>
       </div>
     </div>

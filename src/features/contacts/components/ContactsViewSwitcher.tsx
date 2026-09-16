@@ -4,6 +4,7 @@ import { LayoutGrid, List } from 'lucide-react'
 import { ContactCard } from '@/app/(dashboard)/contacts/ContactCard'
 import { ContactsRegistry, type ContactMeta } from './ContactsRegistry'
 import { RegistryToolbar } from '@/components/layout/RegistryToolbar'
+import { EmptyState } from '@/components/layout/EmptyState'
 import { BulkBar } from '@/features/registry/components/BulkBar'
 import { useRegistryFilters } from '@/hooks/useRegistryFilters'
 import { useSelection } from '@/hooks/useSelection'
@@ -76,18 +77,18 @@ export function ContactsViewSwitcher({
       {/* Без AnimatePresence: mode="wait" ждал exit уходящего вида и при
           переключении с канбана на реестр новый вид не монтировался вовсе —
           таблица не появлялась ни через секунду, ни через шесть. */}
-      {view === 'cards' ? (
-        filteredContacts.length === 0 ? (
-          <div className="hp-card hp-empty">
-            <p className="text-[var(--hp-sub)] text-sm">Нет контактов по выбранным фильтрам</p>
-          </div>
-        ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredContacts.map((contact, idx) => (
-              <ContactCard key={contact.id} contact={contact} idx={idx} />
-            ))}
-          </div>
-        )
+      {filteredContacts.length === 0 ? (
+        <EmptyState
+          title="Ничего не найдено"
+          description="По этим фильтрам контактов нет — попробуйте их сбросить."
+          action={<button type="button" onClick={reset} className="hp-btn-secondary">Сбросить фильтры</button>}
+        />
+      ) : view === 'cards' ? (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredContacts.map((contact, idx) => (
+            <ContactCard key={contact.id} contact={contact} idx={idx} />
+          ))}
+        </div>
       ) : (
         <ContactsRegistry contacts={filteredContacts} meta={meta} selection={selection} />
       )}

@@ -5,11 +5,12 @@ import Link from 'next/link'
 import { AlertCircle, User, Building2 } from 'lucide-react'
 import { DadataSuggestInput } from '@/components/forms/DadataSuggestInput'
 import { findContactByPhoneAction } from '../actions/duplicates.actions'
+import { CONTACT_SOURCES } from '../config/contact-sources'
+import { Field, FieldGrid, FormExtra, FormSection } from '@/components/forms/FormLayout'
 
 const inputCls = "w-full h-10 px-4 rounded-[var(--hp-radius)] border border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-ink)] placeholder:text-[var(--hp-tertiary)] text-sm outline-none focus:border-[var(--hp-ink)] transition-colors"
 const selectCls = "w-full h-10 px-4 rounded-[var(--hp-radius)] border border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-ink)] text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer transition-colors"
 const labelCls = "hp-label"
-const cardCls = "bg-[var(--hp-surface)] border border-[var(--hp-border)] rounded-[var(--hp-radius)] p-6 space-y-4"
 
 interface ContactFormDefaults {
   /** Заполнен при редактировании — нужен, чтобы не считать саму карточку дублем. */
@@ -74,9 +75,9 @@ export function ContactForm({ action, defaults = {}, backHref, submitLabel }: Co
           {state.error}
         </div>
       )}
-      {/* Тип лица */}
-      <div className={cardCls}>
-        <h2 className="font-semibold text-[var(--hp-ink)]">Тип контакта</h2>
+
+      {/* Кто это: тип, имя, роль (+ организация у юрлица) — правило «≤ 6 полей на виду» */}
+      <FormSection title="Кто это">
         <div className="grid grid-cols-2 gap-2.5">
           <label
             className="flex items-center gap-3 p-3 rounded-[var(--hp-radius)] cursor-pointer transition-colors text-sm border"
@@ -101,51 +102,58 @@ export function ContactForm({ action, defaults = {}, backHref, submitLabel }: Co
             Юридическое лицо
           </label>
         </div>
-      </div>
 
-      {/* Основное */}
-      <div className={cardCls}>
-        <h2 className="font-semibold text-[var(--hp-ink)]">Основные данные</h2>
-        <div>
-          <label className={labelCls}>{clientType === 'legal_entity' ? 'Контактное лицо (ФИО) *' : 'Полное имя *'}</label>
-          <input type="text" name="full_name" data-testid="contact-full-name" required defaultValue={defaults.full_name ?? ''}
-            placeholder={clientType === 'legal_entity' ? 'Иванов Иван Иванович' : 'Иван Иванович Иванов'}
-            className={inputCls} />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className={labelCls}>Роль *</label>
+        {clientType === 'legal_entity' && (
+          <FieldGrid>
+          <Field label="Название организации" required hint="Начните вводить название или ИНН — реквизиты подставятся из ЕГРЮЛ">
+            {/* Подсказки DaData: по названию или ИНН заполняются КПП, ОГРН, юр. адрес
+                и руководитель — раньше всё это вбивалось руками из выписки, а опечатка
+                в реквизитах всплывала уже в подписанном договоре. */}
+            <DadataSuggestInput
+              name="company_name"
+              kind="party"
+              defaultValue={defaults.company_name ?? ''}
+              placeholder='ООО "Ромашка" или ИНН'
+              className={inputCls}
+              fillFields={{
+                inn: 'inn',
+                kpp: 'kpp',
+                ogrn: 'ogrn',
+                legalAddress: 'legal_address',
+              }}
+              hintTemplate="Руководитель по ЕГРЮЛ: {managerName}[, {managerPost}]"
+            />
+          </Field>
+          <Field label="ИНН" required>
+            <input type="text" name="inn" required defaultValue={defaults.inn ?? ''} placeholder="7707083893" className={inputCls} />
+          </Field>
+          </FieldGrid>
+        )}
+
+        <FieldGrid>
+          <Field
+            label={clientType === 'legal_entity' ? 'Контактное лицо (ФИО)' : 'Полное имя'}
+            required
+            hint={clientType === 'legal_entity' ? 'Сотрудник, через которого вы общаетесь. Подписантов с доверенностью добавите на карточке после создания' : undefined}
+          >
+            <input type="text" name="full_name" data-testid="contact-full-name" required defaultValue={defaults.full_name ?? ''}
+              placeholder={clientType === 'legal_entity' ? 'Иванов Иван Иванович' : 'Иван Иванович Иванов'}
+              className={inputCls} />
+          </Field>
+          <Field label="Роль" required hint="Клиент ищет или снимает, собственник сдаёт или продаёт">
             <select name="role" required defaultValue={defaults.role ?? 'client'} className={selectCls}>
               <option value="client">Клиент</option>
               <option value="owner">Собственник</option>
               <option value="both">Клиент + Собственник</option>
             </select>
-          </div>
-          {defaults.status !== undefined && (
-            <div>
-              <label className={labelCls}>Статус</label>
-              <select name="status" defaultValue={defaults.status ?? 'new'} className={selectCls}>
-                <option value="new">Новый</option>
-                <option value="active">Активный</option>
-                <option value="vip">VIP</option>
-                <option value="inactive">Неактивный</option>
-              </select>
-            </div>
-          )}
-        </div>
-        {clientType === 'individual' && (
-          <div>
-            <label className={labelCls}>Дата рождения</label>
-            <input type="date" name="birth_date" defaultValue={defaults.birth_date?.slice(0, 10) ?? ''} className={inputCls} />
-          </div>
-        )}
-      </div>
+          </Field>
+        </FieldGrid>
+      </FormSection>
 
-      {/* Контакты */}
-      <div className={cardCls}>
-        <h2 className="font-semibold text-[var(--hp-ink)]">Контактные данные</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
+      {/* Как связаться */}
+      <FormSection title="Как связаться">
+        <FieldGrid>
+          <div className="space-y-1.5">
             <label className={labelCls}>Телефон</label>
             <input
               type="tel"
@@ -164,7 +172,7 @@ export function ContactForm({ action, defaults = {}, backHref, submitLabel }: Co
               }}
             />
             {phoneMatches.length > 0 && (
-              <p className="text-xs text-[var(--hp-warn)] mt-1">
+              <p className="text-xs text-[var(--hp-warn)]">
                 Такой телефон уже есть:{' '}
                 {phoneMatches.slice(0, 3).map((m, i) => (
                   <span key={m.id}>
@@ -178,54 +186,66 @@ export function ContactForm({ action, defaults = {}, backHref, submitLabel }: Co
               </p>
             )}
           </div>
-          <div>
-            <label className={labelCls}>Email</label>
+          <Field label="Email">
             <input type="email" name="email" defaultValue={defaults.email ?? ''} placeholder="user@example.com" className={inputCls} />
-          </div>
-          <div>
-            <label className={labelCls}>Telegram</label>
+          </Field>
+        </FieldGrid>
+      </FormSection>
+
+      {/* Всё, что не нужно в момент звонка, — заполняется позже: перед договором
+          (паспорт, адрес, реквизиты) или по ходу работы (статус, источник). */}
+      <FormExtra
+        summary={clientType === 'legal_entity'
+          ? 'реквизиты и банк, статус, мессенджеры, источник, комментарий'
+          : 'паспорт, адрес, дата рождения, статус, мессенджеры, источник, комментарий'}
+      >
+        <FieldGrid>
+          {defaults.status !== undefined && (
+            <Field label="Статус" hint="VIP и «неактивный» влияют только на сортировку и фильтры">
+              <select name="status" defaultValue={defaults.status ?? 'new'} className={selectCls}>
+                <option value="new">Новый</option>
+                <option value="active">Активный</option>
+                <option value="vip">VIP</option>
+                <option value="inactive">Неактивный</option>
+              </select>
+            </Field>
+          )}
+          {clientType === 'individual' && (
+            <Field label="Дата рождения">
+              <input type="date" name="birth_date" defaultValue={defaults.birth_date?.slice(0, 10) ?? ''} className={inputCls} />
+            </Field>
+          )}
+          <Field label="Telegram">
             <input type="text" name="telegram" defaultValue={defaults.telegram ?? ''} placeholder="@username" className={inputCls} />
-          </div>
-          <div>
-            <label className={labelCls}>WhatsApp</label>
+          </Field>
+          <Field label="WhatsApp">
             <input type="text" name="whatsapp" defaultValue={defaults.whatsapp ?? ''} placeholder="+7 (999) 123-45-67" className={inputCls} />
-          </div>
-        </div>
-      </div>
+          </Field>
+        </FieldGrid>
 
-      {clientType === 'individual' ? (
-        <>
-          {/* Паспорт */}
-          <div className={cardCls}>
-            <h2 className="font-semibold text-[var(--hp-ink)]">Паспортные данные</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className={labelCls}>Серия</label>
+        {clientType === 'individual' ? (
+          <>
+            <h3 className="hp-label !mb-0 pt-2">Паспорт — нужен для договора</h3>
+            <FieldGrid>
+              <Field label="Серия">
                 <input type="text" name="passport_series" defaultValue={defaults.passport_series ?? ''} placeholder="1234" className={inputCls} />
-              </div>
-              <div>
-                <label className={labelCls}>Номер</label>
+              </Field>
+              <Field label="Номер">
                 <input type="text" name="passport_number" defaultValue={defaults.passport_number ?? ''} placeholder="567890" className={inputCls} />
-              </div>
-              <div>
-                <label className={labelCls}>Дата выдачи</label>
+              </Field>
+              <Field label="Дата выдачи">
                 <input type="date" name="passport_issued_date" defaultValue={defaults.passport_issued_date?.slice(0, 10) ?? ''} className={inputCls} />
-              </div>
-              <div>
-                <label className={labelCls}>Код подразделения</label>
+              </Field>
+              <Field label="Код подразделения">
                 <input type="text" name="passport_department_code" defaultValue={defaults.passport_department_code ?? ''} placeholder="770-001" className={inputCls} />
-              </div>
-            </div>
-            <div>
-              <label className={labelCls}>Кем выдан</label>
+              </Field>
+            </FieldGrid>
+            <Field label="Кем выдан">
               <input type="text" name="passport_issued_by" defaultValue={defaults.passport_issued_by ?? ''} placeholder="ОВД Пресненского района г. Москвы" className={inputCls} />
-            </div>
-          </div>
+            </Field>
 
-          {/* Адрес */}
-          <div className={cardCls}>
-            <h2 className="font-semibold text-[var(--hp-ink)]">Адрес регистрации</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <h3 className="hp-label !mb-0 pt-2">Адрес регистрации</h3>
+            <FieldGrid>
               {[
                 { label: 'Страна', name: 'country', placeholder: 'Россия', val: defaults.country ?? 'Россия' },
                 { label: 'Регион', name: 'region', placeholder: 'Московская область', val: defaults.region },
@@ -235,123 +255,68 @@ export function ContactForm({ action, defaults = {}, backHref, submitLabel }: Co
                 { label: 'Корпус', name: 'building', placeholder: '1', val: defaults.building },
                 { label: 'Квартира', name: 'apartment', placeholder: '42', val: defaults.apartment },
               ].map(f => (
-                <div key={f.name}>
-                  <label className={labelCls}>{f.label}</label>
+                <Field key={f.name} label={f.label}>
                   <input type="text" name={f.name} defaultValue={f.val ?? ''} placeholder={f.placeholder} className={inputCls} />
-                </div>
+                </Field>
               ))}
-            </div>
-          </div>
-        </>
-      ) : (
-        /* Реквизиты юрлица */
-        <div className={cardCls}>
-          <h2 className="font-semibold text-[var(--hp-ink)]">Реквизиты организации</h2>
-          <div>
-            <label className={labelCls}>Название организации *</label>
-            {/* Подсказки DaData: по названию или ИНН заполняются КПП, ОГРН, юр. адрес
-                и руководитель — раньше всё это вбивалось руками из выписки, а опечатка
-                в реквизитах всплывала уже в подписанном договоре. */}
-            <DadataSuggestInput
-              name="company_name"
-              kind="party"
-              defaultValue={defaults.company_name ?? ''}
-              placeholder='ООО "Ромашка" или ИНН'
-              className={inputCls}
-              fillFields={{
-                inn: 'inn',
-                kpp: 'kpp',
-                ogrn: 'ogrn',
-                legalAddress: 'legal_address',
-              }}
-              hintTemplate="Руководитель по ЕГРЮЛ: {managerName}[, {managerPost}]"
-            />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className={labelCls}>ИНН *</label>
-              <input type="text" name="inn" defaultValue={defaults.inn ?? ''} placeholder="7707083893" className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>КПП</label>
-              <input type="text" name="kpp" defaultValue={defaults.kpp ?? ''} placeholder="770701001" className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>ОГРН</label>
-              <input type="text" name="ogrn" defaultValue={defaults.ogrn ?? ''} placeholder="1027700132195" className={inputCls} />
-            </div>
-          </div>
-          <div>
-            <label className={labelCls}>Юридический адрес</label>
-            <input type="text" name="legal_address" defaultValue={defaults.legal_address ?? ''} placeholder="г. Москва, ул. Тверская, д. 1" className={inputCls} />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className={labelCls}>Банк</label>
-              {/* По названию банка или БИК подставляются БИК и корр. счёт. */}
-              <DadataSuggestInput
-                name="bank_name"
-                kind="bank"
-                defaultValue={defaults.bank_name ?? ''}
-                placeholder="Сбербанк или БИК"
-                className={inputCls}
-                fillFields={{ bik: 'bik', correspondentAccount: 'corr_account' }}
-              />
-            </div>
-            <div>
-              <label className={labelCls}>БИК</label>
-              <input type="text" name="bik" defaultValue={defaults.bik ?? ''} className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Расчётный счёт</label>
-              <input type="text" name="bank_account" defaultValue={defaults.bank_account ?? ''} className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Корр. счёт</label>
-              <input type="text" name="corr_account" defaultValue={defaults.corr_account ?? ''} className={inputCls} />
-            </div>
-          </div>
-          <p className="text-xs text-[var(--hp-sub)]">
-            Поле «Контактное лицо» выше — это сотрудник, через которого вы общаетесь. Уполномоченных подписантов (с указанием доверенности) можно будет добавить на странице контакта после создания.
-          </p>
-        </div>
-      )}
+            </FieldGrid>
+          </>
+        ) : (
+          <>
+            <h3 className="hp-label !mb-0 pt-2">Реквизиты — нужны для договора</h3>
+            <FieldGrid>
+              <Field label="КПП">
+                <input type="text" name="kpp" defaultValue={defaults.kpp ?? ''} placeholder="770701001" className={inputCls} />
+              </Field>
+              <Field label="ОГРН">
+                <input type="text" name="ogrn" defaultValue={defaults.ogrn ?? ''} placeholder="1027700132195" className={inputCls} />
+              </Field>
+              <Field label="Юридический адрес">
+                <input type="text" name="legal_address" defaultValue={defaults.legal_address ?? ''} placeholder="г. Москва, ул. Тверская, д. 1" className={inputCls} />
+              </Field>
+              <Field label="Банк" hint="По названию или БИК подставятся БИК и корр. счёт">
+                <DadataSuggestInput
+                  name="bank_name"
+                  kind="bank"
+                  defaultValue={defaults.bank_name ?? ''}
+                  placeholder="Сбербанк или БИК"
+                  className={inputCls}
+                  fillFields={{ bik: 'bik', correspondentAccount: 'corr_account' }}
+                />
+              </Field>
+              <Field label="БИК">
+                <input type="text" name="bik" defaultValue={defaults.bik ?? ''} className={inputCls} />
+              </Field>
+              <Field label="Расчётный счёт">
+                <input type="text" name="bank_account" defaultValue={defaults.bank_account ?? ''} className={inputCls} />
+              </Field>
+              <Field label="Корр. счёт">
+                <input type="text" name="corr_account" defaultValue={defaults.corr_account ?? ''} className={inputCls} />
+              </Field>
+            </FieldGrid>
+          </>
+        )}
 
-      {/* Дополнительно */}
-      <div className={cardCls}>
-        <h2 className="font-semibold text-[var(--hp-ink)]">Дополнительно</h2>
-        <div>
-          <label className={labelCls}>Источник</label>
-          <select name="source" defaultValue={defaults.source ?? ''} className={selectCls}>
-            <option value="">Выберите источник</option>
-            <option value="avito">Avito</option>
-            <option value="cian">ЦИАН</option>
-            <option value="domclick">Домклик</option>
-            <option value="instagram">Instagram</option>
-            <option value="vk">VK</option>
-            <option value="telegram">Telegram</option>
-            <option value="whatsapp">WhatsApp</option>
-            <option value="phone">Звонок</option>
-            <option value="referral">Рекомендация</option>
-            <option value="other">Другое</option>
-          </select>
-        </div>
-        <div>
-          <label className={labelCls}>Комментарий</label>
+        <FieldGrid>
+          <Field label="Источник" hint="Как узнали о контакте">
+            <select name="source" defaultValue={defaults.source ?? ''} className={selectCls}>
+              <option value="">Выберите источник</option>
+              {CONTACT_SOURCES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+            </select>
+          </Field>
+        </FieldGrid>
+        <Field label="Комментарий">
           <textarea name="comment" rows={3} defaultValue={defaults.comment ?? ''}
-            placeholder="Дополнительная информация о контакте..."
-            className="w-full px-4 py-2.5 rounded-[var(--hp-radius)] border border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-ink)] placeholder:text-[var(--hp-tertiary)] text-sm outline-none focus:border-[var(--hp-ink)] transition-colors resize-none" />
-        </div>
-      </div>
+            placeholder="Что важно помнить об этом человеке…"
+            className={`${inputCls} !h-auto py-2.5 resize-none`} />
+        </Field>
+      </FormExtra>
 
-      <div className="flex items-center gap-3">
-        <button type="submit" data-testid="contact-submit" disabled={isPending}
-          className="px-6 py-2.5 rounded-[var(--hp-radius)] text-white font-semibold transition-colors text-sm bg-[var(--hp-accent)] hover:bg-[var(--hp-accent-hover)] disabled:opacity-60 disabled:cursor-not-allowed">
+      <div className="flex items-center gap-3 pt-1">
+        <button type="submit" data-testid="contact-submit" disabled={isPending} className="hp-btn-primary disabled:opacity-60 disabled:cursor-not-allowed">
           {isPending ? 'Сохранение…' : submitLabel}
         </button>
-        <Link href={backHref} className="px-6 py-2.5 border border-[var(--hp-border)] text-[var(--hp-ink)] rounded-[var(--hp-radius)] text-sm font-semibold hover:border-[var(--hp-sub)] transition-colors">
-          Отмена
-        </Link>
+        <Link href={backHref} className="hp-btn-secondary">Отмена</Link>
       </div>
     </form>
   )

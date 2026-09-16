@@ -6,8 +6,8 @@ export default function NewContactPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <PageHeader
-        title="Добавить контакт"
-        subtitle="Физлицо или юрлицо · клиент, собственник или оба"
+        title="Новый контакт"
+        subtitle="Достаточно имени и телефона — остальное заполните позже"
         backHref="/contacts"
         backLabel="Вернуться к контактам"
       />
@@ -15,7 +15,7 @@ export default function NewContactPage() {
       <ContactForm
         action={createContactAction}
         backHref="/contacts"
-        submitLabel="Добавить контакт"
+        submitLabel="Создать контакт"
       />
     </div>
   )

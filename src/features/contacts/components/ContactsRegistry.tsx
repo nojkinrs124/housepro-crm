@@ -93,7 +93,7 @@ export function ContactsRegistry({
       columns={columns}
       href={c => `/contacts/${c.id}`}
       selection={selection}
-      empty="Нет контактов по выбранным фильтрам"
+      empty="Ничего не найдено"
     />
   )
 }

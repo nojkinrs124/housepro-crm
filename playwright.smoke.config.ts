@@ -35,8 +35,11 @@ for (const line of readFileSync(envFile, 'utf-8').split(/\r?\n/)) {
 // E2E_BASE_URL из шелла не переведёт прогон на прод.
 Object.assign(process.env, branchEnv)
 
-const baseURL = branchEnv.E2E_BASE_URL || 'http://localhost:3100'
-const port = Number(new URL(baseURL).port || 3100)
+// SMOKE_PORT — единственное, что берётся из шелла: чтобы прогнать смоук рядом
+// с уже поднятым локальным сервером (например, production-сборкой на :3100).
+// Адрес Supabase из шелла не переопределяется никогда.
+const port = Number(process.env.SMOKE_PORT || new URL(branchEnv.E2E_BASE_URL || 'http://localhost:3100').port || 3100)
+const baseURL = `http://localhost:${port}`
 
 export default defineConfig({
   testDir: './e2e/smoke',
