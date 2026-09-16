@@ -1,21 +1,21 @@
 -- ═══════════════════════════════════════════════════════════════════════════
--- НЕ ПРИМЕНЕНО. Лежит вне supabase/migrations намеренно: содержит DROP, который
--- guard-migration блокирует через apply_migration — это единственный путь к
--- потере боевых данных, и запускает его владелец руками (решение B4 аудита
--- упрощения, docs/SIMPLIFY-AUDIT.md).
+-- ПРИМЕНЕНО на проде 16.09.2026 владельцем вручную через Dashboard SQL Editor
+-- (guard-migration блокирует DROP через apply_migration — намеренно). Запись в
+-- supabase_migrations.schema_migrations добавлена отдельно, чтобы db push и
+-- локальный стек не пытались применить повторно. Решение B4 аудита упрощения
+-- (docs/SIMPLIFY-AUDIT.md).
 --
--- Перед запуском (все проверки на проде 16.09.2026 дали 0 — повторить):
+-- Проверки перед запуском (все дали 0 на проде 16.09.2026):
 --   select count(*) from deals     where client_id is not null or owner_id is not null;
 --   select count(*) from contracts where client_id is not null or owner_id is not null;
 --   select count(*) from tasks     where owner_id is not null;
---   select count(*) from logs;   -- 10 строк, никем не читаются (A1 закрыт)
+--   select count(*) from logs;   -- 10 строк, никем не читались (A1 закрыт)
 --
--- Из кода обращений к этим колонкам нет (grep 16.09.2026). НЕ трогаем:
+-- Код: ContractSchema держал client_id (uuid → null), и insert/update договора
+-- писал client_id: null — после DROP это падало бы на проде. Снято тем же
+-- коммитом (src/lib/schemas/index.ts, contracts/[id]/edit). НЕ трогаем:
 -- contacts.passport (читает генерация документов) и files.client_id
 -- (пишет files.actions.ts — привязка файла к контакту).
---
--- После запуска: перенести файл в supabase/migrations/ с версией из
--- schema_migrations и перегенерировать типы (npm run db:types).
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- Осколки удалённых таблиц clients/owners (задача #24 в docs/IMPROVEMENTS.md)

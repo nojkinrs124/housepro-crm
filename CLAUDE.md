@@ -87,10 +87,9 @@ const supabase = createClient()            // ← без await
 `company_name/inn/kpp/ogrn/legal_address/…` и представители в
 `contact_representatives`), `leads`, `deals`, `properties`, `contracts`, `payments`,
 `tasks`, `showings`, `property_collections`, `organizations` + `organization_members`.
-`clients` и `owners` — больше нет: код отвязан, таблицы удалены 02.09.2026
-(`list_tables` их не показывает). Остались только пустые колонки-ссылки
-`client_id`/`owner_id` в `tasks`/`deals` — вычистить при случае, задача #24
-в `docs/IMPROVEMENTS.md`.
+`clients` и `owners` — больше нет: код отвязан, таблицы удалены 02.09.2026,
+колонки-ссылки `client_id`/`owner_id` в `deals`/`contracts`/`tasks` — 16.09.2026
+(задача #24 в `docs/IMPROVEMENTS.md`). `list_tables` — источник истины.
 
 Мультиарендность: каждая запись несёт `organization_id`, изоляция в RLS через
 `get_user_org_id()`.

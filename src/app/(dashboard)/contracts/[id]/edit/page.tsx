@@ -61,7 +61,7 @@ export default async function EditContractPage({ params }: { params: Promise<{ i
         defaults={{
           contract_type:     c.contract_type,
           owner_contact_id:  c.owner_contact_id ?? undefined,
-          client_contact_id: c.client_contact_id ?? c.client_id ?? undefined,
+          client_contact_id: c.client_contact_id ?? undefined,
           owner_representative_id:  c.owner_representative_id ?? undefined,
           client_representative_id: c.client_representative_id ?? undefined,
           property_id:       c.property_id ?? undefined,

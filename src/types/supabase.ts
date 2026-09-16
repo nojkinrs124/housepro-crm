@@ -1633,7 +1633,6 @@ export type Database = {
           amount: number | null
           base_contract_id: string | null
           client_contact_id: string | null
-          client_id: string | null
           client_representative_id: string | null
           company_profile_id: string | null
           contract_number: string | null
@@ -1653,7 +1652,6 @@ export type Database = {
           organization_id: string
           owner_contact_id: string | null
           owner_fixed_amount: number | null
-          owner_id: string | null
           owner_payout_day: number | null
           owner_representative_id: string | null
           plan_id: string | null
@@ -1667,7 +1665,6 @@ export type Database = {
           amount?: number | null
           base_contract_id?: string | null
           client_contact_id?: string | null
-          client_id?: string | null
           client_representative_id?: string | null
           company_profile_id?: string | null
           contract_number?: string | null
@@ -1687,7 +1684,6 @@ export type Database = {
           organization_id: string
           owner_contact_id?: string | null
           owner_fixed_amount?: number | null
-          owner_id?: string | null
           owner_payout_day?: number | null
           owner_representative_id?: string | null
           plan_id?: string | null
@@ -1701,7 +1697,6 @@ export type Database = {
           amount?: number | null
           base_contract_id?: string | null
           client_contact_id?: string | null
-          client_id?: string | null
           client_representative_id?: string | null
           company_profile_id?: string | null
           contract_number?: string | null
@@ -1721,7 +1716,6 @@ export type Database = {
           organization_id?: string
           owner_contact_id?: string | null
           owner_fixed_amount?: number | null
-          owner_id?: string | null
           owner_payout_day?: number | null
           owner_representative_id?: string | null
           plan_id?: string | null
@@ -1871,7 +1865,6 @@ export type Database = {
           bank_name: string | null
           bargain_amount: number | null
           client_contact_id: string | null
-          client_id: string | null
           client_representative_id: string | null
           commission: number | null
           created_at: string | null
@@ -1886,7 +1879,6 @@ export type Database = {
           notes: string | null
           organization_id: string
           owner_contact_id: string | null
-          owner_id: string | null
           owner_representative_id: string | null
           payment_method: string | null
           plan_id: string | null
@@ -1903,7 +1895,6 @@ export type Database = {
           bank_name?: string | null
           bargain_amount?: number | null
           client_contact_id?: string | null
-          client_id?: string | null
           client_representative_id?: string | null
           commission?: number | null
           created_at?: string | null
@@ -1918,7 +1909,6 @@ export type Database = {
           notes?: string | null
           organization_id: string
           owner_contact_id?: string | null
-          owner_id?: string | null
           owner_representative_id?: string | null
           payment_method?: string | null
           plan_id?: string | null
@@ -1935,7 +1925,6 @@ export type Database = {
           bank_name?: string | null
           bargain_amount?: number | null
           client_contact_id?: string | null
-          client_id?: string | null
           client_representative_id?: string | null
           commission?: number | null
           created_at?: string | null
@@ -1950,7 +1939,6 @@ export type Database = {
           notes?: string | null
           organization_id?: string
           owner_contact_id?: string | null
-          owner_id?: string | null
           owner_representative_id?: string | null
           payment_method?: string | null
           plan_id?: string | null
@@ -2500,57 +2488,6 @@ export type Database = {
           },
         ]
       }
-      logs: {
-        Row: {
-          action: string
-          created_at: string | null
-          entity_id: string | null
-          entity_type: string | null
-          id: string
-          new_data: Json | null
-          old_data: Json | null
-          organization_id: string | null
-          user_id: string | null
-        }
-        Insert: {
-          action: string
-          created_at?: string | null
-          entity_id?: string | null
-          entity_type?: string | null
-          id?: string
-          new_data?: Json | null
-          old_data?: Json | null
-          organization_id?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          action?: string
-          created_at?: string | null
-          entity_id?: string | null
-          entity_type?: string | null
-          id?: string
-          new_data?: Json | null
-          old_data?: Json | null
-          organization_id?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "logs_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "logs_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       management_engagements: {
         Row: {
           contract_id: string | null
@@ -2875,10 +2812,6 @@ export type Database = {
           onboarding_completed: boolean
           plan: string
           slug: string
-          stripe_customer_id: string | null
-          stripe_subscription_id: string | null
-          subscription_status: string | null
-          trial_ends_at: string | null
           updated_at: string | null
         }
         Insert: {
@@ -2889,10 +2822,6 @@ export type Database = {
           onboarding_completed?: boolean
           plan?: string
           slug: string
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
-          subscription_status?: string | null
-          trial_ends_at?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -2903,10 +2832,6 @@ export type Database = {
           onboarding_completed?: boolean
           plan?: string
           slug?: string
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
-          subscription_status?: string | null
-          trial_ends_at?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -3703,7 +3628,6 @@ export type Database = {
           id: string
           lead_id: string | null
           organization_id: string
-          owner_id: string | null
           payment_id: string | null
           priority: string
           property_id: string | null
@@ -3725,7 +3649,6 @@ export type Database = {
           id?: string
           lead_id?: string | null
           organization_id: string
-          owner_id?: string | null
           payment_id?: string | null
           priority?: string
           property_id?: string | null
@@ -3747,7 +3670,6 @@ export type Database = {
           id?: string
           lead_id?: string | null
           organization_id?: string
-          owner_id?: string | null
           payment_id?: string | null
           priority?: string
           property_id?: string | null
