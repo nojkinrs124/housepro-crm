@@ -1,308 +1,77 @@
 import { createClient } from '@/lib/supabase/server'
-import { ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { updatePropertyAction } from '@/features/properties/actions/properties.actions'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
+import { FormActions, FormSection } from '@/components/forms/FormLayout'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { PropertyPhotosManager } from '@/features/properties/components/PropertyPhotosManager'
-import { DadataSuggestInput } from '@/components/forms/DadataSuggestInput'
-import { ContactSelectField } from '@/features/contacts/components/ContactSelectField'
+import { PropertyFormBody } from '@/features/properties/components/PropertyFormBody'
 import { GenerateListingButton } from '@/features/properties/components/GenerateListingButton'
 import { propertyListingFacts } from '@/lib/ai/listing/facts'
 
 export default async function EditPropertyPage({ params }: { params: Promise<{ id: string }> }) {
- const { id } = await params
- const supabase = await createClient()
+  const { id } = await params
+  const supabase = await createClient()
 
- const [{ data: rawProperty }, { data: owners }] = await Promise.all([
- supabase.from('properties').select('*').eq('id', id).single(),
- supabase.from('contacts').select('id, full_name, phone').in('role', ['owner', 'both']).order('full_name'),
- ])
+  const [{ data: rawProperty }, { data: owners }] = await Promise.all([
+    supabase.from('properties').select('*').eq('id', id).single(),
+    supabase.from('contacts').select('id, full_name, phone').in('role', ['owner', 'both']).order('full_name'),
+  ])
 
- if (!rawProperty) notFound()
+  if (!rawProperty) notFound()
 
- const p = rawProperty
- const boundAction = updatePropertyAction.bind(null, id)
+  const p = rawProperty
+  const boundAction = updatePropertyAction.bind(null, id)
 
- const inp = 'w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all'
- const sel = 'w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer'
- const lbl = 'block text-sm font-medium text-foreground mb-1.5'
+  return (
+    <div className="max-w-3xl mx-auto space-y-6">
+      <PageHeader
+        title="Редактировать объект"
+        subtitle={p.title}
+        backHref={`/properties/${id}`}
+        backLabel="Вернуться к объекту"
+      />
 
- return (
- <div className="max-w-3xl mx-auto space-y-6">
- <PageHeader
- title="Редактировать объект"
- subtitle={p.title}
- backHref={`/properties/${id}`}
- backLabel="Вернуться к объекту"
- />
+      {/* Фотографии — управляются отдельно от формы, сохраняются сразу при загрузке */}
+      <FormSection title="Фотографии">
+        <PropertyPhotosManager propertyId={id} initialPhotos={p.photo_urls ?? []} />
+      </FormSection>
 
- {/* Фотографии — управляются отдельно от формы, сохраняются сразу при загрузке */}
- <div className="hp-card p-6 space-y-4">
- <h2 className="font-semibold text-foreground">Фотографии</h2>
- <PropertyPhotosManager propertyId={id} initialPhotos={p.photo_urls ?? []} />
- </div>
-
- <ServerActionForm action={boundAction} className="space-y-4">
-
- {/* Основное */}
- <div className="hp-card p-6 space-y-4">
- <h2 className="font-semibold text-foreground">Основные данные</h2>
-
- <div>
- <label className={lbl}>Название *</label>
- <input name="title" required defaultValue={p.title ?? ''} className={inp} />
- </div>
-
- <div>
- <label className={lbl}>Адрес *</label>
- <DadataSuggestInput
- name="address"
- kind="address"
- required
- defaultValue={p.address ?? ''}
- className={inp}
- fillFields={{
- latitude: 'latitude',
- longitude: 'longitude',
- fiasId: 'fias_id',
- metro: 'metro',
- cityDistrict: 'district',
- }}
- hintTemplate="Координаты: {latitude}, {longitude}"
- />
- {/* Геоданные из подсказки: пользователь их не редактирует, но без них
- нет карты в подборке и корректного фида на площадки. */}
- <input type="hidden" name="latitude" defaultValue={p.latitude ?? ''} />
- <input type="hidden" name="longitude" defaultValue={p.longitude ?? ''} />
- <input type="hidden" name="fias_id" defaultValue={p.fias_id ?? ''} />
- <input type="hidden" name="metro" defaultValue={p.metro ?? ''} />
- </div>
-
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
- <div>
- <label className={lbl}>Тип объекта</label>
- <select name="property_type" defaultValue={p.property_type ?? 'apartment'} className={sel}>
- <option value="apartment">Квартира</option>
- <option value="house">Дом</option>
- <option value="commercial">Коммерция</option>
- <option value="office">Офис</option>
- <option value="warehouse">Склад</option>
- <option value="land">Участок</option>
- </select>
- </div>
- <div>
- <label className={lbl}>Тип сделки</label>
- <select name="deal_type" defaultValue={p.deal_type ?? 'rent'} className={sel}>
- <option value="rent">Аренда</option>
- <option value="sale">Продажа</option>
- <option value="management">Управление</option>
- <option value="subrent">Субаренда</option>
- </select>
- </div>
- <div>
- <label className={lbl}>Статус</label>
- <select name="status" defaultValue={p.status ?? 'available'} className={sel}>
- <option value="available">Доступно</option>
- <option value="reserved">Зарезервировано</option>
- <option value="rented">Сдано</option>
- <option value="sold">Продано</option>
- <option value="inactive">Неактивно</option>
- </select>
- </div>
- </div>
-
- {/* Собственник объекта: без него в «Управлении» и в отчёте будет прочерк,
- а договор подписывать не с кем. Ставится в любой момент, в том числе
- задним числом — объект часто заводят раньше, чем оформлен собственник. */}
- <ContactSelectField contacts={owners ?? []} defaultContactId={p.owner_id ?? ''} />
- </div>
-
- {/* Параметры */}
- <div className="hp-card p-6 space-y-4">
- <h2 className="font-semibold text-foreground">Параметры</h2>
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
- {([
- { label: 'Площадь общая (м²)', name: 'area', step: '0.1' },
- { label: 'Площадь жилая (м²)', name: 'living_area', step: '0.1' },
- { label: 'Площадь кухни (м²)', name: 'kitchen_area', step: '0.1' },
- { label: 'Комнат', name: 'rooms', step: '1' },
- { label: 'Этаж', name: 'floor', step: '1' },
- { label: 'Этажность дома', name: 'total_floors', step: '1' },
- { label: 'Высота потолков (м)', name: 'ceiling_height', step: '0.1' },
- ] as const).map(f => (
- <div key={f.name}>
- <label className={lbl}>{f.label}</label>
- <input type="number" name={f.name} step={f.step} defaultValue={p[f.name] ?? ''} className={inp} />
- </div>
- ))}
- </div>
- </div>
-
- {/* Дом */}
- <div className="hp-card p-6 space-y-4">
- <h2 className="font-semibold text-foreground">Характеристики дома</h2>
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
- <div>
- <label className={lbl}>Тип дома</label>
- <select name="house_type" defaultValue={p.house_type ?? ''} className={sel}>
- <option value="">— выберите —</option>
- <option value="panel">Панельный</option>
- <option value="brick">Кирпичный</option>
- <option value="monolith">Монолит</option>
- <option value="monolith_brick">Монолит-кирпич</option>
- <option value="wood">Деревянный</option>
- </select>
- </div>
- <div>
- <label className={lbl}>Материал стен</label>
- <select name="wall_material" defaultValue={p.wall_material ?? ''} className={sel}>
- <option value="">— выберите —</option>
- <option value="brick">Кирпич</option>
- <option value="panel">Панель</option>
- <option value="concrete">Бетон</option>
- <option value="wood">Дерево</option>
- <option value="gas_block">Газоблок</option>
- </select>
- </div>
- <div>
- <label className={lbl}>Год постройки</label>
- <input type="number" name="year_built" defaultValue={p.year_built ?? ''} placeholder="2005" min="1900" max="2030" className={inp} />
- </div>
- </div>
- <div className="flex items-center gap-6">
- <label className="flex items-center gap-2 cursor-pointer text-sm">
- <input type="checkbox" name="has_elevator" defaultChecked={!!p.has_elevator} className="w-4 h-4 accent-primary" />
- Лифт
- </label>
- <label className="flex items-center gap-2 cursor-pointer text-sm">
- <input type="checkbox" name="has_parking" defaultChecked={!!p.has_parking} className="w-4 h-4 accent-primary" />
- Парковка
- </label>
- </div>
- </div>
-
- {/* Коммуникации */}
- <div className="hp-card p-6 space-y-4">
- <h2 className="font-semibold text-foreground">Коммуникации</h2>
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
- <div>
- <label className={lbl}>Отопление</label>
- <select name="heating_type" defaultValue={p.heating_type ?? ''} className={sel}>
- <option value="">— выберите —</option>
- <option value="central">Центральное</option>
- <option value="gas">Газовое</option>
- <option value="electric">Электрическое</option>
- <option value="autonomous">Автономное</option>
- </select>
- </div>
- <div>
- <label className={lbl}>Водоснабжение</label>
- <select name="water_supply_type" defaultValue={p.water_supply_type ?? ''} className={sel}>
- <option value="">— выберите —</option>
- <option value="central">Центральное</option>
- <option value="well">Скважина/колодец</option>
- <option value="none">Нет</option>
- </select>
- </div>
- </div>
- <div className="flex items-center gap-6">
- <label className="flex items-center gap-2 cursor-pointer text-sm">
- <input type="checkbox" name="has_internet" defaultChecked={!!p.has_internet} className="w-4 h-4 accent-primary" />
- Интернет
- </label>
- <label className="flex items-center gap-2 cursor-pointer text-sm">
- <input type="checkbox" name="has_tv" defaultChecked={!!p.has_tv} className="w-4 h-4 accent-primary" />
- Телевидение
- </label>
- </div>
- </div>
-
- {/* Право собственности */}
- <div className="hp-card p-6 space-y-4">
- <h2 className="font-semibold text-foreground">Право собственности и юр. статус</h2>
- <div className="space-y-1.5">
- <label className={lbl}>Документ-основание</label>
- <input name="ownership_basis" defaultValue={p.ownership_basis ?? ''} placeholder="Выписка из ЕГРН № ... от ..." className={inp} />
- <p className="text-xs text-muted-foreground">Подставляется в договоры найма/аренды по этому объекту.</p>
- </div>
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
- <div className="space-y-1.5">
- <label className={lbl}>Кадастровый номер</label>
- <input name="cadastral_number" defaultValue={p.cadastral_number ?? ''} placeholder="50:21:0040214:1187" className={inp} />
- </div>
- <div className="space-y-1.5">
- <label className={lbl}>Участок, соток</label>
- <input name="land_area" type="number" step="0.01" min="0" defaultValue={p.land_area ?? ''} placeholder="12" className={inp} />
- </div>
- <div className="space-y-1.5">
- <label className={lbl}>Обременения</label>
- <input name="encumbrances" defaultValue={p.encumbrances ?? ''} placeholder="нет" className={inp} />
- </div>
- </div>
- </div>
-
- {/* Финансы */}
- <div className="hp-card p-6 space-y-4">
- <h2 className="font-semibold text-foreground">Финансы</h2>
- <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
- <div>
- <label className={lbl}>Цена (₽)</label>
- <input step="any" type="number" name="price" defaultValue={p.price ?? ''} className={inp} />
- </div>
- <div>
- <label className={lbl}>Депозит (₽)</label>
- <input step="any" type="number" name="deposit" defaultValue={p.deposit ?? ''} className={inp} />
- </div>
- <div>
- <label className={lbl}>Комиссия управления (₽)</label>
- <input step="any" type="number" name="management_fee" defaultValue={p.management_fee ?? ''} className={inp} />
- </div>
- </div>
- <div>
- <label className={lbl}>Что включено в коммунальные</label>
- <input type="text" name="utilities_included" defaultValue={p.utilities_included ?? ''} placeholder="вода, газ, электричество" className={inp} />
- </div>
- </div>
-
- {/* Описание — этот текст уходит в фиды Авито/ЦИАН/Домклик. Генератор пишет
- результат прямо сюда (и в базу), так что отдельного поля «объявление» на
- экране нет; listing_* хранят заголовок, вводные и модель последней генерации. */}
- <div className="hp-card p-6 space-y-3">
- <div className="flex items-start justify-between gap-4 flex-wrap">
- <div>
- <h2 className="font-semibold text-foreground">Описание</h2>
- <p className="text-xs text-muted-foreground mt-1">
- Уходит на Авито, ЦИАН и Домклик. Генератор берёт сохранённые поля объекта — если меняли
- их выше, сначала «Сохранить изменения».
- {p.listing_generated_at && (
- <> Последняя генерация: {new Date(p.listing_generated_at).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' })}{p.listing_model ? ` · ${p.listing_model}` : ''}.</>
- )}
- </p>
- </div>
- <GenerateListingButton
- propertyId={id}
- facts={propertyListingFacts(p)}
- initialRawInput={p.listing_raw_input ?? ''}
- />
- </div>
- <textarea id="property-description" name="description" rows={10} defaultValue={p.description ?? ''}
- placeholder="Описание для публикации на Авито, ЦИАН, Домклик..."
- className="w-full px-4 py-3 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] resize-y" />
- </div>
-
- <div className="flex gap-3">
- <button type="submit"
- className="flex-1 h-10 text-white text-sm font-bold transition" style={{ background: 'var(--hp-accent)', }}>
- Сохранить изменения
- </button>
- <Link href={`/properties/${id}`}
- className="flex-1 h-10 flex items-center justify-center border border-border text-sm font-medium hover:bg-accent transition">
- Отмена
- </Link>
- </div>
- </ServerActionForm>
- </div>
- )
+      <ServerActionForm action={boundAction} className="space-y-4">
+        <PropertyFormBody
+          property={p}
+          owners={owners ?? []}
+          showStatus
+          descriptionSlot={
+            /* Описание — этот текст уходит в фиды Авито/ЦИАН/Домклик. Генератор пишет
+               результат прямо сюда (и в базу), так что отдельного поля «объявление» на
+               экране нет; listing_* хранят заголовок, вводные и модель последней генерации. */
+            <FormSection>
+              <div className="flex items-start justify-between gap-4 flex-wrap">
+                <div>
+                  <h2 className="hp-h2">Описание</h2>
+                  <p className="text-xs text-[var(--hp-sub)] mt-1">
+                    Уходит на Авито, ЦИАН и Домклик. Генератор берёт сохранённые поля объекта — если меняли
+                    их выше, сначала «Сохранить изменения».
+                    {p.listing_generated_at && (
+                      <> Последняя генерация: {new Date(p.listing_generated_at).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' })}{p.listing_model ? ` · ${p.listing_model}` : ''}.</>
+                    )}
+                  </p>
+                </div>
+                <GenerateListingButton
+                  propertyId={id}
+                  facts={propertyListingFacts(p)}
+                  initialRawInput={p.listing_raw_input ?? ''}
+                />
+              </div>
+              <textarea id="property-description" name="description" rows={10} defaultValue={p.description ?? ''}
+                placeholder="Описание для публикации на Авито, ЦИАН, Домклик…"
+                className="hp-input !h-auto py-2.5 resize-y" />
+            </FormSection>
+          }
+        />
+        <FormActions submitLabel="Сохранить изменения" cancelHref={`/properties/${id}`} />
+      </ServerActionForm>
+    </div>
+  )
 }

@@ -12,6 +12,7 @@ import {
   yandexPhotoSize,
   yandexPathFromUrl,
 } from '@/lib/storage/photo-storage'
+import { friendlyDbError } from '@/lib/errors'
 
 const MAX_PHOTO_SIZE = 10 * 1024 * 1024 // 10 МБ — фото для Авито не нужно тяжелее
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp']
@@ -106,7 +107,7 @@ export async function deletePropertyPhotoAction(propertyId: string, url: string)
     .update({ photo_urls: newUrls })
     .eq('id', propertyId)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'фото' }) }
 
   await removePhotoByUrl(supabase, url)
 
@@ -141,7 +142,7 @@ export async function setPropertyCoverPhotoAction(propertyId: string, url: strin
     .update({ photo_urls: newUrls })
     .eq('id', propertyId)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'фото' }) }
 
   revalidatePath(`/properties/${propertyId}`)
   revalidatePath(`/properties/${propertyId}/edit`)
@@ -216,7 +217,7 @@ export async function confirmPhotoUploadAction(propertyId: string, publicUrl: st
     .eq('id', propertyId)
   if (error) {
     await removePhotoByUrl(supabase, publicUrl)
-    return { error: `Ошибка записи: ${error.message}` }
+    return { error: friendlyDbError(error, { entity: 'фото' }) }
   }
 
   revalidatePath(`/properties/${propertyId}`)
@@ -251,7 +252,7 @@ export async function reorderPropertyPhotosAction(propertyId: string, urls: stri
     .from('properties')
     .update({ photo_urls: urls })
     .eq('id', propertyId)
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'фото' }) }
 
   revalidatePath(`/properties/${propertyId}`)
   revalidatePath(`/properties/${propertyId}/edit`)

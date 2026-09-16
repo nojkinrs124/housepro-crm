@@ -11,6 +11,7 @@ import { PropertyAvitoQuickToggle } from '@/features/avito/components/PropertyAv
 import { PropertySiteQuickToggle } from '@/features/properties/components/PropertySiteQuickToggle'
 import { toAvitoStatus } from '@/features/avito/config/status'
 import { RegistryToolbar } from '@/components/layout/RegistryToolbar'
+import { EmptyState } from '@/components/layout/EmptyState'
 import { RegistryTable, type RegistryColumn } from '@/features/registry/components/RegistryTable'
 import { BulkBar } from '@/features/registry/components/BulkBar'
 import { useRegistryFilters } from '@/hooks/useRegistryFilters'
@@ -152,18 +153,20 @@ export function PropertiesView({ properties }: { properties: PropertyRow[] }) {
       {/* Без AnimatePresence: mode="wait" ждал exit уходящего вида и при
           переключении с канбана на реестр новый вид не монтировался вовсе —
           таблица не появлялась ни через секунду, ни через шесть. */}
-      {view === 'list' ? (
+      {filtered.length === 0 ? (
+        <EmptyState
+          title="Ничего не найдено"
+          description="По этим фильтрам объектов нет — попробуйте их сбросить."
+          action={<button type="button" onClick={reset} className="hp-btn-secondary">Сбросить фильтры</button>}
+        />
+      ) : view === 'list' ? (
         <RegistryTable
           rows={filtered}
           columns={columns}
           href={p => `/properties/${p.id}`}
           selection={selection}
-          empty="Нет объектов по выбранным фильтрам"
+          empty="Ничего не найдено"
         />
-      ) : filtered.length === 0 ? (
-        <div className="hp-card hp-empty">
-          <p className="text-[var(--hp-sub)] text-sm">Нет объектов по выбранным фильтрам</p>
-        </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filtered.map(property => {

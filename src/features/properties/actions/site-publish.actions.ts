@@ -6,6 +6,7 @@ import { requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
 import { rateLimitMutation } from '@/lib/rate-limit'
 import { writeAuditLog } from '@/lib/audit'
+import { friendlyDbError } from '@/lib/errors'
 
 /**
  * Публикация объекта на публичном сайте «ХаусПро».
@@ -44,7 +45,7 @@ export async function togglePropertySitePublishAction(propertyId: string, publis
     .update({ site_publish: publish })
     .eq('id', propertyId)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'публикацию' }) }
 
   await writeAuditLog({
     userId: user.id,

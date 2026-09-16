@@ -7,6 +7,7 @@ import { requirePermission } from '@/lib/permissions'
 import { rateLimitMutation } from '@/lib/rate-limit'
 import { computeConsumption, computeAmount, detectAnomalies } from '@/features/meters/services/anomalies'
 import { METER_KINDS } from '@/features/meters/config/meter-kinds'
+import { friendlyDbError } from '@/lib/errors'
 
 export interface MeterResult {
   error?: string
@@ -60,7 +61,7 @@ export async function createMeterAction(propertyId: string, formData: FormData):
     tariff: parseNumber(formData.get('tariff')),
   })
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'счётчик' }) }
 
   revalidatePath(`/properties/${propertyId}`)
   return { success: true }
@@ -149,7 +150,7 @@ export async function addMeterReadingAction(
     created_by: user.id,
   })
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'счётчик' }) }
 
   revalidatePath(`/properties/${propertyId}`)
   // Счётчики показываются и на карточке объекта в управлении, и там же
@@ -175,7 +176,7 @@ export async function deactivateMeterAction(meterId: string, propertyId: string)
   if (permError) return { error: permError.error }
 
   const { error } = await supabase.from('utility_meters').update({ is_active: false }).eq('id', meterId)
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'счётчик' }) }
 
   revalidatePath(`/properties/${propertyId}`)
   return { success: true }

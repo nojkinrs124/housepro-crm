@@ -3,6 +3,7 @@ import { Home, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { buttonVariants } from '@/components/ui/button'
+import { EmptyState } from '@/components/layout/EmptyState'
 import { PropertiesView, type PropertyRow } from '@/features/properties/components/PropertiesView'
 
 export default async function PropertiesPage() {
@@ -28,31 +29,34 @@ export default async function PropertiesPage() {
   const sitePublishedCount = properties.filter(p => p.site_publish).length
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <PageHeader
-        title="Объекты недвижимости"
+        title="Объекты"
         subtitle={`${properties.length} объектов в базе · ${publishedCount} на Авито · ${sitePublishedCount} на сайте`}
         actions={
           <Link href="/properties/new" className={buttonVariants({ size: 'sm' })}>
             <Plus style={{ width: 16, height: 16 }} />
-            Добавить объект
+            Новый объект
           </Link>
         }
       />
 
       {properties.length === 0 ? (
-        <div className="hp-card hp-empty">
-          <div className="w-12 h-12 rounded-[var(--hp-radius)] bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)] flex items-center justify-center mx-auto mb-3">
-            <Home style={{ width: 20, height: 20 }} className="text-[var(--hp-tertiary)]" />
-          </div>
-          <p className="text-[var(--hp-ink)] font-semibold">
-            {error ? `Ошибка: ${error.message}` : 'Нет объектов'}
-          </p>
-          <Link href="/properties/new" className="hp-btn-primary mt-5">
-            <Plus style={{ width: 16, height: 16 }} />
-            Добавить объект
-          </Link>
-        </div>
+        error ? (
+          <EmptyState
+            icon={<Home className="w-5 h-5 text-[var(--hp-sub)]" />}
+            title="Не получилось загрузить объекты"
+            description="Обновите страницу. Если ошибка повторится — напишите в поддержку."
+          />
+        ) : (
+          <EmptyState
+            icon={<Home className="w-5 h-5 text-[var(--hp-sub)]" />}
+            title="Объектов пока нет"
+            description="Объект — квартира, дом или помещение, с которым вы работаете. Добавьте первый, и его можно будет привязать к сделке и опубликовать на Авито и сайте."
+            actionHref="/properties/new"
+            actionLabel="Новый объект"
+          />
+        )
       ) : (
         <PropertiesView properties={properties} />
       )}

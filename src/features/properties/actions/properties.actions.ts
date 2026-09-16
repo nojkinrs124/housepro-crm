@@ -10,6 +10,7 @@ import { requirePermission } from '@/lib/permissions'
 import { rateLimitMutation } from '@/lib/rate-limit'
 import { writeAuditLog } from '@/lib/audit'
 import { LISTING_BODY_MAX, LISTING_TITLE_MAX } from '@/lib/ai/listing/facts'
+import { friendlyDbError } from '@/lib/errors'
 
 function extractPropertyFields(formData: FormData) {
   return {
@@ -89,7 +90,7 @@ export async function createPropertyAction(formData: FormData) {
     organization_id: orgId,
   }).select().single()
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'объект' }) }
 
   revalidatePath('/properties')
   revalidateSiteForProperty(property.id)
@@ -117,7 +118,7 @@ export async function createPropertyQuickAction(formData: FormData) {
     organization_id: orgId,
   }).select('id, title, address, property_type').single()
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'объект' }) }
 
   revalidatePath('/properties')
   revalidateSiteForProperty(property.id)
@@ -143,7 +144,7 @@ export async function updatePropertyAction(id: string, formData: FormData) {
     .update({ ...fields, updated_at: new Date().toISOString() })
     .eq('id', id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'объект' }) }
 
   revalidatePath('/properties')
   revalidatePath(`/properties/${id}`)
@@ -160,7 +161,7 @@ export async function deletePropertyAction(id: string) {
   if (permError) return permError
 
   const { error } = await supabase.from('properties').delete().eq('id', id)
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'объект', verb: 'удалить' }) }
 
   revalidatePath('/properties')
   revalidateSiteForProperty(id)
@@ -216,7 +217,7 @@ export async function saveListingTextAction(propertyId: string, input: z.input<t
       updated_at: new Date().toISOString(),
     })
     .eq('id', propertyId)
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'объект' }) }
 
   await writeAuditLog({
     userId: user.id,
