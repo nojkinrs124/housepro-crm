@@ -58,11 +58,14 @@ export default async function DashboardPage() {
  supabase.from('deals').select('id', { count: 'exact', head: true }).not('status', 'in', '(completed,cancelled)'),
  supabase.from('tasks').select('id', { count: 'exact', head: true })
  .lt('deadline', now).not('status', 'in', '(done,cancelled)'),
- supabase.from('payments').select('id', { count: 'exact', head: true })
- .eq('payment_status', 'overdue'),
+ // Платежи — из accounting_transactions: таблица payments заморожена с июня
+ // 2026, дашборд по ней показывал застывшие цифры (открытых там 0).
+ supabase.from('accounting_transactions').select('id', { count: 'exact', head: true })
+ .eq('type', 'income').eq('status', 'planned').lt('due_date', new Date().toISOString().slice(0, 10)),
  supabase.from('deals').select('status, deal_type'),
- supabase.from('payments')
- .select('amount, payment_status')
+ supabase.from('accounting_transactions')
+ .select('amount, status, type')
+ .eq('type', 'income')
  .gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()),
  supabase.from('contacts').select('id, full_name, phone, role, status, created_at')
  .order('created_at', { ascending: false }).limit(5),
@@ -72,8 +75,8 @@ export default async function DashboardPage() {
  .eq('assigned_to', user?.id ?? '')
  .not('status', 'in', '(done,cancelled)')
  .order('deadline', { ascending: true }).limit(6),
- supabase.from('payments').select('id, amount, payment_type, due_date, contract:contracts(contract_number)')
- .eq('payment_status', 'overdue')
+ supabase.from('accounting_transactions').select('id, amount, due_date, contract:contracts(contract_number)')
+ .eq('type', 'income').eq('status', 'planned').lt('due_date', new Date().toISOString().slice(0, 10))
  .order('due_date', { ascending: true }).limit(4),
  supabase.from('tasks').select('id, title, priority, deadline')
  .gte('deadline', now)
@@ -83,10 +86,10 @@ export default async function DashboardPage() {
  ])
 
  const paidThisMonth = (paymentStats ?? [])
- .filter(p => p.payment_status === 'paid')
+ .filter(p => p.status === 'completed')
  .reduce((s, p) => s + Number(p.amount ?? 0), 0)
  const pendingThisMonth = (paymentStats ?? [])
- .filter(p => ['pending', 'partial'].includes(p.payment_status ?? ''))
+ .filter(p => p.status === 'planned')
  .reduce((s, p) => s + Number(p.amount ?? 0), 0)
 
  // bg через color-mix(...,var(--hp-surface)) вместо голой rgba(...,0.12): на тёмной
@@ -162,7 +165,7 @@ export default async function DashboardPage() {
  </Link>
  )}
  {(overduePaymentsCount ?? 0) > 0 && (
- <Link href="/payments" className="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-[var(--hp-warn-tint)] text-[var(--hp-warn)] border border-[var(--hp-border)] hover:bg-[var(--hp-warn-tint)] transition-colors">
+ <Link href="/accounting?status=planned" className="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-[var(--hp-warn-tint)] text-[var(--hp-warn)] border border-[var(--hp-border)] hover:bg-[var(--hp-warn-tint)] transition-colors">
  <DollarSign style={{ width: 14, height: 14 }} />
  {overduePaymentsCount} просроч. платежей
  </Link>
@@ -184,7 +187,7 @@ export default async function DashboardPage() {
  <h2 className="font-bold text-foreground text-[16px] tracking-tight">Финансы</h2>
  <p className="text-xs text-muted-foreground mt-0.5 font-medium">Текущий месяц</p>
  </div>
- <Link href="/payments" className="flex items-center gap-1 text-xs text-[var(--hp-accent)] font-semibold hover:underline">
+ <Link href="/accounting" className="flex items-center gap-1 text-xs text-[var(--hp-accent)] font-semibold hover:underline">
  Подробнее <ArrowUpRight style={{ width: 13, height: 13 }} />
  </Link>
  </div>
@@ -226,7 +229,7 @@ export default async function DashboardPage() {
  </p>
  <div className="space-y-2">
  {overduePaymentsList!.map(p => (
- <Link key={p.id} href={`/payments/${p.id}/edit`}
+ <Link key={p.id} href={`/accounting/transactions/${p.id}`}
  className="flex items-center justify-between px-4 py-3 border transition-all"
  style={{ background: 'var(--hp-danger-tint)', borderColor: 'var(--hp-border)' }}>
  <div>

@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Users, Home, FileText, BookOpen,
   CheckSquare, Settings, LogOut, PanelLeftClose, PanelLeftOpen,
   Zap, TrendingUp, UserCog, BarChart2, X, Menu,
-  Eye, FolderOpen, CalendarDays, Building2, Library, Wrench,
+  Eye, Building2,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
@@ -24,7 +24,19 @@ import type { UserBadge } from '@/types/database'
  * чем оформляем, «Обслуживание» — непрерывная работа по объектам в управлении,
  * «Деньги» — учёт и цифры.
  */
-const navigation = [
+// 17 пунктов → 11. Убраны (docs/HIDDEN.md): Подборки и Заявки (данных 0),
+// Календарь (кнопка в «Задачах»), База знаний («?» в шапке). Сотрудники —
+// только администратору. Страницы остались, ссылки с них работают.
+interface NavItem {
+  name: string
+  href: string
+  icon: typeof LayoutDashboard
+  section: string | null
+  /** Пункт видит только администратор организации */
+  adminOnly?: boolean
+}
+
+const navigation: NavItem[] = [
   { name: 'Дашборд',              href: '/dashboard',    icon: LayoutDashboard, section: null },
 
   { name: 'Лиды',                 href: '/leads',        icon: Zap,             section: 'Продажи' },
@@ -33,19 +45,15 @@ const navigation = [
 
   { name: 'Объекты',              href: '/properties',   icon: Home,            section: 'База' },
   { name: 'Показы',               href: '/showings',     icon: Eye,             section: null },
-  { name: 'Подборки',             href: '/collections',  icon: FolderOpen,      section: null },
   { name: 'Договоры',             href: '/contracts',    icon: FileText,        section: null },
 
   { name: 'Объекты в управлении', href: '/management',   icon: Building2,       section: 'Обслуживание' },
-  { name: 'Календарь',            href: '/calendar',     icon: CalendarDays,    section: null },
   { name: 'Задачи',               href: '/tasks',        icon: CheckSquare,     section: null },
-  { name: 'Заявки',               href: '/requests',     icon: Wrench,          section: null },
 
   { name: 'Бухгалтерия',          href: '/accounting',   icon: BookOpen,        section: 'Деньги' },
   { name: 'Аналитика',            href: '/analytics',    icon: BarChart2,       section: null },
 
-  { name: 'База знаний',          href: '/knowledge',    icon: Library,         section: 'Система' },
-  { name: 'Сотрудники',           href: '/employees',    icon: UserCog,         section: null },
+  { name: 'Сотрудники',           href: '/employees',    icon: UserCog,         section: 'Система', adminOnly: true },
   { name: 'Настройки',            href: '/settings',     icon: Settings,        section: null },
 ]
 
@@ -79,6 +87,7 @@ function SidebarContent({
   const pathname = usePathname()
   let lastSection: string | null = 'start'
   const [hoveredItem, setHoveredItem] = useState<{ name: string; top: number } | null>(null)
+  const visibleNavigation = navigation.filter(item => !item.adminOnly || user?.role === 'admin')
 
   return (
     <>
@@ -87,7 +96,7 @@ function SidebarContent({
           рисуется толстой и заметной и визуально спорит с компактным меню. */}
       <nav className="flex-1 py-1.5 px-3 overflow-y-auto overflow-x-hidden relative hp-scroll-hidden">
         <div className="space-y-0.5">
-          {navigation.map((item) => {
+          {visibleNavigation.map((item) => {
             const Icon = item.icon
             const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
             const showSection = !collapsed && item.section && item.section !== lastSection

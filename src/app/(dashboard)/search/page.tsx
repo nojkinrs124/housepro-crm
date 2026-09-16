@@ -3,6 +3,7 @@ import { Search, User, Home, TrendingUp, FileText, CheckSquare } from 'lucide-re
 import Link from 'next/link'
 import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { EmptyState } from '@/components/layout/EmptyState'
 import { formatDate, likeFilterValue } from '@/lib/utils'
 import { DEAL_TYPE_LABELS as dealTypeLabels } from '@/features/deals/config/deal-stages'
 
@@ -18,16 +19,19 @@ export default async function SearchPage({
  return (
  <div className="max-w-3xl mx-auto space-y-6">
  <PageHeader title="Поиск" />
- <div className="hp-card p-12 text-center">
- <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-40" />
- <p className="text-muted-foreground">Введите запрос в строку поиска</p>
- </div>
+ <EmptyState
+ icon={<Search className="w-5 h-5 text-[var(--hp-sub)]" />}
+ title="Что ищем?"
+ description="Введите имя или телефон контакта, адрес объекта, номер договора, задачу или номер сделки (СД-12) в строку поиска сверху."
+ />
  </div>
  )
  }
 
  const supabase = await createClient()
  const like = likeFilterValue(query)
+ const dealNumberMatch = query.match(/^(?:сд|sd)?[-\s]*(\d+)$/i)
+ const dealNumber = dealNumberMatch ? Number(dealNumberMatch[1]) : null
 
  const [
  { data: contacts },
@@ -38,7 +42,12 @@ export default async function SearchPage({
  ] = await Promise.all([
  supabase.from('contacts').select('id, full_name, phone, role').or(`full_name.ilike.${like},phone.ilike.${like}`).limit(5),
  supabase.from('properties').select('id, title, address').or(`title.ilike.${like},address.ilike.${like}`).limit(5),
- supabase.from('deals').select('id, deal_type, status, amount, created_at').limit(3),
+ // Сделки ищутся по номеру: «СД-12», «12». Текстового поля у сделки нет,
+ // а раньше блок вообще не фильтровался и в любую выдачу попадали три
+ // случайные сделки.
+ dealNumber !== null
+ ? supabase.from('deals').select('id, deal_type, status, amount, created_at, deal_number').eq('deal_number', dealNumber).limit(3)
+ : Promise.resolve({ data: [] as { id: string; deal_type: string; status: string; amount: number | null; created_at: string | null; deal_number: number | null }[] }),
  supabase.from('contracts').select('id, contract_number, contract_type, status').or(`contract_number.ilike.${like}`).limit(5),
  supabase.from('tasks').select('id, title, status, priority').ilike('title', `%${query}%`).limit(5),
  ])
@@ -50,17 +59,18 @@ export default async function SearchPage({
  return (
  <div className="max-w-3xl mx-auto space-y-6">
  <div className="flex items-center gap-3">
- <Search className="w-5 h-5 text-muted-foreground" />
- <h1 className="text-2xl font-bold text-foreground">
- Результаты: <span className="text-primary">{query}</span>
+ <Search className="w-5 h-5 text-[var(--hp-sub)]" />
+ <h1 className="hp-h1">
+ Результаты: <span className="text-[var(--hp-accent)]">{query}</span>
  </h1>
- <span className="text-muted-foreground text-sm">({total} совпадений)</span>
+ <span className="text-[var(--hp-sub)] text-sm">({total} совпадений)</span>
  </div>
 
  {total === 0 ? (
- <div className="hp-card p-12 text-center">
- <p className="text-muted-foreground">Ничего не найдено по запросу «{query}»</p>
- </div>
+ <EmptyState
+ title={`Ничего не найдено по запросу «${query}»`}
+ description="Поиск ищет по имени и телефону контакта, адресу объекта, номеру договора и названию задачи. Сделки — по номеру СД-…"
+ />
  ) : (
  <div className="space-y-4">
 
@@ -164,7 +174,7 @@ export default async function SearchPage({
  <Link key={d.id} href={`/deals/${d.id}`}
  className="flex items-center justify-between px-5 py-3 hover:bg-accent/40 transition">
  <p className="text-sm font-medium text-foreground">
- {dealTypeLabels[d.deal_type] ?? d.deal_type} · {formatDate(d.created_at)}
+ {d.deal_number ? `СД-${d.deal_number} · ` : ''}{dealTypeLabels[d.deal_type] ?? d.deal_type} · {formatDate(d.created_at)}
  </p>
  {d.amount && (
  <span className="text-sm font-semibold text-foreground">{Number(d.amount).toLocaleString('ru-RU')} ₽</span>

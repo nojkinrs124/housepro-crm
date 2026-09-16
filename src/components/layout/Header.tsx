@@ -1,6 +1,6 @@
 'use client'
 
-import { Search, Plus, ChevronDown, Sparkles, User as UserIcon, Home, TrendingUp, FileText, CheckSquare } from 'lucide-react'
+import { Search, Plus, ChevronDown, Sparkles, User as UserIcon, Home, TrendingUp, FileText, CheckSquare, Zap, CircleHelp } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import type { UserBadge } from '@/types/database'
@@ -88,6 +88,17 @@ export function Header({ unreadCount = 0 }: { user?: UserBadge | null; unreadCou
       <div className="flex-1" />
 
       <div className="flex items-center gap-2">
+        {/* База знаний — справочник для сотрудника, живёт под «?», а не в
+            боковом меню среди рабочих разделов (решение B1.5). */}
+        <a
+          href="/knowledge"
+          title="База знаний — как работать в системе"
+          aria-label="База знаний"
+          className="hidden sm:flex items-center justify-center w-10 h-10 rounded-[var(--hp-radius)] text-[var(--hp-sub)] hover:text-[var(--hp-ink)] hover:bg-[var(--hp-neutral-tint)] transition-colors"
+        >
+          <CircleHelp style={{ width: 18, height: 18 }} />
+        </a>
+
         <NotificationBell unreadCount={unreadCount} />
 
         {/* Quick create */}
@@ -124,6 +135,9 @@ export function Header({ unreadCount = 0 }: { user?: UserBadge | null; unreadCou
                 </span>
               </div>
               {[
+                // Входящий звонок — всегда лид (решение B5): одна точка входа для
+                // человека, контакт появится при конвертации.
+                { label: 'Лид — звонок или заявка', href: '/leads/new', Icon: Zap },
                 { label: 'Контакт',  href: '/contacts/new',   Icon: UserIcon },
                 { label: 'Объект',   href: '/properties/new', Icon: Home },
                 { label: 'Сделку',   href: '/deals/new',      Icon: TrendingUp },
