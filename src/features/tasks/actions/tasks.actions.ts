@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/server'
 import { requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
 import { emailTaskAssigned } from '@/lib/email/send'
+import { friendlyDbError } from '@/lib/errors'
 
 const VALID_TASK_STATUSES = ['todo', 'in_progress', 'done', 'cancelled']
 const VALID_TASK_PRIORITIES = ['low', 'medium', 'high']
@@ -20,7 +21,7 @@ export async function createTaskAction(formData: FormData) {
 
   const priority = formData.get('priority') as string
   if (!VALID_TASK_PRIORITIES.includes(priority)) {
-    return { error: `Недопустимый приоритет: ${priority}` }
+    return { error: 'Выберите приоритет задачи из списка' }
   }
 
   const values = {
@@ -51,7 +52,7 @@ export async function createTaskAction(formData: FormData) {
   if (permError) return permError
 
   const { data: task, error } = await supabase.from('tasks').insert(values).select('id').single()
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'задачу' }) }
 
   // Письмо исполнителю — только если задачу назначили не себе (emailTaskAssigned
   // сам отсеет этот случай по actorId) и почта настроена.
@@ -86,7 +87,7 @@ export async function updateTaskStatusAction(
   }
 
   if (!VALID_TASK_STATUSES.includes(status)) {
-    return { error: `Недопустимый статус: ${status}` }
+    return { error: 'Такого статуса задачи не существует — обновите страницу и попробуйте снова' }
   }
 
   const permError = await requirePermission(user.id, 'tasks', 'update')
@@ -97,7 +98,7 @@ export async function updateTaskStatusAction(
     .update({ status })
     .eq('id', id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'задачу' }) }
 
   revalidatePath('/tasks')
   return { success: true }
@@ -116,7 +117,7 @@ export async function deleteTaskAction(id: string) {
   const { error } = await supabase.from('tasks').delete().eq('id', id)
 
   if (error) {
-    return { error: error.message }
+    return { error: friendlyDbError(error, { entity: 'задачу', verb: 'удалить' }) }
   }
 
   revalidatePath('/tasks')

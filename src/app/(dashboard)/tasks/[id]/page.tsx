@@ -1,266 +1,231 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import {
- ArrowLeft, CheckSquare, Calendar, User, Clock,
- AlertTriangle, Building2, FileText, Banknote, Flag,
-} from 'lucide-react'
+import { CheckSquare, TrendingUp, Home, FileText, Zap, Edit } from 'lucide-react'
 import { TaskStatusSelect } from '@/features/tasks/components/TaskStatusSelect'
-import { TaskDeleteButton } from '@/features/tasks/components/TaskDeleteButton'
-import { formatDate } from '@/lib/utils'
+import { deleteTaskAction } from '@/features/tasks/actions/tasks.actions'
+import { PageHeader } from '@/components/layout/PageHeader'
+import { RecordActions } from '@/components/layout/RecordActions'
+import { ConfirmDeleteButton } from '@/components/forms/ConfirmDeleteButton'
+import { DEAL_TYPE_LABELS, DEAL_STATUS_LABELS } from '@/features/deals/config/deal-stages'
+import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
+import { formatDate, formatDeadline, initials } from '@/lib/utils'
 
-const PRIORITY_LABELS: Record<string, { label: string; color: string; bg: string }> = {
- low: { label: 'Низкий', color: 'text-[var(--hp-good)]', bg: 'bg-[var(--hp-good-tint)] border-[var(--hp-border)]' },
- medium: { label: 'Средний', color: 'text-[var(--hp-warn)]', bg: 'bg-[var(--hp-warn-tint)] border-[var(--hp-border)]' },
- high: { label: 'Высокий', color: 'text-[var(--hp-danger)]', bg: 'bg-[var(--hp-danger-tint)] border-[var(--hp-border)]' },
+const PRIORITY_LABELS: Record<string, { label: string; cls: string }> = {
+  low:    { label: 'Низкий приоритет',  cls: 'hp-badge-neutral' },
+  medium: { label: 'Средний приоритет', cls: 'hp-badge-info' },
+  high:   { label: 'Высокий приоритет', cls: 'hp-badge-warn' },
 }
 
-const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
- todo: { label: 'К выполнению', color: 'text-[var(--hp-info)]', bg: 'bg-[var(--hp-info-tint)] border-[var(--hp-border)]' },
- in_progress: { label: 'В работе', color: 'text-[var(--hp-warn)]', bg: 'bg-[var(--hp-warn-tint)] border-[var(--hp-border)]' },
- done: { label: 'Выполнена', color: 'text-[var(--hp-good)]', bg: 'bg-[var(--hp-good-tint)] border-[var(--hp-border)]' },
- cancelled: { label: 'Отменена', color: 'text-[var(--hp-sub)]', bg: 'bg-[var(--hp-neutral-tint)] border-[var(--hp-border)]' },
+const STATUS_LABELS: Record<string, { label: string; cls: string }> = {
+  todo:        { label: 'К выполнению', cls: 'hp-badge-info' },
+  in_progress: { label: 'В работе',     cls: 'hp-badge-warn' },
+  done:        { label: 'Выполнена',    cls: 'hp-badge-good' },
+  cancelled:   { label: 'Отменена',     cls: 'hp-badge-neutral' },
 }
 
 const LONG_DATE = { day: '2-digit', month: 'long', year: 'numeric' } as const
 const LONG_DATE_TIME = { ...LONG_DATE, hour: '2-digit', minute: '2-digit' } as const
 
+/**
+ * Карточка задачи — по скелету эталона (сделки): шапка с одной главной кнопкой,
+ * блоки hp-block, действия в «…». Главное действие здесь — смена статуса, она
+ * прямо под шапкой, без лишнего клика.
+ */
 export default async function TaskDetailPage({ params }: { params: Promise<{ id: string }> }) {
- const { id } = await params
- const supabase = await createClient()
- const { data: { user } } = await supabase.auth.getUser()
+  const { id } = await params
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
- const { data: task, error: taskError } = await supabase
- .from('tasks')
- .select(`
- *,
- assignee:users!tasks_assigned_to_fkey(id, full_name, email, role),
- creator:users!tasks_created_by_fkey(id, full_name),
- deal:deals(id, deal_type, status),
- property:properties(id, title, address),
- contract:contracts(id, contract_number, contract_type),
- lead:leads(id, full_name, phone)
- `)
- .eq('id', id)
- .single()
+  const { data: task, error: taskError } = await supabase
+    .from('tasks')
+    .select(`
+      *,
+      assignee:users!tasks_assigned_to_fkey(id, full_name, email, role),
+      creator:users!tasks_created_by_fkey(id, full_name),
+      deal:deals(id, deal_type, status, deal_number),
+      property:properties(id, title, address),
+      contract:contracts(id, contract_number, contract_type),
+      lead:leads(id, full_name, phone),
+      contact:contacts(id, full_name, company_name)
+    `)
+    .eq('id', id)
+    .single()
 
- if (taskError && taskError.code !== 'PGRST116') {
- throw new Error(`Не удалось загрузить задачу: ${taskError.message}`)
- }
- if (!task) notFound()
+  if (taskError && taskError.code !== 'PGRST116') {
+    throw new Error(`Не удалось загрузить задачу: ${taskError.message}`)
+  }
+  if (!task) notFound()
 
- const { data: currentUserData } = await supabase
- .from('users')
- .select('role')
- .eq('id', user!.id)
- .single()
+  const { data: currentUserData } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', user!.id)
+    .single()
+  const canDelete = ['admin', 'manager'].includes(currentUserData?.role ?? '')
 
- const canDelete = ['admin', 'manager'].includes(currentUserData?.role ?? '')
+  const priority = PRIORITY_LABELS[task.priority] ?? PRIORITY_LABELS.medium
+  const status = STATUS_LABELS[task.status] ?? STATUS_LABELS.todo
+  const isClosed = ['done', 'cancelled'].includes(task.status)
 
- const priority = PRIORITY_LABELS[task.priority] ?? PRIORITY_LABELS.medium
- const status = STATUS_LABELS[task.status] ?? STATUS_LABELS.todo
+  const deadline = task.deadline ?? task.due_date
+  const dl = deadline ? formatDeadline(deadline) : null
+  const isOverdue = !!dl?.overdue && !isClosed
 
- const deadline = task.deadline ?? task.due_date
- const isOverdue = deadline && new Date(deadline) < new Date() && !['done', 'cancelled'].includes(task.status)
+  const assignee = task.assignee as { id: string; full_name: string; email?: string | null } | null
+  const creator  = task.creator as { full_name?: string | null } | null
+  const deal     = task.deal as { id: string; deal_type: string; status: string; deal_number?: number | null } | null
+  const property = task.property as { id: string; title: string; address?: string | null } | null
+  const contract = task.contract as { id: string; contract_number?: string | null; contract_type: string } | null
+  const lead     = task.lead as { id: string; full_name?: string | null; phone?: string | null } | null
+  const contact  = task.contact as { id: string; full_name: string; company_name?: string | null } | null
 
- return (
- <div className="max-w-4xl mx-auto space-y-6">
- {/* Back */}
- <Link href="/tasks" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
- <ArrowLeft style={{ width: 16, height: 16 }} />
- Назад к задачам
- </Link>
+  const related = [
+    deal && {
+      href: `/deals/${deal.id}`, icon: TrendingUp, kind: 'Сделка',
+      title: `${deal.deal_number ? `СД-${deal.deal_number} · ` : ''}${DEAL_TYPE_LABELS[deal.deal_type] ?? deal.deal_type}`,
+      sub: DEAL_STATUS_LABELS[deal.status] ?? deal.status,
+    },
+    contact && {
+      href: `/contacts/${contact.id}`, icon: CheckSquare, kind: 'Контакт',
+      title: contact.company_name || contact.full_name, sub: null,
+    },
+    property && {
+      href: `/properties/${property.id}`, icon: Home, kind: 'Объект',
+      title: property.title, sub: property.address ?? null,
+    },
+    contract && {
+      href: `/contracts/${contract.id}`, icon: FileText, kind: 'Договор',
+      title: CONTRACT_TYPE_LABELS[contract.contract_type] ?? contract.contract_type,
+      sub: contract.contract_number ?? null,
+    },
+    lead && {
+      href: `/leads/${lead.id}`, icon: Zap, kind: 'Лид',
+      title: lead.full_name || 'Без имени', sub: lead.phone ?? null,
+    },
+  ].filter((r): r is NonNullable<typeof r> => Boolean(r))
 
- {/* Header */}
- <div className="bg-[var(--hp-surface)] border border-border p-6">
- <div className="flex items-start justify-between gap-4">
- <div className="flex items-start gap-4 flex-1 min-w-0">
- <div className="w-12 h-12 flex items-center justify-center shrink-0"
- style={{ background: task.status === 'done' ? 'var(--hp-accent)' : '#41546B', }}>
- <CheckSquare style={{ width: 22, height: 22, color: '#fff' }} />
- </div>
- <div className="flex-1 min-w-0">
- <h1 className="text-xl font-bold text-foreground leading-snug">{task.title}</h1>
- <p className="text-sm text-muted-foreground mt-1">
- Создана {formatDate(task.created_at, LONG_DATE)}
- {(task.creator as { full_name?: string } | null)?.full_name ? ` · ${(task.creator as { full_name: string }).full_name}` : ''}
- </p>
- </div>
- </div>
+  return (
+    <div className="max-w-4xl mx-auto space-y-5">
+      <PageHeader
+        crumbs={[{ label: 'Задачи', href: '/tasks' }, { label: status.label }]}
+        title={task.title}
+        badges={
+          <span className="flex items-center gap-1.5 flex-wrap">
+            <span className={`hp-badge ${status.cls}`}>{status.label}</span>
+            <span className={`hp-badge ${priority.cls}`}>{priority.label}</span>
+            {isOverdue && <span className="hp-badge hp-badge-danger">Просрочена</span>}
+          </span>
+        }
+        meta={
+          <>
+            <span>создана {formatDate(task.created_at, LONG_DATE)}</span>
+            {creator?.full_name && (
+              <>
+                <span className="sep">·</span>
+                <span>{creator.full_name}</span>
+              </>
+            )}
+          </>
+        }
+        actions={
+          <RecordActions
+            secondary={
+              <Link href={`/tasks/new?deal_id=${task.deal_id ?? ''}&contact_id=${task.contact_id ?? ''}&property_id=${task.property_id ?? ''}&contract_id=${task.contract_id ?? ''}`}
+                className="hp-btn-secondary">
+                <Edit className="w-4 h-4" />
+                Создать похожую
+              </Link>
+            }
+            more={canDelete && (
+              <ConfirmDeleteButton
+                action={deleteTaskAction.bind(null, id)}
+                confirmText={`Удалить задачу «${task.title}»? Она пропадёт из списка и календаря. Отменить нельзя.`}
+                label="Удалить задачу"
+              />
+            )}
+          />
+        }
+      />
 
- <div className="flex items-center gap-2 shrink-0">
- {/* Priority badge */}
- <span className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold border ${priority.bg} ${priority.color}`}>
- <Flag style={{ width: 12, height: 12 }} />
- {priority.label}
- </span>
+      {/* Главное действие — статус. Это то, зачем открывают карточку задачи. */}
+      <div className="hp-block">
+        <div className="hp-block-header">Статус</div>
+        <div className="px-[18px] py-3">
+          <TaskStatusSelect taskId={task.id} currentStatus={task.status} />
+        </div>
+      </div>
 
- {/* Overdue warning */}
- {isOverdue && (
- <span className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold bg-[var(--hp-danger-tint)] text-[var(--hp-danger)] border border-[var(--hp-border)]">
- <AlertTriangle style={{ width: 12, height: 12 }} />
- Просрочена
- </span>
- )}
- </div>
- </div>
+      <div className="grid lg:grid-cols-3 gap-4 items-start">
+        <div className="lg:col-span-2 space-y-4">
+          {task.description && (
+            <div className="hp-block">
+              <div className="hp-block-header">Описание</div>
+              <p className="px-[18px] py-3 text-sm text-[var(--hp-sub)] whitespace-pre-wrap leading-relaxed">
+                {task.description}
+              </p>
+            </div>
+          )}
 
- {/* Description */}
- {task.description && (
- <div className="mt-4 p-4 bg-background border border-border text-sm text-[var(--hp-ink)] leading-relaxed whitespace-pre-wrap">
- {task.description}
- </div>
- )}
- </div>
+          <div className="hp-block">
+            <div className="hp-block-header">Связано с</div>
+            {related.length === 0 ? (
+              <div className="hp-block-item text-[var(--hp-tertiary)]">Задача ни к чему не привязана</div>
+            ) : (
+              related.map(r => {
+                const Icon = r.icon
+                return (
+                  <Link key={r.href} href={r.href} className="hp-block-item">
+                    <Icon className="w-4 h-4 shrink-0 text-[var(--hp-sub)]" />
+                    <span className="flex-1 min-w-0">
+                      <span className="block truncate text-[var(--hp-ink)] font-medium">{r.title}</span>
+                      {r.sub && <span className="block text-[11.5px] text-[var(--hp-sub)] truncate">{r.sub}</span>}
+                    </span>
+                    <span className="shrink-0 text-[11px] uppercase tracking-wide text-[var(--hp-tertiary)]">{r.kind}</span>
+                  </Link>
+                )
+              })
+            )}
+          </div>
+        </div>
 
- <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
- {/* Left: Status + details */}
- <div className="md:col-span-2 space-y-6">
- {/* Status control */}
- <div className="bg-[var(--hp-surface)] border border-border p-5">
- <h2 className="text-sm font-semibold text-foreground mb-4">Статус задачи</h2>
- <TaskStatusSelect taskId={task.id} currentStatus={task.status} />
- </div>
+        <div className="space-y-4">
+          <div className="hp-block">
+            <div className="hp-block-header">Исполнитель</div>
+            {assignee ? (
+              <div className="hp-block-item">
+                <div className="hp-avatar">{initials(assignee.full_name)}</div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-[var(--hp-ink)] truncate">{assignee.full_name}</p>
+                  {assignee.email && <p className="text-[11.5px] text-[var(--hp-sub)] truncate">{assignee.email}</p>}
+                </div>
+              </div>
+            ) : (
+              <div className="hp-block-item text-[var(--hp-tertiary)]">Не назначен</div>
+            )}
+          </div>
 
- {/* Related entities */}
- <div className="bg-[var(--hp-surface)] border border-border p-5">
- <h2 className="text-sm font-semibold text-foreground mb-4">Связанные объекты</h2>
- <div className="space-y-2">
- {(task.deal as { id: string; deal_type: string; status: string } | null) && (
- <Link href={`/deals/${(task.deal as { id: string }).id}`}
- className="flex items-center gap-3 p-3 border border-border hover:border-[var(--hp-border)] hover:bg-[var(--hp-info-tint)]/40 transition-all group">
- <div className="w-8 h-8 bg-[var(--hp-info-tint)] flex items-center justify-center">
- <Banknote style={{ width: 16, height: 16, color: '#41546B' }} />
- </div>
- <div>
- <p className="text-xs text-muted-foreground">Сделка</p>
- <p className="text-sm font-medium text-foreground group-hover:text-[var(--hp-info)] transition-colors">
- {(task.deal as { deal_type: string }).deal_type === 'rent' ? 'Аренда' :
- (task.deal as { deal_type: string }).deal_type === 'sale' ? 'Продажа' : 'Управление'}
- </p>
- </div>
- </Link>
- )}
-
- {(task.property as { id: string; title: string; address?: string } | null) && (
- <Link href={`/properties/${(task.property as { id: string }).id}`}
- className="flex items-center gap-3 p-3 border border-border hover:border-[var(--hp-border)] hover:bg-[var(--hp-neutral-tint)]/40 transition-all group">
- <div className="w-8 h-8 bg-[var(--hp-neutral-tint)] flex items-center justify-center">
- <Building2 style={{ width: 16, height: 16, color: '#5C6659' }} />
- </div>
- <div className="min-w-0">
- <p className="text-xs text-muted-foreground">Объект</p>
- <p className="text-sm font-medium text-foreground group-hover:text-[var(--hp-sub)] transition-colors truncate">
- {(task.property as { title: string }).title}
- </p>
- {(task.property as { address?: string }).address && (
- <p className="text-xs text-muted-foreground truncate">{(task.property as { address: string }).address}</p>
- )}
- </div>
- </Link>
- )}
-
- {(task.contract as { id: string; contract_number?: string } | null) && (
- <Link href={`/contracts/${(task.contract as { id: string }).id}`}
- className="flex items-center gap-3 p-3 border border-border hover:border-[var(--hp-border)] hover:bg-[var(--hp-good-tint)]/40 transition-all group">
- <div className="w-8 h-8 bg-[var(--hp-good-tint)] flex items-center justify-center">
- <FileText style={{ width: 16, height: 16, color: 'var(--hp-accent)' }} />
- </div>
- <div>
- <p className="text-xs text-muted-foreground">Договор</p>
- <p className="text-sm font-medium text-foreground group-hover:text-[var(--hp-good)] transition-colors">
- № {(task.contract as { contract_number?: string }).contract_number ?? '—'}
- </p>
- </div>
- </Link>
- )}
-
- {(task.lead as { id: string; full_name?: string; phone?: string } | null) && (
- <Link href={`/leads/${(task.lead as { id: string }).id}`}
- className="flex items-center gap-3 p-3 border border-border hover:border-[var(--hp-border)] hover:bg-[var(--hp-warn-tint)]/40 transition-all group">
- <div className="w-8 h-8 bg-[var(--hp-warn-tint)] flex items-center justify-center">
- <User style={{ width: 16, height: 16, color: 'var(--hp-warn)' }} />
- </div>
- <div>
- <p className="text-xs text-muted-foreground">Лид</p>
- <p className="text-sm font-medium text-foreground group-hover:text-[var(--hp-warn)] transition-colors">
- {(task.lead as { full_name?: string }).full_name ?? (task.lead as { phone?: string }).phone ?? '—'}
- </p>
- </div>
- </Link>
- )}
-
- {!task.deal && !task.property && !task.contract && !task.lead && (
- <p className="text-sm text-muted-foreground py-2">Нет связанных объектов</p>
- )}
- </div>
- </div>
- </div>
-
- {/* Right: Info panel */}
- <div className="space-y-4">
- {/* Assignee */}
- <div className="bg-[var(--hp-surface)] border border-border p-5">
- <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Исполнитель</h2>
- {(task.assignee as { full_name?: string; email?: string; role?: string } | null) ? (
- <div className="flex items-center gap-3">
- <div className="w-10 h-10 rounded-[var(--hp-radius)] bg-[var(--hp-accent)] flex items-center justify-center text-white text-sm font-bold">
- {(task.assignee as { full_name: string }).full_name.charAt(0).toUpperCase()}
- </div>
- <div>
- <p className="text-sm font-semibold text-foreground">{(task.assignee as { full_name: string }).full_name}</p>
- <p className="text-xs text-muted-foreground">{(task.assignee as { email?: string }).email ?? ''}</p>
- </div>
- </div>
- ) : (
- <p className="text-sm text-muted-foreground">Не назначен</p>
- )}
- </div>
-
- {/* Deadline */}
- <div className="bg-[var(--hp-surface)] border border-border p-5">
- <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Сроки</h2>
- <div className="space-y-2">
- {deadline && (
- <div className={`flex items-center gap-2.5 p-3 border ${isOverdue ? 'bg-[var(--hp-danger-tint)] border-[var(--hp-border)]' : 'bg-background border-border'}`}>
- <Clock style={{ width: 15, height: 15, color: isOverdue ? '#A24B30' : '#5C6659', flexShrink: 0 }} />
- <div>
- <p className="text-xs text-muted-foreground">Дедлайн</p>
- <p className={`text-sm font-semibold ${isOverdue ? 'text-[var(--hp-danger)]' : 'text-foreground'}`}>
- {formatDate(deadline, LONG_DATE_TIME)}
- </p>
- </div>
- </div>
- )}
- <div className="flex items-center gap-2.5 p-3 bg-background border border-border">
- <Calendar style={{ width: 15, height: 15, color: '#5C6659', flexShrink: 0 }} />
- <div>
- <p className="text-xs text-muted-foreground">Создана</p>
- <p className="text-sm font-medium text-foreground">{formatDate(task.created_at, LONG_DATE)}</p>
- </div>
- </div>
- </div>
- </div>
-
- {/* Current status badge */}
- <div className="bg-[var(--hp-surface)] border border-border p-5">
- <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Текущий статус</h2>
- <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold border ${status.bg} ${status.color}`}>
- {status.label}
- </span>
- </div>
-
- {/* Actions */}
- <div className="bg-[var(--hp-surface)] border border-border p-5 space-y-2">
- <Link href={`/tasks/new?deal_id=${task.deal_id ?? ''}&contract_id=${task.contract_id ?? ''}`}
- className="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-medium text-[#41546B] bg-[var(--hp-info-tint)] border border-[var(--hp-border)] hover:bg-[var(--hp-info-tint)] transition-all">
- <CheckSquare style={{ width: 15, height: 15 }} />
- Создать похожую
- </Link>
- {canDelete && <TaskDeleteButton taskId={task.id} />}
- </div>
- </div>
- </div>
- </div>
- )
+          <div className="hp-block">
+            <div className="hp-block-header">Сроки</div>
+            <div className="hp-block-row">
+              <span className="label">Срок</span>
+              <span className={`value${isOverdue ? ' danger' : ''}`}>
+                {deadline ? formatDate(deadline, LONG_DATE_TIME) : <span className="text-[var(--hp-tertiary)]">не задан</span>}
+              </span>
+            </div>
+            {dl && !isClosed && (
+              <div className="hp-block-row">
+                <span className="label">Осталось</span>
+                <span className={`value${isOverdue ? ' danger' : ''}`}>{dl.label}</span>
+              </div>
+            )}
+            <div className="hp-block-row">
+              <span className="label">Создана</span>
+              <span className="value">{formatDate(task.created_at, LONG_DATE)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }

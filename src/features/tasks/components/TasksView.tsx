@@ -5,6 +5,7 @@ import { LayoutGrid, List } from 'lucide-react'
 import { TasksKanbanBoard } from './TasksKanban'
 import { TASK_STATUSES } from '@/features/registry/config/registries'
 import { RegistryToolbar } from '@/components/layout/RegistryToolbar'
+import { EmptyState } from '@/components/layout/EmptyState'
 import { RegistryTable, type RegistryColumn } from '@/features/registry/components/RegistryTable'
 import { BulkBar } from '@/features/registry/components/BulkBar'
 import { useRegistryFilters } from '@/hooks/useRegistryFilters'
@@ -121,7 +122,13 @@ export function TasksView({ tasks }: { tasks: TaskRow[] }) {
       {/* Без AnimatePresence: mode="wait" ждал exit уходящего вида и при
           переключении с канбана на реестр новый вид не монтировался вовсе —
           таблица не появлялась ни через секунду, ни через шесть. */}
-      {view === 'kanban' ? (
+      {filtered.length === 0 ? (
+        <EmptyState
+          title="Ничего не найдено"
+          description="По этим фильтрам задач нет — попробуйте их сбросить."
+          action={<button type="button" onClick={reset} className="hp-btn-secondary">Сбросить фильтры</button>}
+        />
+      ) : view === 'kanban' ? (
         <TasksKanbanBoard tasks={filtered} />
       ) : (
         <RegistryTable
@@ -129,7 +136,7 @@ export function TasksView({ tasks }: { tasks: TaskRow[] }) {
           columns={columns}
           href={t => `/tasks/${t.id}`}
           selection={selection}
-          empty="Нет задач по выбранным фильтрам"
+          empty="Ничего не найдено"
         />
       )}
     </div>
