@@ -87,7 +87,7 @@ export function LeadsListView({ leads, selection }: { leads: LeadRow[]; selectio
       columns={columns}
       href={l => `/leads/${l.id}`}
       selection={selection}
-      empty="Нет лидов по выбранным фильтрам"
+      empty="Ничего не найдено"
     />
   )
 }

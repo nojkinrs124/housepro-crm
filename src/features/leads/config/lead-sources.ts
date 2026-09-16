@@ -26,10 +26,18 @@ export const LEAD_SOURCES = [
   { value: 'site_o_kompanii',     label: 'Сайт · О компании' },
   { value: 'whatsapp', label: 'WhatsApp' },
   { value: 'telegram', label: 'Telegram' },
+  { value: 'instagram', label: 'Instagram' },
+  { value: 'vk',       label: 'VK' },
   { value: 'call',     label: 'Звонок' },
   { value: 'referral', label: 'Рекомендация' },
   { value: 'other',    label: 'Другое' },
 ] as const
+
+/**
+ * Источники, которые сотрудник выбирает руками в форме лида. Страницы сайта
+ * (`site_*`) сюда не входят — их проставляет сама форма на сайте.
+ */
+export const LEAD_SOURCES_MANUAL = LEAD_SOURCES.filter(s => !s.value.startsWith('site_'))
 
 export const LEAD_SOURCE_LABELS: Record<string, string> =
   Object.fromEntries(LEAD_SOURCES.map(s => [s.value, s.label]))

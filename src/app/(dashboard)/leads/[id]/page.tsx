@@ -1,27 +1,24 @@
 import { createClient } from '@/lib/supabase/server'
-import { ArrowLeft, Phone, Mail, MessageCircle, Clock, UserCheck, MapPin, Home, DollarSign, Zap, Edit, Plus, Users, FileText, Activity, AlertTriangle } from 'lucide-react'
+import { Phone, Mail, MessageCircle, UserCheck, Home, Edit, Plus, Users, FileText, Activity } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { convertLeadToClient } from '@/features/leads/actions/leads.actions'
-import { DeleteLeadButton } from '@/features/leads/components/DeleteLeadButton'
+import { deleteLeadAction } from '@/features/leads/actions/leads.actions'
+import { RecordActions } from '@/components/layout/RecordActions'
+import { ConfirmDeleteButton } from '@/components/forms/ConfirmDeleteButton'
 import { LeadActivityForm } from '@/features/leads/components/LeadActivityForm'
 import { LeadStatusSelect } from '@/features/leads/components/LeadStatusSelect'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { ReadinessPanel } from '@/components/layout/ReadinessPanel'
 import { checkLead } from '@/lib/readiness'
-import { CommunicationTimeline } from '@/features/communications/components/CommunicationTimeline'
 import { LEAD_STATUS_BADGE, LEAD_STATUS_LABELS } from '@/features/leads/config/lead-statuses'
+import { LEAD_SOURCE_LABELS } from '@/features/leads/config/lead-sources'
 import { formatDate } from '@/lib/utils'
 
-const sourceLabels: Record<string, string> = {
- avito: 'Авито', cian: 'ЦИАН', domclick: 'Домклик',
- whatsapp: 'WhatsApp', telegram: 'Telegram', call: 'Звонок',
- website: 'Сайт', referral: 'Рекомендация',
- instagram: 'Instagram', vk: 'VK', other: 'Другое',
-}
+const sourceLabels = LEAD_SOURCE_LABELS
 const dealTypeLabels: Record<string, string> = {
- rent: 'Аренда', sale: 'Покупка', subrent: 'Субаренда',
+ rent: 'Снять', sale: 'Купить', subrent: 'Субаренда',
  management: 'Управление', commercial: 'Коммерция',
 }
 const propertyTypeLabels: Record<string, string> = {
@@ -69,290 +66,190 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
  const isConverted = lead.status === 'converted' || lead.status === 'closed'
  const isOverdue = lead.next_contact_at && new Date(lead.next_contact_at) < new Date() && !isConverted
 
+ const fmtDt = (d: string) => formatDate(d, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+ const criteria = [
+ lead.deal_type && { label: 'Хочет', value: dealTypeLabels[lead.deal_type] ?? lead.deal_type },
+ lead.property_type && { label: 'Тип объекта', value: propertyTypeLabels[lead.property_type] ?? lead.property_type },
+ lead.rooms && { label: 'Комнат', value: String(lead.rooms) },
+ (lead.budget_min || lead.budget_max) && { label: 'Бюджет', value: `${lead.budget_min ? Number(lead.budget_min).toLocaleString('ru-RU') : '0'} — ${lead.budget_max ? `${Number(lead.budget_max).toLocaleString('ru-RU')} ₽` : 'без верхней границы'}` },
+ (lead.area_min || lead.area_max) && { label: 'Площадь', value: `${lead.area_min ?? '—'} – ${lead.area_max ?? '∞'} м²` },
+ lead.district && { label: 'Район', value: lead.district },
+ ].filter((c): c is { label: string; value: string } => Boolean(c))
+
  return (
- <div className="max-w-4xl mx-auto space-y-6">
+ <div className="max-w-4xl mx-auto space-y-5">
  <PageHeader
- title={lead.full_name || 'Без имени'}
- backHref="/leads"
- backLabel="Все лиды"
- iconBg="bg-[var(--hp-info-tint)]"
- iconBoxClassName="w-14 h-14"
- icon={
- <span className="text-[var(--hp-info)] text-2xl font-bold">
- {lead.full_name?.charAt(0)?.toUpperCase() ?? '?'}
+ crumbs={[{ label: 'Лиды', href: '/leads' }, { label: statusLabels[lead.status] ?? lead.status }]}
+ title={lead.full_name || lead.phone || 'Без имени'}
+ badges={
+ <span className="flex items-center gap-1.5 flex-wrap">
+ <span className={`hp-badge ${statusColors[lead.status] ?? 'hp-badge-neutral'}`}>{statusLabels[lead.status] ?? lead.status}</span>
+ {isOverdue && <span className="hp-badge hp-badge-danger">Просрочен контакт</span>}
  </span>
  }
- subtitle={
- <span className="flex items-center gap-2 flex-wrap">
- <span className={`text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium ${statusColors[lead.status] ?? 'bg-[var(--hp-neutral-tint)]'}`}>
- {statusLabels[lead.status] ?? lead.status}
- </span>
- {lead.source && (
- <span className="text-xs text-muted-foreground">{sourceLabels[lead.source] ?? lead.source}</span>
- )}
- {isOverdue && (
- <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-[var(--hp-radius-badge)] font-medium bg-[var(--hp-danger-tint)] text-[var(--hp-danger)] animate-pulse">
- <AlertTriangle className="w-3 h-3" />
- Просрочен контакт
- </span>
- )}
- </span>
+ meta={
+ <>
+ {lead.source && <span>{sourceLabels[lead.source] ?? lead.source}</span>}
+ {lead.source && <span className="sep">·</span>}
+ <span>добавлен {formatDate(lead.created_at)}</span>
+ {assignee?.full_name && (<><span className="sep">·</span><span>риелтор {assignee.full_name}</span></>)}
+ </>
  }
  actions={
- <>
- {!isConverted && (
+ <RecordActions
+ /* Главное действие лида — сделать его контактом: после этого с карточки
+ контакта одной кнопкой заводится сделка. Раньше «Создать сделку» была
+ прямо здесь, но передавала id лида вместо контакта и молча ничего не
+ подставляла. */
+ primary={!isConverted && (
  <ServerActionForm action={convertLeadToClient.bind(null, id)}>
- <button type="submit"
- className="flex items-center gap-2 px-4 py-2 text-white text-sm font-bold transition whitespace-nowrap" style={{ background: 'var(--hp-accent)', }}>
+ <button type="submit" className="hp-btn-primary" data-testid="lead-convert">
  <UserCheck className="w-4 h-4" />
- → Контакт
+ В контакты
  </button>
  </ServerActionForm>
  )}
- <Link href={`/leads/${id}/edit`}
- className="flex items-center gap-2 px-4 py-2 border border-border text-sm font-medium hover:bg-accent transition whitespace-nowrap">
+ secondary={
+ <Link href={`/leads/${id}/edit`} className="hp-btn-secondary" data-testid="lead-edit">
  <Edit className="w-4 h-4" />
- Изменить
+ Редактировать
  </Link>
- <DeleteLeadButton leadId={id} />
+ }
+ more={
+ <>
+ <Link href={`/tasks/new?lead_id=${id}`} className="hp-menu-item" role="menuitem">
+ <Plus className="w-4 h-4" />
+ Поставить задачу
+ </Link>
+ <ConfirmDeleteButton
+ action={deleteLeadAction.bind(null, id)}
+ confirmText={`Удалить лид «${lead.full_name || lead.phone || 'без имени'}»? История звонков по нему тоже удалится. Отменить нельзя.`}
+ label="Удалить лид"
+ />
  </>
  }
  />
-
+ }
+ />
 
  <ReadinessPanel issues={issues} />
 
- <div className="grid lg:grid-cols-3 gap-6">
+ {/* Статус — то, ради чего открывают карточку: сразу под шапкой */}
+ <div className="hp-block">
+ <div className="hp-block-header">Статус</div>
+ <div className="px-[18px] py-3">
+ <LeadStatusSelect leadId={id} currentStatus={lead.status} />
+ </div>
+ </div>
+
+ <div className="grid lg:grid-cols-3 gap-4 items-start">
  <div className="lg:col-span-2 space-y-4">
 
- {/* Контактная информация */}
- <div className="hp-card p-5">
- <h2 className="font-semibold text-foreground mb-4">Контактные данные</h2>
- <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+ <div className="hp-block">
+ <div className="hp-block-header">Контакт</div>
  {lead.phone && (
- <a href={`tel:${lead.phone}`}
- className="flex items-center gap-3 p-3 bg-muted/30 hover:bg-accent transition">
- <Phone className="w-4 h-4 text-muted-foreground shrink-0" />
- <div>
- <p className="text-xs text-muted-foreground">Телефон</p>
- <p className="text-sm font-medium text-foreground">{lead.phone}</p>
- </div>
+ <a href={`tel:${lead.phone}`} className="hp-block-item">
+ <Phone className="w-4 h-4 shrink-0 text-[var(--hp-sub)]" />
+ <span className="flex-1 min-w-0 truncate text-[var(--hp-ink)] font-medium">{lead.phone}</span>
+ <span className="shrink-0 text-[11px] uppercase tracking-wide text-[var(--hp-tertiary)]">Телефон</span>
  </a>
  )}
  {lead.email && (
- <a href={`mailto:${lead.email}`}
- className="flex items-center gap-3 p-3 bg-muted/30 hover:bg-accent transition">
- <Mail className="w-4 h-4 text-muted-foreground shrink-0" />
- <div>
- <p className="text-xs text-muted-foreground">Email</p>
- <p className="text-sm font-medium text-foreground truncate">{lead.email}</p>
- </div>
+ <a href={`mailto:${lead.email}`} className="hp-block-item">
+ <Mail className="w-4 h-4 shrink-0 text-[var(--hp-sub)]" />
+ <span className="flex-1 min-w-0 truncate text-[var(--hp-ink)] font-medium">{lead.email}</span>
+ <span className="shrink-0 text-[11px] uppercase tracking-wide text-[var(--hp-tertiary)]">Email</span>
  </a>
  )}
  {lead.telegram && (
- <div className="flex items-center gap-3 p-3 bg-muted/30">
- <MessageCircle className="w-4 h-4 text-[var(--hp-info)] shrink-0" />
- <div>
- <p className="text-xs text-muted-foreground">Telegram</p>
- <p className="text-sm font-medium text-foreground">{lead.telegram}</p>
- </div>
+ <div className="hp-block-item">
+ <MessageCircle className="w-4 h-4 shrink-0 text-[var(--hp-sub)]" />
+ <span className="flex-1 min-w-0 truncate text-[var(--hp-ink)] font-medium">{lead.telegram}</span>
+ <span className="shrink-0 text-[11px] uppercase tracking-wide text-[var(--hp-tertiary)]">Telegram</span>
  </div>
  )}
  {lead.whatsapp && (
- <div className="flex items-center gap-3 p-3 bg-muted/30">
- <MessageCircle className="w-4 h-4 text-[var(--hp-good)] shrink-0" />
- <div>
- <p className="text-xs text-muted-foreground">WhatsApp</p>
- <p className="text-sm font-medium text-foreground">{lead.whatsapp}</p>
- </div>
+ <div className="hp-block-item">
+ <MessageCircle className="w-4 h-4 shrink-0 text-[var(--hp-sub)]" />
+ <span className="flex-1 min-w-0 truncate text-[var(--hp-ink)] font-medium">{lead.whatsapp}</span>
+ <span className="shrink-0 text-[11px] uppercase tracking-wide text-[var(--hp-tertiary)]">WhatsApp</span>
  </div>
  )}
- </div>
+ {!lead.phone && !lead.email && !lead.telegram && !lead.whatsapp && (
+ <div className="hp-block-item text-[var(--hp-tertiary)]">Контакты не указаны</div>
+ )}
  </div>
 
- {/* Критерии подбора */}
- {(lead.deal_type || lead.property_type || lead.budget_min || lead.budget_max || lead.rooms || lead.district || lead.area_min || lead.area_max) && (
- <div className="hp-card p-5">
- <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
- <Home className="w-4 h-4" />
- Критерии подбора
- </h2>
- <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
- {lead.deal_type && (
- <div className="p-3 bg-[var(--hp-info-tint)] text-center">
- <p className="text-xs text-[var(--hp-info)] font-medium">Тип сделки</p>
- <p className="text-sm font-semibold text-[var(--hp-info)] mt-0.5">{dealTypeLabels[lead.deal_type] ?? lead.deal_type}</p>
- </div>
- )}
- {lead.property_type && (
- <div className="p-3 bg-muted/30 text-center">
- <p className="text-xs text-muted-foreground font-medium">Тип объекта</p>
- <p className="text-sm font-semibold text-foreground mt-0.5">{propertyTypeLabels[lead.property_type] ?? lead.property_type}</p>
- </div>
- )}
- {lead.rooms && (
- <div className="p-3 bg-muted/30 text-center">
- <p className="text-xs text-muted-foreground font-medium">Комнат</p>
- <p className="text-sm font-semibold text-foreground mt-0.5">{lead.rooms}</p>
- </div>
- )}
- {(lead.budget_min || lead.budget_max) && (
- <div className="p-3 bg-[var(--hp-good-tint)] col-span-2 sm:col-span-1">
- <p className="text-xs text-[var(--hp-good)] font-medium flex items-center gap-1">
- <DollarSign className="w-3 h-3" /> Бюджет
- </p>
- <p className="text-sm font-semibold text-[var(--hp-good)] mt-0.5">
- {lead.budget_min ? `${Number(lead.budget_min).toLocaleString('ru-RU')}` : '0'} —{' '}
- {lead.budget_max ? `${Number(lead.budget_max).toLocaleString('ru-RU')} ₽` : '∞'}
- </p>
- </div>
- )}
- {(lead.area_min || lead.area_max) && (
- <div className="p-3 bg-muted/30 text-center">
- <p className="text-xs text-muted-foreground font-medium">Площадь</p>
- <p className="text-sm font-semibold text-foreground mt-0.5">
- {lead.area_min ?? '—'} – {lead.area_max ?? '∞'} м²
- </p>
- </div>
- )}
- {lead.district && (
- <div className="p-3 bg-muted/30">
- <p className="text-xs text-muted-foreground font-medium flex items-center gap-1">
- <MapPin className="w-3 h-3" /> Район
- </p>
- <p className="text-sm font-semibold text-foreground mt-0.5">{lead.district}</p>
- </div>
- )}
+ {criteria.length > 0 && (
+ <div className="hp-block">
+ <div className="hp-block-header">Что ищет</div>
+ <div className="hp-block-grid">
+ {criteria.map(c => (
+ <div key={c.label} className="hp-block-row"><span className="label">{c.label}</span><span className="value">{c.value}</span></div>
+ ))}
  </div>
  </div>
  )}
 
- {/* Комментарий */}
  {lead.comment && (
- <div className="hp-card p-5">
- <h2 className="font-semibold text-foreground mb-2">Комментарий</h2>
- <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{lead.comment}</p>
+ <div className="hp-block">
+ <div className="hp-block-header">Комментарий</div>
+ <p className="px-[18px] py-3 text-sm text-[var(--hp-sub)] whitespace-pre-wrap leading-relaxed">{lead.comment}</p>
  </div>
  )}
 
- {/* Активности */}
- <div className="hp-card p-5">
- <div className="flex items-center justify-between mb-4">
- <h2 className="font-semibold text-foreground">История активности</h2>
- <span className="text-xs text-muted-foreground">{activities.length} записей</span>
+ <div className="hp-block">
+ <div className="hp-block-header flex items-center justify-between">
+ <span>История общения</span>
+ <span className="normal-case tracking-normal text-[11px] text-[var(--hp-tertiary)]">{activities.length} записей</span>
  </div>
-
- {/* Форма добавления активности */}
- {!isConverted && <LeadActivityForm leadId={id} />}
-
- {/* Список активностей */}
+ {!isConverted && (
+ <div className="px-[18px] py-3 border-b border-[var(--hp-border-soft)]">
+ <LeadActivityForm leadId={id} />
+ </div>
+ )}
  {activities.length === 0 ? (
- <div className="text-center py-6 text-muted-foreground text-sm mt-4">
- Активностей ещё нет — добавьте первую
+ <div className="hp-block-item text-[var(--hp-tertiary)]">
+ <Activity className="w-4 h-4 shrink-0" />
+ Пока ничего не записано — отметьте первый звонок или сообщение
  </div>
  ) : (
- <div className="mt-4 space-y-3">
- {activities.map(act => {
+ activities.map(act => {
  const ActivityIcon = activityIcons[act.type] ?? Activity
  return (
- <div key={act.id} className="flex gap-3">
- <div className="w-8 h-8 bg-muted flex items-center justify-center shrink-0">
- <ActivityIcon className="w-4 h-4 text-muted-foreground" />
- </div>
+ <div key={act.id} className="hp-block-item items-start">
+ <ActivityIcon className="w-4 h-4 shrink-0 text-[var(--hp-sub)] mt-0.5" />
  <div className="flex-1 min-w-0">
- <div className="flex items-center gap-2 flex-wrap">
- <span className="text-sm font-medium text-foreground">
- {activityLabels[act.type] ?? act.type}
- </span>
- <span className="text-xs text-muted-foreground">
- {formatDate(act.created_at, {
- day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
- })}
- </span>
- {act.user?.full_name && (
- <span className="text-xs text-muted-foreground">· {act.user.full_name}</span>
- )}
- </div>
- {act.content && (
- <p className="text-sm text-foreground mt-0.5">{act.content}</p>
- )}
- {act.result && (
- <p className="text-xs text-muted-foreground mt-0.5 italic">Результат: {act.result}</p>
- )}
- {act.scheduled_at && (
- <p className="text-xs text-primary mt-0.5">
- Следующий: {new Date(act.scheduled_at).toLocaleDateString('ru-RU', {
- day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
- })}
+ <p className="text-sm text-[var(--hp-ink)]">
+ <span className="font-medium">{activityLabels[act.type] ?? act.type}</span>
+ <span className="text-[var(--hp-tertiary)]"> · {act.created_at ? fmtDt(act.created_at) : ""}{act.user?.full_name ? ` · ${act.user.full_name}` : ''}</span>
  </p>
- )}
+ {act.content && <p className="text-sm text-[var(--hp-sub)] mt-0.5 whitespace-pre-wrap">{act.content}</p>}
+ {act.result && <p className="text-xs text-[var(--hp-sub)] mt-0.5">Результат: {act.result}</p>}
+ {act.scheduled_at && <p className="text-xs text-[var(--hp-accent)] mt-0.5">Следующий контакт: {fmtDt(act.scheduled_at)}</p>}
  </div>
  </div>
- )})}
- </div>
+ )
+ })
  )}
  </div>
  </div>
 
- {/* Правая колонка */}
  <div className="space-y-4">
-
- {/* Статус */}
- <div className="hp-card p-5">
- <h2 className="font-semibold text-foreground mb-3">Статус лида</h2>
- <LeadStatusSelect leadId={id} currentStatus={lead.status} />
+ <div className="hp-block">
+ <div className="hp-block-header">Детали</div>
+ <div className="hp-block-row">
+ <span className="label">Следующий контакт</span>
+ <span className={`value${isOverdue ? ' danger' : ''}`}>{lead.next_contact_at ? fmtDt(lead.next_contact_at) : <span className="text-[var(--hp-tertiary)] font-normal">не назначен</span>}</span>
  </div>
-
- {/* Детали */}
- <div className="hp-card p-5">
- <h2 className="font-semibold text-foreground mb-4">Детали</h2>
- <div className="space-y-2.5 text-sm">
  {assignee?.full_name && (
- <div className="flex justify-between">
- <span className="text-muted-foreground">Ответственный</span>
- <span className="text-foreground font-medium">{assignee.full_name}</span>
- </div>
+ <div className="hp-block-row"><span className="label">Ответственный</span><span className="value">{assignee.full_name}</span></div>
  )}
- {lead.next_contact_at && (
- <div className="flex justify-between items-start">
- <span className="text-muted-foreground">След. контакт</span>
- <span className={`font-medium text-right ${isOverdue ? 'text-[var(--hp-danger)]' : 'text-foreground'}`}>
- {new Date(lead.next_contact_at).toLocaleDateString('ru-RU', {
- day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
- })}
- </span>
- </div>
- )}
- <div className="flex justify-between">
- <span className="text-muted-foreground">Добавлен</span>
- <span className="text-foreground">{formatDate(lead.created_at)}</span>
- </div>
+ <div className="hp-block-row"><span className="label">Добавлен</span><span className="value">{formatDate(lead.created_at)}</span></div>
  {lead.updated_at && (
- <div className="flex justify-between">
- <span className="text-muted-foreground">Обновлён</span>
- <span className="text-foreground">{new Date(lead.updated_at).toLocaleDateString('ru-RU')}</span>
- </div>
+ <div className="hp-block-row"><span className="label">Обновлён</span><span className="value">{formatDate(lead.updated_at)}</span></div>
  )}
  </div>
- </div>
-
- <CommunicationTimeline leadId={id} phone={lead.phone ?? null} />
-
- {/* Быстрые действия */}
- {!isConverted && (
- <div className="hp-card p-4 space-y-2">
- <Link href={`/deals/new?client_id=${id}`}
- className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition">
- <Zap className="w-4 h-4" />
- Создать сделку
- </Link>
- <Link href={`/tasks/new?lead_id=${id}`}
- className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-border text-sm font-medium hover:bg-accent transition">
- <Plus className="w-4 h-4" />
- Добавить задачу
- </Link>
- </div>
- )}
  </div>
  </div>
  </div>

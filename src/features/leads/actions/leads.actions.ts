@@ -10,6 +10,7 @@ import { normalizePhone } from '@/lib/utils'
 import { notifyNewLead } from '@/lib/telegram/notify-lead'
 import { emailLeadAssigned } from '@/lib/email/send'
 import { LEAD_STATUS_VALUES } from '@/features/leads/config/lead-statuses'
+import { friendlyDbError } from '@/lib/errors'
 
 const VALID_STATUSES = LEAD_STATUS_VALUES
 
@@ -54,7 +55,7 @@ export async function createLeadAction(formData: FormData) {
     .select()
     .single()
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'лид' }) }
 
   dispatchWebhook(orgId, 'lead.created', {
     id: lead.id, full_name: lead.full_name, phone: lead.phone, source: lead.source,
@@ -90,7 +91,7 @@ export async function updateLeadAction(id: string, formData: FormData) {
     .update({ ...fields, updated_at: new Date().toISOString() })
     .eq('id', id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'лид' }) }
 
   revalidatePath('/leads')
   revalidatePath(`/leads/${id}`)
@@ -123,7 +124,7 @@ export async function updateLeadStatusAction(
     .update({ status, updated_at: new Date().toISOString() })
     .eq('id', id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'лид' }) }
 
   revalidatePath('/leads')
   revalidatePath(`/leads/${id}`)
@@ -151,7 +152,7 @@ export async function addLeadActivityAction(formData: FormData) {
     organization_id: orgId,
   })
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'лид' }) }
 
   if (scheduled_at) {
     await supabase.from('leads').update({
@@ -194,7 +195,7 @@ export async function convertLeadToClient(id: string) {
     .select()
     .single()
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'лид' }) }
 
   await supabase
     .from('leads')
@@ -214,7 +215,9 @@ export async function deleteLeadAction(id: string) {
   const permError = await requirePermission(user.id, 'leads', 'delete')
   if (permError) return permError
 
-  await supabase.from('leads').delete().eq('id', id)
+  // Результат раньше не проверялся — при отказе RLS всё равно шёл redirect.
+  const { error } = await supabase.from('leads').delete().eq('id', id)
+  if (error) return { error: friendlyDbError(error, { entity: 'лид', verb: 'удалить' }) }
 
   revalidatePath('/leads')
   redirect('/leads')

@@ -1,9 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
-import { Plus, Zap, TrendingUp, CheckCircle2, Clock } from 'lucide-react'
+import { Plus, Zap } from 'lucide-react'
 import Link from 'next/link'
 import { LeadsViewSwitcher } from '@/features/leads/components/LeadsViewSwitcher'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { buttonVariants } from '@/components/ui/button'
+import { StatStrip } from '@/components/layout/StatStrip'
+import { EmptyState } from '@/components/layout/EmptyState'
 import { LEAD_STATUSES_IN_WORK } from '@/features/leads/config/lead-statuses'
 
 export default async function LeadsPage() {
@@ -19,7 +21,7 @@ export default async function LeadsPage() {
  const converted = (leads ?? []).filter(l => l.status === 'converted').length
 
  return (
- <div className="space-y-6">
+ <div className="space-y-5">
  <PageHeader
  title="Лиды"
  subtitle={`${total} всего · ${newCount} новых · ${converted} конвертировано`}
@@ -31,30 +33,28 @@ export default async function LeadsPage() {
  }
  />
 
- {/* Stats */}
- <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
- {[
- { label: 'Всего лидов', value: total, Icon: Zap, iconCls: 'bg-[var(--hp-info-tint)]', iconColor: 'text-[var(--hp-info)]' },
- { label: 'Новых', value: newCount, Icon: Clock, iconCls: 'bg-[var(--hp-warn-tint)]', iconColor: 'text-[var(--hp-warn)]' },
- { label: 'В работе', value: inWork, Icon: TrendingUp, iconCls: 'bg-[var(--hp-neutral-tint)]', iconColor: 'text-[var(--hp-sub)]' },
- { label: 'Конвертировано', value: converted, Icon: CheckCircle2, iconCls: 'bg-[var(--hp-good-tint)]', iconColor: 'text-[var(--hp-good)]' },
- ].map(stat => {
- const Icon = stat.Icon
- return (
- <div key={stat.label} className="hp-card p-5 flex items-center gap-3 sm:gap-4">
- <div className={`w-11 h-11 flex items-center justify-center shrink-0 ${stat.iconCls}`}>
- <Icon className={stat.iconColor} style={{ width: 20, height: 20 }} />
- </div>
- <div className="min-w-0">
- <p className="text-2xl font-bold text-foreground">{stat.value}</p>
- <p className="text-xs text-muted-foreground font-medium mt-0.5 leading-tight break-words">{stat.label}</p>
- </div>
- </div>
- )
- })}
- </div>
+ {total > 0 && (
+ <StatStrip
+ items={[
+ { label: 'Всего лидов', value: total },
+ { label: 'Новых', value: newCount, hint: newCount > 0 ? 'ещё не связались' : 'все обработаны', alert: newCount > 0 },
+ { label: 'В работе', value: inWork },
+ { label: 'Стали клиентами', value: converted, hint: total > 0 ? `${Math.round((converted / total) * 100)}% от всех` : undefined },
+ ]}
+ />
+ )}
 
+ {total === 0 ? (
+ <EmptyState
+ icon={<Zap className="w-5 h-5 text-[var(--hp-sub)]" />}
+ title="Лидов пока нет"
+ description="Лид — входящий звонок или сообщение от человека, который ещё не стал клиентом. Заявки с сайта и Авито попадают сюда сами; звонок записывается вручную."
+ actionHref="/leads/new"
+ actionLabel="Новый лид"
+ />
+ ) : (
  <LeadsViewSwitcher leads={leads ?? []} />
+ )}
  </div>
  )
 }
