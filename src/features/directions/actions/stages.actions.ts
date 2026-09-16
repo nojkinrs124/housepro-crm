@@ -5,6 +5,7 @@ import { getSessionContext } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
 import { checklistFor } from '@/features/directions/config/stage-checklists'
 import { isStageOf } from '@/features/directions/config/directions'
+import { friendlyDbError } from '@/lib/errors'
 
 /**
  * Отметка пункта чек-листа стадии.
@@ -51,7 +52,7 @@ export async function toggleChecklistItemAction(
     .update({ stage_progress: progress })
     .eq('id', dealId)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'изменить' }) }
 
   revalidatePath(`/deals/${dealId}`)
   return { success: true }

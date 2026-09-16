@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { getSessionContext } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
+import { friendlyDbError } from '@/lib/errors'
 
 export async function addDealCommentAction(dealId: string, formData: FormData) {
   const ctx = await getSessionContext()
@@ -24,7 +25,7 @@ export async function addDealCommentAction(dealId: string, formData: FormData) {
     organization_id: orgId,
   })
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error) }
 
   revalidatePath(`/deals/${dealId}`)
   return { success: true }
@@ -41,7 +42,7 @@ export async function deleteDealCommentAction(commentId: string, dealId: string)
     .eq('id', commentId)
     .eq('author_id', user.id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'удалить' }) }
 
   revalidatePath(`/deals/${dealId}`)
   return { success: true }

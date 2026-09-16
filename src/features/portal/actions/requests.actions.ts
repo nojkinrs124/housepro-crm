@@ -5,6 +5,7 @@ import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { rateLimit } from '@/lib/rate-limit'
 import { grantFor, currentScope } from '@/features/portal/services/access.service'
 import { REQUEST_CATEGORY_LABELS } from '@/features/portal/config/request-categories'
+import { friendlyDbError } from '@/lib/errors'
 
 type Result = { error?: string; success?: boolean }
 
@@ -52,7 +53,7 @@ export async function createServiceRequestAction(formData: FormData): Promise<Re
     .select('id')
     .single()
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error) }
 
   const { data: property } = await supabaseAdmin
     .from('properties')

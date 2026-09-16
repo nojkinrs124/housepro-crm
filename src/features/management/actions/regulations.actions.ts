@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { getSessionContext } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
 import { writeAuditLog } from '@/lib/audit'
+import { friendlyDbError } from '@/lib/errors'
 
 type Result = { error?: string; success?: boolean }
 
@@ -125,7 +126,7 @@ export async function deleteRegulationAction(id: string): Promise<Result> {
     .maybeSingle()
 
   const { error } = await supabase.from('management_regulations').delete().eq('id', id)
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'удалить' }) }
 
   await writeAuditLog({
     userId: user.id, orgId,

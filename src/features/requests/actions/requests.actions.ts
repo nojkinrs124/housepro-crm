@@ -5,6 +5,7 @@ import { getSessionContext } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
 import { writeAuditLog } from '@/lib/audit'
 import { canTransition, REQUEST_STATUS_LABELS } from '@/features/portal/config/request-categories'
+import { friendlyDbError } from '@/lib/errors'
 
 type Result = { error?: string; success?: boolean }
 
@@ -64,7 +65,7 @@ export async function updateRequestStatusAction(formData: FormData): Promise<Res
     })
     .eq('id', id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error) }
 
   // Задача ответственного идёт следом: держать её открытой по выполненной
   // заявке значит копить мусор в списке дел.
@@ -148,7 +149,7 @@ export async function addRequestExpenseAction(formData: FormData): Promise<Resul
     .select('id')
     .single()
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error) }
 
   await supabase.from('service_requests').update({ transaction_id: transaction.id }).eq('id', id)
 

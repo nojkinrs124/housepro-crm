@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
 import { rateLimitMutation } from '@/lib/rate-limit'
+import { friendlyDbError } from '@/lib/errors'
 
 export interface TargetResult {
   error?: string
@@ -76,7 +77,7 @@ export async function saveEmployeeTargetAction(userId: string, formData: FormDat
     .from('employee_targets')
     .upsert(payload, { onConflict: 'organization_id,user_id,period_month' })
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error) }
 
   revalidatePath(`/employees/${userId}`)
   return { success: true }

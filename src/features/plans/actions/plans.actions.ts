@@ -8,6 +8,7 @@ import { rateLimitMutation } from '@/lib/rate-limit'
 import { writeAuditLog } from '@/lib/audit'
 import { getChargeType } from '@/features/plans/config/settlement'
 import { DIRECTION_VALUES } from '@/features/directions/config/directions'
+import { friendlyDbError } from '@/lib/errors'
 
 type State = { error?: string } | undefined
 
@@ -168,7 +169,7 @@ export async function updatePlanAction(_prev: State, formData: FormData): Promis
     .update({ ...editable, updated_at: new Date().toISOString() })
     .eq('id', id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'изменить' }) }
 
   await writeAuditLog({
     userId: user.id, orgId,
@@ -198,7 +199,7 @@ export async function togglePlanActiveAction(id: string, isActive: boolean): Pro
     .update({ is_active: isActive, updated_at: new Date().toISOString() })
     .eq('id', id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'изменить' }) }
 
   await writeAuditLog({
     userId: user.id, orgId,

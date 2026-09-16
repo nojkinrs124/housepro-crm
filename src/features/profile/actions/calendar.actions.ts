@@ -4,6 +4,7 @@ import { randomBytes } from 'crypto'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { rateLimitMutation } from '@/lib/rate-limit'
+import { friendlyDbError } from '@/lib/errors'
 
 /**
  * Выдаёт (или перевыпускает) токен подписки на календарь.
@@ -23,7 +24,7 @@ export async function regenerateIcalTokenAction() {
   const token = randomBytes(24).toString('hex')
 
   const { error } = await supabase.from('users').update({ ical_token: token }).eq('id', user.id)
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'изменить' }) }
 
   revalidatePath('/settings/profile')
   return { success: true, token }
@@ -36,7 +37,7 @@ export async function revokeIcalTokenAction() {
   if (!user) return { error: 'Не авторизован' }
 
   const { error } = await supabase.from('users').update({ ical_token: null }).eq('id', user.id)
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'изменить' }) }
 
   revalidatePath('/settings/profile')
   return { success: true }

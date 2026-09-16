@@ -14,6 +14,7 @@ import {
   AvitoApiError,
 } from '@/features/avito/services/avito-api.service'
 import type { Insert } from '@/types/database'
+import { friendlyDbError } from '@/lib/errors'
 
 async function requireAdmin() {
   const supabase = await createClient()
@@ -64,7 +65,7 @@ export async function toggleAvitoPublishAction(propertyId: string, publish: bool
     })
     .eq('id', propertyId)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error) }
 
   await writeAuditLog({
     userId: user.id,
@@ -134,7 +135,7 @@ export async function saveAvitoSettingsAction(_prevState: unknown, formData: For
     ? await supabase.from('avito_settings').update(payload).eq('id', existing.id)
     : await supabase.from('avito_settings').insert(payload)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'изменить' }) }
 
   await writeAuditLog({
     userId: user.id,
@@ -164,7 +165,7 @@ export async function regenerateAvitoFeedTokenAction() {
     .update({ feed_token: newToken, updated_at: new Date().toISOString() })
     .eq('organization_id', orgId)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'изменить' }) }
 
   revalidatePath('/settings/avito')
   return { success: true }

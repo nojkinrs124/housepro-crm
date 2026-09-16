@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { validateUploadedFile } from '@/lib/validate-file'
 import { normalizePhone } from '@/lib/utils'
+import { friendlyDbError } from '@/lib/errors'
 
 const AVATAR_BUCKET = 'avatars'
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
@@ -31,7 +32,7 @@ export async function updateProfileAction(formData: FormData) {
     .update(updateData)
     .eq('id', user.id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'изменить' }) }
 
   revalidatePath('/settings/profile')
   revalidatePath('/', 'layout')
@@ -65,7 +66,7 @@ export async function updatePasswordAction(formData: FormData) {
   }
 
   const { error } = await supabase.auth.updateUser({ password })
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error) }
 
   return { success: true }
 }

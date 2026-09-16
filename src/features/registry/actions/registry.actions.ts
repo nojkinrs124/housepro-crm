@@ -7,6 +7,7 @@ import { rateLimitMutation } from '@/lib/rate-limit'
 import { writeAuditLogBatch } from '@/lib/audit'
 import { bulkTable, type BulkPatch, type BulkRow } from '@/lib/supabase/bulk'
 import { REGISTRIES, plural, type RegistryKey } from '@/features/registry/config/registries'
+import { friendlyDbError } from '@/lib/errors'
 
 /**
  * Групповые действия над выделенными строками реестра — одни на все разделы.
@@ -48,7 +49,7 @@ async function prepare(
     .in('id', ids)
     .eq('organization_id', session.orgId)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error) }
   const rows = data ?? []
   if (rows.length === 0) return { error: 'Записи не найдены' }
 
@@ -112,7 +113,7 @@ export async function bulkUpdateAction(
     .in('id', foundIds)
     .eq('organization_id', session.orgId)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'изменить' }) }
 
   await writeAuditLogBatch(rows.map(row => ({
     userId: session.user.id,
@@ -145,7 +146,7 @@ export async function bulkDeleteAction(key: RegistryKey, ids: string[]): Promise
     .in('id', foundIds)
     .eq('organization_id', session.orgId)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'удалить' }) }
 
   await writeAuditLogBatch(rows.map(row => ({
     userId: session.user.id,

@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { friendlyDbError } from '@/lib/errors'
 
 export type GeneralSettings = {
   language: string
@@ -64,7 +65,7 @@ export async function updateGeneralSettingsAction(formData: FormData) {
     .update({ settings })
     .eq('id', user.id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'изменить' }) }
 
   revalidatePath('/settings/general')
   revalidatePath('/', 'layout')

@@ -11,6 +11,7 @@ import {
   loadSettlementOperations,
   categoryIdByCode,
 } from '@/features/management/data/settlement.data'
+import { friendlyDbError } from '@/lib/errors'
 
 type Result = { error?: string; success?: boolean; warning?: string }
 
@@ -80,7 +81,7 @@ export async function registerTenantPaymentAction(formData: FormData): Promise<R
     created_by: user.id,
     organization_id: orgId,
   })
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error) }
 
   // Удержание агентства при процентной схеме — отдельной проводкой, чтобы в
   // бухгалтерии было видно, откуда взялся доход, а не только итоговое сальдо.
@@ -194,7 +195,7 @@ export async function payOwnerAction(formData: FormData): Promise<Result> {
     created_by: user.id,
     organization_id: orgId,
   })
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error) }
 
   await writeAuditLog({
     userId: user.id, orgId,
@@ -286,7 +287,7 @@ export async function addExpenseAction(formData: FormData): Promise<Result> {
     created_by: user.id,
     organization_id: orgId,
   })
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error) }
 
   await writeAuditLog({
     userId: user.id, orgId,

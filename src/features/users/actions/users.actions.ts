@@ -10,6 +10,7 @@ import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { rateLimitCreate } from '@/lib/rate-limit'
 import { getSiteUrl } from '@/lib/telegram/site-url'
 import { writeAuditLog } from '@/lib/audit'
+import { friendlyDbError } from '@/lib/errors'
 
 const VALID_ROLES: UserRole[] = ['admin', 'manager', 'agent', 'accountant']
 
@@ -118,7 +119,7 @@ export async function updateEmployeeAction(employeeId: string, formData: FormDat
     .update(payload)
     .eq('id', employeeId)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'изменить' }) }
 
   revalidatePath('/employees')
   return { success: true }
@@ -146,7 +147,7 @@ export async function deactivateEmployeeAction(employeeId: string) {
     .update({ is_active: false })
     .eq('id', employeeId)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'изменить' }) }
 
   revalidatePath('/employees')
   return { success: true }
@@ -169,7 +170,7 @@ export async function activateEmployeeAction(employeeId: string) {
     .update({ is_active: true })
     .eq('id', employeeId)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'изменить' }) }
 
   revalidatePath('/employees')
   return { success: true }

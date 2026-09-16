@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import { validateUploadedFile } from '@/lib/validate-file'
 import { requirePermission } from '@/lib/permissions'
 import { normalizePhone } from '@/lib/utils'
+import { friendlyDbError } from '@/lib/errors'
 
 const LOGO_BUCKET = 'company-logos'
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml']
@@ -88,7 +89,7 @@ export async function createCompanyProfileAction(_prevState: unknown, formData: 
     .select('id')
     .single()
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error) }
 
   revalidatePath('/settings/company')
   redirect(`/settings/company/${created.id}/edit?created=1`)
@@ -108,7 +109,7 @@ export async function updateCompanyProfileAction(id: string, _prevState: unknown
     .update({ ...values, updated_at: new Date().toISOString() })
     .eq('id', id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'изменить' }) }
 
   revalidatePath('/settings/company')
   return { success: true }
@@ -158,7 +159,7 @@ export async function setDefaultCompanyProfileAction(id: string) {
 
   await supabase.from('company_settings').update({ is_default: false }).eq('is_default', true)
   const { error } = await supabase.from('company_settings').update({ is_default: true }).eq('id', id)
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'изменить' }) }
 
   revalidatePath('/settings/company')
   return { success: true }

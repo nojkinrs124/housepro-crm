@@ -11,6 +11,7 @@ import {
   hashSignCode,
   CODE_TTL_MINUTES,
 } from '@/lib/signing'
+import { friendlyDbError } from '@/lib/errors'
 
 type Result = { error?: string; success?: boolean }
 type IssueResult = Result & { code?: string; expiresInMinutes?: number }
@@ -111,7 +112,7 @@ export async function revokePortalAccessAction(accessId: string): Promise<Result
     .select('property_id, contact_id')
     .maybeSingle()
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error) }
   if (!access) return { error: 'Доступ не найден или уже отозван' }
 
   await writeAuditLog({
@@ -165,7 +166,7 @@ export async function issuePortalCodeAction(accessId: string): Promise<IssueResu
     issued_by: user.id,
     expires_at: new Date(Date.now() + CODE_TTL_MINUTES * 60_000).toISOString(),
   })
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error) }
 
   await writeAuditLog({
     userId: user.id, orgId,

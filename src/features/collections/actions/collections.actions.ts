@@ -9,6 +9,7 @@ import { isValidEmail } from '@/lib/email/provider'
 import { sendCollectionSharedEmail } from '@/lib/email/send'
 import { getSiteUrl } from '@/lib/telegram/site-url'
 import { advanceDealStage } from '@/lib/deal-automation'
+import { friendlyDbError } from '@/lib/errors'
 
 export async function createCollectionAction(formData: FormData) {
   const supabase = await createClient()
@@ -31,7 +32,7 @@ export async function createCollectionAction(formData: FormData) {
     .select('id')
     .single()
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error) }
 
   revalidatePath('/collections')
   redirect(`/collections/${data.id}`)
@@ -50,7 +51,7 @@ export async function toggleCollectionPublicAction(collectionId: string, isPubli
     .update({ is_public: isPublic })
     .eq('id', collectionId)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'изменить' }) }
   revalidatePath(`/collections/${collectionId}`)
   return { success: true }
 }
@@ -69,7 +70,7 @@ export async function addPropertyToCollectionAction(collectionId: string, proper
 
   if (error) {
     if (error.code === '23505') return { error: 'Объект уже в подборке' }
-    return { error: error.message }
+    return { error: friendlyDbError(error) }
   }
 
   revalidatePath(`/collections/${collectionId}`)
@@ -90,7 +91,7 @@ export async function removePropertyFromCollectionAction(collectionId: string, p
     .eq('collection_id', collectionId)
     .eq('property_id', propertyId)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'удалить' }) }
   revalidatePath(`/collections/${collectionId}`)
   return { success: true }
 }
@@ -104,7 +105,7 @@ export async function deleteCollectionAction(id: string) {
   if (permError) return permError
 
   const { error } = await supabase.from('property_collections').delete().eq('id', id)
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'удалить' }) }
 
   revalidatePath('/collections')
   redirect('/collections')

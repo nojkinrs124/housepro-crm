@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { requireOrgId } from '@/lib/org'
 import { randomBytes } from 'crypto'
 import { requirePermission } from '@/lib/permissions'
+import { friendlyDbError } from '@/lib/errors'
 
 const AVAILABLE_EVENTS = ['lead.created', 'deal.created', 'contract.created', 'payment.received']
 
@@ -41,7 +42,7 @@ export async function createWebhookAction(formData: FormData) {
     organization_id: orgId,
   })
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error) }
 
   revalidatePath('/settings/webhooks')
   return { success: true, secret }
@@ -53,7 +54,7 @@ export async function toggleWebhookAction(id: string, isActive: boolean) {
   const { supabase } = auth
 
   const { error } = await supabase.from('webhook_endpoints').update({ is_active: isActive }).eq('id', id)
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'изменить' }) }
 
   revalidatePath('/settings/webhooks')
   return { success: true }
@@ -65,7 +66,7 @@ export async function deleteWebhookAction(id: string) {
   const { supabase } = auth
 
   const { error } = await supabase.from('webhook_endpoints').delete().eq('id', id)
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'удалить' }) }
 
   revalidatePath('/settings/webhooks')
   return { success: true }

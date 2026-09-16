@@ -5,6 +5,7 @@ import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { rateLimit } from '@/lib/rate-limit'
 import { grantFor } from '@/features/portal/services/access.service'
 import { computeConsumption, computeAmount } from '@/features/meters/services/anomalies'
+import { friendlyDbError } from '@/lib/errors'
 
 type Result = { error?: string; success?: boolean; message?: string }
 
@@ -81,7 +82,7 @@ export async function submitTenantReadingAction(formData: FormData): Promise<Res
     source: 'tenant',
     note: 'Внесено арендатором из кабинета',
   })
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error) }
 
   revalidatePath(`/cabinet/tenant/${grant.propertyId}`)
   // Показания видны и агентству — на карточке объекта и в акте приёма.

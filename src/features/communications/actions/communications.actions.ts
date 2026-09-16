@@ -14,6 +14,7 @@ import {
   type WhatsappProvider,
 } from '@/lib/communications/whatsapp'
 import { TELEPHONY_PROVIDERS } from '@/lib/communications/telephony'
+import { friendlyDbError } from '@/lib/errors'
 
 /** Эквайринг: пока поддержана только ЮKassa, список — точка расширения. */
 const PAYMENT_PROVIDERS = ['yookassa'] as const
@@ -71,7 +72,7 @@ export async function logManualCommunicationAction(links: LinkFields, formData: 
     user_id: user.id,
   })
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error) }
 
   if (links.contactId) revalidatePath(`/contacts/${links.contactId}`)
   if (links.leadId) revalidatePath(`/leads/${links.leadId}`)
@@ -195,7 +196,7 @@ export async function saveChannelIntegrationAction(
     ? await supabase.from('channel_integrations').update(payload).eq('id', existing.id)
     : await supabase.from('channel_integrations').insert(payload)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'изменить' }) }
 
   revalidatePath('/settings/channels')
   revalidatePath('/settings/payments')
@@ -225,7 +226,7 @@ export async function regenerateWebhookSecretAction(
     .eq('organization_id', orgId)
     .eq('kind', kind)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'изменить' }) }
 
   revalidatePath('/settings/channels')
   revalidatePath('/settings/payments')

@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { requireOrgId } from '@/lib/org'
 import { generateApiKey } from '@/lib/api-auth'
 import { requirePermission } from '@/lib/permissions'
+import { friendlyDbError } from '@/lib/errors'
 
 async function requireAdmin() {
   const supabase = await createClient()
@@ -37,7 +38,7 @@ export async function createApiKeyAction(formData: FormData) {
     organization_id: orgId, created_by: user.id,
   })
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error) }
 
   revalidatePath('/settings/api')
   // Возвращаем plaintext только один раз — больше его нигде не сохраняем
@@ -50,7 +51,7 @@ export async function revokeApiKeyAction(keyId: string) {
   const { supabase } = auth
 
   const { error } = await supabase.from('api_keys').update({ is_active: false }).eq('id', keyId)
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'изменить' }) }
 
   revalidatePath('/settings/api')
   return { success: true }
@@ -62,7 +63,7 @@ export async function deleteApiKeyAction(keyId: string) {
   const { supabase } = auth
 
   const { error } = await supabase.from('api_keys').delete().eq('id', keyId)
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'удалить' }) }
 
   revalidatePath('/settings/api')
   return { success: true }

@@ -5,6 +5,7 @@ import { getSessionContext } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
 import { writeAuditLog } from '@/lib/audit'
 import { toJson } from '@/lib/json'
+import { friendlyDbError } from '@/lib/errors'
 
 type Result = { error?: string; success?: boolean }
 
@@ -74,7 +75,7 @@ export async function saveHandoverAction(formData: FormData): Promise<Result> {
       updated_at: new Date().toISOString(),
     }, { onConflict: 'engagement_id' })
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error) }
 
   revalidatePath('/management')
   return { success: true }
@@ -151,7 +152,7 @@ export async function completeHandoverAction(engagementId: string): Promise<Resu
     .update({ completed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
     .eq('id', handover.id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'изменить' }) }
 
   // Приёмка закрыта — обслуживание переходит в рабочее состояние.
   const { error: statusError } = await supabase

@@ -6,6 +6,7 @@ import type { FileRecord } from '@/types/database'
 import { validateUploadedFile } from '@/lib/validate-file'
 import { requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
+import { friendlyDbError } from '@/lib/errors'
 
 const BUCKET = 'documents'
 const MAX_FILE_SIZE = 20 * 1024 * 1024 // 20 МБ
@@ -119,7 +120,7 @@ export async function deleteFileAction(fileId: string) {
   }
 
   const { error } = await supabase.from('files').delete().eq('id', fileId)
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'удалить' }) }
 
   if (file.client_id) revalidatePath(`/contacts/${file.client_id}`)
   if (file.property_id) revalidatePath(`/properties/${file.property_id}`)

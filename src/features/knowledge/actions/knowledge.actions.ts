@@ -6,6 +6,7 @@ import { getSessionContext } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
 import { rateLimitMutation } from '@/lib/rate-limit'
 import { writeAuditLog } from '@/lib/audit'
+import { friendlyDbError } from '@/lib/errors'
 
 /**
  * Адрес статьи из заголовка. Кириллица транслитерируется: адрес должен
@@ -126,7 +127,7 @@ export async function updateArticleAction(id: string, _prev: unknown, formData: 
     .select('slug')
     .single()
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error) }
 
   await writeAuditLog({
     userId: user.id, orgId, action: 'update',
@@ -164,7 +165,7 @@ export async function markArticleReviewedAction(id: string) {
     .select('slug, title')
     .single()
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error) }
 
   await writeAuditLog({
     userId: user.id, orgId, action: 'update',
@@ -198,7 +199,7 @@ export async function deleteArticleAction(id: string) {
     .eq('id', id)
     .eq('organization_id', orgId)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { verb: 'удалить' }) }
 
   await writeAuditLog({
     userId: user.id, orgId, action: 'delete',

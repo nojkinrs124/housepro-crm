@@ -7,6 +7,7 @@ import { rateLimitMutation } from '@/lib/rate-limit'
 import { writeAuditLog } from '@/lib/audit'
 import { validateEngagementTerms } from '@/features/plans/services/plan-terms'
 import { advanceDealStage } from '@/lib/deal-automation'
+import { friendlyDbError } from '@/lib/errors'
 
 type Result = { error?: string; success?: boolean; id?: string }
 
@@ -137,7 +138,7 @@ export async function startEngagementAction(formData: FormData): Promise<Result>
     .select('id')
     .single()
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error) }
 
   const { error: handoverError } = await supabase.from('property_handovers').insert({
     organization_id: orgId,
@@ -217,7 +218,7 @@ export async function updateEngagementTermsAction(formData: FormData): Promise<R
     .select('property_id')
     .single()
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error) }
 
   await writeAuditLog({
     userId: user.id, orgId,
@@ -279,7 +280,7 @@ export async function setEngagementStatusAction(
     })
     .eq('id', id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error) }
 
   await writeAuditLog({
     userId: user.id, orgId,
