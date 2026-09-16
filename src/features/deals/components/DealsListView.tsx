@@ -82,7 +82,7 @@ export function DealsListView({ deals, selection }: { deals: DealListItem[]; sel
       columns={columns}
       href={d => `/deals/${d.id}`}
       selection={selection}
-      empty="Нет сделок по выбранным фильтрам"
+      empty="Ничего не найдено"
     />
   )
 }

@@ -1,17 +1,17 @@
 import { createClient } from '@/lib/supabase/server'
 import {
-  Edit, Home, Plus, FileText, Paperclip, CheckSquare, ExternalLink, Zap,
+  Edit, Plus, FileText, CheckSquare, ExternalLink, Zap,
 } from 'lucide-react'
-import { DeleteDealButton } from '@/features/deals/components/DeleteDealButton'
-import { DealComments } from '@/features/deals/components/DealComments'
+import { deleteDealAction } from '@/features/deals/actions/deals.actions'
 import { DealStageBar } from '@/features/deals/components/DealStageBar'
 import { StageChecklist } from '@/features/directions/components/StageChecklist'
-import { FileUploadToggle } from '@/features/files/components/FileUploadToggle'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { CommunicationTimeline } from '@/features/communications/components/CommunicationTimeline'
+import { RecordActions } from '@/components/layout/RecordActions'
+import { ConfirmDeleteButton } from '@/components/forms/ConfirmDeleteButton'
 import { StatStrip } from '@/components/layout/StatStrip'
+import { DEAL_SOURCE_LABELS } from '@/features/deals/config/deal-sources'
 import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
 import {
   DEAL_STATUS_LABELS, DEAL_TYPE_LABELS, dealStageBadgeClass,
@@ -35,12 +35,6 @@ const contactStatusLabels: Record<string, { label: string; cls: string }> = {
   active:   { label: 'Активный',   cls: 'hp-badge-good' },
   vip:      { label: 'VIP',        cls: 'hp-badge-warn' },
   inactive: { label: 'Неактивный', cls: 'hp-badge-neutral' },
-}
-
-const sourceLabels: Record<string, string> = {
-  avito: 'Avito', cian: 'ЦИАН', domclick: 'Домклик', instagram: 'Instagram',
-  vk: 'VK', telegram: 'Telegram', whatsapp: 'WhatsApp', phone: 'Звонок',
-  referral: 'Рекомендация', site: 'Сайт', other: 'Другое',
 }
 
 interface PartyContact {
@@ -107,9 +101,7 @@ function Party({ role, contact, fallbackName, fallbackPhone }: {
 export default async function DealPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  const [dealResult, commentsResult, contractsResult, tasksResult, filesResult] = await Promise.all([
+  const [dealResult, contractsResult, tasksResult] = await Promise.all([
     supabase
       .from('deals')
       .select(`
@@ -121,12 +113,6 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
       `)
       .eq('id', id)
       .single(),
-
-    supabase
-      .from('deal_comments')
-      .select('id, body, created_at, author:users!deal_comments_author_id_fkey(id, full_name, avatar_url)')
-      .eq('deal_id', id)
-      .order('created_at', { ascending: true }),
 
     supabase
       .from('contracts')
@@ -141,12 +127,6 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
       .not('status', 'in', '(done,cancelled)')
       .order('deadline', { ascending: true, nullsFirst: false })
       .limit(6),
-
-    supabase
-      .from('files')
-      .select('id, file_name, file_url, file_type, created_at')
-      .eq('deal_id', id)
-      .order('created_at', { ascending: false }),
   ])
 
   const deal = dealResult.data
@@ -155,10 +135,8 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
   }
   if (!deal) notFound()
 
-  const comments = commentsResult.data ?? []
   const contracts = contractsResult.data ?? []
   const tasks = tasksResult.data ?? []
-  const files = filesResult.data ?? []
 
   const ownerContact  = deal.owner_contact as PartyContact | null
   const clientContact = deal.client_contact as PartyContact | null
@@ -219,29 +197,31 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
           </>
         }
         actions={
-          <>
-            {/* Оформление — цепочка договор → начисления → задача → статус
-                объекта одним подтверждением. Скрыто только у отменённой сделки:
-                по завершённой договор нередко оформляют задним числом, а этап
-                автоматика назад всё равно не двигает. */}
-            {deal.status !== 'cancelled' && (
-              <Link
-                href={`/deals/${id}/complete`}
-                className="flex items-center gap-2 px-4 py-2 rounded-[var(--hp-radius)] text-sm font-semibold text-white bg-[var(--hp-accent)] hover:bg-[var(--hp-accent-hover)] transition-colors whitespace-nowrap"
-              >
+          <RecordActions
+            /* Оформление — цепочка договор → начисления → задача → статус
+               объекта одним подтверждением. Скрыто только у отменённой сделки:
+               по завершённой договор нередко оформляют задним числом, а этап
+               автоматика назад всё равно не двигает. */
+            primary={deal.status !== 'cancelled' && (
+              <Link href={`/deals/${id}/complete`} className="hp-btn-primary" data-testid="deal-complete">
                 <Zap className="w-4 h-4" />
                 Оформить
               </Link>
             )}
-            <Link
-              href={`/deals/${id}/edit`}
-              className="flex items-center gap-2 px-4 py-2 border border-[var(--hp-border)] rounded-[var(--hp-radius)] text-sm font-semibold text-[var(--hp-ink)] hover:border-[var(--hp-sub)] transition-colors whitespace-nowrap"
-            >
-              <Edit className="w-4 h-4" />
-              Редактировать
-            </Link>
-            <DeleteDealButton dealId={id} />
-          </>
+            secondary={
+              <Link href={`/deals/${id}/edit`} className="hp-btn-secondary" data-testid="deal-edit">
+                <Edit className="w-4 h-4" />
+                Редактировать
+              </Link>
+            }
+            more={
+              <ConfirmDeleteButton
+                action={deleteDealAction.bind(null, id)}
+                confirmText={`Удалить сделку ${dealNo}? Договоры, задачи и платежи останутся, но потеряют связь со сделкой. Отменить нельзя.`}
+                label="Удалить сделку"
+              />
+            }
+          />
         }
       />
 
@@ -372,7 +352,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
               </div>
               <div className="hp-block-row">
                 <span className="label">Источник</span>
-                <span className="value">{deal.source ? (sourceLabels[deal.source] ?? deal.source) : '—'}</span>
+                <span className="value">{deal.source ? (DEAL_SOURCE_LABELS[deal.source] ?? deal.source) : '—'}</span>
               </div>
             </div>
           </div>
@@ -419,7 +399,6 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
             </div>
           )}
 
-          <DealComments dealId={id} comments={comments} currentUserId={user?.id ?? ''} />
         </div>
 
         {/* Правая колонка */}
@@ -446,12 +425,21 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
             )}
           </div>
 
-          {/* Документы: договоры + вложения */}
-          <FileUploadToggle title="Документы" dealId={id}>
-            {contracts.length === 0 && files.length === 0 && (
+          {/* Договоры по сделке. Вложения (files) скрыты: бакет не существует
+              (задача #35), записей 0 — см. docs/HIDDEN.md. */}
+          <div className="hp-block">
+            <div className="hp-block-header flex items-center justify-between">
+              <span>Договоры</span>
+              <Link href={`/contracts/new?deal_id=${id}`}
+                className="flex items-center gap-1 normal-case tracking-normal text-[11px] font-semibold text-[var(--hp-sub)] hover:text-[var(--hp-ink)] transition-colors">
+                <Plus className="w-3 h-3" />
+                Договор
+              </Link>
+            </div>
+            {contracts.length === 0 && (
               <div className="hp-block-item text-[var(--hp-tertiary)]">
                 <FileText className="w-4 h-4 shrink-0" />
-                Документов пока нет
+                Договоров пока нет
               </div>
             )}
             {contracts.map(c => {
@@ -466,38 +454,6 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
                 </Link>
               )
             })}
-            {files.map(f => (
-              // file_url в схеме nullable: пустую ссылку не рендерим — раньше
-              // это скрывал каст к any, и в разметку уходил href={null}.
-              <a key={f.id} href={f.file_url ?? undefined} target="_blank" rel="noopener noreferrer" className="hp-block-item">
-                <Paperclip className="w-4 h-4 shrink-0 text-[var(--hp-sub)]" />
-                <span className="flex-1 min-w-0 truncate text-[var(--hp-ink)]">{f.file_name}</span>
-                <span className="shrink-0 text-[11.5px] text-[var(--hp-tertiary)]">
-                  от {formatDateCompact(f.created_at)}
-                </span>
-              </a>
-            ))}
-            <Link href={`/contracts/new?deal_id=${id}`} className="hp-block-item text-[var(--hp-accent)] font-semibold">
-              <Plus className="w-4 h-4 shrink-0" />
-              Создать договор
-            </Link>
-          </FileUploadToggle>
-
-          <CommunicationTimeline dealId={id} phone={clientContact?.phone ?? null} />
-
-          {/* Быстрые действия */}
-          <div className="hp-block">
-            <div className="hp-block-header">Быстрые действия</div>
-            <Link href={`/tasks/new?deal_id=${id}`} className="hp-block-item">
-              <CheckSquare className="w-4 h-4 shrink-0 text-[var(--hp-sub)]" />
-              Поставить задачу
-            </Link>
-            {property?.id && (
-              <Link href={`/properties/${property.id}`} className="hp-block-item">
-                <Home className="w-4 h-4 shrink-0 text-[var(--hp-sub)]" />
-                Открыть объект
-              </Link>
-            )}
           </div>
         </div>
       </div>

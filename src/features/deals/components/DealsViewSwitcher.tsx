@@ -4,6 +4,7 @@ import { LayoutGrid, List } from 'lucide-react'
 import { DealsKanbanBoard } from './DealsKanban'
 import { DealsListView } from './DealsListView'
 import { RegistryToolbar } from '@/components/layout/RegistryToolbar'
+import { EmptyState } from '@/components/layout/EmptyState'
 import { BulkBar } from '@/features/registry/components/BulkBar'
 import { useRegistryFilters } from '@/hooks/useRegistryFilters'
 import { useSelection } from '@/hooks/useSelection'
@@ -73,7 +74,13 @@ export function DealsViewSwitcher({ deals }: { deals: DealListItem[] }) {
       {/* Без AnimatePresence: mode="wait" ждал exit уходящего вида и при
           переключении с канбана на реестр новый вид не монтировался вовсе —
           таблица не появлялась ни через секунду, ни через шесть. */}
-      {view === 'kanban'
+      {filteredDeals.length === 0 ? (
+        <EmptyState
+          title="Ничего не найдено"
+          description="По этим фильтрам сделок нет — попробуйте их сбросить."
+          action={<button type="button" onClick={reset} className="hp-btn-secondary">Сбросить фильтры</button>}
+        />
+      ) : view === 'kanban'
         ? <DealsKanbanBoard deals={filteredDeals} />
         : <DealsListView deals={filteredDeals} selection={selection} />}
     </div>

@@ -10,7 +10,7 @@
  */
 
 export const DEAL_SOURCES = [
-  { value: 'avito',    label: 'Avito' },
+  { value: 'avito',    label: 'Авито' },
   { value: 'cian',     label: 'ЦИАН' },
   { value: 'domclick', label: 'Домклик' },
   { value: 'yandex',   label: 'Яндекс Недвижимость' },

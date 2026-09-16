@@ -1,9 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { TrendingUp } from 'lucide-react'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { updateDealAction } from '@/features/deals/actions/deals.actions'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
+import { FormActions } from '@/components/forms/FormLayout'
 import { DealFormBody } from '@/features/deals/components/DealFormBody'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { DEAL_STATUS_LABELS } from '@/features/deals/config/deal-stages'
@@ -69,13 +69,7 @@ export default async function EditDealPage({ params }: { params: Promise<{ id: s
           showStatus
         />
 
-        <div className="flex items-center gap-3 pt-1">
-          <button type="submit" className="hp-btn-primary">
-            <TrendingUp className="w-4 h-4" />
-            Сохранить изменения
-          </button>
-          <Link href={`/deals/${id}`} className="hp-btn-secondary">Отмена</Link>
-        </div>
+        <FormActions submitLabel="Сохранить изменения" cancelHref={`/deals/${id}`} />
       </ServerActionForm>
     </div>
   )

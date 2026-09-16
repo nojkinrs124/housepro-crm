@@ -1,9 +1,10 @@
 import { DealsViewSwitcher } from '@/features/deals/components/DealsViewSwitcher'
-import { Plus } from 'lucide-react'
+import { Plus, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { StatStrip } from '@/components/layout/StatStrip'
+import { EmptyState } from '@/components/layout/EmptyState'
 import { buttonVariants } from '@/components/ui/button'
 import { formatAmount, formatDateCompact } from '@/lib/utils'
 
@@ -47,7 +48,7 @@ export default async function DealsPage() {
         title="Сделки"
         subtitle={`${active.length} активных из ${deals.length}`}
         actions={
-          <Link href="/deals/new" className={buttonVariants({ size: 'lg' })}>
+          <Link href="/deals/new" className={buttonVariants({ size: 'sm' })}>
             <Plus style={{ width: 16, height: 16 }} />
             Новая сделка
           </Link>
@@ -85,7 +86,17 @@ export default async function DealsPage() {
         />
       )}
 
-      <DealsViewSwitcher deals={deals} />
+      {deals.length === 0 ? (
+        <EmptyState
+          icon={<TrendingUp className="w-5 h-5 text-[var(--hp-sub)]" />}
+          title="Сделок пока нет"
+          description="Сделка — это работа с клиентом от первого контакта до подписанного договора. Создайте первую, и здесь появится воронка по стадиям."
+          actionHref="/deals/new"
+          actionLabel="Новая сделка"
+        />
+      ) : (
+        <DealsViewSwitcher deals={deals} />
+      )}
     </div>
   )
 }

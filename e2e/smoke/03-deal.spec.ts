@@ -11,6 +11,8 @@ test.describe('создание сделки', () => {
 
     await page.goto('/deals/new')
     await page.getByTestId('deal-direction-sale').check()
+    // Примечания — в свёрнутом блоке «Дополнительно» (правило ≤6 полей на виду)
+    await page.getByTestId('form-extra').locator('summary').click()
     await page.getByTestId('deal-notes').fill(notes)
     await page.getByTestId('deal-submit').click()
 

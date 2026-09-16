@@ -1,8 +1,8 @@
 import { createDealAction } from '@/features/deals/actions/deals.actions'
 import { createClient } from '@/lib/supabase/server'
 import { TrendingUp } from 'lucide-react'
-import Link from 'next/link'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
+import { FormActions } from '@/components/forms/FormLayout'
 import { DealFormBody } from '@/features/deals/components/DealFormBody'
 import { PageHeader } from '@/components/layout/PageHeader'
 import type { RepresentativeOption } from '@/features/deals/components/DealFormBody'
@@ -74,13 +74,7 @@ export default async function NewDealPage({
           propertyDefaultId={params.property_id ?? ''}
         />
 
-        <div className="flex items-center gap-3 pt-1">
-          <button type="submit" data-testid="deal-submit" className="hp-btn-primary">
-            <TrendingUp className="w-4 h-4" />
-            Создать сделку
-          </button>
-          <Link href="/deals" className="hp-btn-secondary">Отмена</Link>
-        </div>
+        <FormActions submitLabel="Создать сделку" cancelHref="/deals" submitTestId="deal-submit" />
       </ServerActionForm>
     </div>
   )

@@ -236,6 +236,23 @@ input[type="date"]::-webkit-calendar-picker-indicator { margin-left: 4px; }
 }
 .hp-btn-secondary:hover { border-color: var(--hp-sub); color: var(--hp-ink); }
 
+/* ── Пункт меню «…» (OverflowMenu) — второстепенные и опасные действия карточки ── */
+.hp-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 14px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--hp-ink);
+  text-align: left;
+  background: transparent;
+  transition: background-color 0.15s ease;
+}
+.hp-menu-item:hover { background: var(--hp-neutral-tint); }
+.hp-menu-item:disabled { opacity: 0.5; }
+
 /* ── Форма-карточка ── */
 .hp-form-card {
   background: var(--hp-surface);

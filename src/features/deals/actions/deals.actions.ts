@@ -9,6 +9,7 @@ import { requireOrgId } from '@/lib/org'
 import { writeAuditLog } from '@/lib/audit'
 import { dispatchWebhook } from '@/lib/webhooks'
 import { requirePermission } from '@/lib/permissions'
+import { friendlyDbError } from '@/lib/errors'
 import { collectDealFacts, canMoveStage } from '@/features/directions/services/transitions'
 import { stageLabel, stagesOf } from '@/features/directions/config/directions'
 
@@ -46,7 +47,7 @@ export async function createDealAction(formData: FormData) {
     manager_id: user.id,
     organization_id: orgId,
   }).select('id').single()
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'сделку' }) }
 
   await writeAuditLog({
     userId: user.id, orgId,
@@ -97,7 +98,7 @@ export async function updateDealStatusAction(
     .update({ status })
     .eq('id', id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'стадию', verb: 'изменить' }) }
 
   await writeAuditLog({
     userId: user.id,
@@ -133,7 +134,7 @@ export async function updateDealAction(id: string, formData: FormData) {
     .update(parsed.data)
     .eq('id', id)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'сделку' }) }
 
   revalidatePath('/deals')
   revalidatePath(`/deals/${id}`)
@@ -148,7 +149,16 @@ export async function deleteDealAction(id: string) {
   const permError = await requirePermission(user.id, 'deals', 'delete')
   if (permError) return permError
 
-  await supabase.from('deals').delete().eq('id', id)
+  // Результат раньше не проверялся: при отказе RLS или FK экшен всё равно
+  // делал redirect, и сделка «удалялась» только на экране.
+  const { error } = await supabase.from('deals').delete().eq('id', id)
+  if (error) return { error: friendlyDbError(error, { entity: 'сделку', verb: 'удалить' }) }
+
+  await writeAuditLog({
+    userId: user.id,
+    orgId: await requireOrgId().catch(() => ''),
+    action: 'delete', entityType: 'deal', entityId: id, entityLabel: 'Сделка',
+  })
 
   revalidatePath('/deals')
   redirect('/deals')
