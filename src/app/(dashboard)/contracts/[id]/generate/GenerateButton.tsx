@@ -23,16 +23,16 @@ export function GenerateButton({ contractId }: { contractId: string }) {
  return (
  <div className="flex items-center gap-3 flex-wrap">
  <button
+ type="button"
  data-testid="contract-generate"
  onClick={handleGenerate}
  disabled={state === 'loading'}
- className="flex items-center gap-2 px-5 py-2.5 text-white text-sm font-bold transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
- style={{ background: 'var(--hp-accent)', }}
+ className="hp-btn-primary disabled:opacity-60 disabled:cursor-not-allowed"
  >
  {state === 'loading' ? (
  <><Loader2 className="w-4 h-4 animate-spin" />Генерация...</>
  ) : (
- <><Sparkles className="w-4 h-4" />Сгенерировать DOCX</>
+ <><Sparkles className="w-4 h-4" />Сформировать документ</>
  )}
  </button>
 
@@ -40,14 +40,13 @@ export function GenerateButton({ contractId }: { contractId: string }) {
  <div className="flex items-center gap-3">
  <div data-testid="contract-generate-success" className="flex items-center gap-1.5 text-sm text-[var(--hp-good)] bg-[var(--hp-good-tint)] border border-[var(--hp-border)] px-3 py-2">
  <CheckCircle2 className="w-4 h-4" />
- Версия {result.version} создана!
+ Версия {result.version} готова
  </div>
  <a
  href={result.docxUrl}
  target="_blank"
  rel="noopener noreferrer"
- className="flex items-center gap-2 px-4 py-2.5 text-white text-sm font-bold transition-all"
- style={{ background: 'var(--hp-accent)', }}
+ className="hp-btn-secondary"
  >
  <Download className="w-4 h-4" />
  Скачать DOCX
@@ -58,7 +57,7 @@ export function GenerateButton({ contractId }: { contractId: string }) {
  {state === 'error' && (
  <div className="flex items-center gap-1.5 text-sm text-[var(--hp-danger)] bg-[var(--hp-danger-tint)] border border-[var(--hp-border)] px-3 py-2">
  <AlertCircle className="w-4 h-4" />
- {result.error || 'Ошибка генерации'}
+ {result.error || 'Не получилось сформировать документ. Попробуйте ещё раз.'}
  </div>
  )}
  </div>

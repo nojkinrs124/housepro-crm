@@ -11,6 +11,8 @@ test.describe('договор', () => {
 
     await page.goto('/contracts/new')
     await page.getByTestId('contract-type-rent_apartment').check()
+    // Примечания — в свёрнутом «Дополнительно»
+    await page.getByTestId('form-extra').locator('summary').click()
     await page.getByTestId('contract-notes').fill(notes)
     await page.getByTestId('contract-submit').click()
     await page.waitForURL(/\/contracts\/[0-9a-f-]{36}$/, { timeout: 30_000 })

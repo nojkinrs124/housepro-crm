@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useActionState } from 'react'
-import { FileText, Building2, User, Home, Briefcase, Link2 } from 'lucide-react'
+import { Building2, User, Home, Briefcase, Link2 } from 'lucide-react'
 import Link from 'next/link'
 import { PartyContactSelect, type PartyContact, type PartyRepresentative } from '@/features/contacts/components/PartyContactSelect'
 import { CONTRACT_TYPES, CONTRACT_TYPE_MAP, type ContractPartyRole } from '../config/contract-types'
@@ -13,6 +13,7 @@ import { AgencyServiceExtraFields } from './AgencyServiceExtraFields'
 import { PropertyManagementExtraFields } from './PropertyManagementExtraFields'
 import { SETTLEMENT_SCHEMES, getChargeType } from '@/features/plans/config/settlement'
 import { SubleaseExtraFields } from './SubleaseExtraFields'
+import { Field, FormExtra } from '@/components/forms/FormLayout'
 
 const AGENCY_SERVICE_TYPES = ['agency_owner', 'agency_client', 'agency_legal_entity']
 
@@ -109,10 +110,10 @@ export function ContractForm({
  ? properties.filter(p => config.propertyTypes!.includes(p.property_type ?? '') || p.id === defaults.property_id)
  : properties
 
- const inp = 'w-full h-10 px-4 border border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-ink)] text-sm outline-none focus:border-[var(--hp-ink)] transition-colors'
- const sel = 'w-full h-10 px-4 border border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-ink)] text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer'
- const lbl = 'block text-sm font-medium text-[var(--hp-ink)] mb-1.5'
- const h2 = 'font-bold text-[var(--hp-ink)] text-[15px]'
+ const inp = 'hp-input'
+ const sel = 'hp-input cursor-pointer'
+ const lbl = 'hp-label'
+ const h2 = 'hp-h2'
 
  return (
  <form action={formAction} className="space-y-4">
@@ -166,18 +167,6 @@ export function ContractForm({
  </div>
  </div>
  </div>
-
- {/* Статус (только для edit) */}
- {mode === 'edit' && (
- <div className="hp-card p-5 space-y-3">
- <h2 className={h2}>Статус</h2>
- <select name="status" defaultValue={defaults.status ?? 'draft'} className={sel}>
- {statusOptions.map(o => (
- <option key={o.value} value={o.value}>{o.label}</option>
- ))}
- </select>
- </div>
- )}
 
  {/* Стороны */}
  <div className="hp-card p-5 space-y-5">
@@ -243,41 +232,6 @@ export function ContractForm({
  }
  placeholder={config.requiresLegalEntity ? 'Выберите юр. лицо' : `Выберите: ${config.party2Label.toLowerCase()}`}
  />
-
- <div className="space-y-1.5">
- <label className={lbl + ' flex items-center gap-2'}>
- <Link2 className="w-4 h-4 text-[var(--hp-good)]" />
- Сделка (необязательно)
- </label>
- <select name="deal_id" defaultValue={defaults.deal_id ?? ''} className={sel}>
- <option value="">Не связан со сделкой</option>
- {deals.map(d => (
- <option key={d.id} value={d.id}>{d.label}</option>
- ))}
- </select>
- <p className="text-xs text-muted-foreground">
- Если выбрать сделку — она будет сама двигаться по стадиям: создание договора → «Договор»,
- формирование DOCX → «Оплата», отметка платежа оплаченным → «Завершено».
- </p>
- </div>
-
- {config.requiresBaseContract && (
- <div className="space-y-1.5">
- <label className={lbl + ' flex items-center gap-2'}>
- <Link2 className="w-4 h-4 text-[var(--hp-sub)]" />
- Договор-основание (исходная аренда)
- </label>
- <select name="base_contract_id" defaultValue={defaults.base_contract_id ?? ''} className={sel}>
- <option value="">Не выбрано</option>
- {baseContracts.map(c => (
- <option key={c.id} value={c.id}>{c.label}</option>
- ))}
- </select>
- {baseContracts.length === 0 && (
- <p className="text-xs text-muted-foreground">Нет действующих договоров аренды для основания.</p>
- )}
- </div>
- )}
 
  <div className="space-y-1.5">
  <label className={lbl + ' flex items-center gap-2'}>
@@ -432,24 +386,66 @@ export function ContractForm({
  <SubleaseExtraFields key={selectedType} defaultValue={defaults.contract_type_data} />
  )}
 
- {/* Примечания */}
- <div className="hp-card p-5 space-y-3">
- <h2 className={h2}>Примечания</h2>
- <textarea name="notes" data-testid="contract-notes" rows={3} placeholder="Дополнительные условия..."
- defaultValue={defaults.notes ?? ''}
- className="w-full px-4 py-3 border border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-ink)] text-sm outline-none focus:border-[var(--hp-ink)] resize-none" />
+ {/* Всё, что не нужно для самого документа: связь со сделкой, статус,
+ примечания. Раскрыто, если договор создаётся из сделки. */}
+ <FormExtra summary="связь со сделкой, договор-основание, статус, примечания" defaultOpen={Boolean(defaults.deal_id) || Boolean(defaults.base_contract_id)}>
+ <div className="space-y-1.5">
+ <label className={lbl + ' flex items-center gap-2'}>
+ <Link2 className="w-4 h-4 text-[var(--hp-good)]" />
+ Сделка (необязательно)
+ </label>
+ <select name="deal_id" defaultValue={defaults.deal_id ?? ''} className={sel}>
+ <option value="">Не связан со сделкой</option>
+ {deals.map(d => (
+ <option key={d.id} value={d.id}>{d.label}</option>
+ ))}
+ </select>
+ <p className="text-xs text-[var(--hp-sub)]">
+ Если выбрать сделку — она будет сама двигаться по стадиям: создание договора → «Договор»,
+ формирование DOCX → «Оплата», отметка платежа оплаченным → «Завершено».
+ </p>
  </div>
 
- <div className="flex items-center gap-3">
- <button type="submit" data-testid="contract-submit" disabled={isPending}
- className="flex items-center gap-2 px-6 py-2.5 bg-[var(--hp-accent)] text-white text-sm font-semibold hover:bg-[var(--hp-accent-hover)] transition-colors disabled:opacity-60">
- <FileText className="w-4 h-4" />
- {isPending ? 'Сохранение...' : submitLabel}
+ {config.requiresBaseContract && (
+ <div className="space-y-1.5">
+ <label className={lbl + ' flex items-center gap-2'}>
+ <Link2 className="w-4 h-4 text-[var(--hp-sub)]" />
+ Договор-основание (исходная аренда)
+ </label>
+ <select name="base_contract_id" defaultValue={defaults.base_contract_id ?? ''} className={sel}>
+ <option value="">Не выбрано</option>
+ {baseContracts.map(c => (
+ <option key={c.id} value={c.id}>{c.label}</option>
+ ))}
+ </select>
+ {baseContracts.length === 0 && (
+ <p className="text-xs text-[var(--hp-sub)]">Нет действующих договоров аренды для основания.</p>
+ )}
+ </div>
+ )}
+
+
+ {mode === 'edit' && (
+ <Field label="Статус">
+ <select name="status" defaultValue={defaults.status ?? 'draft'} className={sel}>
+ {statusOptions.map(o => (
+ <option key={o.value} value={o.value}>{o.label}</option>
+ ))}
+ </select>
+ </Field>
+ )}
+ <Field label="Примечания">
+ <textarea name="notes" data-testid="contract-notes" rows={3} placeholder="Дополнительные условия…"
+ defaultValue={defaults.notes ?? ''}
+ className="hp-input !h-auto py-2.5 resize-none" />
+ </Field>
+ </FormExtra>
+
+ <div className="flex items-center gap-3 pt-1">
+ <button type="submit" data-testid="contract-submit" disabled={isPending} className="hp-btn-primary disabled:opacity-60">
+ {isPending ? 'Сохранение…' : submitLabel}
  </button>
- <Link href={backHref}
- className="px-6 py-2.5 border border-[var(--hp-border)] text-[var(--hp-ink)] text-sm font-semibold hover:border-[var(--hp-sub)] transition-colors">
- Отмена
- </Link>
+ <Link href={backHref} className="hp-btn-secondary">Отмена</Link>
  </div>
  </form>
  )

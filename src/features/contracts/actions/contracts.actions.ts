@@ -28,6 +28,7 @@ import {
   type ExistingTerms,
 } from '@/features/plans/services/plan-terms'
 import { toJson } from '@/lib/json'
+import { friendlyDbError } from '@/lib/errors'
 
 // Схема contract_type_data по каждому типу договора (см. config/contract-types.ts).
 const CONTRACT_TYPE_DATA_SCHEMAS: Record<string, z.ZodTypeAny> = {
@@ -175,7 +176,7 @@ export async function createContractAction(_prevState: PrevState, formData: Form
     .select()
     .single()
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'договор' }) }
 
   // Автоматизация: договор создан из карточки сделки — двигаем сделку на стадию «Договор».
   if (parsed.data.deal_id) {
@@ -250,7 +251,7 @@ export async function updateContractAction(id: string, _prevState: PrevState, fo
     .from('contracts')
     .update({ ...parsed.data, ...resolvedUpdate.terms, contract_type_data: toJson(contractTypeData) })
     .eq('id', id)
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'договор' }) }
 
   await writeAuditLog({
     userId: user.id, orgId,
@@ -275,7 +276,7 @@ export async function deleteContractAction(id: string) {
   if (permError) return permError
 
   const { error } = await supabase.from('contracts').delete().eq('id', id)
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'договор', verb: 'удалить' }) }
 
   if (orgId) {
     await writeAuditLog({
@@ -302,7 +303,7 @@ export async function updateContractStatusAction(id: string, status: string) {
   if (permError) return permError
 
   const { error } = await supabase.from('contracts').update({ status }).eq('id', id)
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'договор' }) }
 
   revalidatePath('/contracts')
   revalidatePath('/analytics', 'page')
@@ -368,7 +369,7 @@ export async function restoreContractVersionAction(contractId: string, versionId
     .update(restorePayload)
     .eq('id', contractId)
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'договор' }) }
 
   await writeAuditLog({
     userId: user.id, orgId,

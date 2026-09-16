@@ -3,6 +3,7 @@ import { FileText, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { buttonVariants } from '@/components/ui/button'
+import { EmptyState } from '@/components/layout/EmptyState'
 import { isId } from '@/lib/utils'
 import { ContractsView, type ContractRow } from '@/features/contracts/components/ContractsView'
 import { getContractTypeConfig } from '@/features/contracts/config/contract-types'
@@ -63,7 +64,7 @@ export default async function ContractsPage() {
   })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <PageHeader
         title="Договоры"
         subtitle={`${rows.length} договоров`}
@@ -76,18 +77,21 @@ export default async function ContractsPage() {
       />
 
       {rows.length === 0 ? (
-        <div className="hp-card hp-empty">
-          <div className="w-12 h-12 rounded-[var(--hp-radius)] bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)] flex items-center justify-center mx-auto mb-3">
-            <FileText style={{ width: 20, height: 20 }} className="text-[var(--hp-tertiary)]" />
-          </div>
-          <p className="text-[var(--hp-ink)] font-semibold">
-            {error ? `Ошибка: ${error.message}` : 'Нет договоров'}
-          </p>
-          <Link href="/contracts/new" className="hp-btn-primary mt-5">
-            <Plus style={{ width: 16, height: 16 }} />
-            Создать договор
-          </Link>
-        </div>
+        error ? (
+          <EmptyState
+            icon={<FileText className="w-5 h-5 text-[var(--hp-sub)]" />}
+            title="Не получилось загрузить договоры"
+            description="Обновите страницу. Если ошибка повторится — напишите в поддержку."
+          />
+        ) : (
+          <EmptyState
+            icon={<FileText className="w-5 h-5 text-[var(--hp-sub)]" />}
+            title="Договоров пока нет"
+            description="Договор создаётся из сделки или отдельно: выберите тип, стороны и объект — документ сформируется по шаблону агентства."
+            actionHref="/contracts/new"
+            actionLabel="Новый договор"
+          />
+        )
       ) : (
         <ContractsView contracts={rows} />
       )}

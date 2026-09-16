@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
 import { CONTRACT_STATUSES } from '@/features/registry/config/registries'
 import { RegistryToolbar } from '@/components/layout/RegistryToolbar'
+import { EmptyState } from '@/components/layout/EmptyState'
 import { RegistryTable, type RegistryColumn } from '@/features/registry/components/RegistryTable'
 import { BulkBar } from '@/features/registry/components/BulkBar'
 import { useRegistryFilters } from '@/hooks/useRegistryFilters'
@@ -137,13 +138,21 @@ export function ContractsView({ contracts }: { contracts: ContractRow[] }) {
 
       <BulkBar registry="contracts" selection={selection} />
 
-      <RegistryTable
-        rows={filtered}
-        columns={columns}
-        href={c => `/contracts/${c.id}`}
-        selection={selection}
-        empty="Нет договоров по выбранным фильтрам"
-      />
+      {filtered.length === 0 ? (
+        <EmptyState
+          title="Ничего не найдено"
+          description="По этим фильтрам договоров нет — попробуйте их сбросить."
+          action={<button type="button" onClick={reset} className="hp-btn-secondary">Сбросить фильтры</button>}
+        />
+      ) : (
+        <RegistryTable
+          rows={filtered}
+          columns={columns}
+          href={c => `/contracts/${c.id}`}
+          selection={selection}
+          empty="Ничего не найдено"
+        />
+      )}
     </div>
   )
 }
