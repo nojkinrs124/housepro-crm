@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Wrench } from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { EmptyState } from '@/components/layout/EmptyState'
 import { RequestCard, type RequestRow } from '@/features/requests/components/RequestCard'
 
 export const dynamic = 'force-dynamic'
@@ -54,15 +55,11 @@ export default async function RequestsPage() {
       />
 
       {rows.length === 0 ? (
-        <div className="hp-card hp-empty">
-          <div className="w-12 h-12 rounded-[var(--hp-radius)] bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)] flex items-center justify-center mx-auto mb-3">
-            <Wrench style={{ width: 20, height: 20 }} className="text-[var(--hp-tertiary)]" />
-          </div>
-          <p className="text-[var(--hp-ink)] font-semibold">Заявок пока нет</p>
-          <p className="text-[var(--hp-sub)] text-sm mt-1">
-            Арендаторы оставляют их в личном кабинете — вызвать клининг, электрика, сантехника
-          </p>
-        </div>
+        <EmptyState
+          icon={<Wrench className="w-5 h-5 text-[var(--hp-sub)]" />}
+          title="Заявок пока нет"
+          description="Заявки приходят от жильцов через личный кабинет: поломка, вопрос, показания. Пока ничего не поступало."
+        />
       ) : (
         <>
           {open.length > 0 && (

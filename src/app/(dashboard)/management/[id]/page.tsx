@@ -5,6 +5,7 @@ import {
   Plus, FileText, Wallet, ArrowUpRight, KeyRound, Phone, Receipt, Settings2, ClipboardCheck,
 } from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { RecordActions } from '@/components/layout/RecordActions'
 import { PortalAccessPanel } from '@/features/portal/components/PortalAccessPanel'
 import { maskPhone } from '@/lib/signing'
 import { ReadinessPanel } from '@/components/layout/ReadinessPanel'
@@ -189,35 +190,39 @@ export default async function ManagementDetailPage({ params }: { params: Promise
     ({ id: c.id, label: c.company_name || c.full_name, hasPhone: Boolean(c.phone) })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <PageHeader
         title={property.title}
         subtitle={property.address ?? 'Объект в управлении'}
         backHref="/management"
         backLabel="Управление"
         actions={
-          <>
-            {engagement && (
+          <RecordActions
+            primary={
+              <Link href={`/accounting/transactions/new?property_id=${id}`} className="hp-btn-primary">
+                <Plus className="w-4 h-4" />
+                Платёж
+              </Link>
+            }
+            secondary={
+              <Link href={`/management/${id}/report`} className="hp-btn-secondary">
+                <Receipt className="w-4 h-4" />
+                Отчёт собственнику
+              </Link>
+            }
+            more={engagement && (
               <>
-                <Link href={`/management/${id}/terms`} className={buttonVariants({ variant: 'secondary', size: 'sm' })}>
-                  <Settings2 style={{ width: 16, height: 16 }} />
-                  Условия
+                <Link href={`/management/${id}/terms`} className="hp-menu-item" role="menuitem">
+                  <Settings2 className="w-4 h-4" />
+                  Условия обслуживания
                 </Link>
-                <Link href={`/management/${id}/handover`} className={buttonVariants({ variant: 'secondary', size: 'sm' })}>
-                  <ClipboardCheck style={{ width: 16, height: 16 }} />
-                  Акт приёма
+                <Link href={`/management/${id}/handover`} className="hp-menu-item" role="menuitem">
+                  <ClipboardCheck className="w-4 h-4" />
+                  Акт приёма-передачи
                 </Link>
               </>
             )}
-            <Link href={`/management/${id}/report`} className={buttonVariants({ variant: 'secondary', size: 'sm' })}>
-              <Receipt style={{ width: 16, height: 16 }} />
-              Отчёт собственнику
-            </Link>
-            <Link href={`/accounting/transactions/new?property_id=${id}`} className={buttonVariants({ size: 'sm' })}>
-              <Plus style={{ width: 16, height: 16 }} />
-              Платёж
-            </Link>
-          </>
+          />
         }
       />
 

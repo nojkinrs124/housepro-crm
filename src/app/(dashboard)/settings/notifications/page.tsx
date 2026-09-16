@@ -3,6 +3,15 @@ import { Bell, CheckCheck } from 'lucide-react'
 import { markAllNotificationsReadAction, markNotificationReadAction } from './notifications.actions'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { formatDate } from '@/lib/utils'
+import { resolveProvider } from '@/lib/email/provider'
+import Link from 'next/link'
+import { EmptyState } from '@/components/layout/EmptyState'
+
+const PROVIDER_LABEL: Record<string, string> = {
+ resend: 'Resend',
+ unisender: 'Unisender Go',
+ log: 'не настроен — письма клиентам не уходят',
+}
 
 const typeColors: Record<string, string> = {
  overdue_payment: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]',
@@ -36,6 +45,15 @@ export default async function NotificationsPage() {
 
  const unreadCount = (notifications ?? []).filter(n => !n.is_read).length
 
+ // Письма клиентам — вторая половина «уведомлений»: что CRM отправляет от вашего
+ // имени. Полный журнал и настройка отправителя — /settings/email, здесь сводка.
+ const { data: profile } = await supabase.from('users').select('role').eq('id', user?.id ?? '').maybeSingle()
+ const isAdmin = profile?.role === 'admin'
+ const provider = resolveProvider()
+ const { data: recentMail } = isAdmin
+ ? await supabase.from('email_log').select('id, recipient, subject, status, created_at').order('created_at', { ascending: false }).limit(5)
+ : { data: [] }
+
  return (
  <div className="max-w-2xl mx-auto space-y-6">
  <PageHeader
@@ -59,14 +77,11 @@ export default async function NotificationsPage() {
  />
 
  {!notifications?.length ? (
- <div className="hp-card p-12 text-center" style={{ }}>
- <div className="w-14 h-14 flex items-center justify-center mx-auto mb-4"
- style={{ background: 'var(--hp-accent-tint)' }}>
- <Bell style={{ width: 24, height: 24, color: 'var(--hp-accent)' }} />
- </div>
- <p className="font-bold text-foreground text-base">Уведомлений нет</p>
- <p className="text-muted-foreground text-sm mt-1">Все актуально — продолжайте работу</p>
- </div>
+ <EmptyState
+ icon={<Bell className="w-5 h-5 text-[var(--hp-sub)]" />}
+ title="Уведомлений нет"
+ description="Сюда приходят напоминания о просроченных платежах, истекающих договорах и задачах. Пока всё в порядке."
+ />
  ) : (
  <div className="hp-card overflow-hidden" style={{ }}>
  <div className="divide-y divide-[var(--hp-border-soft)]">
@@ -80,8 +95,8 @@ export default async function NotificationsPage() {
  </span>
  </div>
  <div className="flex-1 min-w-0">
- <p className={`text-sm text-foreground ${!n.is_read ? 'font-semibold' : 'font-medium'}`}>{n.title}</p>
- {n.body && <p className="text-xs text-muted-foreground mt-0.5">{n.body}</p>}
+ <p className={`text-sm text-[var(--hp-ink)] ${!n.is_read ? 'font-semibold' : 'font-medium'}`}>{n.title}</p>
+ {n.body && <p className="text-xs text-[var(--hp-sub)] mt-0.5">{n.body}</p>}
  <p className="text-xs text-[var(--hp-tertiary)] mt-1">
  {formatDate(n.created_at, { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
  </p>
@@ -100,6 +115,32 @@ export default async function NotificationsPage() {
  )
  })}
  </div>
+ </div>
+ )}
+
+ {isAdmin && (
+ <div className="hp-block">
+ <div className="hp-block-header flex items-center justify-between">
+ <span>Письма клиентам</span>
+ <Link href="/settings/email" className="normal-case tracking-normal text-[11px] font-semibold text-[var(--hp-sub)] hover:text-[var(--hp-ink)] transition-colors">Журнал и отправитель →</Link>
+ </div>
+ <div className="hp-block-row">
+ <span className="label">Отправитель</span>
+ <span className={`value${provider === 'log' ? ' danger' : ''}`}>{PROVIDER_LABEL[provider] ?? provider}</span>
+ </div>
+ {(recentMail ?? []).length === 0 ? (
+ <div className="hp-block-item text-[var(--hp-tertiary)]">Писем ещё не отправляли</div>
+ ) : (
+ (recentMail ?? []).map(m => (
+ <div key={m.id} className="hp-block-item">
+ <span className="flex-1 min-w-0">
+ <span className="block truncate text-[var(--hp-ink)]">{m.subject}</span>
+ <span className="block text-[11.5px] text-[var(--hp-sub)] truncate">{m.recipient} · {m.created_at ? formatDate(m.created_at, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}</span>
+ </span>
+ <span className={`hp-badge ${m.status === 'failed' ? 'hp-badge-danger' : 'hp-badge-good'} shrink-0`}>{m.status === 'failed' ? 'ошибка' : 'отправлено'}</span>
+ </div>
+ ))
+ )}
  </div>
  )}
  </div>

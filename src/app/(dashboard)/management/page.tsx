@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Building2, Plus } from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { EmptyState } from '@/components/layout/EmptyState'
 import { StatStrip } from '@/components/layout/StatStrip'
 import { buttonVariants } from '@/components/ui/button'
 import { ManagementView, type ManagementRow } from '@/features/management/components/ManagementView'
@@ -55,21 +56,13 @@ export default async function ManagementPage() {
       )}
 
       {rows.length === 0 ? (
-        <div className="hp-card hp-empty">
-          <div className="w-12 h-12 rounded-[var(--hp-radius)] bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)] flex items-center justify-center mx-auto mb-3">
-            <Building2 style={{ width: 20, height: 20 }} className="text-[var(--hp-tertiary)]" />
-          </div>
-          <p className="text-[var(--hp-ink)] font-semibold">Объектов в управлении нет</p>
-          <p className="text-[var(--hp-sub)] text-sm mt-1">
-            Объект попадает сюда после приёма в управление — по подписанному договору
-            управления или субаренды. Тип сделки «Управление» в карточке объекта сам по
-            себе объект сюда не приводит: у обслуживания свои условия расчёта и свой срок
-          </p>
-          <Link href="/management/new" className="hp-btn-primary mt-5">
-            <Plus style={{ width: 16, height: 16 }} />
-            Принять объект в управление
-          </Link>
-        </div>
+        <EmptyState
+          icon={<Building2 className="w-5 h-5 text-[var(--hp-sub)]" />}
+          title="Объектов в управлении нет"
+          description="Объект в управлении — тот, который агентство ведёт за собственника: приёмка, платежи, отчёты. Возьмите первый — из карточки объекта или отсюда."
+          actionHref="/management/new"
+          actionLabel="Взять объект в управление"
+        />
       ) : (
         <ManagementView rows={rows} />
       )}

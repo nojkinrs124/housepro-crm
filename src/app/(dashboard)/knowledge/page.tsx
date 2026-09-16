@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { BookOpen, Plus } from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { EmptyState } from '@/components/layout/EmptyState'
 import { buttonVariants } from '@/components/ui/button'
 import { KnowledgeList, type ArticleRow } from '@/features/knowledge/components/KnowledgeList'
 import { can, toUserRole } from '@/lib/permissions'
@@ -65,21 +66,13 @@ export default async function KnowledgePage() {
       />
 
       {articles.length === 0 ? (
-        <div className="hp-card hp-empty">
-          <div className="w-12 h-12 rounded-[var(--hp-radius)] bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)] flex items-center justify-center mx-auto mb-3">
-            <BookOpen style={{ width: 20, height: 20 }} className="text-[var(--hp-tertiary)]" />
-          </div>
-          <p className="text-[var(--hp-ink)] font-semibold">Инструкций пока нет</p>
-          <p className="text-[var(--hp-sub)] text-sm mt-1">
-            Соберите здесь порядок работы агентства — от приёма заявки до отчёта собственнику
-          </p>
-          {canEdit && (
-            <Link href="/knowledge/new" className="hp-btn-primary mt-5">
-              <Plus style={{ width: 16, height: 16 }} />
-              Написать первую
-            </Link>
-          )}
-        </div>
+        <EmptyState
+          icon={<BookOpen className="w-5 h-5 text-[var(--hp-sub)]" />}
+          title="Инструкций пока нет"
+          description="База знаний — справочник для сотрудников: как заводить сделку, что заполнять перед договором. Напишите первую статью."
+          actionHref="/knowledge/new"
+          actionLabel="Новая статья"
+        />
       ) : (
         <KnowledgeList articles={articles} canEdit={canEdit} />
       )}

@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { Settings, Building2, Bell, Shield, Database, ChevronRight, ScrollText, CreditCard, Key, Webhook, Megaphone, Mail, Upload, Download, HandCoins, Code2 } from 'lucide-react'
+import { Settings, Building2, Bell, Shield, Database, ChevronRight, ScrollText, CreditCard, Key, Webhook, Megaphone, Upload, Download, HandCoins, Code2 } from 'lucide-react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { APP_VERSION, BUILD_SHA } from '@/lib/version'
@@ -34,14 +34,13 @@ const SETTINGS_GROUPS = [
     title: 'Интеграции',
     items: [
       { icon: Megaphone, title: 'Авито', desc: 'Публикация объектов через автозагрузку', href: '/settings/avito' },
-      { icon: Mail, title: 'Почта', desc: 'От кого уходят письма клиентам и журнал отправок', href: '/settings/email' },
       { icon: CreditCard, title: 'Приём платежей', desc: 'Ссылки на оплату для клиентов агентства', href: '/settings/payments' },
     ],
   },
   {
     title: 'Аккаунт',
     items: [
-      { icon: Bell, title: 'Уведомления', desc: 'Что присылать на почту и в колокольчик', href: '/settings/notifications' },
+      { icon: Bell, title: 'Уведомления и письма', desc: 'Напоминания в колокольчике и письма, которые CRM шлёт клиентам', href: '/settings/notifications' },
       { icon: Shield, title: 'Безопасность', desc: 'Пароль, двухфакторная защита, устройства', href: '/settings/security' },
     ],
   },

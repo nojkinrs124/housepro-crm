@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Plus, FolderOpen } from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { EmptyState } from '@/components/layout/EmptyState'
 import { buttonVariants } from '@/components/ui/button'
 import { CollectionsView, type CollectionRow } from '@/features/collections/components/CollectionsView'
 
@@ -47,16 +48,13 @@ export default async function CollectionsPage() {
       />
 
       {collections.length === 0 ? (
-        <div className="hp-card hp-empty">
-          <div className="w-12 h-12 rounded-[var(--hp-radius)] bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)] flex items-center justify-center mx-auto mb-3">
-            <FolderOpen style={{ width: 20, height: 20 }} className="text-[var(--hp-tertiary)]" />
-          </div>
-          <p className="text-[var(--hp-ink)] font-semibold">Подборок пока нет</p>
-          <Link href="/collections/new" className="hp-btn-primary mt-5">
-            <Plus style={{ width: 16, height: 16 }} />
-            Создать подборку
-          </Link>
-        </div>
+        <EmptyState
+          icon={<FolderOpen className="w-5 h-5 text-[var(--hp-sub)]" />}
+          title="Подборок пока нет"
+          description="Подборка — набор объектов, который отправляется клиенту одной ссылкой. Соберите первую."
+          actionHref="/collections/new"
+          actionLabel="Новая подборка"
+        />
       ) : (
         <CollectionsView collections={collections} />
       )}
