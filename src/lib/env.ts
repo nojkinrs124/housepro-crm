@@ -22,10 +22,10 @@ Copy .env.local.example to .env.local and fill in the value.`
 export const env = {
   supabaseUrl:     requireEnv('NEXT_PUBLIC_SUPABASE_URL'),
   supabaseAnonKey: requireEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
-  // Stripe — опционально, читается напрямую из process.env в billing/webhook роутах.
-  // НЕ добавлять сюда через requireEnv(): это поломает ВСЕ страницы (env.ts
-  // импортируется в supabase/server.ts, который используется почти везде),
-  // если Stripe ключи ещё не настроены в окружении.
+  // Необязательные ключи интеграций (Юкасса, DaData, OpenRouter) читаются
+  // прямо из process.env там, где нужны. НЕ добавлять их сюда через requireEnv():
+  // env.ts импортируется в supabase/server.ts, и отсутствие ключа поломало бы
+  // все страницы разом.
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
 } as const
 

@@ -11,6 +11,7 @@ import { CONTRACT_TYPE_MAP } from '../config/contract-types'
 import { getSessionContext, requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
 import { advanceDealStage } from '@/lib/deal-automation'
+import { writeAuditLog, writeAuditLogServiceRole } from '@/lib/audit'
 
 export async function generateContractDocx(contractId: string) {
   const ctx = await getSessionContext()
@@ -101,14 +102,13 @@ export async function generateContractDocx(contractId: string) {
       revalidatePath(`/deals/${contract.deal_id}`)
     }
 
-    // 7. Логируем
-    await supabase.from('logs').insert({
-      user_id: user.id,
-      action: 'generate_contract',
-      entity_type: 'contract',
-      entity_id: contractId,
-      new_data: { version: nextVersion, docx_url: docxUrl },
-      organization_id: orgId,
+    // 7. Журнал аудита — тот, что видит администратор в /settings/audit.
+    //    Раньше событие писалось в таблицу logs, которую никто не читал.
+    await writeAuditLog({
+      userId: user.id, orgId,
+      action: 'update', entityType: 'contract', entityId: contractId,
+      entityLabel: `Сформирован DOCX, версия ${nextVersion}`,
+      changes: { docx_url: { old: null, new: docxUrl }, version: { old: nextVersion - 1, new: nextVersion } },
     })
 
     revalidatePath(`/contracts/${contractId}`)
@@ -202,13 +202,11 @@ export async function generateContractDocxForOrg(orgId: string, contractId: stri
       await advanceDealStage(supabaseAdmin, contract.deal_id, 'payment')
     }
 
-    await supabaseAdmin.from('logs').insert({
-      user_id: null,
-      action: 'generate_contract',
-      entity_type: 'contract',
-      entity_id: contractId,
-      new_data: { version: nextVersion, docx_url: docxUrl, source: 'telegram_bot' },
-      organization_id: orgId,
+    await writeAuditLogServiceRole(supabaseAdmin, {
+      orgId,
+      action: 'update', entityType: 'contract', entityId: contractId,
+      entityLabel: `Сформирован DOCX, версия ${nextVersion} (Telegram-бот)`,
+      changes: { docx_url: { old: null, new: docxUrl }, version: { old: nextVersion - 1, new: nextVersion } },
     })
 
     return { success: true, docxUrl, version: nextVersion }
