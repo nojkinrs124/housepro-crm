@@ -21,5 +21,15 @@ export const CONTACT_SOURCES = [
   { value: 'other',     label: 'Другое' },
 ] as const
 
-export const CONTACT_SOURCE_LABELS: Record<string, string> =
-  Object.fromEntries(CONTACT_SOURCES.map(s => [s.value, s.label]))
+export const CONTACT_SOURCE_LABELS: Record<string, string> = {
+  ...Object.fromEntries(CONTACT_SOURCES.map(s => [s.value, s.label])),
+  // Значения, которые приносит конвертация лида (LEAD_SOURCES): контакт
+  // наследует источник лида как есть, и подписи должны быть и для них.
+  call: 'Звонок',
+  website: 'Сайт',
+  site_uslugi: 'Сайт · Услуги',
+  site_sdat_kvartiru: 'Сайт · Сдать квартиру',
+  site_snyat: 'Сайт · Снять квартиру',
+  site_prodat: 'Сайт · Продать или купить',
+  site_o_kompanii: 'Сайт · О компании',
+}

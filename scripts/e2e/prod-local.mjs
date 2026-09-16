@@ -25,7 +25,9 @@ if (!existsSync(envFile)) {
   process.exit(1)
 }
 
-const env = { ...process.env, NEXT_DIST_DIR: '.next-smoke' }
+// NEXT_DIST_DIR / PORT из шелла — чтобы поднять вторую сборку рядом с уже
+// работающей (регрессия против старой версии). Секретов среди них нет.
+const env = { ...process.env, NEXT_DIST_DIR: process.env.NEXT_DIST_DIR || '.next-smoke' }
 for (const line of readFileSync(envFile, 'utf-8').split(/\r?\n/)) {
   const t = line.trim()
   if (!t || t.startsWith('#')) continue
@@ -39,7 +41,7 @@ if (url.includes('zwclvcswvhjeqwxrkbte') || (/supabase\.co/.test(url) && !env.E2
   process.exit(1)
 }
 
-const port = new URL(env.E2E_BASE_URL || 'http://localhost:3100').port || '3100'
+const port = process.env.PORT || new URL(env.E2E_BASE_URL || 'http://localhost:3100').port || '3100'
 const mode = process.argv[2] ?? 'all'
 
 function run(args) {
