@@ -52,6 +52,8 @@ e2e-results.json
 
 # смоук /simplify-ux: свой distDir и отчёты
 .next-smoke/
+.next-walk/
+docs/qa/.walkthrough/
 .next-regress/
 playwright-report-smoke/
 test-results-smoke/

@@ -14,6 +14,8 @@
     "test:e2e": "playwright test",
     "test:smoke": "playwright test -c playwright.smoke.config.ts",
     "e2e:branch-env": "node scripts/e2e/write-branch-env.mjs",
+    "walkthrough:up": "node scripts/e2e/walkthrough-up.mjs",
+    "walkthrough:down": "node scripts/e2e/walkthrough-up.mjs down",
     "check": "node scripts/pre-push-check.mjs",
     "check:design": "node scripts/checks/design-tokens.mjs",
     "check:design:baseline": "node scripts/checks/design-tokens.mjs --baseline",
