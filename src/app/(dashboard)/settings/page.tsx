@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { Settings, Building2, Bell, Shield, Database, ChevronRight, ScrollText, CreditCard, Key, Webhook, Megaphone, Mail, Upload, Download, PhoneCall, Signature, HandCoins } from 'lucide-react'
+import { Settings, Building2, Bell, Shield, Database, ChevronRight, ScrollText, CreditCard, Key, Webhook, Megaphone, Mail, Upload, Download, HandCoins, Code2 } from 'lucide-react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { APP_VERSION, BUILD_SHA } from '@/lib/version'
@@ -7,7 +7,7 @@ import { APP_VERSION, BUILD_SHA } from '@/lib/version'
 const roleLabels: Record<string, string> = {
   admin: 'Администратор',
   manager: 'Менеджер',
-  agent: 'Агент',
+  agent: 'Риелтор',
   accountant: 'Бухгалтер',
 }
 
@@ -17,36 +17,50 @@ const roleLabels: Record<string, string> = {
 // в системе — только семантика статуса, а не подсветка модуля.
 const SETTINGS_GROUPS = [
   {
-    title: 'Рабочее пространство',
+    title: 'Компания',
     items: [
-      { icon: Building2, title: 'Компания', desc: 'Название, логотип, реквизиты', href: '/settings/company' },
+      { icon: Building2, title: 'Компания', desc: 'Название, логотип, реквизиты для договоров', href: '/settings/company' },
       { icon: HandCoins, title: 'Тарифы агентства', desc: 'Условия работы с собственниками и клиентами', href: '/settings/plans' },
-      { icon: Settings, title: 'Общие настройки', desc: 'Язык, валюта, временная зона', href: '/settings/general' },
-      { icon: Bell, title: 'Уведомления', desc: 'Email и push-уведомления', href: '/settings/notifications' },
-      { icon: Database, title: 'Шаблоны документов', desc: 'DOCX шаблоны договоров', href: '/settings/templates' },
+      { icon: Settings, title: 'Общие настройки', desc: 'Язык, валюта, часовой пояс', href: '/settings/general' },
     ],
   },
   {
-    title: 'Доступ и данные',
+    title: 'Документы',
     items: [
-      { icon: Shield, title: 'Безопасность', desc: 'Роли, доступы, пароли', href: '/settings/security' },
-      { icon: ScrollText, title: 'Журнал аудита', desc: 'История изменений (только admin)', href: '/settings/audit' },
-      { icon: Upload, title: 'Импорт данных', desc: 'Перенос базы из Excel или CSV', href: '/settings/import' },
-      { icon: Download, title: 'Экспорт объектов', desc: 'XML-фиды для площадок и CSV для 1С', href: '/settings/export' },
+      { icon: Database, title: 'Шаблоны договоров', desc: 'DOCX-шаблоны, по которым формируются документы', href: '/settings/templates' },
     ],
   },
   {
     title: 'Интеграции',
     items: [
-      { icon: Key, title: 'API‑ключи', desc: 'Доступ для интеграций', href: '/settings/api' },
-      { icon: Webhook, title: 'Вебхуки', desc: 'Уведомления о событиях в реальном времени', href: '/settings/webhooks' },
       { icon: Megaphone, title: 'Авито', desc: 'Публикация объектов через автозагрузку', href: '/settings/avito' },
-      { icon: Mail, title: 'Почта', desc: 'Отправитель и журнал писем клиентам', href: '/settings/email' },
-      { icon: PhoneCall, title: 'Каналы связи', desc: 'Телефония и WhatsApp в карточках клиентов', href: '/settings/channels' },
+      { icon: Mail, title: 'Почта', desc: 'От кого уходят письма клиентам и журнал отправок', href: '/settings/email' },
       { icon: CreditCard, title: 'Приём платежей', desc: 'Ссылки на оплату для клиентов агентства', href: '/settings/payments' },
-      { icon: Signature, title: 'Электронная подпись', desc: 'Подписание договоров через Подпислон', href: '/settings/signing' },
     ],
   },
+  {
+    title: 'Аккаунт',
+    items: [
+      { icon: Bell, title: 'Уведомления', desc: 'Что присылать на почту и в колокольчик', href: '/settings/notifications' },
+      { icon: Shield, title: 'Безопасность', desc: 'Пароль, двухфакторная защита, устройства', href: '/settings/security' },
+    ],
+  },
+  {
+    title: 'Данные',
+    items: [
+      { icon: Upload, title: 'Импорт', desc: 'Перенос базы из Excel или CSV', href: '/settings/import' },
+      { icon: Download, title: 'Экспорт', desc: 'XML-фиды для площадок и CSV для 1С', href: '/settings/export' },
+      { icon: ScrollText, title: 'Журнал изменений', desc: 'Кто и что менял (только администратор)', href: '/settings/audit' },
+    ],
+  },
+]
+
+// Разделы для разработчиков — только администратору и свёрнуты: ими пользуются
+// раз в год при подключении внешнего сервиса. Каналы связи и электронная подпись
+// скрыты целиком до первого реального использования (docs/HIDDEN.md).
+const DEVELOPER_ITEMS = [
+  { icon: Key, title: 'API-ключи', desc: 'Доступ для внешних программ', href: '/settings/api' },
+  { icon: Webhook, title: 'Вебхуки', desc: 'CRM присылает уведомление о событии на ваш адрес в момент, когда оно происходит', href: '/settings/webhooks' },
 ]
 
 export default async function SettingsPage() {
@@ -57,6 +71,7 @@ export default async function SettingsPage() {
     ? await supabase.from('users').select('id, full_name, email, role, avatar_url, phone').eq('id', user.id).single()
     : { data: null }
 
+  const isAdmin = (profile as { role?: string } | null)?.role === 'admin'
   const initials = (profile as { full_name?: string } | null)?.full_name?.charAt(0)?.toUpperCase() ?? 'U'
   const avatarUrl = (profile as { avatar_url?: string } | null)?.avatar_url ?? null
 
@@ -82,10 +97,10 @@ export default async function SettingsPage() {
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="font-semibold text-foreground text-sm truncate">
+            <p className="font-semibold text-[var(--hp-ink)] text-sm truncate">
               {(profile as { full_name?: string }).full_name}
             </p>
-            <p className="text-xs text-muted-foreground mt-0.5 truncate">
+            <p className="text-xs text-[var(--hp-sub)] mt-0.5 truncate">
               {(profile as { email?: string }).email} ·{' '}
               {roleLabels[(profile as { role?: string }).role ?? ''] ?? (profile as { role?: string }).role}
             </p>
@@ -107,8 +122,8 @@ export default async function SettingsPage() {
                   <Icon className="text-[var(--hp-sub)]" style={{ width: 17, height: 17 }} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-foreground text-sm">{item.title}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5 truncate">{item.desc}</p>
+                  <p className="font-semibold text-[var(--hp-ink)] text-sm">{item.title}</p>
+                  <p className="text-xs text-[var(--hp-sub)] mt-0.5 truncate">{item.desc}</p>
                 </div>
                 <ChevronRight className="text-[var(--hp-tertiary)] shrink-0" style={{ width: 16, height: 16 }} />
               </Link>
@@ -117,7 +132,30 @@ export default async function SettingsPage() {
         </div>
       ))}
 
-      <p className="text-xs text-muted-foreground text-center py-1">
+      {isAdmin && (
+        <details className="hp-block group">
+          <summary className="hp-block-header flex items-center justify-between cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+            <span className="flex items-center gap-2"><Code2 style={{ width: 14, height: 14 }} />Для разработчиков</span>
+            <ChevronRight className="transition-transform group-open:rotate-90" style={{ width: 14, height: 14 }} />
+          </summary>
+          {DEVELOPER_ITEMS.map((item) => {
+            const Icon = item.icon
+            return (
+              <Link key={item.href} href={item.href} className="hp-block-item">
+                <div className="w-9 h-9 flex items-center justify-center shrink-0 bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)]">
+                  <Icon className="text-[var(--hp-sub)]" style={{ width: 17, height: 17 }} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-[var(--hp-ink)] text-sm">{item.title}</p>
+                  <p className="text-xs text-[var(--hp-sub)] mt-0.5">{item.desc}</p>
+                </div>
+              </Link>
+            )
+          })}
+        </details>
+      )}
+
+      <p className="text-xs text-[var(--hp-sub)] text-center py-1">
         ХаусПро CRM v{APP_VERSION}{BUILD_SHA ? ` · сборка ${BUILD_SHA}` : ''} · Powered by Next.js + Supabase
       </p>
     </div>

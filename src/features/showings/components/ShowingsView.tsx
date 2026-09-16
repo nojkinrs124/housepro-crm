@@ -65,7 +65,7 @@ export function ShowingsView({ showings }: { showings: ShowingRow[] }) {
       cell: s => <span className="block truncate">{s.leadName ?? <span className="text-[var(--hp-tertiary)]">—</span>}</span>,
     },
     {
-      key: 'agent', title: 'Агент', cellClass: 'sub whitespace-nowrap', headClass: 'hidden md:table-cell',
+      key: 'agent', title: 'Риелтор', cellClass: 'sub whitespace-nowrap', headClass: 'hidden md:table-cell',
       cell: s => s.agentName ?? <span className="text-[var(--hp-tertiary)]">—</span>,
     },
     {

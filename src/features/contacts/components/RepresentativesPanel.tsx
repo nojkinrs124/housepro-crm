@@ -27,7 +27,7 @@ export function RepresentativesPanel({ contactId, representatives }: { contactId
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
   async function handleDelete(repId: string) {
-    if (!confirm('Удалить представителя?')) return
+    if (!confirm('Удалить представителя? В уже сформированных документах он останется, но выбрать его для новых договоров будет нельзя.')) return
     setDeleteError(null)
     const result = await deleteRepresentativeAction(repId, contactId)
     if (result?.error) setDeleteError(result.error)

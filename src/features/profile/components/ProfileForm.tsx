@@ -8,7 +8,7 @@ import type { User as UserType } from '@/types/database'
 const roleLabels: Record<string, string> = {
  admin: 'Администратор',
  manager: 'Менеджер',
- agent: 'Агент',
+ agent: 'Риелтор',
  accountant: 'Бухгалтер',
 }
 

@@ -31,7 +31,7 @@ export function WebhookRow({ id, url, events, isActive }: Props) {
  }
 
  async function handleDelete() {
- if (!confirm('Удалить вебхук?')) return
+ if (!confirm('Удалить интеграцию? Внешний сервис перестанет получать события из CRM. Отменить нельзя.')) return
  setLoading(true)
  await deleteWebhookAction(id)
  setLoading(false)

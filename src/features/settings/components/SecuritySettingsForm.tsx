@@ -235,13 +235,13 @@ export function SecuritySettingsForm({
  <div className="hp-card p-6 space-y-4">
  <h2 className="font-semibold text-foreground flex items-center gap-2 text-sm">
  <LogOut className="w-4 h-4 text-muted-foreground" />
- Активные сессии
+ Устройства, с которых вы вошли
  </h2>
 
  <div className="flex items-start gap-3 p-3.5 bg-[var(--hp-good-tint)] border border-[var(--hp-border)]">
  <div className="w-2 h-2 rounded-full bg-[var(--hp-accent)] mt-1.5 shrink-0 animate-pulse" />
  <div>
- <p className="text-sm font-medium text-[var(--hp-good)]">Текущая сессия</p>
+ <p className="text-sm font-medium text-[var(--hp-good)]">Это устройство</p>
  <p className="text-xs text-[var(--hp-good)] mt-0.5">Активна сейчас · Браузер</p>
  </div>
  </div>
@@ -256,7 +256,7 @@ export function SecuritySettingsForm({
  <div className="flex items-center gap-3 pt-1">
  {showLogoutConfirm ? (
  <>
- <span className="text-sm text-muted-foreground">Вы уверены? Будете разлогинены.</span>
+ <span className="text-sm text-[var(--hp-sub)]">Все устройства выйдут из системы, включая это — придётся войти заново.</span>
  <button
  type="button"
  onClick={() => setShowLogoutConfirm(false)}

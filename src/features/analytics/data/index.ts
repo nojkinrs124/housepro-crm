@@ -30,6 +30,26 @@ export function monthLabel(isoMonth: string) {
   return d.toLocaleDateString('ru-RU', { month: 'short', year: '2-digit' })
 }
 
+/**
+ * Операция учёта → форма «платежа», которую ждёт страница аналитики:
+ * выполненный доход = оплачен, запланированный до срока = ожидает, после срока =
+ * просрочен. Так страница не зависит от того, из какой таблицы пришли данные.
+ */
+function toPaymentShape(rows: Array<{ status: string; amount: number | null; paid_at: string | null; due_date: string | null; created_at: string | null }>): AnalyticsRawData['payments'] {
+  const today = new Date().toISOString().slice(0, 10)
+  return rows.map(r => ({
+    payment_status: r.status === 'completed'
+      ? 'paid'
+      : r.status === 'planned'
+        ? (r.due_date && r.due_date < today ? 'overdue' : 'pending')
+        : 'cancelled',
+    amount: r.amount,
+    payment_date: r.paid_at,
+    due_date: r.due_date,
+    created_at: r.created_at,
+  }))
+}
+
 // ─── Cached fetcher ───────────────────────────────────────────────────────────
 
 async function fetchAnalyticsData(from?: string, to?: string): Promise<AnalyticsRawData> {
@@ -54,9 +74,12 @@ async function fetchAnalyticsData(from?: string, to?: string): Promise<Analytics
       .gte('created_at', fromDate)
       .lte('created_at', toDate ?? new Date().toISOString()),
 
+    // Платежи — из accounting_transactions: таблица payments заморожена с июня
+    // 2026 (7 строк, открытых 0), аналитика по ней показывала застывшую картину.
     supabase
-      .from('payments')
-      .select('payment_status, amount, payment_date, due_date, created_at')
+      .from('accounting_transactions')
+      .select('status, amount, paid_at, due_date, created_at')
+      .eq('type', 'income')
       .gte('created_at', fromDate)
       .lte('created_at', toDate ?? new Date().toISOString()),
 
@@ -76,9 +99,11 @@ async function fetchAnalyticsData(from?: string, to?: string): Promise<Analytics
     supabase.from('properties').select('status'),
 
     supabase
-      .from('payments')
+      .from('accounting_transactions')
       .select('id, amount, due_date, contract:contracts(contract_number)')
-      .eq('payment_status', 'overdue')
+      .eq('type', 'income')
+      .eq('status', 'planned')
+      .lt('due_date', new Date().toISOString().slice(0, 10))
       .order('due_date', { ascending: true })
       .limit(6),
 
@@ -95,7 +120,7 @@ async function fetchAnalyticsData(from?: string, to?: string): Promise<Analytics
 
   return {
     deals: (dealsResult.data ?? []) as AnalyticsRawData['deals'],
-    payments: (paymentsResult.data ?? []) as AnalyticsRawData['payments'],
+    payments: toPaymentShape(paymentsResult.data ?? []),
     leads: leadsResult.data ?? [],
     leadsConverted: leadsConvertedResult.data ?? [],
     properties: propertiesResult.data ?? [],
