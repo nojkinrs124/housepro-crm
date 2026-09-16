@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { SHOWING_STATUSES } from '@/features/registry/config/registries'
 import { RegistryToolbar } from '@/components/layout/RegistryToolbar'
+import { EmptyState } from '@/components/layout/EmptyState'
 import { RegistryTable, type RegistryColumn } from '@/features/registry/components/RegistryTable'
 import { BulkBar } from '@/features/registry/components/BulkBar'
 import { useRegistryFilters } from '@/hooks/useRegistryFilters'
@@ -99,13 +100,21 @@ export function ShowingsView({ showings }: { showings: ShowingRow[] }) {
 
       <BulkBar registry="showings" selection={selection} />
 
-      <RegistryTable
-        rows={filtered}
-        columns={columns}
-        href={s => `/showings/${s.id}`}
-        selection={selection}
-        empty="Нет показов по выбранным фильтрам"
-      />
+      {filtered.length === 0 ? (
+        <EmptyState
+          title="Ничего не найдено"
+          description="По этим фильтрам показов нет — попробуйте их сбросить."
+          action={<button type="button" onClick={reset} className="hp-btn-secondary">Сбросить фильтры</button>}
+        />
+      ) : (
+        <RegistryTable
+          rows={filtered}
+          columns={columns}
+          href={s => `/showings/${s.id}`}
+          selection={selection}
+          empty="Ничего не найдено"
+        />
+      )}
     </div>
   )
 }

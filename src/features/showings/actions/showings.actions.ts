@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import { requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
 import type { Update } from '@/types/database'
+import { friendlyDbError } from '@/lib/errors'
 
 const VALID_STATUSES = ['planned', 'completed', 'cancelled', 'no_show']
 
@@ -38,7 +39,7 @@ export async function createShowingAction(formData: FormData) {
   }
 
   const { data, error } = await supabase.from('showings').insert(values).select('id').single()
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'показ' }) }
 
   revalidatePath('/showings')
   redirect(`/showings/${data.id}`)
@@ -48,7 +49,7 @@ export async function updateShowingStatusAction(id: string, status: string, form
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Не авторизован' }
-  if (!VALID_STATUSES.includes(status)) return { error: 'Недопустимый статус' }
+  if (!VALID_STATUSES.includes(status)) return { error: 'Такого статуса показа не существует — обновите страницу' }
 
   const permError = await requirePermission(user.id, 'showings', 'update')
   if (permError) return permError
@@ -75,7 +76,7 @@ export async function updateShowingStatusAction(id: string, status: string, form
     .select('lead_id, agent_id')
     .single()
 
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'показ' }) }
 
   // Автоматизация: показ завершён с результатом — двигаем связанный лид без лишнего клика.
   if (status === 'completed' && result && updated?.lead_id) {
@@ -123,7 +124,7 @@ export async function deleteShowingAction(id: string) {
   if (permError) return permError
 
   const { error } = await supabase.from('showings').delete().eq('id', id)
-  if (error) return { error: error.message }
+  if (error) return { error: friendlyDbError(error, { entity: 'показ', verb: 'удалить' }) }
 
   revalidatePath('/showings')
   redirect('/showings')

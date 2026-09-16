@@ -1,199 +1,189 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Calendar, Clock, User, Home, FileText, Trash2 } from 'lucide-react'
+import { User, Home, Zap, XCircle } from 'lucide-react'
 import { ShowingStatusBadge } from '@/features/showings/components/ShowingStatusBadge'
 import { ShowingResultForm } from '@/features/showings/components/ShowingResultForm'
-import { DeleteShowingButton } from '@/features/showings/components/DeleteShowingButton'
 import { deleteShowingAction, updateShowingStatusAction } from '@/features/showings/actions/showings.actions'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { SendByEmailForm } from '@/components/forms/SendByEmailForm'
 import { sendShowingInviteAction } from '@/features/showings/actions/notify.actions'
+import { PageHeader } from '@/components/layout/PageHeader'
+import { RecordActions } from '@/components/layout/RecordActions'
+import { ConfirmDeleteButton } from '@/components/forms/ConfirmDeleteButton'
+import { formatAmount } from '@/lib/utils'
+
+const RESULT_LABELS: Record<string, string> = {
+  interested: 'Заинтересован', thinking: 'Думает', not_interested: 'Не заинтересован',
+}
 
 export default async function ShowingDetailPage({ params }: { params: Promise<{ id: string }> }) {
- const { id } = await params
- const supabase = await createClient()
- const { data: { user } } = await supabase.auth.getUser()
- if (!user) redirect('/login')
+  const { id } = await params
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
- const { data: raw, error: rawError } = await supabase
- .from('showings')
- .select(`
- *,
- property:properties(id, title, address, deal_type, price),
- lead:leads(id, full_name, phone, email),
- contact:contacts(id, full_name, phone, email),
- agent:users!showings_agent_id_fkey(id, full_name, phone)
- `)
- .eq('id', id)
- .single()
+  const { data: raw, error: rawError } = await supabase
+    .from('showings')
+    .select(`
+      *,
+      property:properties(id, title, address, deal_type, price),
+      lead:leads(id, full_name, phone, email),
+      contact:contacts(id, full_name, phone, email),
+      agent:users!showings_agent_id_fkey(id, full_name, phone),
+      deal:deals(id, deal_number, deal_type)
+    `)
+    .eq('id', id)
+    .single()
 
- if (rawError && rawError.code !== 'PGRST116') {
- throw new Error(`Не удалось загрузить показ: ${rawError.message}`)
- }
- if (!raw) notFound()
- const showing = raw
+  if (rawError && rawError.code !== 'PGRST116') {
+    throw new Error(`Не удалось загрузить показ: ${rawError.message}`)
+  }
+  if (!raw) notFound()
+  const showing = raw
+  const deal = showing.deal as { id: string; deal_number: number | null; deal_type: string } | null
 
- const cancelAction = updateShowingStatusAction.bind(null, id, 'cancelled')
+  const cancelAction = updateShowingStatusAction.bind(null, id, 'cancelled')
+  const when = new Date(showing.scheduled_at)
+  const whenLabel = when.toLocaleString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  const client = showing.contact ?? showing.lead
 
- return (
- <div className="max-w-4xl mx-auto space-y-6">
- {/* Header */}
- <div className="flex items-start justify-between gap-4">
- <div className="flex items-center gap-3">
- <Link href="/showings" className="p-2 hover:bg-[var(--hp-neutral-tint)] transition-colors text-muted-foreground">
- <ArrowLeft className="w-4 h-4" />
- </Link>
- <div>
- <div className="flex items-center gap-2">
- <h1 className="text-xl font-bold">Показ объекта</h1>
- <ShowingStatusBadge status={showing.status} />
- </div>
- <p className="text-sm text-muted-foreground mt-0.5">
- {new Date(showing.scheduled_at).toLocaleString('ru-RU', {
- day: '2-digit', month: 'long', year: 'numeric',
- hour: '2-digit', minute: '2-digit',
- })}
- </p>
- </div>
- </div>
+  return (
+    <div className="max-w-4xl mx-auto space-y-5">
+      <PageHeader
+        crumbs={[{ label: 'Показы', href: '/showings' }, { label: whenLabel }]}
+        title={showing.property?.title ? `Показ · ${showing.property.title}` : 'Показ объекта'}
+        badges={<ShowingStatusBadge status={showing.status} />}
+        meta={
+          <>
+            <span>{whenLabel}</span>
+            <span className="sep">·</span>
+            <span>{showing.duration_min} мин</span>
+            {showing.agent?.full_name && (<><span className="sep">·</span><span>риелтор {showing.agent.full_name}</span></>)}
+          </>
+        }
+        actions={
+          <RecordActions
+            /* Главное действие запланированного показа — записать, чем он кончился;
+               форма результата прямо под шапкой. Отмена — в «…». */
+            more={
+              <>
+                {showing.status !== 'cancelled' && (
+                  <ServerActionForm action={cancelAction}>
+                    <button type="submit" className="hp-menu-item" role="menuitem">
+                      <XCircle className="w-4 h-4" />
+                      Отменить показ
+                    </button>
+                  </ServerActionForm>
+                )}
+                <ConfirmDeleteButton
+                  action={deleteShowingAction.bind(null, id)}
+                  confirmText="Удалить показ? Он пропадёт из календаря и истории клиента. Отменить нельзя."
+                  label="Удалить показ"
+                />
+              </>
+            }
+          />
+        }
+      />
 
- {showing.status !== 'cancelled' && (
- <ServerActionForm action={cancelAction}>
- <button type="submit" className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-[var(--hp-border)] text-[var(--hp-sub)] hover:bg-[var(--hp-neutral-tint)] hover:text-[var(--hp-danger)] hover:border-[var(--hp-border)] transition-colors">
- <Trash2 className="w-3.5 h-3.5" />
- Отменить показ
- </button>
- </ServerActionForm>
- )}
- </div>
+      <div className="grid lg:grid-cols-3 gap-4 items-start">
+        <div className="lg:col-span-2 space-y-4">
+          {showing.status === 'planned' && (
+            <div className="hp-block">
+              <div className="hp-block-header">Результат показа</div>
+              <div className="px-[18px] py-3">
+                <ShowingResultForm showingId={id} />
+              </div>
+            </div>
+          )}
 
- {/* Приглашение клиенту: письмо с вложением .ics, чтобы показ попал
- к нему в календарь и напомнил о себе сам. */}
- {showing.status === 'planned' && (
- <SendByEmailForm
- action={sendShowingInviteAction.bind(null, id)}
- defaultEmail={showing.contact?.email ?? showing.lead?.email ?? null}
- title="Отправить приглашение клиенту"
- hint="В письме — время, адрес, контакты агента и файл для календаря."
- submitLabel="Отправить приглашение"
- withComment={false}
- />
- )}
+          {showing.status === 'completed' && (
+            <div className="hp-block">
+              <div className="hp-block-header">Итоги показа</div>
+              <div className="hp-block-row">
+                <span className="label">Результат</span>
+                <span className="value">{showing.result ? RESULT_LABELS[showing.result] ?? showing.result : '—'}</span>
+              </div>
+              {showing.feedback && (
+                <div className="hp-block-row"><span className="label">Обратная связь</span><span className="value">{showing.feedback}</span></div>
+              )}
+              {showing.next_step && (
+                <div className="hp-block-row"><span className="label">Следующий шаг</span><span className="value">{showing.next_step}</span></div>
+              )}
+            </div>
+          )}
 
- <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
- {/* Main */}
- <div className="lg:col-span-2 space-y-5">
- {/* Property */}
- {showing.property && (
- <div className="hp-card p-5">
- <h2 className="font-semibold mb-3 flex items-center gap-2">
- <Home className="w-4 h-4 text-primary" />
- Объект
- </h2>
- <Link href={`/properties/${showing.property.id}`} className="hover:underline font-medium">
- {showing.property.title}
- </Link>
- {showing.property.address && (
- <p className="text-sm text-muted-foreground mt-1">{showing.property.address}</p>
- )}
- {showing.property.price && (
- <p className="text-sm font-medium mt-2">
- {Number(showing.property.price).toLocaleString('ru-RU')} ₽
- </p>
- )}
- </div>
- )}
+          {/* Приглашение клиенту: письмо с вложением .ics, чтобы показ попал
+              к нему в календарь и напомнил о себе сам. */}
+          {showing.status === 'planned' && (
+            <SendByEmailForm
+              action={sendShowingInviteAction.bind(null, id)}
+              defaultEmail={showing.contact?.email ?? showing.lead?.email ?? null}
+              title="Отправить приглашение клиенту"
+              hint="В письме — время, адрес, контакты риелтора и файл для календаря."
+              submitLabel="Отправить приглашение"
+              withComment={false}
+            />
+          )}
 
- {/* Result form (only if planned) */}
- {showing.status === 'planned' && (
- <div className="hp-card p-5">
- <h2 className="font-semibold mb-4">Результат показа</h2>
- <ShowingResultForm showingId={id} />
- </div>
- )}
+          {showing.status === 'planned' && showing.feedback && (
+            <div className="hp-block">
+              <div className="hp-block-header">Заметки</div>
+              <p className="px-[18px] py-3 text-sm text-[var(--hp-sub)] whitespace-pre-wrap">{showing.feedback}</p>
+            </div>
+          )}
+        </div>
 
- {/* Completed result */}
- {showing.status === 'completed' && (
- <div className="hp-card p-5 space-y-3">
- <h2 className="font-semibold">Итоги показа</h2>
- {showing.result && (
- <div>
- <span className="text-xs text-muted-foreground">Результат</span>
- <p className="text-sm font-medium mt-0.5">{
- showing.result === 'interested' ? 'Заинтересован' :
- showing.result === 'thinking' ? 'Думает' : 'Не заинтересован'
- }</p>
- </div>
- )}
- {showing.feedback && (
- <div>
- <span className="text-xs text-muted-foreground">Обратная связь</span>
- <p className="text-sm mt-0.5">{showing.feedback}</p>
- </div>
- )}
- {showing.next_step && (
- <div>
- <span className="text-xs text-muted-foreground">Следующий шаг</span>
- <p className="text-sm mt-0.5">{showing.next_step}</p>
- </div>
- )}
- </div>
- )}
- </div>
+        <div className="space-y-4">
+          <div className="hp-block">
+            <div className="hp-block-header">Участники</div>
+            {client ? (
+              <Link href={showing.contact ? `/contacts/${showing.contact.id}` : `/leads/${showing.lead!.id}`} className="hp-block-item">
+                <User className="w-4 h-4 shrink-0 text-[var(--hp-sub)]" />
+                <span className="flex-1 min-w-0">
+                  <span className="block truncate text-[var(--hp-ink)] font-medium">{client.full_name}</span>
+                  <span className="block text-[11.5px] text-[var(--hp-sub)]">{showing.contact ? 'Клиент' : 'Лид'}{client.phone ? ` · ${client.phone}` : ''}</span>
+                </span>
+              </Link>
+            ) : (
+              <div className="hp-block-item text-[var(--hp-tertiary)]"><User className="w-4 h-4 shrink-0" />Клиент не указан</div>
+            )}
+            {showing.agent && (
+              <div className="hp-block-item">
+                <User className="w-4 h-4 shrink-0 text-[var(--hp-sub)]" />
+                <span className="flex-1 min-w-0">
+                  <span className="block truncate text-[var(--hp-ink)] font-medium">{showing.agent.full_name}</span>
+                  <span className="block text-[11.5px] text-[var(--hp-sub)]">Риелтор{showing.agent.phone ? ` · ${showing.agent.phone}` : ''}</span>
+                </span>
+              </div>
+            )}
+          </div>
 
- {/* Sidebar */}
- <div className="space-y-4">
- <div className="hp-card p-5 space-y-4">
- <h2 className="font-semibold">Информация</h2>
- <div className="space-y-3 text-sm">
- <div className="flex items-start gap-2">
- <Calendar className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
- <div>
- <div className="text-muted-foreground text-xs">Дата и время</div>
- <div className="font-medium">
- {new Date(showing.scheduled_at).toLocaleString('ru-RU', {
- day: '2-digit', month: '2-digit', year: 'numeric',
- hour: '2-digit', minute: '2-digit',
- })}
- </div>
- </div>
- </div>
- <div className="flex items-start gap-2">
- <Clock className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
- <div>
- <div className="text-muted-foreground text-xs">Длительность</div>
- <div className="font-medium">{showing.duration_min} мин</div>
- </div>
- </div>
- {showing.agent && (
- <div className="flex items-start gap-2">
- <User className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
- <div>
- <div className="text-muted-foreground text-xs">Агент</div>
- <div className="font-medium">{showing.agent.full_name}</div>
- {showing.agent.phone && <div className="text-muted-foreground">{showing.agent.phone}</div>}
- </div>
- </div>
- )}
- {showing.lead && (
- <div className="flex items-start gap-2">
- <FileText className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
- <div>
- <div className="text-muted-foreground text-xs">Клиент (лид)</div>
- <Link href={`/leads/${showing.lead.id}`} className="font-medium hover:underline">
- {showing.lead.full_name}
- </Link>
- {showing.lead.phone && <div className="text-muted-foreground">{showing.lead.phone}</div>}
- </div>
- </div>
- )}
- </div>
- </div>
-
- <DeleteShowingButton id={id} />
- </div>
- </div>
- </div>
- )
+          <div className="hp-block">
+            <div className="hp-block-header">Объект и сделка</div>
+            {showing.property ? (
+              <Link href={`/properties/${showing.property.id}`} className="hp-block-item">
+                <Home className="w-4 h-4 shrink-0 text-[var(--hp-sub)]" />
+                <span className="flex-1 min-w-0">
+                  <span className="block truncate text-[var(--hp-ink)] font-medium">{showing.property.title}</span>
+                  <span className="block text-[11.5px] text-[var(--hp-sub)] truncate">
+                    {showing.property.address ?? ''}{showing.property.price ? ` · ${formatAmount(showing.property.price)} ₽` : ''}
+                  </span>
+                </span>
+              </Link>
+            ) : (
+              <div className="hp-block-item text-[var(--hp-tertiary)]"><Home className="w-4 h-4 shrink-0" />Объект не указан</div>
+            )}
+            {deal && (
+              <Link href={`/deals/${deal.id}`} className="hp-block-item">
+                <Zap className="w-4 h-4 shrink-0 text-[var(--hp-sub)]" />
+                <span className="flex-1 min-w-0 truncate text-[var(--hp-ink)] font-medium">Сделка {deal.deal_number ? `СД-${deal.deal_number}` : ''}</span>
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }

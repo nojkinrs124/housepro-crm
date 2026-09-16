@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import {
-  Edit, Plus, FileText, CheckSquare, ExternalLink, Zap,
+  Edit, Plus, FileText, CheckSquare, ExternalLink, Zap, Eye,
 } from 'lucide-react'
 import { deleteDealAction } from '@/features/deals/actions/deals.actions'
 import { DealStageBar } from '@/features/deals/components/DealStageBar'
@@ -215,11 +215,20 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
               </Link>
             }
             more={
+              <>
+                {/* Показ — стадия воронки, но не главное действие карточки:
+                    главное — «Оформить». Форма показа подставит объект и клиента. */}
+                <Link href={`/showings/new?deal_id=${id}${property?.id ? `&property_id=${property.id}` : ''}${clientContact?.id ? `&contact_id=${clientContact.id}` : ''}`}
+                  className="hp-menu-item" role="menuitem">
+                  <Eye className="w-4 h-4" />
+                  Запланировать показ
+                </Link>
               <ConfirmDeleteButton
                 action={deleteDealAction.bind(null, id)}
                 confirmText={`Удалить сделку ${dealNo}? Договоры, задачи и платежи останутся, но потеряют связь со сделкой. Отменить нельзя.`}
                 label="Удалить сделку"
               />
+              </>
             }
           />
         }

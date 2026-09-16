@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Plus, Eye, CalendarDays } from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { buttonVariants } from '@/components/ui/button'
+import { EmptyState } from '@/components/layout/EmptyState'
 import { ShowingsView, type ShowingRow } from '@/features/showings/components/ShowingsView'
 
 export default async function ShowingsPage() {
@@ -47,7 +48,7 @@ export default async function ShowingsPage() {
   })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <PageHeader
         title="Показы"
         subtitle={`${showings.length} показов`}
@@ -66,16 +67,13 @@ export default async function ShowingsPage() {
       />
 
       {showings.length === 0 ? (
-        <div className="hp-card hp-empty">
-          <div className="w-12 h-12 rounded-[var(--hp-radius)] bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)] flex items-center justify-center mx-auto mb-3">
-            <Eye style={{ width: 20, height: 20 }} className="text-[var(--hp-tertiary)]" />
-          </div>
-          <p className="text-[var(--hp-ink)] font-semibold">Показов пока нет</p>
-          <Link href="/showings/new" className="hp-btn-primary mt-5">
-            <Plus style={{ width: 16, height: 16 }} />
-            Запланировать показ
-          </Link>
-        </div>
+        <EmptyState
+          icon={<Eye className="w-5 h-5 text-[var(--hp-sub)]" />}
+          title="Показов пока нет"
+          description="Показ планируется с карточки сделки или объекта — клиент, объект и время подставятся сами, а приглашение уйдёт письмом."
+          actionHref="/showings/new"
+          actionLabel="Новый показ"
+        />
       ) : (
         <ShowingsView showings={showings} />
       )}
