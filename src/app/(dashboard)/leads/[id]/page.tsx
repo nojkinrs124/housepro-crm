@@ -14,11 +14,14 @@ import { ReadinessPanel } from '@/components/layout/ReadinessPanel'
 import { checkLead } from '@/lib/readiness'
 import { LEAD_STATUS_BADGE, LEAD_STATUS_LABELS } from '@/features/leads/config/lead-statuses'
 import { LEAD_SOURCE_LABELS } from '@/features/leads/config/lead-sources'
-import { formatDate } from '@/lib/utils'
+import { LEAD_DEAL_TYPE_LABELS } from '@/features/leads/config/lead-deal-types'
+import { formatDate, formatDeadline, plural } from '@/lib/utils'
+import { contactDisplayName } from '@/features/contacts/config/display-name'
+import { SHOWING_STATUS_LABELS, SHOWING_RESULT_LABELS } from '@/features/showings/config/showing-labels'
 
 const sourceLabels = LEAD_SOURCE_LABELS
 const dealTypeLabels: Record<string, string> = {
- rent: 'Снять', sale: 'Купить', subrent: 'Субаренда',
+ ...LEAD_DEAL_TYPE_LABELS,
  management: 'Управление', commercial: 'Коммерция',
 }
 const propertyTypeLabels: Record<string, string> = {
@@ -41,15 +44,27 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
  const { id } = await params
  const supabase = await createClient()
 
- const [{ data: rawLead, error: leadError }, { data: rawActivities }] = await Promise.all([
+ const [{ data: rawLead, error: leadError }, { data: rawActivities }, { data: rawTasks }, { data: rawShowings }] = await Promise.all([
  supabase.from('leads')
- .select('*, assignee:users!leads_assigned_to_fkey(full_name)')
+ .select('*, assignee:users!leads_assigned_to_fkey(full_name), contact:contacts!leads_contact_id_fkey(id, full_name, company_name, client_type)')
  .eq('id', id)
  .single(),
  supabase.from('lead_activities')
  .select('*, user:users(full_name)')
  .eq('lead_id', id)
  .order('created_at', { ascending: false }),
+ // Задачи и показы по лиду: раньше они жили только в общих реестрах, и с
+ // карточки было не видно, что по лиду уже что-то назначено (проход 17.09.2026, L-5/L-7).
+ supabase.from('tasks')
+ .select('id, title, status, deadline')
+ .eq('lead_id', id)
+ .order('deadline', { ascending: true, nullsFirst: false })
+ .limit(8),
+ supabase.from('showings')
+ .select('id, scheduled_at, status, result, property:properties(title)')
+ .eq('lead_id', id)
+ .order('scheduled_at', { ascending: false })
+ .limit(8),
  ])
 
  if (leadError && leadError.code !== 'PGRST116') {
@@ -59,7 +74,10 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
 
  const lead = rawLead
  const activities = (rawActivities ?? [])
+ const tasks = rawTasks ?? []
+ const showings = (rawShowings ?? []).map(s => ({ ...s, property: s.property as { title?: string | null } | null }))
  const assignee = lead.assignee as { full_name?: string } | null
+ const contact = lead.contact as { id: string; full_name: string | null; company_name: string | null; client_type: string | null } | null
 
  const issues = checkLead(lead)
 
@@ -101,7 +119,13 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
  контакта одной кнопкой заводится сделка. Раньше «Создать сделку» была
  прямо здесь, но передавала id лида вместо контакта и молча ничего не
  подставляла. */
- primary={!isConverted && (
+ primary={lead.status === 'converted' && lead.contact_id ? (
+ /* Конвертированный лид — история обращения; работа идёт в контакте. */
+ <Link href={`/contacts/${lead.contact_id}`} className="hp-btn-primary" data-testid="lead-open-contact">
+ <UserCheck className="w-4 h-4" />
+ Открыть контакт
+ </Link>
+ ) : !isConverted && (
  <ServerActionForm action={convertLeadToClient.bind(null, id)}>
  <button type="submit" className="hp-btn-primary" data-testid="lead-convert">
  <UserCheck className="w-4 h-4" />
@@ -109,17 +133,21 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
  </button>
  </ServerActionForm>
  )}
- secondary={
+ secondary={lead.status !== 'converted' && (
  <Link href={`/leads/${id}/edit`} className="hp-btn-secondary" data-testid="lead-edit">
  <Edit className="w-4 h-4" />
  Редактировать
  </Link>
- }
+ )}
  more={
  <>
  <Link href={`/tasks/new?lead_id=${id}`} className="hp-menu-item" role="menuitem">
  <Plus className="w-4 h-4" />
  Поставить задачу
+ </Link>
+ <Link href={`/showings/new?lead_id=${id}${lead.property_id ? `&property_id=${lead.property_id}` : ''}`} className="hp-menu-item" role="menuitem">
+ <Home className="w-4 h-4" />
+ Запланировать показ
  </Link>
  <ConfirmDeleteButton
  action={deleteLeadAction.bind(null, id)}
@@ -201,7 +229,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
  <div className="hp-block">
  <div className="hp-block-header flex items-center justify-between">
  <span>История общения</span>
- <span className="normal-case tracking-normal text-[11px] text-[var(--hp-tertiary)]">{activities.length} записей</span>
+ <span className="normal-case tracking-normal text-[11px] text-[var(--hp-tertiary)]">{plural(activities.length, ['запись', 'записи', 'записей'])}</span>
  </div>
  {!isConverted && (
  <div className="px-[18px] py-3 border-b border-[var(--hp-border-soft)]">
@@ -236,6 +264,57 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
  </div>
 
  <div className="space-y-4">
+ {contact && (
+ <div className="hp-block">
+ <div className="hp-block-header">Контакт из лида</div>
+ <Link href={`/contacts/${contact.id}`} className="hp-block-item">
+ <UserCheck className="w-4 h-4 shrink-0 text-[var(--hp-sub)]" />
+ <span className="flex-1 min-w-0 truncate text-[var(--hp-ink)] font-medium">{contactDisplayName(contact)}</span>
+ <span className="shrink-0 text-[11px] text-[var(--hp-sub)]">открыть</span>
+ </Link>
+ </div>
+ )}
+
+ <div className="hp-block">
+ <div className="hp-block-header flex items-center justify-between">
+ <span>Задачи</span>
+ <Link href={`/tasks/new?lead_id=${id}`} className="flex items-center gap-1 normal-case tracking-normal text-[11px] font-semibold text-[var(--hp-sub)] hover:text-[var(--hp-ink)] transition-colors">
+ <Plus className="w-3 h-3" />
+ Задача
+ </Link>
+ </div>
+ {tasks.length === 0 && <div className="hp-block-item text-[var(--hp-tertiary)]">Задач по лиду нет</div>}
+ {tasks.map(t => {
+ const dl = formatDeadline(t.deadline)
+ const done = t.status === 'done' || t.status === 'cancelled'
+ return (
+ <Link key={t.id} href={`/tasks/${t.id}`} className="hp-block-item">
+ <span className={`mt-0.5 w-1.5 h-1.5 rounded-full shrink-0 ${done ? 'bg-[var(--hp-good)]' : dl?.overdue ? 'bg-[var(--hp-danger)]' : 'bg-[var(--hp-sub)]'}`} />
+ <span className={`flex-1 min-w-0 truncate ${done ? 'line-through text-[var(--hp-tertiary)]' : 'text-[var(--hp-ink)]'}`}>{t.title}</span>
+ {dl && !done && <span className={`shrink-0 text-[11.5px] ${dl.overdue ? 'text-[var(--hp-danger)]' : 'text-[var(--hp-sub)]'}`}>{dl.label}</span>}
+ </Link>
+ )
+ })}
+ </div>
+
+ <div className="hp-block">
+ <div className="hp-block-header flex items-center justify-between">
+ <span>Показы</span>
+ <Link href={`/showings/new?lead_id=${id}${lead.property_id ? `&property_id=${lead.property_id}` : ''}`} className="flex items-center gap-1 normal-case tracking-normal text-[11px] font-semibold text-[var(--hp-sub)] hover:text-[var(--hp-ink)] transition-colors">
+ <Plus className="w-3 h-3" />
+ Показ
+ </Link>
+ </div>
+ {showings.length === 0 && <div className="hp-block-item text-[var(--hp-tertiary)]">Показов по лиду нет</div>}
+ {showings.map(sh => (
+ <Link key={sh.id} href={`/showings/${sh.id}`} className="hp-block-item">
+ <Home className="w-4 h-4 shrink-0 text-[var(--hp-sub)]" />
+ <span className="flex-1 min-w-0 truncate text-[var(--hp-ink)]">{sh.property?.title ?? 'Показ'} · {fmtDt(sh.scheduled_at)}</span>
+ <span className="shrink-0 text-[11.5px] text-[var(--hp-sub)]">{SHOWING_STATUS_LABELS[sh.status] ?? sh.status}{sh.result ? ` · ${SHOWING_RESULT_LABELS[sh.result] ?? sh.result}` : ''}</span>
+ </Link>
+ ))}
+ </div>
+
  <div className="hp-block">
  <div className="hp-block-header">Детали</div>
  <div className="hp-block-row">

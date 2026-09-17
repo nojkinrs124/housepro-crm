@@ -14,6 +14,7 @@ import type {
   Update,
 } from '@/types/database'
 import { friendlyDbError } from '@/lib/errors'
+import { todayIso } from '@/lib/timezone'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -291,7 +292,7 @@ export async function createContractPaymentAction(
   const permError = await requirePermission(user.id, 'accounting', 'create')
   if (permError) return permError
 
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayIso()
 
   // Подтягиваем сделку, к которой привязан договор — так платёж автоматически виден
   // и в разрезе сделки, а не только договора (используется в completeTransactionAction
@@ -367,6 +368,11 @@ export async function updateTransactionAction(id: string, _prevState: unknown, f
     borne_by:       parseBorneBy(formData.get('borne_by')),
   }
 
+  // Смена статуса на «проведена» через форму — тоже проведение: ставим дату.
+  const { data: before } = await supabase.from('accounting_transactions').select('status, paid_at').eq('id', id).maybeSingle()
+  if (status === 'completed' && before?.status !== 'completed') payload.paid_at = new Date().toISOString()
+  if (status !== 'completed') payload.paid_at = null
+
   const { error } = await supabase
     .from('accounting_transactions')
     .update(payload)
@@ -420,7 +426,9 @@ export async function completeTransactionAction(id: string) {
 
   const { data: updated, error } = await supabase
     .from('accounting_transactions')
-    .update({ status: 'completed' as AccountingTransactionStatus })
+    // Дата проведения — отдельно от даты операции: она отвечает на вопрос
+    // «когда деньги реально пришли» (проход 17.09.2026, AC-2).
+    .update({ status: 'completed' as AccountingTransactionStatus, paid_at: new Date().toISOString() })
     .eq('id', id)
     .neq('status', 'completed')
     .select('id, contract_id, deal_id, type, amount')

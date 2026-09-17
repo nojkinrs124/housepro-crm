@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { APP_TZ, todayIso } from "@/lib/timezone"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -24,7 +25,9 @@ export function formatDate(
   if (!date) return '—'
   const d = date instanceof Date ? date : new Date(date)
   if (Number.isNaN(d.getTime())) return String(date)
-  return d.toLocaleDateString('ru-RU', opts)
+  // Пояс агентства, а не браузера/сервера: иначе одно и то же время в двух
+  // окружениях показывается по-разному (см. src/lib/timezone.ts).
+  return d.toLocaleDateString('ru-RU', { timeZone: APP_TZ, ...opts })
 }
 
 /**
@@ -41,9 +44,9 @@ export function formatAmount(amount: number | string | null | undefined): string
 export function formatDateCompact(date: string | Date | null | undefined): string {
   if (!date) return '—'
   const d = new Date(date)
-  const sameYear = d.getFullYear() === new Date().getFullYear()
+  const sameYear = todayIso(d).slice(0, 4) === todayIso().slice(0, 4)
   return d.toLocaleDateString('ru-RU',
-    sameYear ? { day: '2-digit', month: '2-digit' } : { day: '2-digit', month: '2-digit', year: 'numeric' })
+    sameYear ? { timeZone: APP_TZ, day: '2-digit', month: '2-digit' } : { timeZone: APP_TZ, day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
 /** «2 ч. назад», «3 дн. назад», «12.08.2026» — для мета-строк и лент. */
@@ -57,7 +60,7 @@ export function formatRelative(date: string | Date | null | undefined): string {
   if (diffH < 24) return `${diffH} ч. назад`
   const diffD = Math.floor(diffH / 24)
   if (diffD < 7) return `${diffD} дн. назад`
-  return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  return d.toLocaleDateString('ru-RU', { timeZone: APP_TZ, day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
 /**
@@ -66,9 +69,11 @@ export function formatRelative(date: string | Date | null | undefined): string {
  */
 export function formatDeadline(date: string | null | undefined): { label: string; overdue: boolean } | null {
   if (!date) return null
-  const today = new Date(); today.setHours(0, 0, 0, 0)
-  const due = new Date(date); due.setHours(0, 0, 0, 0)
-  const days = Math.round((due.getTime() - today.getTime()) / 86400000)
+  // Дни считаем по календарю агентства: «сегодня» — это дата в APP_TZ.
+  const today = Date.parse(`${todayIso()}T00:00:00Z`)
+  const dueStr = /^\d{4}-\d{2}-\d{2}$/.test(String(date)) ? String(date) : todayIso(new Date(date))
+  const due = Date.parse(`${dueStr}T00:00:00Z`)
+  const days = Math.round((due - today) / 86400000)
   if (days < 0)  return { label: `просрочено ${pluralDays(-days)}`, overdue: true }
   if (days === 0) return { label: 'сегодня', overdue: true }
   if (days === 1) return { label: 'завтра', overdue: false }
@@ -76,10 +81,21 @@ export function formatDeadline(date: string | null | undefined): { label: string
 }
 
 function pluralDays(n: number): string {
-  const mod10 = n % 10, mod100 = n % 100
-  if (mod10 === 1 && mod100 !== 11) return `${n} день`
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return `${n} дн.`
-  return `${n} дн.`
+  return plural(n, ['день', 'дн.', 'дн.'])
+}
+
+/**
+ * Число с правильной формой существительного: `plural(3, ['тариф', 'тарифа', 'тарифов'])`
+ * → «3 тарифа». Формы — для 1, 2–4 и 5+ (проход 17.09.2026: «1 тарифов»,
+ * «1 сотрудников», «2 объектов» в подзаголовках).
+ */
+export function plural(n: number, forms: [string, string, string]): string {
+  const abs = Math.abs(n)
+  const mod10 = abs % 10, mod100 = abs % 100
+  const form = mod10 === 1 && mod100 !== 11 ? forms[0]
+    : mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14) ? forms[1]
+    : forms[2]
+  return `${n} ${form}`
 }
 
 /** Инициалы для аватара: «Анна Петрова» → «АП». */

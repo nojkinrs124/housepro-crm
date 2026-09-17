@@ -16,10 +16,14 @@ import {
 import {
   calcCommission,
   contractTypeForDeal,
+  isAgencyContract,
   needsSchedule,
   propertyStatusAfterDeal,
+  requiredForContract,
   taskTitleForContract,
 } from '../services/deal-completion'
+import { todayIso } from '@/lib/timezone'
+import { categoryIdByCode } from '@/features/management/data/settlement.data'
 
 const VALID_PERIODICITY: SchedulePeriodicity[] = ['monthly', 'quarterly', 'semiannual', 'yearly', 'once']
 
@@ -76,7 +80,8 @@ export async function completeDealAction(
       owner_contact_id, client_contact_id,
       owner_representative_id, client_representative_id,
       property_id,
-      property:properties(id, property_type, status)
+      property:properties(id, property_type, status),
+      client_contact:contacts!deals_client_contact_id_fkey(client_type)
     `)
     .eq('id', dealId)
     .maybeSingle()
@@ -84,14 +89,26 @@ export async function completeDealAction(
   if (!deal) return { error: 'Сделка не найдена' }
 
   const property = deal.property as { id: string; property_type: string | null; status: string | null } | null
-  const contractType = contractTypeForDeal(deal.deal_type, property?.property_type)
+  const clientContact = deal.client_contact as { client_type: string | null } | null
+  // Тип договора зависит от стадии: до агентского договора включительно —
+  // договор агентства, дальше — итоговый (см. contractTypeForDeal).
+  const contractType = contractTypeForDeal(deal.deal_type, property?.property_type, deal.status, clientContact?.client_type)
+  const need = requiredForContract(contractType)
 
-  if (!deal.owner_contact_id || !deal.client_contact_id) {
-    return { error: 'В сделке указаны не обе стороны — договор подписывать не с кем' }
+  if (need.owner && !deal.owner_contact_id) return { error: 'В сделке не указан собственник — договор подписывать не с кем' }
+  if (need.client && !deal.client_contact_id) return { error: 'В сделке не указан клиент — договор подписывать не с кем' }
+  if (need.property && !deal.property_id) return { error: 'В сделке не выбран объект' }
+  const agency = isAgencyContract(contractType)
+
+  // Договор управления требует схему расчёта — её выбирают в форме договора.
+  if (contractType === 'property_management') {
+    return { error: 'Договор управления оформляется в форме договора: там выбирается схема расчёта с собственником' }
   }
-  if (!deal.property_id && contractType !== 'agency_client') {
-    return { error: 'В сделке не выбран объект' }
-  }
+
+  // Ставка тарифа фиксируется в договоре на момент оформления (FR-007).
+  const { data: dealPlan } = deal.plan_id
+    ? await supabase.from('service_plans').select('rate').eq('id', deal.plan_id).maybeSingle()
+    : { data: null }
 
   const startDate = str(formData.get('start_date'))
   const endDate = str(formData.get('end_date'))
@@ -112,10 +129,15 @@ export async function completeDealAction(
       status: 'draft',
       deal_id: dealId,
       property_id: deal.property_id,
-      owner_contact_id: deal.owner_contact_id,
-      client_contact_id: deal.client_contact_id,
-      owner_representative_id: deal.owner_representative_id,
-      client_representative_id: deal.client_representative_id,
+      // У договора агентства с собственником второй стороны-клиента нет, у
+      // договора с заказчиком — собственника: лишняя сторона в документе —
+      // лишняя подпись.
+      owner_contact_id: need.owner || !need.client ? deal.owner_contact_id : null,
+      client_contact_id: need.client || !need.owner ? deal.client_contact_id : null,
+      owner_representative_id: need.owner || !need.client ? deal.owner_representative_id : null,
+      client_representative_id: need.client || !need.owner ? deal.client_representative_id : null,
+      plan_id: deal.plan_id,
+      plan_rate: dealPlan?.rate ?? null,
       start_date: startDate,
       end_date: endDate,
       amount,
@@ -154,7 +176,8 @@ export async function completeDealAction(
       : []
 
     if (items.length > 0) {
-      const today = new Date().toISOString().slice(0, 10)
+      const today = todayIso()
+      const tenantCategory = await categoryIdByCode(supabase, 'tenant_payment')
       const { error: scheduleError } = await supabase.from('accounting_transactions').insert(
         items.map(item => ({
           type: 'income' as const,
@@ -163,6 +186,7 @@ export async function completeDealAction(
           due_date: item.dueDate,
           status: 'planned' as const,
           description: item.label,
+          category_id: tenantCategory,
           contract_id: contract.id,
           deal_id: dealId,
           property_id: deal.property_id,
@@ -189,14 +213,15 @@ export async function completeDealAction(
       deal_id: dealId,
       contract_id: contract.id,
       property_id: deal.property_id,
-      contact_id: deal.client_contact_id,
+      contact_id: deal.client_contact_id ?? deal.owner_contact_id,
       organization_id: orgId,
     })
     if (!taskError) created.push('задача на подписание')
   }
 
   // ─── 4. Статус объекта ──────────────────────────────────────────────────
-  const nextPropertyStatus = propertyStatusAfterDeal(deal.deal_type)
+  // Агентский договор объект не сдаёт и не продаёт — статус меняет итоговый.
+  const nextPropertyStatus = agency ? null : propertyStatusAfterDeal(deal.deal_type)
   if (
     formData.get('with_property_status') === 'on' &&
     nextPropertyStatus &&
@@ -216,7 +241,7 @@ export async function completeDealAction(
   // ─── 5. Вознаграждение агентства ────────────────────────────────────────
   // Считается по тарифу работы, а не вводится руками: ставка уже зафиксирована,
   // и ручной ввод здесь означал бы третий источник правды о деньгах.
-  if (formData.get('with_commission') === 'on') {
+  if (formData.get('with_commission') === 'on' && !agency) {
     const { data: plan } = deal.plan_id
       ? await supabase.from('service_plans').select('charge_type, rate, title').eq('id', deal.plan_id).maybeSingle()
       : { data: null }
@@ -256,6 +281,7 @@ export async function completeDealAction(
         status: 'planned',
         amount: commission.amount,
         date: startDate,
+        category_id: await categoryIdByCode(supabase, 'agency_fee'),
         description: `Вознаграждение агентства${commission.basis ? ` — ${commission.basis}` : ''}`,
         deal_id: dealId,
         contract_id: contract.id,

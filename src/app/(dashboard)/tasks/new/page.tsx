@@ -30,7 +30,13 @@ export default async function NewTaskPage({
 
   // Задача, поставленная с карточки сделки/контакта/объекта, уже привязана —
   // блок связей раскрываем, чтобы человек видел, к чему она относится.
-  const linkedFromRecord = Boolean(params.deal_id || params.contact_id || params.client_id || params.property_id || params.contract_id)
+  const linkedFromRecord = Boolean(params.lead_id || params.deal_id || params.contact_id || params.client_id || params.property_id || params.contract_id)
+
+  // Задача с карточки лида: показываем, к кому она относится, — раньше лид
+  // уходил скрытым полем, и на форме было не видно связи (проход 17.09.2026, L-5).
+  const { data: lead } = params.lead_id
+    ? await supabase.from('leads').select('id, full_name, phone').eq('id', params.lead_id).maybeSingle()
+    : { data: null }
   const onlyOneUser = (users?.length ?? 0) <= 1
 
   return (
@@ -107,7 +113,12 @@ export default async function NewTaskPage({
               </select>
             </Field>
           </FieldGrid>
-          {params.lead_id && <input type="hidden" name="lead_id" value={params.lead_id} />}
+          {lead && (
+            <Field label="Лид">
+              <input type="hidden" name="lead_id" value={lead.id} />
+              <input readOnly value={`${lead.full_name || 'Без имени'}${lead.phone ? ` · ${lead.phone}` : ''}`} className="hp-input bg-[var(--hp-neutral-tint)]" />
+            </Field>
+          )}
         </FormExtra>
 
         <FormActions submitLabel="Создать задачу" cancelHref="/tasks" submitTestId="task-submit" />

@@ -10,8 +10,8 @@ import {
 import { CONTRACT_TYPE_MAP } from '../config/contract-types'
 import { getSessionContext, requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
-import { advanceDealStage } from '@/lib/deal-automation'
 import { writeAuditLog, writeAuditLogServiceRole } from '@/lib/audit'
+import { toJson } from '@/lib/json'
 
 export async function generateContractDocx(contractId: string) {
   const ctx = await getSessionContext()
@@ -23,9 +23,11 @@ export async function generateContractDocx(contractId: string) {
 
   try {
     // 1. Получаем данные договора
+    // Полная строка: её снимок ложится в version_data, иначе «Восстановить»
+    // в истории версий не появляется (проход 17.09.2026, RA-8).
     const { data: contract } = await supabase
       .from('contracts')
-      .select('contract_type, deal_id')
+      .select('*')
       .eq('id', contractId)
       .single()
 
@@ -83,6 +85,7 @@ export async function generateContractDocx(contractId: string) {
       contract_id: contractId,
       version: nextVersion,
       docx_url: docxUrl,
+      version_data: toJson(contract),
       created_by: user.id,
     })
 
@@ -95,9 +98,9 @@ export async function generateContractDocx(contractId: string) {
       })
       .eq('id', contractId)
 
-    // 6b. Автоматизация: файл сформирован — двигаем привязанную сделку на стадию «Оплата».
+    // Сформированный файл сделку не двигает: подписи под ним ещё нет.
+    // Стадию переводит смена статуса договора на «Подписан» (contracts.actions).
     if (contract.deal_id) {
-      await advanceDealStage(supabase, contract.deal_id, 'payment')
       revalidatePath('/deals')
       revalidatePath(`/deals/${contract.deal_id}`)
     }
@@ -136,7 +139,7 @@ export async function generateContractDocxForOrg(orgId: string, contractId: stri
   try {
     const { data: contract } = await supabaseAdmin
       .from('contracts')
-      .select('contract_type, deal_id')
+      .select('*')
       .eq('id', contractId)
       .eq('organization_id', orgId)
       .single()
@@ -190,6 +193,7 @@ export async function generateContractDocxForOrg(orgId: string, contractId: stri
       contract_id: contractId,
       version: nextVersion,
       docx_url: docxUrl,
+      version_data: toJson(contract),
       created_by: null,
     })
 
@@ -197,10 +201,6 @@ export async function generateContractDocxForOrg(orgId: string, contractId: stri
       .from('contracts')
       .update({ status: 'generated', generated_docx_url: docxUrl })
       .eq('id', contractId)
-
-    if (contract.deal_id) {
-      await advanceDealStage(supabaseAdmin, contract.deal_id, 'payment')
-    }
 
     await writeAuditLogServiceRole(supabaseAdmin, {
       orgId,

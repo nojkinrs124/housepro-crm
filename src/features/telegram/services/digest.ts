@@ -16,6 +16,7 @@
  */
 
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { todayIso } from '@/lib/timezone'
 
 /** Лид без движения дольше этого срока считается «молчащим». */
 export const STALE_LEAD_DAYS = 3
@@ -60,7 +61,7 @@ function daysAgoIso(n: number): string {
 
 export async function collectDigest(orgId: string): Promise<DigestData> {
   const supabaseAdmin = getSupabaseAdmin()
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayIso()
 
   const [{ data: payments }, { data: tasks }, { data: leads }] = await Promise.all([
     supabaseAdmin

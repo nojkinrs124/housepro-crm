@@ -7,6 +7,11 @@ const nextConfig: NextConfig = {
   // lock в distDir, поэтому у смоука он свой (playwright.smoke.config.ts задаёт
   // NEXT_DIST_DIR=.next-smoke). В обычной работе переменной нет — остаётся .next.
   distDir: process.env.NEXT_DIST_DIR || '.next',
+  // Стандартный справочник (docs/handbook) читается с диска в Server Action
+  // базы знаний — без явного включения serverless-бандл Vercel его не увидит.
+  outputFileTracingIncludes: {
+    '/knowledge': ['./docs/handbook/**/*'],
+  },
   experimental: {
     // Фото объектов уходят через Server Action по одному файлу; лимит по
     // умолчанию 1 МБ режет любой снимок с телефона (2–8 МБ) ещё до нашего

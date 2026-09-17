@@ -12,6 +12,7 @@
 //   'client' — выбирается из контактов с ролью client/both
 
 import { Home, Building2, HandCoins, ClipboardList, FileSignature, Briefcase, Settings, Repeat, type LucideIcon } from 'lucide-react'
+import { todayIso } from '@/lib/timezone'
 
 export type ContractPartyRole = 'agency' | 'owner' | 'client'
 
@@ -240,7 +241,7 @@ export const RENT_CONTRACT_TYPES = ['rent_apartment', 'rent_commercial', 'sublea
  */
 export function isActiveRentContract(
   c: { contract_type?: string | null; status?: string | null; end_date?: string | null },
-  todayStr: string = new Date().toISOString().slice(0, 10)
+  todayStr: string = todayIso()
 ): boolean {
   if (!RENT_CONTRACT_TYPES.includes(c.contract_type ?? '')) return false
   if (c.status === 'cancelled') return false

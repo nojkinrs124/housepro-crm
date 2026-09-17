@@ -1,3 +1,4 @@
+import { todayIso } from '@/lib/timezone'
 /**
  * Взаиморасчёт с собственником по объекту в управлении.
  *
@@ -119,7 +120,7 @@ export function obligationMonths(startedAt: string, asOf: string, payoutDay: num
 export function calcSettlement(
   terms: SettlementTerms,
   operations: SettlementOperation[],
-  asOf: string = new Date().toISOString().slice(0, 10),
+  asOf: string = todayIso(),
 ): SettlementResult {
   const empty: SettlementResult = {
     tenantPayments: 0, agencyFee: 0, managementFee: 0, ownerExpenses: 0, agencyExpenses: 0,

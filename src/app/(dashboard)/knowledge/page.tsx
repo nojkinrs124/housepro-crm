@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { EmptyState } from '@/components/layout/EmptyState'
 import { buttonVariants } from '@/components/ui/button'
 import { KnowledgeList, type ArticleRow } from '@/features/knowledge/components/KnowledgeList'
+import { LoadHandbookButton } from '@/features/knowledge/components/LoadHandbookButton'
 import { can, toUserRole } from '@/lib/permissions'
 import { freshnessOf } from '@/features/knowledge/services/freshness'
 
@@ -69,9 +70,10 @@ export default async function KnowledgePage() {
         <EmptyState
           icon={<BookOpen className="w-5 h-5 text-[var(--hp-sub)]" />}
           title="Инструкций пока нет"
-          description="База знаний — справочник для сотрудников: как заводить сделку, что заполнять перед договором. Напишите первую статью."
-          actionHref="/knowledge/new"
-          actionLabel="Новая статья"
+          description="База знаний — справочник для сотрудников: как заводить сделку, что заполнять перед договором. Загрузите стандартный справочник по всем разделам CRM или напишите первую статью."
+          action={canEdit ? <LoadHandbookButton /> : undefined}
+          actionHref={canEdit ? undefined : '/knowledge/new'}
+          actionLabel={canEdit ? undefined : 'Новая статья'}
         />
       ) : (
         <KnowledgeList articles={articles} canEdit={canEdit} />

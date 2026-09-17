@@ -7,6 +7,8 @@ import { requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
 import type { Update } from '@/types/database'
 import { friendlyDbError } from '@/lib/errors'
+import { localDateTimeToIso } from '@/lib/timezone'
+import { markChecklistItems } from '@/features/directions/services/checklist-sync'
 
 const VALID_STATUSES = ['planned', 'completed', 'cancelled', 'no_show']
 
@@ -18,7 +20,9 @@ export async function createShowingAction(formData: FormData) {
   const orgId = await requireOrgId().catch(() => null)
   if (!orgId) return { error: 'Организация не найдена' }
 
-  const scheduled_at = formData.get('scheduled_at') as string
+  // Поле datetime-local приходит по времени агентства — в базу пишем UTC,
+  // иначе 11:00 превращались в 18:00 (проход 17.09.2026, SH-1).
+  const scheduled_at = localDateTimeToIso(formData.get('scheduled_at') as string)
   if (!scheduled_at) return { error: 'Укажите дату и время показа' }
 
   const permError = await requirePermission(user.id, 'showings', 'create')
@@ -40,6 +44,12 @@ export async function createShowingAction(formData: FormData) {
 
   const { data, error } = await supabase.from('showings').insert(values).select('id').single()
   if (error) return { error: friendlyDbError(error, { entity: 'показ' }) }
+
+  // Назначенный показ закрывает пункт «Назначены просмотры» у сделки подбора.
+  if (values.deal_id) {
+    await markChecklistItems(supabase, values.deal_id, [{ stage: 'viewings', item: 'scheduled' }])
+    revalidatePath(`/deals/${values.deal_id}`)
+  }
 
   revalidatePath('/showings')
   redirect(`/showings/${data.id}`)
@@ -73,14 +83,32 @@ export async function updateShowingStatusAction(id: string, status: string, form
     .from('showings')
     .update(updates)
     .eq('id', id)
-    .select('lead_id, agent_id')
+    .select('lead_id, agent_id, deal_id')
     .single()
 
   if (error) return { error: friendlyDbError(error, { entity: 'показ' }) }
 
+  // Проведённый показ закрывает пункт «Проведён хотя бы один показ» у сделки.
+  if (status === 'completed' && updated?.deal_id) {
+    await markChecklistItems(supabase, updated.deal_id, [
+      { stage: 'showings', item: 'shown' },
+      { stage: 'viewings', item: 'done' },
+    ])
+    revalidatePath(`/deals/${updated.deal_id}`)
+  }
+
   // Автоматизация: показ завершён с результатом — двигаем связанный лид без лишнего клика.
   if (status === 'completed' && result && updated?.lead_id) {
     if (result === 'interested') {
+      // Лид, который заинтересовался на показе, — «Заинтересован», а не «Новый»
+      // (проход 17.09.2026, L-7). Конвертированный и закрытый не трогаем.
+      await supabase.from('leads')
+        .update({ status: 'interested', updated_at: new Date().toISOString() })
+        .eq('id', updated.lead_id)
+        .in('status', ['new', 'contacted', 'showing', 'searching'])
+      revalidatePath('/leads')
+      revalidatePath(`/leads/${updated.lead_id}`)
+
       const orgId = await requireOrgId().catch(() => null)
       if (orgId) {
         const deadline = new Date()

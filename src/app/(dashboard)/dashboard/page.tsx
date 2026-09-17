@@ -27,6 +27,7 @@ import { DashboardKpiCards } from '@/features/dashboard/components/DashboardKpiC
 import { PageHeader } from '@/components/layout/PageHeader'
 import { formatDate } from '@/lib/utils'
 import { DEAL_TYPE_LABELS as dealTypeLabels, DEAL_STATUS_LABELS as dealStatusLabels, dealStageBadgeClass } from '@/features/deals/config/deal-stages'
+import { todayIso } from '@/lib/timezone'
 
 export default async function DashboardPage() {
  const supabase = await createClient()
@@ -50,7 +51,9 @@ export default async function DashboardPage() {
  { data: overduePaymentsList },
  { data: upcomingDeadlines },
  ] = await Promise.all([
- supabase.from('contacts').select('id', { count: 'exact', head: true }),
+ // Слитые дубли (merged_into) — не контакты: реестр их не показывает, и
+ // счётчик не должен (проход 17.09.2026, AN-1).
+ supabase.from('contacts').select('id', { count: 'exact', head: true }).is('merged_into', null),
  supabase.from('properties').select('id', { count: 'exact', head: true }).eq('status', 'available'),
  supabase.from('contracts').select('id', { count: 'exact', head: true }).eq('status', 'signed'),
  supabase.from('tasks').select('id', { count: 'exact', head: true }).not('status', 'in', '(done,cancelled)'),
@@ -61,7 +64,7 @@ export default async function DashboardPage() {
  // Платежи — из accounting_transactions: таблица payments заморожена с июня
  // 2026, дашборд по ней показывал застывшие цифры (открытых там 0).
  supabase.from('accounting_transactions').select('id', { count: 'exact', head: true })
- .eq('type', 'income').eq('status', 'planned').lt('due_date', new Date().toISOString().slice(0, 10)),
+ .eq('type', 'income').eq('status', 'planned').lt('due_date', todayIso()),
  supabase.from('deals').select('status, deal_type'),
  supabase.from('accounting_transactions')
  .select('amount, status, type')
@@ -76,7 +79,7 @@ export default async function DashboardPage() {
  .not('status', 'in', '(done,cancelled)')
  .order('deadline', { ascending: true }).limit(6),
  supabase.from('accounting_transactions').select('id, amount, due_date, contract:contracts(contract_number)')
- .eq('type', 'income').eq('status', 'planned').lt('due_date', new Date().toISOString().slice(0, 10))
+ .eq('type', 'income').eq('status', 'planned').lt('due_date', todayIso())
  .order('due_date', { ascending: true }).limit(4),
  supabase.from('tasks').select('id, title, priority, deadline')
  .gte('deadline', now)
@@ -141,12 +144,12 @@ export default async function DashboardPage() {
  const todayStr = today.toLocaleDateString('ru-RU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
 
  const kpiData = [
- { title: 'Новые лиды', value: newLeadsCount ?? 0, icon: 'Zap', color: 'var(--hp-info)', iconBg: 'color-mix(in srgb, #3B82F6 16%, var(--hp-surface))', href: '/leads', trend: '+12%', trendPos: true },
- { title: 'Активных сделок', value: activeDealsCount ?? 0, icon: 'TrendingUp', color: 'var(--hp-accent)', iconBg: 'color-mix(in srgb, #16A34A 16%, var(--hp-surface))', href: '/deals', trend: '+8%', trendPos: true },
- { title: 'Контактов', value: contactsCount ?? 0, icon: 'Users', color: 'var(--hp-sub)', iconBg: 'color-mix(in srgb, #8B5CF6 16%, var(--hp-surface))', href: '/contacts', trend: '+5%', trendPos: true },
- { title: 'Своб. объектов', value: propertiesCount ?? 0, icon: 'Home', color: 'var(--hp-accent)', iconBg: 'color-mix(in srgb, #10B981 16%, var(--hp-surface))', href: '/properties', trend: '0%', trendPos: null },
- { title: 'Активных догов.', value: contractsCount ?? 0, icon: 'FileText', color: 'var(--hp-warn)', iconBg: 'color-mix(in srgb, #F59E0B 16%, var(--hp-surface))', href: '/contracts', trend: '+3%', trendPos: true },
- { title: 'Задач в работе', value: activeTasksCount ?? 0, icon: 'CheckSquare', color: 'var(--hp-danger)', iconBg: 'color-mix(in srgb, #EF4444 16%, var(--hp-surface))', href: '/tasks', trend: '-2%', trendPos: false },
+ { title: 'Новые лиды', value: newLeadsCount ?? 0, icon: 'Zap', color: 'var(--hp-info)', iconBg: 'color-mix(in srgb, #3B82F6 16%, var(--hp-surface))', href: '/leads' },
+ { title: 'Активных сделок', value: activeDealsCount ?? 0, icon: 'TrendingUp', color: 'var(--hp-accent)', iconBg: 'color-mix(in srgb, #16A34A 16%, var(--hp-surface))', href: '/deals' },
+ { title: 'Контактов', value: contactsCount ?? 0, icon: 'Users', color: 'var(--hp-sub)', iconBg: 'color-mix(in srgb, #8B5CF6 16%, var(--hp-surface))', href: '/contacts' },
+ { title: 'Своб. объектов', value: propertiesCount ?? 0, icon: 'Home', color: 'var(--hp-accent)', iconBg: 'color-mix(in srgb, #10B981 16%, var(--hp-surface))', href: '/properties' },
+ { title: 'Активных догов.', value: contractsCount ?? 0, icon: 'FileText', color: 'var(--hp-warn)', iconBg: 'color-mix(in srgb, #F59E0B 16%, var(--hp-surface))', href: '/contracts' },
+ { title: 'Задач в работе', value: activeTasksCount ?? 0, icon: 'CheckSquare', color: 'var(--hp-danger)', iconBg: 'color-mix(in srgb, #EF4444 16%, var(--hp-surface))', href: '/tasks' },
  ]
 
  return (

@@ -1,7 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import {
-  Edit, Plus, FileText, CheckSquare, ExternalLink, Zap, Eye,
+  Edit, Plus, FileText, CheckSquare, ExternalLink, Zap, Eye, FolderOpen, Building2,
 } from 'lucide-react'
+import { contactDisplayName } from '@/features/contacts/config/display-name'
+import { SHOWING_STATUS_LABELS, SHOWING_RESULT_LABELS } from '@/features/showings/config/showing-labels'
 import { deleteDealAction } from '@/features/deals/actions/deals.actions'
 import { DealStageBar } from '@/features/deals/components/DealStageBar'
 import { StageChecklist } from '@/features/directions/components/StageChecklist'
@@ -17,9 +19,10 @@ import {
   DEAL_STATUS_LABELS, DEAL_TYPE_LABELS, dealStageBadgeClass,
 } from '@/features/deals/config/deal-stages'
 import { PROPERTY_TYPE_LABELS } from '@/features/properties/config/property-labels'
+import { FilesSection } from '@/features/files/components/FilesSection'
 import {
   formatAmount, formatDate, formatDateCompact, formatDeadline, formatPhone,
-  formatRelative, initials,
+  formatRelative, initials, plural,
 } from '@/lib/utils'
 
 const contractStatusLabels: Record<string, { label: string; cls: string }> = {
@@ -101,7 +104,7 @@ function Party({ role, contact, fallbackName, fallbackPhone }: {
 export default async function DealPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
-  const [dealResult, contractsResult, tasksResult] = await Promise.all([
+  const [dealResult, contractsResult, tasksResult, showingsResult, incomeResult, collectionsResult] = await Promise.all([
     supabase
       .from('deals')
       .select(`
@@ -127,6 +130,29 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
       .not('status', 'in', '(done,cancelled)')
       .order('deadline', { ascending: true, nullsFirst: false })
       .limit(6),
+
+    // Показы по сделке: стадия «Показы» без списка показов — слепая
+    // (проход 17.09.2026, SH-1).
+    supabase
+      .from('showings')
+      .select('id, scheduled_at, status, result, contact:contacts(full_name, company_name, client_type)')
+      .eq('deal_id', id)
+      .order('scheduled_at', { ascending: false })
+      .limit(6),
+
+    // Фактическая комиссия — сумма проведённых доходов по сделке, а не
+    // статическое поле: у завершённой сделки «—» при реальных деньгах (TS-7).
+    supabase
+      .from('accounting_transactions')
+      .select('amount, status')
+      .eq('deal_id', id)
+      .eq('type', 'income'),
+
+    supabase
+      .from('property_collections')
+      .select('id, title, sent_at, items:collection_items(property_id)')
+      .eq('deal_id', id)
+      .order('created_at', { ascending: false }),
   ])
 
   const deal = dealResult.data
@@ -137,6 +163,14 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
 
   const contracts = contractsResult.data ?? []
   const tasks = tasksResult.data ?? []
+  const showings = (showingsResult.data ?? []).map(sh => ({
+    ...sh,
+    contact: sh.contact as { full_name: string | null; company_name: string | null; client_type: string | null } | null,
+  }))
+  const incomeRows = incomeResult.data ?? []
+  const incomeDone = incomeRows.filter(t => t.status === 'completed').reduce((sum, t) => sum + Number(t.amount), 0)
+  const incomePlanned = incomeRows.filter(t => t.status === 'planned').reduce((sum, t) => sum + Number(t.amount), 0)
+  const collections = collectionsResult.data ?? []
 
   const ownerContact  = deal.owner_contact as PartyContact | null
   const clientContact = deal.client_contact as PartyContact | null
@@ -223,6 +257,22 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
                   <Eye className="w-4 h-4" />
                   Запланировать показ
                 </Link>
+                <Link href={`/contracts/new?deal_id=${id}`} className="hp-menu-item" role="menuitem">
+                  <FileText className="w-4 h-4" />
+                  Договор вручную
+                </Link>
+                {deal.deal_type === 'tenant_search' && (
+                  <Link href={`/collections/new?deal_id=${id}`} className="hp-menu-item" role="menuitem">
+                    <FolderOpen className="w-4 h-4" />
+                    Собрать подборку
+                  </Link>
+                )}
+                {deal.deal_type === 'management' && property?.id && (
+                  <Link href={`/management/new?deal_id=${id}&property_id=${property.id}`} className="hp-menu-item" role="menuitem">
+                    <Building2 className="w-4 h-4" />
+                    Принять в управление
+                  </Link>
+                )}
               <ConfirmDeleteButton
                 action={deleteDealAction.bind(null, id)}
                 confirmText={`Удалить сделку ${dealNo}? Договоры, задачи и платежи останутся, но потеряют связь со сделкой. Отменить нельзя.`}
@@ -247,7 +297,12 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
             label: commissionPct ? `Комиссия ${commissionPct}%` : 'Комиссия',
             value: deal.commission
               ? <>{formatAmount(deal.commission)} <span className="text-[var(--hp-tertiary)]">₽</span></>
-              : '—',
+              : incomeDone > 0
+                ? <>{formatAmount(incomeDone)} <span className="text-[var(--hp-tertiary)]">₽</span></>
+                : '—',
+            hint: incomeDone > 0 || incomePlanned > 0
+              ? `получено ${formatAmount(incomeDone)} ₽${incomePlanned > 0 ? ` · ожидается ${formatAmount(incomePlanned)} ₽` : ''}`
+              : undefined,
           },
           {
             label: 'Аванс',
@@ -327,9 +382,10 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
               <div className="hp-block-row">
                 <span className="label">{isSale ? 'Первый взнос' : 'Аванс'}</span>
                 <span className="value">
-                  {deal.down_payment
-                    ? `${formatAmount(deal.down_payment)} ₽`
-                    : deal.advance_amount ? `${formatAmount(deal.advance_amount)} ₽` : '—'}
+                  {/* Первый взнос и аванс — разные деньги; пустое поле не подменяем чужим (SL-6.3). */}
+                  {isSale
+                    ? (deal.down_payment ? `${formatAmount(deal.down_payment)} ₽` : '—')
+                    : (deal.advance_amount ? `${formatAmount(deal.advance_amount)} ₽` : '—')}
                 </span>
               </div>
 
@@ -434,8 +490,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
             )}
           </div>
 
-          {/* Договоры по сделке. Вложения (files) скрыты: бакет не существует
-              (задача #35), записей 0 — см. docs/HIDDEN.md. */}
+          {/* Договоры по сделке */}
           <div className="hp-block">
             <div className="hp-block-header flex items-center justify-between">
               <span>Договоры</span>
@@ -464,6 +519,66 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
               )
             })}
           </div>
+
+          <div className="hp-block">
+            <div className="hp-block-header flex items-center justify-between">
+              <span>Показы</span>
+              <Link href={`/showings/new?deal_id=${id}${property?.id ? `&property_id=${property.id}` : ''}${clientContact?.id ? `&contact_id=${clientContact.id}` : ''}`}
+                className="flex items-center gap-1 normal-case tracking-normal text-[11px] font-semibold text-[var(--hp-sub)] hover:text-[var(--hp-ink)] transition-colors">
+                <Plus className="w-3 h-3" />
+                Показ
+              </Link>
+            </div>
+            {showings.length === 0 && (
+              <div className="hp-block-item text-[var(--hp-tertiary)]">
+                <Eye className="w-4 h-4 shrink-0" />
+                Показов пока нет
+              </div>
+            )}
+            {showings.map(sh => (
+              <Link key={sh.id} href={`/showings/${sh.id}`} className="hp-block-item">
+                <Eye className="w-4 h-4 shrink-0 text-[var(--hp-sub)]" />
+                <span className="flex-1 min-w-0 truncate text-[var(--hp-ink)]">
+                  {formatDate(sh.scheduled_at, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                  {sh.contact ? ` · ${contactDisplayName(sh.contact)}` : ''}
+                </span>
+                <span className="shrink-0 text-[11.5px] text-[var(--hp-sub)]">
+                  {SHOWING_STATUS_LABELS[sh.status] ?? sh.status}{sh.result ? ` · ${SHOWING_RESULT_LABELS[sh.result] ?? sh.result}` : ''}
+                </span>
+              </Link>
+            ))}
+          </div>
+
+          {/* Вложения сделки — приватный бакет documents (#35 закрыта 17.09.2026) */}
+          <FilesSection dealId={id} title="Файлы сделки" />
+
+          {deal.deal_type === 'tenant_search' && (
+            <div className="hp-block">
+              <div className="hp-block-header flex items-center justify-between">
+                <span>Подборки</span>
+                <Link href={`/collections/new?deal_id=${id}`}
+                  className="flex items-center gap-1 normal-case tracking-normal text-[11px] font-semibold text-[var(--hp-sub)] hover:text-[var(--hp-ink)] transition-colors">
+                  <Plus className="w-3 h-3" />
+                  Подборка
+                </Link>
+              </div>
+              {collections.length === 0 && (
+                <div className="hp-block-item text-[var(--hp-tertiary)]">
+                  <FolderOpen className="w-4 h-4 shrink-0" />
+                  Подборок пока нет — соберите варианты и отправьте клиенту
+                </div>
+              )}
+              {collections.map(col => (
+                <Link key={col.id} href={`/collections/${col.id}`} className="hp-block-item">
+                  <FolderOpen className="w-4 h-4 shrink-0 text-[var(--hp-sub)]" />
+                  <span className="flex-1 min-w-0 truncate text-[var(--hp-ink)]">{col.title}</span>
+                  <span className="shrink-0 text-[11.5px] text-[var(--hp-sub)]">
+                    {plural((col.items ?? []).length, ['объект', 'объекта', 'объектов'])}{col.sent_at ? ` · отправлена ${formatDateCompact(col.sent_at)}` : ''}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

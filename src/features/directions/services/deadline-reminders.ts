@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/supabase'
+import { todayIso } from '@/lib/timezone'
 
 type Client = SupabaseClient<Database>
 
@@ -23,7 +24,7 @@ const REMINDER_KIND = 'preliminary-deadline'
  */
 export async function createPreliminaryDeadlineTasks(
   supabase: Client,
-  today: string = new Date().toISOString().slice(0, 10),
+  today: string = todayIso(),
 ): Promise<{ created: number; skipped: number }> {
   const horizon = new Date(`${today}T00:00:00Z`)
   horizon.setUTCDate(horizon.getUTCDate() + LEAD_DAYS)

@@ -7,6 +7,7 @@
 // ждёт подтверждения "да" от пользователя в Telegram.
 
 import { ALL_STAGE_VALUES, DIRECTION_VALUES } from '@/features/directions/config/directions'
+import { todayIso } from '@/lib/timezone'
 
 export const MUTATING_TOOLS = [
   'add_transaction',
@@ -697,7 +698,7 @@ export async function dispatchReadOnlyTool(name: string, args: Record<string, un
       // пополняется с переезда бухгалтерии, и запрос в неё отвечал «всё чисто»
       // при любом числе реальных просрочек.
       const params = new URLSearchParams({ status: 'planned', type: 'income', limit: '20' })
-      if (!args.include_future) params.set('due_before', new Date().toISOString().slice(0, 10))
+      if (!args.include_future) params.set('due_before', todayIso())
       return callApi(`/api/v1/accounting/transactions?${params.toString()}`)
     }
     case 'get_finance_chart': {

@@ -6,6 +6,7 @@ import { rateLimit } from '@/lib/rate-limit'
 import { grantFor, currentScope } from '@/features/portal/services/access.service'
 import { REQUEST_CATEGORY_LABELS } from '@/features/portal/config/request-categories'
 import { friendlyDbError } from '@/lib/errors'
+import { todayIso } from '@/lib/timezone'
 
 type Result = { error?: string; success?: boolean }
 
@@ -68,7 +69,7 @@ export async function createServiceRequestAction(formData: FormData): Promise<Re
       description: `Заявка арендатора: ${description}`,
       status: 'todo',
       priority: 'high',
-      due_date: new Date().toISOString().slice(0, 10),
+      due_date: todayIso(),
       property_id: grant.propertyId,
       engagement_id: grant.engagementId,
       assigned_to: property?.manager_id ?? null,

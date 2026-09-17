@@ -5,12 +5,14 @@ import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import { QuickCreateModal } from '@/components/ui/QuickCreateModal'
 import { QuickCreateContactForm } from './QuickCreateContactForm'
+import { contactDisplayNameWithPerson } from '@/features/contacts/config/display-name'
 
 export interface PartyContact {
  id: string
  full_name: string
  phone?: string | null
  client_type?: string | null
+ company_name?: string | null
 }
 
 export interface PartyRepresentative {
@@ -63,7 +65,7 @@ export function PartyContactSelect({
  <option value="">{placeholder}</option>
  {contacts.map(c => (
  <option key={c.id} value={c.id}>
- {c.full_name}{c.phone ? ` · ${c.phone}` : ''}
+ {contactDisplayNameWithPerson(c)}{c.phone ? ` · ${c.phone}` : ''}
  </option>
  ))}
  </select>

@@ -27,7 +27,7 @@ export async function getContractFormData(excludeContractId?: string, currentDea
     { data: rawDeals },
     { data: rawPlans },
   ] = await Promise.all([
-    supabase.from('contacts').select('id, full_name, phone, role, client_type').order('full_name'),
+    supabase.from('contacts').select('id, full_name, phone, role, client_type, company_name').order('full_name'),
     supabase.from('properties').select('id, title, address, property_type').order('title'),
     supabase.from('contact_representatives').select('id, contact_id, full_name, position, is_primary').order('is_primary', { ascending: false }),
     supabase

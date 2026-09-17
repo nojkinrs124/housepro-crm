@@ -7,6 +7,7 @@ import { requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
 import { generateDueRecurringTransactions } from '../services/recurring.service'
 import { friendlyDbError } from '@/lib/errors'
+import { todayIso } from '@/lib/timezone'
 
 function parseAmount(raw: unknown): number | null {
   const v = String(raw ?? '').replace(/\s/g, '').replace(',', '.')
@@ -59,7 +60,7 @@ export async function createRecurringRuleAction(_prevState: unknown, formData: F
   if (error) return { error: friendlyDbError(error, { entity: 'правило' }) }
 
   // Generate first transaction if start_date is today or past
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayIso()
   if (startDate <= today) {
     await supabase.from('accounting_transactions').insert({
       type, amount,

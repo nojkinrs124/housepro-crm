@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback } from 'react'
 import { Calendar } from 'lucide-react'
+import { todayIso } from '@/lib/timezone'
 
 interface Props {
  from?: string
@@ -51,7 +52,7 @@ export function DateRangePicker({ from, to }: Props) {
  <input
  type="date"
  defaultValue={from}
- onChange={e => push(e.target.value, to ?? new Date().toISOString().slice(0, 10))}
+ onChange={e => push(e.target.value, to ?? todayIso())}
  className="text-xs px-2 py-1.5 border border-[var(--hp-border)] bg-[var(--hp-surface)] outline-none focus:border-[var(--hp-ink)]"
  />
  <span className="text-muted-foreground text-xs">—</span>

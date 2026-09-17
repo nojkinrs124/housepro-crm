@@ -1,10 +1,12 @@
 'use client'
 
+import { SHOWING_STATUS_LABELS } from '@/features/showings/config/showing-labels'
+
 const STATUS_CONFIG = {
-  planned:   { label: 'Запланирован', color: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]' },
-  completed: { label: 'Проведён',     color: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]' },
-  cancelled: { label: 'Отменён',      color: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]' },
-  no_show:   { label: 'Не явились',   color: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]' },
+  planned:   { label: SHOWING_STATUS_LABELS.planned,   color: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]' },
+  completed: { label: SHOWING_STATUS_LABELS.completed, color: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]' },
+  cancelled: { label: SHOWING_STATUS_LABELS.cancelled, color: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]' },
+  no_show:   { label: SHOWING_STATUS_LABELS.no_show,   color: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]' },
 } as const
 
 export function ShowingStatusBadge({ status }: { status: string }) {

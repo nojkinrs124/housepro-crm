@@ -78,6 +78,7 @@ export function EngagementTermsForm({
   contracts,
   properties = [],
   defaultPropertyId = '',
+  dealId = '',
   backHref,
 }: {
   terms: EngagementTerms
@@ -88,6 +89,8 @@ export function EngagementTermsForm({
   properties?: PropertyOption[]
   /** Объект, подставленный переходом с его карточки. */
   defaultPropertyId?: string
+  /** Сделка управления, с которой пришли: приём двинет её на «В обслуживании». */
+  dealId?: string
   backHref: string
 }) {
   const router = useRouter()
@@ -180,6 +183,7 @@ export function EngagementTermsForm({
   return (
     <form action={submit} className="space-y-4">
       {terms.id && <input type="hidden" name="id" value={terms.id} />}
+      {dealId && <input type="hidden" name="deal_id" value={dealId} />}
 
       <div className="hp-card p-5 space-y-4">
         {isNew && (

@@ -8,6 +8,7 @@ import { RegistryTable, type RegistryColumn } from '@/features/registry/componen
 import { BulkBar } from '@/features/registry/components/BulkBar'
 import { useRegistryFilters } from '@/hooks/useRegistryFilters'
 import { useSelection } from '@/hooks/useSelection'
+import { formatDateTime } from '@/lib/timezone'
 
 export interface ShowingRow {
   id: string
@@ -36,8 +37,7 @@ const STATUS_OPTIONS = [
 ]
 
 function fmtWhen(iso: string): string {
-  const d = new Date(iso)
-  return `${d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })} ${d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`
+  return formatDateTime(iso, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
 }
 
 export function ShowingsView({ showings }: { showings: ShowingRow[] }) {

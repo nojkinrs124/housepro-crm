@@ -12,6 +12,7 @@ import {
   categoryIdByCode,
 } from '@/features/management/data/settlement.data'
 import { friendlyDbError } from '@/lib/errors'
+import { todayIso } from '@/lib/timezone'
 
 type Result = { error?: string; success?: boolean; warning?: string }
 
@@ -50,7 +51,7 @@ export async function registerTenantPaymentAction(formData: FormData): Promise<R
 
   const engagementId = str(formData.get('engagement_id'))
   const amount = num(formData.get('amount'))
-  const date = str(formData.get('date')) || new Date().toISOString().slice(0, 10)
+  const date = str(formData.get('date')) || todayIso()
   const periodStart = str(formData.get('period_start')) || null
   const periodEnd = str(formData.get('period_end')) || null
 
@@ -137,7 +138,7 @@ export async function payOwnerAction(formData: FormData): Promise<Result> {
 
   const engagementId = str(formData.get('engagement_id'))
   const amount = num(formData.get('amount'))
-  const date = str(formData.get('date')) || new Date().toISOString().slice(0, 10)
+  const date = str(formData.get('date')) || todayIso()
   const asAdvance = formData.get('as_advance') === 'on'
 
   if (!engagementId) return { error: 'Обслуживание не найдено' }
@@ -226,7 +227,7 @@ export async function addExpenseAction(formData: FormData): Promise<Result> {
   const engagementId = str(formData.get('engagement_id'))
   const categoryCode = str(formData.get('category_code'))
   const amount = num(formData.get('amount'))
-  const date = str(formData.get('date')) || new Date().toISOString().slice(0, 10)
+  const date = str(formData.get('date')) || todayIso()
   const borneBy = str(formData.get('borne_by')) === 'owner' ? 'owner' : 'agency'
   const description = str(formData.get('description'))
 

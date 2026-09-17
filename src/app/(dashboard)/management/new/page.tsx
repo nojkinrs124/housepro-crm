@@ -8,6 +8,7 @@ import {
   type ContractOption,
 } from '@/features/management/components/EngagementTermsForm'
 import { can, toUserRole } from '@/lib/permissions'
+import { todayIso } from '@/lib/timezone'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,9 +30,9 @@ const SIGNED_STATUSES = ['generated', 'signed', 'completed']
 export default async function StartEngagementPage({
   searchParams,
 }: {
-  searchParams: Promise<{ property_id?: string }>
+  searchParams: Promise<{ property_id?: string; deal_id?: string }>
 }) {
-  const { property_id: preselected } = await searchParams
+  const { property_id: preselected, deal_id: dealId } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -101,7 +102,7 @@ export default async function StartEngagementPage({
     rate: null,
     ownerFixedAmount: null,
     ownerPayoutDay: null,
-    startedAt: new Date().toISOString().slice(0, 10),
+    startedAt: todayIso(),
     notes: null,
   }
 
@@ -134,6 +135,7 @@ export default async function StartEngagementPage({
           terms={terms}
           properties={properties}
           defaultPropertyId={preselected && properties.some(p => p.id === preselected) ? preselected : ''}
+          dealId={dealId ?? ''}
           owners={(owners ?? []).map(o => ({ id: o.id, label: o.company_name || o.full_name }))}
           plans={(plans ?? []).map(p => ({
             id: p.id,

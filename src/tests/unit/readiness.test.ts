@@ -163,6 +163,17 @@ describe('checkContract', () => {
     expect(ids(issues)).not.toContain('contract.property')
   })
 
+  it('агентскому договору с собственником клиент не нужен — стороны полные', () => {
+    const issues = checkContract({ id: 'k1', contract_type: 'agency_owner', owner_contact_id: 'c2' })
+    expect(ids(issues)).not.toContain('contract.parties')
+  })
+
+  it('договору управления нужен собственник, а не клиент', () => {
+    const issues = checkContract({ id: 'k1', contract_type: 'property_management', property_id: 'p1', client_contact_id: 'c1' })
+    expect(ids(issues)).toContain('contract.parties')
+    expect(issues.find(i => i.id === 'contract.parties')?.missing).toMatch(/Не указана сторона/)
+  })
+
   it('заполненный договор аренды — без замечаний', () => {
     const issues = checkContract({
       id: 'k1', contract_type: 'rent_apartment', property_id: 'p1',

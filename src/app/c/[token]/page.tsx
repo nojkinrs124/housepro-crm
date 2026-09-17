@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { Home, MapPin, Phone } from 'lucide-react'
 import { PropertyMap, type MapPoint } from '@/features/properties/components/PropertyMap'
 import { PROPERTY_PURPOSE_LABELS as DEAL_LABELS } from '@/features/properties/config/purpose'
+import { plural } from '@/lib/utils'
 
 export default async function PublicCollectionPage({ params }: { params: Promise<{ token: string }> }) {
  const { token } = await params
@@ -94,7 +95,7 @@ export default async function PublicCollectionPage({ params }: { params: Promise
  <div className="text-center space-y-2">
  <h1 className="text-2xl font-bold text-foreground">{collection.title}</h1>
  <p className="text-muted-foreground text-sm">
- {collection.items?.length ?? 0} объектов{collection.created_at && ` · ${new Date(collection.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}`}
+ {plural(collection.items?.length ?? 0, ['объект', 'объекта', 'объектов'])}{collection.created_at && ` · ${new Date(collection.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}`}
  </p>
  </div>
 

@@ -12,26 +12,71 @@
  */
 
 import type { SchedulePeriodicity } from '@/features/accounting/services/payment-schedule.service'
+import { todayIso } from '@/lib/timezone'
 
 /** Типы объектов, которым положен коммерческий договор аренды. */
 const COMMERCIAL_PROPERTY_TYPES = ['commercial', 'office', 'warehouse', 'land']
 
 /**
- * Направление работы → тип договора. Аренда уточняется по типу объекта:
- * коммерция перестала быть отдельным направлением и определяется объектом.
+ * Стадии, на которых сделка ещё «до агентского договора»: оформление здесь
+ * означает договор агентства с собственником или заказчиком, а не итоговый
+ * договор найма/купли-продажи (проход 17.09.2026, RA-3/MG-2/SL-2.1/TS-2 —
+ * мастер предлагал найм с арендатором на стадии «Договор с собственником»).
+ */
+const AGENCY_STAGES: Record<string, readonly string[]> = {
+  rent_agent:    ['sourcing', 'meeting', 'agency_contract'],
+  management:    ['sourcing', 'meeting', 'mgmt_contract', 'handover'],
+  sale:          ['sourcing', 'valuation', 'agency_contract', 'docs_check'],
+  tenant_search: ['inquiry', 'search_contract', 'searching', 'collection_sent', 'viewings'],
+}
+
+/**
+ * Направление работы и стадия → тип договора.
+ *
+ * До агентского договора включительно оформляется договор агентства (с
+ * собственником — в аренде и продаже, с заказчиком — в подборе, управления — в
+ * управлении); дальше — итоговый договор между сторонами. Аренда уточняется по
+ * типу объекта: коммерция перестала быть отдельным направлением и определяется
+ * объектом. Заказчик-юрлицо в подборе получает «договор с юр. лицом».
  */
 export function contractTypeForDeal(
   direction: string | null | undefined,
-  propertyType?: string | null
+  propertyType?: string | null,
+  stage?: string | null,
+  clientType?: string | null,
 ): string {
   const isCommercialProperty = COMMERCIAL_PROPERTY_TYPES.includes(propertyType ?? '')
+  const rent = isCommercialProperty ? 'rent_commercial' : 'rent_apartment'
+  // Без стадии — прежнее поведение: управление оформляется договором управления,
+  // остальные направления — итоговым договором.
+  const beforeFinal = stage
+    ? (AGENCY_STAGES[direction ?? ''] ?? []).includes(stage)
+    : direction === 'management'
+
   switch (direction) {
-    case 'sale':          return 'sale'
-    case 'management':    return 'property_management'
+    case 'sale':          return beforeFinal ? 'agency_owner' : 'sale'
+    case 'management':    return beforeFinal ? 'property_management' : rent
     case 'tenant_search':
-    case 'rent_agent':
-    default:              return isCommercialProperty ? 'rent_commercial' : 'rent_apartment'
+      return beforeFinal ? (clientType === 'legal_entity' ? 'agency_legal_entity' : 'agency_client') : rent
+    case 'rent_agent':    return beforeFinal ? 'agency_owner' : rent
+    default:              return rent
   }
+}
+
+/** Что должно быть в сделке, чтобы оформить договор этого типа. */
+export function requiredForContract(contractType: string): { owner: boolean; client: boolean; property: boolean } {
+  switch (contractType) {
+    case 'agency_owner':          return { owner: true,  client: false, property: false }
+    case 'agency_client':
+    case 'agency_legal_entity':   return { owner: false, client: true,  property: false }
+    case 'property_management':   return { owner: true,  client: false, property: true }
+    default:                      return { owner: true,  client: true,  property: true }
+  }
+}
+
+/** Договоры агентства: график начислений и статус объекта к ним не относятся. */
+export function isAgencyContract(contractType: string): boolean {
+  return ['agency_owner', 'agency_client', 'agency_legal_entity'].includes(contractType)
 }
 
 /**
@@ -41,9 +86,8 @@ export function contractTypeForDeal(
 export function propertyStatusAfterDeal(direction: string | null | undefined): string | null {
   switch (direction) {
     case 'sale':                            return 'sold'
-    case 'rent_agent': case 'tenant_search': return 'rented'
-    // Управление статуса не меняет: объект в управлении бывает и сдан, и свободен,
-    // а «В обслуживании» — состояние договора с собственником, а не объекта.
+    // «В обслуживании» в управлении наступает после заселения — объект сдан.
+    case 'rent_agent': case 'tenant_search': case 'management': return 'rented'
     default:                                 return null
   }
 }
@@ -77,7 +121,7 @@ const NUMBER_PREFIX: Record<string, string> = {
 export function suggestContractNumber(
   contractType: string,
   seqInYear: number,
-  today: string = new Date().toISOString().slice(0, 10)
+  today: string = todayIso()
 ): string {
   const prefix = NUMBER_PREFIX[contractType] ?? 'ДГ'
   const year = today.slice(0, 4)
@@ -217,7 +261,7 @@ const SIGN_TASK_DAYS = 3
 
 export function defaultTaskDeadline(
   startDate: string,
-  today: string = new Date().toISOString().slice(0, 10)
+  today: string = todayIso()
 ): string {
   const base = startDate > today ? today : startDate
   const [y, m, d] = base.split('-').map(Number)
@@ -228,6 +272,8 @@ export function defaultTaskDeadline(
 export function taskTitleForContract(contractType: string): string {
   if (contractType === 'sale') return 'Подписать договор и подать документы на регистрацию'
   if (contractType === 'property_management') return 'Подписать договор управления и принять объект'
+  if (contractType === 'agency_owner') return 'Подписать агентский договор с собственником'
+  if (contractType === 'agency_client' || contractType === 'agency_legal_entity') return 'Подписать договор на подбор с заказчиком'
   return 'Подписать договор и передать ключи'
 }
 
@@ -253,6 +299,9 @@ export interface DealCompletionPlan {
  */
 export function buildCompletionPlan(input: {
   dealType: string | null | undefined
+  /** Текущая стадия — от неё зависит, агентский договор оформляем или итоговый. */
+  stage?: string | null
+  clientType?: string | null
   propertyType?: string | null
   amount?: number | null
   deposit?: number | null
@@ -265,29 +314,36 @@ export function buildCompletionPlan(input: {
   agreedFee?: number | null
   plans?: { id: string; code: string; title: string; charge_type: string; rate: number | null; directions: string[] | null }[]
 }): DealCompletionPlan {
-  const today = input.today ?? new Date().toISOString().slice(0, 10)
+  const today = input.today ?? todayIso()
   const startDate = input.startDate || today
-  const contractType = contractTypeForDeal(input.dealType, input.propertyType)
+  const contractType = contractTypeForDeal(input.dealType, input.propertyType, input.stage, input.clientType)
+  const agency = isAgencyContract(contractType)
+  const commission = calcCommission({
+    chargeType: input.planChargeType,
+    rate: input.planRate,
+    dealAmount: input.amount,
+    isFirstDealWithOwner: input.isFirstDealWithOwner,
+    agreedFee: input.agreedFee,
+  })
 
   return {
     contractType,
     contractNumber: suggestContractNumber(contractType, input.seqInYear, today),
     startDate,
     endDate: defaultEndDate(startDate, contractType),
-    amount: input.amount ?? null,
-    deposit: input.deposit ?? null,
+    // Сумма агентского договора — вознаграждение агентства, а не цена объекта:
+    // подставлять 8 000 000 ₽ в поле вознаграждения — путь к договору не на ту
+    // сумму (проход 17.09.2026, SL-2.2).
+    amount: agency ? (commission.amount > 0 ? commission.amount : null) : input.amount ?? null,
+    deposit: agency ? null : input.deposit ?? null,
     periodicity: defaultPeriodicity(contractType),
     withSchedule: needsSchedule(contractType) && !!input.amount,
-    propertyStatus: propertyStatusAfterDeal(input.dealType),
+    propertyStatus: agency ? null : propertyStatusAfterDeal(input.dealType),
     taskTitle: taskTitleForContract(contractType),
     taskDeadline: defaultTaskDeadline(startDate, today),
-    commission: calcCommission({
-      chargeType: input.planChargeType,
-      rate: input.planRate,
-      dealAmount: input.amount,
-      isFirstDealWithOwner: input.isFirstDealWithOwner,
-      agreedFee: input.agreedFee,
-    }),
+    // По агентскому договору комиссия ещё не заработана — она начисляется при
+    // итоговом договоре; здесь она только фиксируется суммой договора.
+    commission: agency ? { amount: 0, waivedReason: 'Вознаграждение начисляется при итоговом договоре — сейчас оно фиксируется в агентском' } : commission,
     extraServices: extraServicesFor(input.dealType, input.plans ?? []),
   }
 }

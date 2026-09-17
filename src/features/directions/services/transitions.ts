@@ -14,8 +14,12 @@ import { unmetItems } from '@/features/directions/config/stage-checklists'
 
 type Client = SupabaseClient<Database>
 
-/** Договоры, которые считаются заключёнными. Черновик не подтверждает ничего. */
-const SIGNED_STATUSES = new Set(['generated', 'signed', 'completed'])
+/**
+ * Договоры, которые считаются заключёнными. Черновик не подтверждает ничего,
+ * сформированный DOCX — тоже: файл ещё никто не подписал (проход 17.09.2026,
+ * RA-9/MG-6 — заселение наступало по факту генерации документа).
+ */
+const SIGNED_STATUSES = new Set(['signed', 'completed'])
 
 export interface DealFacts {
   id: string
@@ -35,6 +39,12 @@ export interface DealFacts {
   advanceAmount: number | null
   /** Срок выхода на основную сделку. */
   expectedCloseDate: string | null
+  /** Подборка при сделке с хотя бы одним объектом. */
+  hasCollection: boolean
+  /** Подборка при сделке отправлена клиенту. */
+  collectionSent: boolean
+  /** Объект сделки заведён в раздел «Управление» и не завершён. */
+  hasEngagement: boolean
 }
 
 /**
@@ -62,6 +72,12 @@ const DATA_CHECKS: Partial<Record<PreconditionCode, (f: DealFacts) => boolean>> 
   photos_uploaded:              f => f.photoCount > 0,
   published:                    f => f.isPublished,
   commission_accrued:           f => f.hasIncome,
+  // Продажа закрыта, когда деньги агентства отражены: без единой операции
+  // дохода 8-миллионная сделка закрывалась «в ноль» (проход 17.09.2026, SL-8).
+  settlement_closed:            f => f.hasIncome,
+  collection_built:             f => f.hasCollection,
+  collection_sent:              f => f.collectionSent,
+  engagement_started:           f => f.hasEngagement,
   // Предварительный договор без суммы аванса и срока выхода на сделку — это
   // не договорённость, а протокол о намерениях: по нему нельзя ни удержать
   // задаток, ни напомнить о приближении срока.
@@ -81,7 +97,7 @@ export async function collectDealFacts(supabase: Client, dealId: string): Promis
 
   const propertyId = deal.property_id
 
-  const [{ data: contracts }, { data: property }, { data: income }] = await Promise.all([
+  const [{ data: contracts }, { data: property }, { data: income }, { data: collections }, { data: engagements }] = await Promise.all([
     // Договор мог быть заведён и от сделки, и просто от объекта — учитываем оба пути.
     propertyId
       ? supabase.from('contracts').select('contract_type, status, settlement_scheme')
@@ -92,6 +108,11 @@ export async function collectDealFacts(supabase: Client, dealId: string): Promis
       : Promise.resolve({ data: null }),
     supabase.from('accounting_transactions').select('id')
       .eq('deal_id', dealId).eq('type', 'income').limit(1),
+    supabase.from('property_collections').select('id, sent_at, items:collection_items(property_id)')
+      .eq('deal_id', dealId),
+    propertyId
+      ? supabase.from('management_engagements').select('id').eq('property_id', propertyId).is('ended_at', null).limit(1)
+      : Promise.resolve({ data: null }),
   ])
 
   const signed = (contracts ?? []).filter(c => SIGNED_STATUSES.has(c.status))
@@ -112,6 +133,9 @@ export async function collectDealFacts(supabase: Client, dealId: string): Promis
     hasIncome: (income ?? []).length > 0,
     advanceAmount: deal.advance_amount,
     expectedCloseDate: deal.expected_close_date,
+    hasCollection: (collections ?? []).some(c => (c.items ?? []).length > 0),
+    collectionSent: (collections ?? []).some(c => c.sent_at !== null),
+    hasEngagement: (engagements ?? []).length > 0,
   }
 }
 
@@ -171,20 +195,32 @@ export function canMoveStage(facts: DealFacts, toStage: string): TransitionVerdi
   // Назад — свободно: работу вернули на шаг раньше, потому что ошиблись.
   if (toIndex < fromIndex) return { allowed: true }
 
-  const unmet = unmetItems(direction, facts.status, facts.stage_progress)
-  if (unmet.length > 0) {
-    const list = unmet.map(i => `«${i.title}»`).join(', ')
-    return {
-      allowed: false,
-      reason: `На стадии «${stageLabel(direction, facts.status)}» не закрыты обязательные пункты: ${list}`,
-    }
-  }
+  // Прыжок через стадии — это прохождение каждой из них: чек-листы всех
+  // промежуточных стадий должны быть закрыты, а предусловия каждой следующей —
+  // выполнены. Иначе «Встреча → Показы» обходил бы договор и тариф
+  // (проход 17.09.2026, правило (г)).
+  // Стадия из старой воронки, которой нет в направлении, — переводим без
+  // проверок: держать сделку в несуществующей стадии хуже.
+  if (fromIndex < 0) return { allowed: true }
 
-  const target = getStage(direction, toStage)
-  for (const code of target?.requires ?? []) {
-    const check = DATA_CHECKS[code]
-    if (check && !check(facts)) {
-      return { allowed: false, reason: PRECONDITIONS[code].message }
+  const stages = config.stages
+  for (let i = fromIndex; i < toIndex; i++) {
+    const stage = stages[i].value
+    const unmet = unmetItems(direction, stage, facts.stage_progress)
+    if (unmet.length > 0) {
+      const list = unmet.map(item => `«${item.title}»`).join(', ')
+      return {
+        allowed: false,
+        reason: `На стадии «${stageLabel(direction, stage)}» не закрыты обязательные пункты: ${list}`,
+      }
+    }
+
+    const next = getStage(direction, stages[i + 1].value)
+    for (const code of next?.requires ?? []) {
+      const check = DATA_CHECKS[code]
+      if (check && !check(facts)) {
+        return { allowed: false, reason: PRECONDITIONS[code].message }
+      }
     }
   }
 

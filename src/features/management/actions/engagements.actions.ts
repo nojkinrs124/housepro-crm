@@ -8,6 +8,7 @@ import { writeAuditLog } from '@/lib/audit'
 import { validateEngagementTerms } from '@/features/plans/services/plan-terms'
 import { advanceDealStage } from '@/lib/deal-automation'
 import { friendlyDbError } from '@/lib/errors'
+import { todayIso } from '@/lib/timezone'
 
 type Result = { error?: string; success?: boolean; id?: string }
 
@@ -60,7 +61,7 @@ export async function startEngagementAction(formData: FormData): Promise<Result>
   const ownerContactId = str(formData.get('owner_contact_id'))
   const planId = str(formData.get('plan_id'))
   const dealId = str(formData.get('deal_id'))
-  const startedAt = str(formData.get('started_at')) || new Date().toISOString().slice(0, 10)
+  const startedAt = str(formData.get('started_at')) || todayIso()
 
   const terms = {
     settlement_scheme: str(formData.get('settlement_scheme')) || null,
@@ -147,8 +148,9 @@ export async function startEngagementAction(formData: FormData): Promise<Result>
   })
   if (handoverError) return { error: `Обслуживание заведено, но акт приёма создать не удалось: ${handoverError.message}` }
 
-  // Сделка, которая привела к управлению, переходит на стадию приёмки.
-  if (dealId) await advanceDealStage(supabase, dealId, 'contract')
+  // Сделка, которая привела к управлению, уходит в обслуживание — если её
+  // воронка пройдена (advanceDealStage проверяет чек-листы и предусловия).
+  if (dealId) await advanceDealStage(supabase, dealId, 'completed')
 
   await writeAuditLog({
     userId: user.id, orgId,
@@ -275,7 +277,7 @@ export async function setEngagementStatusAction(
       status,
       // Завершение обслуживания закрывает период — иначе уникальный индекс не
       // даст принять этот же объект заново.
-      ended_at: status === 'ended' ? new Date().toISOString().slice(0, 10) : null,
+      ended_at: status === 'ended' ? todayIso() : null,
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)

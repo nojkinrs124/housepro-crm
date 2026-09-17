@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { buttonVariants } from '@/components/ui/button'
 import { StatStrip } from '@/components/layout/StatStrip'
 import { EmptyState } from '@/components/layout/EmptyState'
+import { plural } from '@/lib/utils'
 
 export default async function TasksPage() {
  const supabase = await createClient()
@@ -35,7 +36,7 @@ export default async function TasksPage() {
  <div className="space-y-5">
  <PageHeader
  title="Задачи"
- subtitle={`${total} задач · ${active} активных`}
+ subtitle={`${plural(total, ['задача', 'задачи', 'задач'])} · ${plural(active, ['активная', 'активные', 'активных'])}`}
  actions={
  <>
  {/* Календарь — тот же список задач и показов по дням, не отдельный раздел */}

@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { buttonVariants } from '@/components/ui/button'
 import { EmptyState } from '@/components/layout/EmptyState'
 import { PropertiesView, type PropertyRow } from '@/features/properties/components/PropertiesView'
+import { plural } from '@/lib/utils'
 
 export default async function PropertiesPage() {
   const supabase = await createClient()
@@ -32,7 +33,7 @@ export default async function PropertiesPage() {
     <div className="space-y-5">
       <PageHeader
         title="Объекты"
-        subtitle={`${properties.length} объектов в базе · ${publishedCount} на Авито · ${sitePublishedCount} на сайте`}
+        subtitle={`${plural(properties.length, ['объект', 'объекта', 'объектов'])} в базе · ${publishedCount} на Авито · ${sitePublishedCount} на сайте`}
         actions={
           <Link href="/properties/new" className={buttonVariants({ size: 'sm' })}>
             <Plus style={{ width: 16, height: 16 }} />

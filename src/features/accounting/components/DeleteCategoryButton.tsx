@@ -4,12 +4,13 @@ import { useTransition } from 'react'
 import { deleteCategoryAction } from '../actions/categories.actions'
 import { Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { confirmDialog } from '@/components/forms/ConfirmDialog'
 
 export function DeleteCategoryButton({ id }: { id: string }) {
  const [isPending, startTransition] = useTransition()
 
- function handleDelete() {
- if (!confirm('Удалить категорию? Операции без категории не потеряются.')) return
+ async function handleDelete() {
+ if (!(await confirmDialog('Удалить категорию? Операции без категории не потеряются.'))) return
  startTransition(async () => {
  const res = await deleteCategoryAction(id)
  if (res && 'error' in res) toast.error(res.error)

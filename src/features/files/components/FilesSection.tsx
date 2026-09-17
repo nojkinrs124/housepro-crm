@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { FileUpload } from './FileUpload'
 import { FileDeleteButton } from './FileDeleteButton'
+import { signedFileUrl } from '../actions/files.actions'
 import { FileText, Image, FileIcon, Download } from 'lucide-react'
 import type { FileRecord } from '@/types/database'
 import { formatDate } from '@/lib/utils'
@@ -9,6 +10,7 @@ interface FilesSectionProps {
  clientId?: string
  propertyId?: string
  contractId?: string
+ dealId?: string
  title?: string
 }
 
@@ -18,11 +20,6 @@ function FileTypeIcon({ type }: { type?: string }) {
  if (type === 'application/pdf') return <FileText className="w-5 h-5 text-[var(--hp-danger)]" />
  return <FileIcon className="w-5 h-5 text-muted-foreground" />
 }
-
-function formatSize(url?: string) {
- return null // size not stored; omit
-}
-
 
 function formatType(type?: string) {
  if (!type) return 'Файл'
@@ -35,7 +32,7 @@ function formatType(type?: string) {
 }
 
 export async function FilesSection({
- clientId, propertyId, contractId, title = 'Файлы и документы'
+ clientId, propertyId, contractId, dealId, title = 'Файлы и документы'
 }: FilesSectionProps) {
  const supabase = await createClient()
 
@@ -44,8 +41,14 @@ export async function FilesSection({
  if (clientId) query = query.eq('client_id', clientId)
  else if (propertyId) query = query.eq('property_id', propertyId)
  else if (contractId) query = query.eq('contract_id', contractId)
+ else if (dealId) query = query.eq('deal_id', dealId)
 
- const { data: files } = await query
+ const { data: rawFiles } = await query
+ // Бакет приватный — ссылки подписываются на время показа страницы.
+ const files = await Promise.all((rawFiles ?? []).map(async (f: FileRecord) => ({
+ ...f,
+ download_url: await signedFileUrl(f.file_url),
+ })))
 
  return (
  <div className="hp-card p-5 space-y-4">
@@ -59,11 +62,11 @@ export async function FilesSection({
  </div>
 
  {/* File list */}
- {!files || files.length === 0 ? (
- <p className="text-sm text-muted-foreground">Файлы не загружены</p>
+ {files.length === 0 ? (
+ <p className="text-sm text-muted-foreground">Файлов пока нет — загрузите скан паспорта, документы на объект или подписанный договор</p>
  ) : (
  <div className="space-y-2">
- {files.map((file: FileRecord) => (
+ {files.map(file => (
  <div
  key={file.id}
  className="flex items-center gap-3 p-3 hover:bg-accent/50 transition-colors group"
@@ -82,9 +85,9 @@ export async function FilesSection({
  </div>
 
  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
- {file.file_url && (
+ {file.download_url && (
  <a
- href={file.file_url}
+ href={file.download_url}
  target="_blank"
  rel="noopener noreferrer"
  download={file.file_name ?? true}
@@ -104,7 +107,7 @@ export async function FilesSection({
  {/* Divider */}
  <div className="border-t border-border pt-4">
  <p className="text-xs font-medium text-muted-foreground mb-3">Загрузить файл</p>
- <FileUpload clientId={clientId} propertyId={propertyId} contractId={contractId} />
+ <FileUpload clientId={clientId} propertyId={propertyId} contractId={contractId} dealId={dealId} />
  </div>
  </div>
  )

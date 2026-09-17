@@ -7,6 +7,7 @@ import { rateLimitMutation } from '@/lib/rate-limit'
 import { writeAuditLog } from '@/lib/audit'
 import { isValidEmail } from '@/lib/email/provider'
 import { sendContractReadyEmail } from '@/lib/email/send'
+import { MAIL_NOT_CONFIGURED } from '@/lib/email/messages'
 
 /** 15 МБ — за этим порогом письмо почти гарантированно отобьётся у получателя. */
 const MAX_ATTACHMENT_BYTES = 15 * 1024 * 1024
@@ -102,7 +103,7 @@ export async function sendContractByEmailAction(contractId: string, formData: Fo
 
   if (!result.ok) return { error: result.error ?? 'Не удалось отправить письмо' }
   if (result.skipped) {
-    return { error: 'Почта не настроена: задайте RESEND_API_KEY или UNISENDER_API_KEY в окружении' }
+    return { error: MAIL_NOT_CONFIGURED }
   }
 
   await writeAuditLog({

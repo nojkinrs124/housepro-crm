@@ -1,8 +1,11 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { ChevronDown, Loader2 } from 'lucide-react'
 import { updateContractStatusAction } from '@/features/contracts/actions/contracts.actions'
+import { confirmDialog } from '@/components/forms/ConfirmDialog'
 
 const statuses = [
  { value: 'draft', label: 'Черновик', color: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]' },
@@ -16,17 +19,33 @@ export function ContractStatusSelector({ contractId, currentStatus }: { contract
  const [open, setOpen] = useState(false)
  const [status, setStatus] = useState(currentStatus)
  const [isPending, startTransition] = useTransition()
+ const router = useRouter()
 
  const current = statuses.find(s => s.value === status) ?? statuses[0]
 
- const handleSelect = (value: string) => {
+ const handleSelect = async (value: string) => {
  setOpen(false)
  if (value === status) return
+ // Откат подписанного договора в черновик стирает факт подписания — это
+ // необратимо по смыслу и требует подтверждения (проход 17.09.2026, CT-2).
+ const rank: Record<string, number> = { draft: 0, generated: 1, signed: 2, completed: 3 }
+ if ((status === 'signed' || status === 'completed') && (rank[value] ?? 0) < rank[status]) {
+ const ok = await confirmDialog(
+ `Договор уже ${status === 'signed' ? 'подписан' : 'завершён'}. Вернуть его в «${statuses.find(s => s.value === value)?.label}»? Сделка по нему может откатиться на прежнюю стадию.`,
+ { title: 'Откатить статус договора', confirmLabel: 'Вернуть', danger: true },
+ )
+ if (!ok) return
+ }
  const prev = status
  setStatus(value)
  startTransition(async () => {
  const res = await updateContractStatusAction(contractId, value)
- if (res && 'error' in res) setStatus(prev)
+ if (res && 'error' in res && res.error) {
+ setStatus(prev)
+ toast.error(res.error)
+ } else {
+ router.refresh()
+ }
  })
  }
 

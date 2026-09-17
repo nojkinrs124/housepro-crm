@@ -6,6 +6,8 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { buttonVariants } from '@/components/ui/button'
 import { EmptyState } from '@/components/layout/EmptyState'
 import { ShowingsView, type ShowingRow } from '@/features/showings/components/ShowingsView'
+import { plural } from '@/lib/utils'
+import { contactDisplayName } from '@/features/contacts/config/display-name'
 
 export default async function ShowingsPage() {
   const supabase = await createClient()
@@ -21,7 +23,8 @@ export default async function ShowingsPage() {
     .select(`
       id, scheduled_at, status, result, duration_min, agent_id,
       property:properties(id, title, address),
-      lead:leads(id, full_name)
+      lead:leads(id, full_name),
+      contact:contacts(id, full_name, company_name, client_type)
     `)
     .order('scheduled_at', { ascending: false })
     .limit(500)
@@ -35,6 +38,9 @@ export default async function ShowingsPage() {
   const showings: ShowingRow[] = (data ?? []).map(s => {
     const property = s.property as { id: string; title: string | null; address: string | null } | null
     const lead = s.lead as { full_name: string | null } | null
+    // Клиент показа — контакт или ещё не конвертированный лид; колонка
+    // «Клиент» пустела для всех показов по контактам (проход 17.09.2026, SH-2).
+    const contact = s.contact as { full_name: string | null; company_name: string | null; client_type: string | null } | null
     return {
       id: s.id,
       scheduledAt: s.scheduled_at,
@@ -42,7 +48,7 @@ export default async function ShowingsPage() {
       durationMin: s.duration_min,
       propertyId: property?.id ?? null,
       propertyLabel: property?.title ?? property?.address ?? null,
-      leadName: lead?.full_name ?? null,
+      leadName: contact ? contactDisplayName(contact) : lead?.full_name ?? null,
       agentName: (s.agent_id ? agentMap[s.agent_id] : null) ?? null,
     }
   })
@@ -51,7 +57,7 @@ export default async function ShowingsPage() {
     <div className="space-y-5">
       <PageHeader
         title="Показы"
-        subtitle={`${showings.length} показов`}
+        subtitle={plural(showings.length, ['показ', 'показа', 'показов'])}
         actions={
           <>
             <Link href="/calendar?kind=showing" className={buttonVariants({ variant: 'secondary', size: 'sm' })}>

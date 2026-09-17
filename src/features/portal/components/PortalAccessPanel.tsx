@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { KeyRound, Plus } from 'lucide-react'
+import { confirmDialog } from '@/components/forms/ConfirmDialog'
 import {
   grantPortalAccessAction,
   revokePortalAccessAction,
@@ -59,8 +60,8 @@ export function PortalAccessPanel({
     })
   }
 
-  function revoke(id: string, name: string) {
-    if (!confirm(`Отозвать доступ у «${name}»? Кабинет закроется сразу.`)) return
+  async function revoke(id: string, name: string) {
+    if (!(await confirmDialog(`Отозвать доступ у «${name}»? Кабинет закроется сразу.`, { confirmLabel: 'Отозвать' }))) return
     start(async () => {
       const res = await revokePortalAccessAction(id)
       if (res.error) toast.error(res.error)

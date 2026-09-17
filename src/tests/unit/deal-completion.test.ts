@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   contractTypeForDeal,
+  requiredForContract,
   propertyStatusAfterDeal,
   needsSchedule,
   suggestContractNumber,
@@ -23,6 +24,24 @@ describe('contractTypeForDeal', () => {
   it('неизвестное направление не роняет оформление', () => {
     expect(contractTypeForDeal(null)).toBe('rent_apartment')
   })
+
+  it('до агентского договора включительно оформляется договор агентства, дальше — итоговый', () => {
+    expect(contractTypeForDeal('rent_agent', 'apartment', 'agency_contract')).toBe('agency_owner')
+    expect(contractTypeForDeal('rent_agent', 'apartment', 'tenant_check')).toBe('rent_apartment')
+    expect(contractTypeForDeal('sale', 'apartment', 'agency_contract')).toBe('agency_owner')
+    expect(contractTypeForDeal('sale', 'apartment', 'main_contract')).toBe('sale')
+    expect(contractTypeForDeal('management', 'apartment', 'mgmt_contract')).toBe('property_management')
+    expect(contractTypeForDeal('management', 'apartment', 'tenant_check')).toBe('rent_apartment')
+    expect(contractTypeForDeal('tenant_search', null, 'search_contract')).toBe('agency_client')
+    expect(contractTypeForDeal('tenant_search', null, 'search_contract', 'legal_entity')).toBe('agency_legal_entity')
+    expect(contractTypeForDeal('tenant_search', 'apartment', 'rent_contract')).toBe('rent_apartment')
+  })
+
+  it('агентскому договору не нужны клиент и объект, договору на подбор — собственник', () => {
+    expect(requiredForContract('agency_owner')).toEqual({ owner: true, client: false, property: false })
+    expect(requiredForContract('agency_client')).toEqual({ owner: false, client: true, property: false })
+    expect(requiredForContract('rent_apartment')).toEqual({ owner: true, client: true, property: true })
+  })
 })
 
 describe('propertyStatusAfterDeal', () => {
@@ -31,8 +50,18 @@ describe('propertyStatusAfterDeal', () => {
     expect(propertyStatusAfterDeal('sale')).toBe('sold')
   })
 
-  it('управление статус объекта не меняет — он может быть и сдан, и свободен', () => {
-    expect(propertyStatusAfterDeal('management')).toBeNull()
+  it('управление после заселения тоже делает объект сданным', () => {
+    expect(propertyStatusAfterDeal('management')).toBe('rented')
+  })
+
+  it('на агентской стадии мастер не трогает статус объекта и не начисляет комиссию', () => {
+    const plan = buildCompletionPlan({ dealType: 'rent_agent', stage: 'agency_contract', amount: 50000, seqInYear: 1, planChargeType: 'deal_percent', planRate: 50 })
+    expect(plan.contractType).toBe('agency_owner')
+    expect(plan.propertyStatus).toBeNull()
+    expect(plan.withSchedule).toBe(false)
+    expect(plan.commission.amount).toBe(0)
+    // Сумма агентского договора — вознаграждение, а не цена объекта.
+    expect(plan.amount).toBe(25000)
   })
 })
 

@@ -4,6 +4,7 @@ import { useActionState, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { AlertCircle, CalendarRange, ChevronDown, ChevronUp } from 'lucide-react'
 import { generatePaymentScheduleAction } from '../actions/payment-schedule.actions'
+import { plural } from '@/lib/utils'
 import {
  buildPaymentSchedule,
  scheduleTotal,
@@ -261,7 +262,7 @@ export function PaymentScheduleForm({
  {existingCount > 0 && (
  <label className="flex items-center gap-2 text-sm text-[var(--hp-danger)]">
  <input type="checkbox" name="replace" />
- Пересоздать график — {existingCount} начислений уже есть (оплаченные останутся)
+ Пересоздать график — уже есть {plural(existingCount, ['начисление', 'начисления', 'начислений'])} (оплаченные останутся)
  </label>
  )}
  </div>
@@ -274,7 +275,7 @@ export function PaymentScheduleForm({
  disabled={preview.length === 0}
  className="flex items-center gap-2 px-5 py-2.5 text-white rounded-[var(--hp-radius)] text-sm font-semibold transition-colors bg-[var(--hp-accent)] hover:bg-[var(--hp-accent-hover)] disabled:opacity-50"
  >
- {isPending ? 'Создаём…' : `Создать ${preview.length} начислений`}
+ {isPending ? 'Создаём…' : preview.length === 0 ? 'Укажите сумму и дату начала' : `Создать: ${plural(preview.length, ['начисление', 'начисления', 'начислений'])}`}
  </button>
  <button
  type="button"
@@ -305,7 +306,7 @@ function SchedulePreview({ items }: { items: ReturnType<typeof buildPaymentSched
  return (
  <div className="hp-block">
  <div className="hp-block-header">
- Предпросмотр — {items.length} начислений на {fmtMoney(scheduleTotal(items))}
+ Предпросмотр — {plural(items.length, ['начисление', 'начисления', 'начислений'])} на {fmtMoney(scheduleTotal(items))}
  </div>
  {visible.map((item) => (
  <div key={item.seq} className="hp-block-row">

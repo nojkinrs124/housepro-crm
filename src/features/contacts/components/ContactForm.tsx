@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { AlertCircle, User, Building2 } from 'lucide-react'
 import { DadataSuggestInput } from '@/components/forms/DadataSuggestInput'
 import { findContactByPhoneAction } from '../actions/duplicates.actions'
-import { CONTACT_SOURCES } from '../config/contact-sources'
+import { CONTACT_SOURCES, CONTACT_SOURCE_LABELS } from '../config/contact-sources'
 import { Field, FieldGrid, FormExtra, FormSection } from '@/components/forms/FormLayout'
 
 const inputCls = "w-full h-10 px-4 rounded-[var(--hp-radius)] border border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-ink)] placeholder:text-[var(--hp-tertiary)] text-sm outline-none focus:border-[var(--hp-ink)] transition-colors"
@@ -302,6 +302,12 @@ export function ContactForm({ action, defaults = {}, backHref, submitLabel }: Co
             <select name="source" defaultValue={defaults.source ?? ''} className={selectCls}>
               <option value="">Выберите источник</option>
               {CONTACT_SOURCES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+              {/* Источник, унаследованный от лида («Звонок», «Сайт · …»), в
+                  справочнике контакта отсутствует — без этой опции сохранение
+                  формы затирало его в пустоту (проход 17.09.2026, P-1). */}
+              {defaults.source && !CONTACT_SOURCES.some(s => s.value === defaults.source) && (
+                <option value={defaults.source}>{CONTACT_SOURCE_LABELS[defaults.source] ?? defaults.source}</option>
+              )}
             </select>
           </Field>
         </FieldGrid>

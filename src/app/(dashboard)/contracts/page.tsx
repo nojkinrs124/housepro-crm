@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { buttonVariants } from '@/components/ui/button'
 import { EmptyState } from '@/components/layout/EmptyState'
-import { isId } from '@/lib/utils'
+import { isId, plural } from '@/lib/utils'
 import { ContractsView, type ContractRow } from '@/features/contracts/components/ContractsView'
 import { getContractTypeConfig } from '@/features/contracts/config/contract-types'
 
@@ -67,7 +67,7 @@ export default async function ContractsPage() {
     <div className="space-y-5">
       <PageHeader
         title="Договоры"
-        subtitle={`${rows.length} договоров`}
+        subtitle={plural(rows.length, ['договор', 'договора', 'договоров'])}
         actions={
           <Link href="/contracts/new" className={buttonVariants({ size: 'sm' })}>
             <Plus style={{ width: 16, height: 16 }} />

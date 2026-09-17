@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Trash2, Plus, UserCircle2, AlertCircle } from 'lucide-react'
 import { addRepresentativeAction, deleteRepresentativeAction } from '@/features/contacts/actions/contacts.actions'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
+import { confirmDialog } from '@/components/forms/ConfirmDialog'
 
 interface Representative {
   id: string
@@ -27,7 +28,7 @@ export function RepresentativesPanel({ contactId, representatives }: { contactId
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
   async function handleDelete(repId: string) {
-    if (!confirm('Удалить представителя? В уже сформированных документах он останется, но выбрать его для новых договоров будет нельзя.')) return
+    if (!(await confirmDialog('Удалить представителя? В уже сформированных документах он останется, но выбрать его для новых договоров будет нельзя.'))) return
     setDeleteError(null)
     const result = await deleteRepresentativeAction(repId, contactId)
     if (result?.error) setDeleteError(result.error)

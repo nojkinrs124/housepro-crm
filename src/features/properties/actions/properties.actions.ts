@@ -160,6 +160,19 @@ export async function deletePropertyAction(id: string) {
   const permError = await requirePermission(user.id, 'properties', 'delete')
   if (permError) return permError
 
+  // Объект с живой сделкой удалять нельзя: сделка осталась бы с битой ссылкой
+  // (проход 17.09.2026, P-5). Сначала закройте или отмените сделку.
+  const { data: activeDeals } = await supabase
+    .from('deals')
+    .select('deal_number')
+    .eq('property_id', id)
+    .not('status', 'in', '(completed,in_service,cancelled)')
+    .limit(3)
+  if (activeDeals && activeDeals.length > 0) {
+    const numbers = activeDeals.map(d => `СД-${d.deal_number ?? '?'}`).join(', ')
+    return { error: `По объекту идёт работа (${numbers}) — сначала завершите или отмените сделку, потом удаляйте объект` }
+  }
+
   const { error } = await supabase.from('properties').delete().eq('id', id)
   if (error) return { error: friendlyDbError(error, { entity: 'объект', verb: 'удалить' }) }
 

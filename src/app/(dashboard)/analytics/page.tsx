@@ -1,5 +1,5 @@
 import { stagesOf, DIRECTION_SHORT_LABELS } from '@/features/directions/config/directions'
-import { isDealSucceeded, isDealClosed } from '@/features/deals/config/deal-stages'
+import { isDealSucceeded, isDealClosed, DEAL_TYPE_LABELS } from '@/features/deals/config/deal-stages'
 import { DEAL_SOURCE_LABELS } from '@/features/deals/config/deal-sources'
 import { CheckCircle2, Clock, AlertTriangle } from 'lucide-react'
 import {
@@ -20,7 +20,7 @@ import {
  getLast12Months,
  monthLabel,
 } from '@/features/analytics/data'
-import { formatMoney } from '@/lib/utils'
+import { formatMoney, plural } from '@/lib/utils'
 import { DateRangePicker } from '@/features/analytics/components/DateRangePicker'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { StatStrip } from '@/components/layout/StatStrip'
@@ -47,9 +47,13 @@ export default async function AnalyticsPage({
 
  // ── KPI ──────────────────────────────────────────────────────────────────────
 
- const totalRevenue = deals
- .filter(d => isDealSucceeded(d.status, d.deal_type))
- .reduce((s, d) => s + Number(d.commission ?? 0), 0)
+ // Доход агентства — по проведённым операциям, а не по полю deals.commission:
+ // поле заполняют не всегда, а деньги в бухгалтерии есть (проход 17.09.2026,
+ // RA-11/TS-7). Платежи арендаторов и депозиты — не доход агентства.
+ const PASS_THROUGH = new Set(['tenant_payment', 'deposit'])
+ const totalRevenue = payments
+ .filter(p => p.payment_status === 'paid' && !PASS_THROUGH.has(p.category_code ?? ''))
+ .reduce((s, p) => s + Number(p.amount ?? 0), 0)
 
  const totalDealsAmount = deals
  .filter(d => isDealSucceeded(d.status, d.deal_type))
@@ -179,10 +183,10 @@ export default async function AnalyticsPage({
 
  <StatStrip
  items={[
- { label: 'Комиссия (закрытые)', value: formatMoney(totalRevenue), hint: `${completedDeals} сделок закрыто` },
+ { label: 'Доход агентства', value: formatMoney(totalRevenue), hint: `${plural(completedDeals, ['сделка закрыта', 'сделки закрыто', 'сделок закрыто'])}` },
  { label: 'Объём сделок', value: formatMoney(totalDealsAmount), hint: `${activeDeals} в работе` },
  { label: 'Платежи получены', value: formatMoney(paidTotal), hint: overdueTotal > 0 ? `просрочено ${formatMoney(overdueTotal)}` : 'просроченных нет', alert: overdueTotal > 0 },
- { label: 'Конверсия лидов', value: `${conversionRate}%`, hint: `${leads.length} лидов, ${leadsConverted.length} стали клиентами` },
+ { label: 'Конверсия лидов', value: `${conversionRate}%`, hint: `${plural(leads.length, ['лид', 'лида', 'лидов'])}, ${leadsConverted.length} стали клиентами` },
  ]}
  />
 
@@ -210,7 +214,7 @@ export default async function AnalyticsPage({
  </div>
  </div>
  <div className="bg-[var(--hp-surface)] border border-[var(--hp-border)] p-5">
- <h2 className="text-sm font-semibold text-[var(--hp-ink)] mb-4">Воронка сделок</h2>
+ <h2 className="text-sm font-semibold text-[var(--hp-ink)] mb-4">Воронка: {DEAL_TYPE_LABELS[mainDirection] ?? mainDirection}</h2>
  <DealFunnelChart data={funnelStages} />
  </div>
  </div>

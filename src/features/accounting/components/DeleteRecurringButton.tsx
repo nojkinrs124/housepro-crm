@@ -4,12 +4,13 @@ import { useTransition } from 'react'
 import { deleteRecurringRuleAction } from '../actions/recurring.actions'
 import { Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { confirmDialog } from '@/components/forms/ConfirmDialog'
 
 export function DeleteRecurringButton({ id }: { id: string }) {
  const [isPending, startTransition] = useTransition()
 
- function handleDelete() {
- if (!confirm('Удалить правило повторения? Уже созданные операции останутся.')) return
+ async function handleDelete() {
+ if (!(await confirmDialog('Удалить правило повторения? Уже созданные операции останутся.'))) return
  startTransition(async () => {
  const res = await deleteRecurringRuleAction(id)
  if (res && 'error' in res) toast.error(res.error)

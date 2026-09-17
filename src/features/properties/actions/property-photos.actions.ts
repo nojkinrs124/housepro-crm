@@ -13,6 +13,7 @@ import {
   yandexPathFromUrl,
 } from '@/lib/storage/photo-storage'
 import { friendlyDbError } from '@/lib/errors'
+import { activeDealIdsForProperty, markChecklistItems } from '@/features/directions/services/checklist-sync'
 
 const MAX_PHOTO_SIZE = 10 * 1024 * 1024 // 10 МБ — фото для Авито не нужно тяжелее
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp']
@@ -76,6 +77,15 @@ export async function uploadPropertyPhotoAction(propertyId: string, formData: Fo
   if (dbError) {
     await removePhotoByUrl(supabase, uploaded.url)
     return { error: `Ошибка записи: ${dbError.message}` }
+  }
+
+  // Загруженные фото закрывают пункты «Фотосъёмка / фото загружены» у сделок по объекту.
+  for (const dealId of await activeDealIdsForProperty(supabase, propertyId)) {
+    await markChecklistItems(supabase, dealId, [
+      { stage: 'preparation', item: 'photos' },
+      { stage: 'preparation', item: 'photos_up' },
+    ])
+    revalidatePath(`/deals/${dealId}`)
   }
 
   revalidatePath(`/properties/${propertyId}`)

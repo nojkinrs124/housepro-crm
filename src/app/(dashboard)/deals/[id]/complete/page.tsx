@@ -4,10 +4,11 @@ import Link from 'next/link'
 import { Zap } from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { CompleteDealPanel } from '@/features/deals/components/CompleteDealPanel'
-import { buildCompletionPlan } from '@/features/deals/services/deal-completion'
+import { buildCompletionPlan, requiredForContract } from '@/features/deals/services/deal-completion'
 import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
 import { PROPERTY_STATUS_LABELS } from '@/features/properties/config/property-labels'
 import { DEAL_TYPE_LABELS } from '@/features/deals/config/deal-stages'
+import { contactDisplayName } from '@/features/contacts/config/display-name'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,8 +28,8 @@ export default async function CompleteDealPage({ params }: { params: Promise<{ i
     .select(`
       id, deal_number, deal_type, status, amount, plan_id, owner_contact_id, client_contact_id, property_id,
       property:properties(id, title, property_type, status),
-      client_contact:contacts!deals_client_contact_id_fkey(id, full_name, company_name),
-      owner_contact:contacts!deals_owner_contact_id_fkey(id, full_name, company_name)
+      client_contact:contacts!deals_client_contact_id_fkey(id, full_name, company_name, client_type),
+      owner_contact:contacts!deals_owner_contact_id_fkey(id, full_name, company_name, client_type)
     `)
     .eq('id', id)
     .maybeSingle()
@@ -36,8 +37,8 @@ export default async function CompleteDealPage({ params }: { params: Promise<{ i
   if (!deal) notFound()
 
   const property = deal.property as { id: string; title: string; property_type: string | null; status: string | null } | null
-  const clientContact = deal.client_contact as { full_name: string | null; company_name: string | null } | null
-  const ownerContact = deal.owner_contact as { full_name: string | null; company_name: string | null } | null
+  const clientContact = deal.client_contact as { full_name: string | null; company_name: string | null; client_type: string | null } | null
+  const ownerContact = deal.owner_contact as { full_name: string | null; company_name: string | null; client_type: string | null } | null
 
   // Порядковый номер договора организации в этом году — из него собирается
   // номер вида «АР-2026-014».
@@ -83,6 +84,8 @@ export default async function CompleteDealPage({ params }: { params: Promise<{ i
 
   const plan = buildCompletionPlan({
     dealType: deal.deal_type,
+    stage: deal.status,
+    clientType: clientContact?.client_type,
     propertyType: property?.property_type,
     amount: deal.amount,
     seqInYear: (count ?? 0) + 1,
@@ -93,10 +96,13 @@ export default async function CompleteDealPage({ params }: { params: Promise<{ i
     plans: flatFeePlans ?? [],
   })
 
+  // Что нужно сделке — зависит от типа договора на этой стадии: агентскому
+  // договору с собственником арендатор не нужен, договору на подбор — объект.
+  const need = requiredForContract(plan.contractType)
   const blockers = [
-    !deal.owner_contact_id && 'не указан собственник',
-    !deal.client_contact_id && 'не указан клиент',
-    !deal.property_id && 'не выбран объект',
+    need.owner && !deal.owner_contact_id && 'не указан собственник',
+    need.client && !deal.client_contact_id && 'не указан клиент',
+    need.property && !deal.property_id && 'не выбран объект',
   ].filter((v): v is string => typeof v === 'string')
 
   const dealNo = deal.deal_number ? `СД-${deal.deal_number}` : `СД-${id.slice(0, 6)}`
@@ -133,7 +139,30 @@ export default async function CompleteDealPage({ params }: { params: Promise<{ i
         backLabel="Вернуться к сделке"
       />
 
-      {blockers.length > 0 ? (
+      {plan.contractType === 'property_management' ? (
+        /* Договору управления нужна схема расчёта с собственником — она
+           выбирается в форме договора, мастер её не знает. */
+        <div className="hp-block">
+          <div className="hp-block-header">Договор управления</div>
+          <div className="hp-block-item items-start">
+            <span className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 bg-[var(--hp-warn)]" />
+            <span className="flex-1 min-w-0">
+              <span className="block text-[var(--hp-ink)] font-medium">
+                Оформляется в форме договора
+              </span>
+              <span className="block text-[12px] text-[var(--hp-sub)] mt-0.5">
+                Там выбирается схема расчёта с собственником — процент от платежа или фиксированная выплата. Собственник, объект и тариф подставятся из сделки.
+              </span>
+            </span>
+            <Link
+              href={`/contracts/new?deal_id=${id}&type=property_management`}
+              className="shrink-0 hp-btn-primary"
+            >
+              Оформить договор
+            </Link>
+          </div>
+        </div>
+      ) : blockers.length > 0 ? (
         <div className="hp-block">
           <div className="hp-block-header">Сначала дозаполните сделку</div>
           <div className="hp-block-item items-start">
@@ -143,7 +172,7 @@ export default async function CompleteDealPage({ params }: { params: Promise<{ i
                 В сделке {blockers.join(', ')}
               </span>
               <span className="block text-[12px] text-[var(--hp-sub)] mt-0.5">
-                Договор нужно с кем-то подписывать и на какой-то объект — без этого оформлять нечего
+                {CONTRACT_TYPE_LABELS[plan.contractType] ?? 'Договор'}: без этого подписывать не с кем или не на что
               </span>
             </span>
             <Link
@@ -183,7 +212,7 @@ export default async function CompleteDealPage({ params }: { params: Promise<{ i
           propertyStatusLabel={
             plan.propertyStatus ? PROPERTY_STATUS_LABELS[plan.propertyStatus]?.label ?? null : null
           }
-          clientName={clientContact?.company_name || clientContact?.full_name || null}
+          clientName={clientContact ? contactDisplayName(clientContact) : ownerContact ? contactDisplayName(ownerContact) : null}
         />
         </>
       )}

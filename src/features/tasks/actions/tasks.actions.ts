@@ -7,6 +7,7 @@ import { requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
 import { emailTaskAssigned } from '@/lib/email/send'
 import { friendlyDbError } from '@/lib/errors'
+import { localDateTimeToIso } from '@/lib/timezone'
 
 const VALID_TASK_STATUSES = ['todo', 'in_progress', 'done', 'cancelled']
 const VALID_TASK_PRIORITIES = ['low', 'medium', 'high']
@@ -28,7 +29,8 @@ export async function createTaskAction(formData: FormData) {
     title: (formData.get('title') as string)?.trim(),
     description: formData.get('description') as string || null,
     priority,
-    deadline: formData.get('deadline') as string || null,
+    // Поле datetime-local приходит по времени агентства — в базу пишем UTC.
+    deadline: localDateTimeToIso(formData.get('deadline') as string),
     status: 'todo' as const,
     created_by: user.id,
     assigned_to: formData.get('assigned_to') as string || user.id,

@@ -1,6 +1,7 @@
 import { PhoneDuplicateField } from '@/features/contacts/components/PhoneDuplicateField'
 import { Field, FieldGrid, FormExtra, FormSection } from '@/components/forms/FormLayout'
 import { LEAD_SOURCES_MANUAL } from '@/features/leads/config/lead-sources'
+import { LEAD_DEAL_TYPES } from '@/features/leads/config/lead-deal-types'
 
 /**
  * Общее тело формы лида для /leads/new и /leads/[id]/edit — раньше две копии
@@ -13,11 +14,6 @@ import { LEAD_SOURCES_MANUAL } from '@/features/leads/config/lead-sources'
  * Серверный компонент: PhoneDuplicateField (клиентский) рендерится как JSX.
  */
 
-const DEAL_TYPES = [
-  { value: 'rent',    label: 'Снять' },
-  { value: 'sale',    label: 'Купить' },
-  { value: 'subrent', label: 'Субаренда' },
-] as const
 
 const PROPERTY_TYPES = [
   { value: 'apartment',  label: 'Квартира' },
@@ -69,7 +65,7 @@ export function LeadFormBody({
             <input name="full_name" defaultValue={l.full_name ?? ''} placeholder="Иван Иванов" className="hp-input" data-testid="lead-full-name" />
           </Field>
           <Field label="Телефон" hint="Если такой номер уже есть в базе — система предупредит">
-            <PhoneDuplicateField defaultValue={l.phone ?? ''} placeholder="+7 (999) 999-99-99" className="hp-input" />
+            <PhoneDuplicateField defaultValue={l.phone ?? ''} placeholder="+7 (999) 999-99-99" className="hp-input" allowDuplicateToggle />
           </Field>
           <Field label="Откуда пришёл" required>
             <select name="source" required defaultValue={l.source ?? ''} className="hp-input cursor-pointer" data-testid="lead-source">
@@ -92,7 +88,7 @@ export function LeadFormBody({
         <FieldGrid>
           <Field label="Хочет">
             <div className="flex flex-wrap gap-2">
-              {DEAL_TYPES.map(t => (
+              {LEAD_DEAL_TYPES.map(t => (
                 <label key={t.value} className={radioCls}>
                   <input type="radio" name="deal_type" value={t.value} defaultChecked={l.deal_type === t.value} className="w-4 h-4 shrink-0" style={{ accentColor: 'var(--hp-accent)' }} />
                   {t.label}

@@ -8,7 +8,7 @@ import { StatStrip } from '@/components/layout/StatStrip'
 import { buttonVariants } from '@/components/ui/button'
 import { ManagementView, type ManagementRow } from '@/features/management/components/ManagementView'
 import { collectManagement } from '@/features/management/services/management.service'
-import { formatAmount } from '@/lib/utils'
+import { formatAmount, plural } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -34,7 +34,7 @@ export default async function ManagementPage() {
     <div className="space-y-6">
       <PageHeader
         title="Объекты в управлении"
-        subtitle={`${rows.length} объектов в доверительном управлении`}
+        subtitle={`${plural(rows.length, ['объект', 'объекта', 'объектов'])} в доверительном управлении`}
         actions={
           <Link href="/management/new" className={buttonVariants({ size: 'sm' })}>
             <Plus style={{ width: 16, height: 16 }} />

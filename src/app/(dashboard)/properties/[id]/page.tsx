@@ -18,6 +18,7 @@ import { PROPERTY_TYPE_LABELS as typeLabels, PROPERTY_DEAL_LABELS as dealLabels,
 import { DEAL_TYPE_LABELS, DEAL_STATUS_LABELS } from '@/features/deals/config/deal-stages'
 import { ReadinessPanel } from '@/components/layout/ReadinessPanel'
 import { checkProperty } from '@/lib/readiness'
+import { FilesSection } from '@/features/files/components/FilesSection'
 
 const statusBadge: Record<string, string> = {
   available: 'hp-badge-good',
@@ -330,6 +331,9 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
               <div className="hp-block-row"><span className="label">Обновлён</span><span className="value">{formatDate(p.updated_at)}</span></div>
             )}
           </div>
+
+          {/* Документы на объект — приватный бакет documents (#35 закрыта 17.09.2026) */}
+          <FilesSection propertyId={id} title="Документы на объект" />
         </div>
       </div>
     </div>

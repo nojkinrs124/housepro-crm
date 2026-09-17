@@ -10,10 +10,12 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Contact } from '@/types/database'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { contactDisplayName } from '@/features/contacts/config/display-name'
 import { ReadinessPanel } from '@/components/layout/ReadinessPanel'
 import { checkContact } from '@/lib/readiness'
 import { DEAL_TYPE_LABELS as dealTypeLabels, DEAL_STATUS_LABELS as dealStatusLabels } from '@/features/deals/config/deal-stages'
 import { formatDate, formatAmount, formatDeadline } from '@/lib/utils'
+import { FilesSection } from '@/features/files/components/FilesSection'
 
 const roleLabels: Record<string, string> = {
   client: 'Клиент',
@@ -36,7 +38,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
   const { id } = await params
   const supabase = await createClient()
 
-  const [{ data: contact }, { data: rawTasks }, { data: rawDeals }, { data: rawReps }] = await Promise.all([
+  const [{ data: contact }, { data: rawTasks }, { data: rawDeals }, { data: rawReps }, { data: rawLeads }] = await Promise.all([
     supabase.from('contacts').select('*').eq('id', id).single(),
     supabase.from('tasks').select('id, title, status, priority, deadline')
       .eq('contact_id', id).order('created_at', { ascending: false }).limit(10),
@@ -44,9 +46,12 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
       .or(`owner_contact_id.eq.${id},client_contact_id.eq.${id}`)
       .order('created_at', { ascending: false }).limit(10),
     supabase.from('contact_representatives').select('*').eq('contact_id', id).order('created_at'),
+    // Из какого лида пришёл контакт — двусторонняя связь (проход 17.09.2026, L-9).
+    supabase.from('leads').select('id, full_name, status, created_at').eq('contact_id', id).order('created_at', { ascending: false }),
   ])
 
   if (!contact) notFound()
+  const leads = rawLeads ?? []
 
   const c = contact as Contact
   const tasks = rawTasks
@@ -63,12 +68,15 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <PageHeader
-        title={c.full_name}
+        title={contactDisplayName(c)}
         backHref="/contacts"
         backLabel="Вернуться к контактам"
         subtitle={
           <span className="flex items-center gap-2 flex-wrap">
             <span className="text-base">{roleLabels[c.role]}</span>
+            {c.client_type === 'legal_entity' && c.company_name && c.full_name && (
+              <span className="text-base text-[var(--hp-sub)]">· контактное лицо {c.full_name}</span>
+            )}
             {c.client_type === 'legal_entity' && (
               <span className="hp-badge hp-badge-neutral">
                 <Building2 className="w-3 h-3" />
@@ -343,7 +351,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
             {c.birth_date && (
               <div className="hp-block-row">
                 <span className="label">Дата рождения</span>
-                <span className="value">{new Date(c.birth_date).toLocaleDateString('ru-RU')}</span>
+                <span className="value">{formatDate(c.birth_date)}</span>
               </div>
             )}
             {c.source && (
@@ -354,8 +362,16 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
             )}
             <div className="hp-block-row">
               <span className="label">Добавлен</span>
-              <span className="value">{new Date(c.created_at).toLocaleDateString('ru-RU')}</span>
+              <span className="value">{formatDate(c.created_at)}</span>
             </div>
+            {leads.map(l => (
+              <div key={l.id} className="hp-block-row">
+                <span className="label">Из лида</span>
+                <Link href={`/leads/${l.id}`} className="value underline-offset-2 hover:underline">
+                  {l.full_name || 'без имени'} · {formatDate(l.created_at)}
+                </Link>
+              </div>
+            ))}
           </div>
 
           {c.comment && (
@@ -365,6 +381,8 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
             </div>
           )}
 
+          {/* Сканы паспорта и документы контакта — приватный бакет documents */}
+          <FilesSection clientId={id} title="Документы" />
         </div>
       </div>
     </div>

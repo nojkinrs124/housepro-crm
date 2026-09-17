@@ -164,7 +164,23 @@ describe('createDealAction — валидация', () => {
     const { createDealAction } = await import('@/features/deals/actions/deals.actions')
     const formData = new FormData()
     formData.set('deal_type', 'rent_agent')
+    formData.set('owner_contact_id', 'c1b0a2d3-0000-4000-8000-000000000001')
 
     await expect(createDealAction(formData)).rejects.toThrow('NEXT_REDIRECT:/deals')
+  })
+
+  it('не создаёт сделку без сторон: аренде нужен собственник, подбору — клиент, продаже — объект', async () => {
+    const { supabase } = createSupabaseMock({ data: {}, error: null })
+    mockCreateClient.mockResolvedValue(supabase)
+    const { createDealAction } = await import('@/features/deals/actions/deals.actions')
+
+    const rent = new FormData(); rent.set('deal_type', 'rent_agent')
+    expect((await createDealAction(rent))?.error).toMatch(/собственника/)
+
+    const search = new FormData(); search.set('deal_type', 'tenant_search')
+    expect((await createDealAction(search))?.error).toMatch(/клиента/)
+
+    const sale = new FormData(); sale.set('deal_type', 'sale'); sale.set('owner_contact_id', 'c1b0a2d3-0000-4000-8000-000000000001')
+    expect((await createDealAction(sale))?.error).toMatch(/объект/)
   })
 })

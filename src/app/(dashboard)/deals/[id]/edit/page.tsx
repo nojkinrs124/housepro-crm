@@ -9,16 +9,18 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { DEAL_STATUS_LABELS } from '@/features/deals/config/deal-stages'
 import { formatDate } from '@/lib/utils'
 import type { RepresentativeOption } from '@/features/deals/components/DealFormBody'
+import { loadDealPlans } from '@/features/plans/data/deal-plans'
 
 export default async function EditDealPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
 
-  const [{ data: rawDeal }, { data: rawContacts }, { data: rawProperties }, { data: rawReps }] = await Promise.all([
+  const [{ data: rawDeal }, { data: rawContacts }, { data: rawProperties }, { data: rawReps }, plans] = await Promise.all([
     supabase.from('deals').select('*').eq('id', id).single(),
-    supabase.from('contacts').select('id, full_name, phone, role, client_type').order('full_name'),
+    supabase.from('contacts').select('id, full_name, phone, role, client_type, company_name').order('full_name'),
     supabase.from('properties').select('id, title, address').order('title'),
     supabase.from('contact_representatives').select('id, contact_id, full_name, position, is_primary').order('is_primary', { ascending: false }),
+    loadDealPlans(supabase),
   ])
 
   if (!rawDeal) notFound()
@@ -60,6 +62,7 @@ export default async function EditDealPage({ params }: { params: Promise<{ id: s
           owners={owners}
           clients={clients}
           properties={properties}
+          plans={plans}
           representativesByContact={representativesByContact}
           ownerDefaultId={deal.owner_contact_id ?? ''}
           clientDefaultId={deal.client_contact_id ?? ''}

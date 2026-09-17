@@ -15,6 +15,7 @@ import {
 } from '@/features/avito/services/avito-api.service'
 import type { Insert } from '@/types/database'
 import { friendlyDbError } from '@/lib/errors'
+import { activeDealIdsForProperty, markChecklistItems } from '@/features/directions/services/checklist-sync'
 
 async function requireAdmin() {
   const supabase = await createClient()
@@ -66,6 +67,14 @@ export async function toggleAvitoPublishAction(propertyId: string, publish: bool
     .eq('id', propertyId)
 
   if (error) return { error: friendlyDbError(error) }
+
+  // Опубликованный объект закрывает пункт «Объявление размещено» у сделок по нему.
+  if (publish) {
+    for (const dealId of await activeDealIdsForProperty(supabase, propertyId)) {
+      await markChecklistItems(supabase, dealId, [{ stage: 'showings', item: 'published' }])
+      revalidatePath(`/deals/${dealId}`)
+    }
+  }
 
   await writeAuditLog({
     userId: user.id,

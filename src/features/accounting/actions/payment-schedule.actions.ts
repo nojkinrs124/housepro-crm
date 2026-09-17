@@ -11,6 +11,8 @@ import {
   scheduleTotal,
   type SchedulePeriodicity,
 } from '@/features/accounting/services/payment-schedule.service'
+import { todayIso } from '@/lib/timezone'
+import { categoryIdByCode } from '@/features/management/data/settlement.data'
 
 const VALID_PERIODICITY: SchedulePeriodicity[] = ['monthly', 'quarterly', 'semiannual', 'yearly', 'once']
 
@@ -53,7 +55,7 @@ export async function generatePaymentScheduleAction(
 
   const { data: contract, error: contractError } = await supabase
     .from('contracts')
-    .select('id, contract_number, start_date, end_date, amount, deposit, deal_id, status, indexation_percent, indexation_period_months')
+    .select('id, contract_number, contract_type, start_date, end_date, amount, deposit, deal_id, property_id, status, indexation_percent, indexation_period_months')
     .eq('id', contractId)
     .single()
 
@@ -88,6 +90,8 @@ export async function generatePaymentScheduleAction(
     startDate,
     endDate,
     amount,
+    paymentLabel: contract.contract_type === 'property_management' ? 'Платёж арендатора'
+      : contract.contract_type === 'sale' ? 'Платёж по договору' : 'Аренда',
     periodicity,
     dayOfMonth: dayOfMonth ?? null,
     depositAmount,
@@ -125,7 +129,17 @@ export async function generatePaymentScheduleAction(
     }
   }
 
-  const today = new Date().toISOString().slice(0, 10)
+  // Начисления по графику — платежи арендатора: без объекта и категории они не
+  // попадали ни в карточку объекта в управлении, ни во взаиморасчёт с
+  // собственником (проход 17.09.2026, MG-8).
+  const [{ data: engagement }, categoryId] = await Promise.all([
+    contract.property_id
+      ? supabase.from('management_engagements').select('id').eq('property_id', contract.property_id).is('ended_at', null).maybeSingle()
+      : Promise.resolve({ data: null }),
+    categoryIdByCode(supabase, contract.contract_type === 'property_management' ? 'management_fee' : 'tenant_payment'),
+  ])
+
+  const today = todayIso()
   const rows = items.map((item) => ({
     type: 'income' as const,
     amount: item.amount,
@@ -135,6 +149,9 @@ export async function generatePaymentScheduleAction(
     description: item.label,
     contract_id: contractId,
     deal_id: contract.deal_id ?? null,
+    property_id: contract.property_id ?? null,
+    engagement_id: engagement?.id ?? null,
+    category_id: categoryId,
     created_by: user.id,
     organization_id: orgId,
     schedule_seq: item.seq,

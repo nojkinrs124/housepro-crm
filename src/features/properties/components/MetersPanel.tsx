@@ -5,6 +5,8 @@ import { toast } from 'sonner'
 import { Gauge, Plus, X } from 'lucide-react'
 import { addMeterReadingAction, createMeterAction, deactivateMeterAction } from '../actions/meters.actions'
 import { METER_KIND_LABELS, METER_KIND_UNITS } from '@/features/meters/config/meter-kinds'
+import { confirmDialog } from '@/components/forms/ConfirmDialog'
+import { todayIso } from '@/lib/timezone'
 
 export interface MeterReadingRow {
  id: string
@@ -69,8 +71,8 @@ export function MetersPanel({ propertyId, meters }: { propertyId: string; meters
  })
  }
 
- function removeMeter(meterId: string) {
- if (!confirm('Снять счётчик с учёта? Показания останутся в истории объекта.')) return
+ async function removeMeter(meterId: string) {
+ if (!(await confirmDialog('Снять счётчик с учёта? Показания останутся в истории объекта.', { confirmLabel: 'Снять с учёта' }))) return
  startTransition(async () => {
  const res = await deactivateMeterAction(meterId, propertyId)
  if (res.error) { toast.error(res.error); return }
@@ -218,7 +220,7 @@ export function MetersPanel({ propertyId, meters }: { propertyId: string; meters
  id={`r-date-${meter.id}`}
  type="date"
  name="reading_date"
- defaultValue={new Date().toISOString().slice(0, 10)}
+ defaultValue={todayIso()}
  className="w-full min-w-0 h-10 px-4 rounded-[var(--hp-radius)] border border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-ink)] text-sm outline-none focus:border-[var(--hp-ink)] transition-colors"
  />
  </div>

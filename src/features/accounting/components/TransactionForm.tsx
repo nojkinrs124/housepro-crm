@@ -9,12 +9,13 @@ import { ArrowDownCircle, ArrowUpCircle, Wallet, Tag, CircleAlert } from 'lucide
 import { FormExtra } from '@/components/forms/FormLayout'
 import { DEAL_TYPE_LABELS } from '@/features/deals/config/deal-stages'
 import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
+import { todayIso } from '@/lib/timezone'
 
 interface Props {
  transaction?: AccountingTransaction
  categories: AccountingCategory[]
  contracts: Pick<Contract, 'id' | 'contract_number' | 'contract_type'>[]
- deals: Pick<Deal, 'id' | 'deal_type'>[]
+ deals: Pick<Deal, 'id' | 'deal_type' | 'deal_number'>[]
  employees: Pick<User, 'id' | 'full_name'>[]
  contacts: Pick<Contact, 'id' | 'full_name' | 'company_name' | 'client_type'>[]
  properties: Pick<Property, 'id' | 'title' | 'address'>[]
@@ -27,6 +28,8 @@ interface Props {
  defaultPropertyId?: string
  /** Предвыбранный договор — например «начислить аренду» из карточки управления */
  defaultContractId?: string
+ /** Предвыбранная сделка — «начислить комиссию» с карточки сделки */
+ defaultDealId?: string
 }
 
 type State = { error?: string; fields?: Record<string, string[]> } | null
@@ -49,7 +52,7 @@ function contactLabel(c: Pick<Contact, 'full_name' | 'company_name' | 'client_ty
  return c.client_type === 'legal_entity' && c.company_name ? c.company_name : c.full_name
 }
 
-export function TransactionForm({ transaction, categories, contracts, deals, employees, contacts, properties, managedPropertyIds = [], defaultPropertyId, defaultContractId }: Props) {
+export function TransactionForm({ transaction, categories, contracts, deals, employees, contacts, properties, managedPropertyIds = [], defaultPropertyId, defaultContractId, defaultDealId }: Props) {
  const isEdit = Boolean(transaction)
  const action = transaction
  ? updateTransactionAction.bind(null, transaction.id)
@@ -158,7 +161,7 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
  <input
  type="date"
  name="date"
- defaultValue={transaction?.date ?? new Date().toISOString().slice(0, 10)}
+ defaultValue={transaction?.date ?? todayIso()}
  className={`${inputCls} min-w-0`}
  />
  </div>
@@ -205,7 +208,7 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
 
  {/* Правило «≤ 6 полей на виду»: статус, способ оплаты, срок и привязки —
  заполняются, когда нужны. Раскрыто, если операция заведена с объекта или договора. */}
- <FormExtra summary="статус, способ оплаты, срок, объект, договор, сделка, контакт, сотрудник" defaultOpen={Boolean(defaultPropertyId || defaultContractId || transaction?.property_id || transaction?.contract_id)}>
+ <FormExtra summary="статус, способ оплаты, срок, объект, договор, сделка, контакт, сотрудник" defaultOpen={Boolean(defaultPropertyId || defaultContractId || defaultDealId || transaction?.property_id || transaction?.contract_id)}>
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
  <div className="space-y-1.5">
  <label className="hp-label">Статус</label>
@@ -301,12 +304,12 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
  <label className="hp-label">Сделка</label>
  <select
  name="deal_id"
- defaultValue={transaction?.deal_id ?? ''}
+ defaultValue={transaction?.deal_id ?? defaultDealId ?? ''}
  className={selectCls}
  >
  <option value="">— не привязана —</option>
  {deals.map(d => (
- <option key={d.id} value={d.id}>{DEAL_TYPE_LABELS[d.deal_type] ?? d.deal_type} · {d.id.slice(0, 8)}</option>
+ <option key={d.id} value={d.id}>СД-{d.deal_number ?? '?'} · {DEAL_TYPE_LABELS[d.deal_type] ?? d.deal_type}</option>
  ))}
  </select>
  </div>

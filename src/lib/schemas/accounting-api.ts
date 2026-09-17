@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { ALL_STAGE_VALUES } from '@/features/directions/config/directions'
+import { todayIso } from '@/lib/timezone'
 
 // Отдельный файл (не в schemas/index.ts) — эта схема используется только новым
 // API v1 роутом для Telegram-бота, не формами в UI.
@@ -24,7 +25,7 @@ export const TransactionCreateSchema = z.object({
   date: z
     .string()
     .optional()
-    .transform((v) => (v ? v : new Date().toISOString().slice(0, 10)))
+    .transform((v) => (v ? v : todayIso()))
     .refine((v) => /^\d{4}-\d{2}-\d{2}$/.test(v), { message: 'date должен быть в формате YYYY-MM-DD' }),
   status: z.enum(['completed', 'pending', 'planned']).default('completed'),
   payment_method: z.string().trim().max(100).nullable().optional(),

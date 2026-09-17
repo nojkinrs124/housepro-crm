@@ -16,6 +16,10 @@ export function LeadStatusSelect({ leadId, currentStatus }: { leadId: string; cu
  const [loading, setLoading] = useState(false)
 
  const current = statuses.find(s => s.value === status) ?? statuses[0]
+ // «Конвертирован» ставится только кнопкой «В контакты» и обратно не снимается —
+ // иначе лид выглядит клиентом без контакта (проход 17.09.2026, L-3).
+ const locked = status === 'converted'
+ const choices = statuses.filter(s => s.value !== 'converted')
 
  async function handleChange(newStatus: string) {
  if (newStatus === status) return
@@ -41,8 +45,11 @@ export function LeadStatusSelect({ leadId, currentStatus }: { leadId: string; cu
  <div className={`px-3 py-2 border text-sm font-medium text-center ${current.color} ${loading ? 'opacity-60' : ''}`}>
  {loading ? 'Сохранение...' : current.label}
  </div>
+ {locked ? (
+ <p className="text-xs text-[var(--hp-sub)]">Лид переведён в контакт — дальше работа идёт в его карточке</p>
+ ) : (
  <div className="grid grid-cols-2 gap-1.5">
- {statuses.map(s => (
+ {choices.map(s => (
  <button
  key={s.value}
  onClick={() => handleChange(s.value)}
@@ -57,6 +64,7 @@ export function LeadStatusSelect({ leadId, currentStatus }: { leadId: string; cu
  </button>
  ))}
  </div>
+ )}
  </div>
  )
 }

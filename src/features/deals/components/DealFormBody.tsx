@@ -1,7 +1,7 @@
 import { Building2, User } from 'lucide-react'
 import { PartyContactSelect } from '@/features/contacts/components/PartyContactSelect'
 import { PropertySelectField } from '@/features/properties/components/PropertySelectField'
-import { DirectionStagePicker } from '@/features/directions/components/DirectionStagePicker'
+import { DirectionStagePicker, type DealPlanOption } from '@/features/directions/components/DirectionStagePicker'
 import { DEAL_SOURCES } from '@/features/deals/config/deal-sources'
 import { Field, FieldGrid, FormExtra, FormSection } from '@/components/forms/FormLayout'
 
@@ -31,6 +31,7 @@ export interface RepresentativeOption { id: string; contact_id: string; full_nam
 interface DealDefaults {
   deal_type?: string | null
   status?: string | null
+  plan_id?: string | null
   amount?: number | null
   commission?: number | null
   advance_amount?: number | null
@@ -49,6 +50,7 @@ export function DealFormBody({
   owners,
   clients,
   properties,
+  plans = [],
   representativesByContact,
   ownerDefaultId = '',
   clientDefaultId = '',
@@ -61,6 +63,7 @@ export function DealFormBody({
   owners: ContactOption[]
   clients: ContactOption[]
   properties: PropertyOption[]
+  plans?: DealPlanOption[]
   representativesByContact: Record<string, RepresentativeOption[]>
   ownerDefaultId?: string
   clientDefaultId?: string
@@ -77,6 +80,8 @@ export function DealFormBody({
       <DirectionStagePicker
         direction={d.deal_type}
         status={d.status}
+        planId={d.plan_id}
+        plans={plans}
         showStatus={showStatus}
       />
 
@@ -144,7 +149,7 @@ export function DealFormBody({
           <Field label="Банк">
             <input name="bank_name" defaultValue={d.bank_name ?? ''} placeholder="Сбер" className="hp-input" />
           </Field>
-          <Field label="Одобрение банка получено">
+          <Field label="Дата одобрения банка">
             <input name="bank_approval_date" type="date" defaultValue={d.bank_approval_date ?? ''} className="hp-input min-w-0" />
           </Field>
           <Field label="Плановое закрытие">

@@ -6,14 +6,7 @@ import { FileText } from 'lucide-react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/layout/PageHeader'
 
-// Тип сделки -> тип договора по умолчанию. 'rent' уточняется ниже по типу объекта
-// (жилой -> rent_apartment, коммерческий -> rent_commercial).
-const DEAL_TYPE_TO_CONTRACT_TYPE: Record<string, string> = {
-  sale: 'sale',
-  management: 'property_management',
-  commercial: 'rent_commercial',
-  subrent: 'sublease',
-}
+import { contractTypeForDeal, isAgencyContract } from '@/features/deals/services/deal-completion'
 
 export default async function NewContractPage({
   searchParams,
@@ -49,25 +42,25 @@ export default async function NewContractPage({
     client_representative_id?: string
     property_id?: string
     amount?: number | null
+    plan_id?: string
   } = {}
 
   if (params.deal_id) {
     const supabase = await createClient()
     const { data: deal } = await supabase
       .from('deals')
-      .select('deal_type, owner_contact_id, client_contact_id, owner_representative_id, client_representative_id, property_id, amount')
+      .select('deal_type, status, owner_contact_id, client_contact_id, owner_representative_id, client_representative_id, property_id, amount, commission, plan_id, client_contact:contacts!deals_client_contact_id_fkey(client_type)')
       .eq('id', params.deal_id)
       .maybeSingle()
 
     if (deal) {
       const property = properties.find(p => p.id === deal.property_id)
-      const isCommercialProperty = property?.property_type
-        ? ['commercial', 'office', 'warehouse', 'land'].includes(property.property_type)
-        : false
-
-      const contractType = deal.deal_type === 'rent'
-        ? (isCommercialProperty ? 'rent_commercial' : 'rent_apartment')
-        : DEAL_TYPE_TO_CONTRACT_TYPE[deal.deal_type] ?? 'rent_apartment'
+      const clientContact = deal.client_contact as { client_type: string | null } | null
+      // Тип договора — по направлению и стадии: до агентского договора
+      // включительно предлагаем договор агентства, дальше — итоговый.
+      const contractType = params.type
+        ?? contractTypeForDeal(deal.deal_type, property?.property_type, deal.status, clientContact?.client_type)
+      const agency = isAgencyContract(contractType)
 
       dealDefaults = {
         contract_type: contractType,
@@ -76,7 +69,9 @@ export default async function NewContractPage({
         owner_representative_id: deal.owner_representative_id ?? undefined,
         client_representative_id: deal.client_representative_id ?? undefined,
         property_id: deal.property_id ?? undefined,
-        amount: deal.amount,
+        // Сумма агентского договора — вознаграждение, а не цена объекта.
+        amount: agency ? deal.commission : deal.amount,
+        plan_id: deal.plan_id ?? undefined,
       }
     }
   }
@@ -114,6 +109,7 @@ export default async function NewContractPage({
           property_id: dealDefaults.property_id ?? params.property_id,
           deal_id: params.deal_id,
           amount: dealDefaults.amount,
+          plan_id: dealDefaults.plan_id,
           company_profile_id: defaultCompanyProfileId,
         }}
       />

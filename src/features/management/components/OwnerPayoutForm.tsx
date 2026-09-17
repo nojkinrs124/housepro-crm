@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { ArrowUpRight } from 'lucide-react'
 import { payOwnerAction } from '@/features/management/actions/settlement.actions'
+import { todayIso } from '@/lib/timezone'
 
 const inp = 'hp-input'
 const lbl = 'hp-label'
@@ -27,7 +28,7 @@ export function OwnerPayoutForm({
 }) {
   const [pending, start] = useTransition()
   const [advance, setAdvance] = useState(false)
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayIso()
 
   function submit(formData: FormData) {
     start(async () => {

@@ -8,8 +8,15 @@ import { requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
 import { friendlyDbError } from '@/lib/errors'
 
+/**
+ * Приватный бакет вложений: путь `<org>/<entity>/<ts>-<file>`, организация
+ * проверяется политикой по первому сегменту. В `files.file_url` хранится
+ * путь в бакете, а не публичная ссылка — файл отдаётся по подписанной ссылке
+ * (`signedFileUrl`). Старые записи с `http…` остаются как есть.
+ */
 const BUCKET = 'documents'
 const MAX_FILE_SIZE = 20 * 1024 * 1024 // 20 МБ
+const SIGNED_URL_TTL_SEC = 60 * 10
 
 export async function uploadFileAction(formData: FormData) {
   const supabase = await createClient()
@@ -49,23 +56,19 @@ export async function uploadFileAction(formData: FormData) {
 
   const ext = file.name.split('.').pop()?.toLowerCase()
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
-  const storagePath = `${entityId}/${Date.now()}-${safeName}`
+  const storagePath = `${orgId}/${entityId}/${Date.now()}-${safeName}`
 
   const { error: uploadError } = await supabase.storage
     .from(BUCKET)
     .upload(storagePath, buffer, { contentType: file.type, upsert: false })
 
   if (uploadError) {
-    return { error: `Ошибка загрузки: ${uploadError.message}` }
+    return { error: `Не удалось загрузить файл: ${uploadError.message}. Попробуйте ещё раз или файл поменьше` }
   }
-
-  const { data } = supabase.storage
-    .from(BUCKET)
-    .getPublicUrl(storagePath)
 
   const payload = {
     file_name: file.name,
-    file_url: data.publicUrl,
+    file_url: storagePath,
     file_type: file.type || `application/${ext}`,
     uploaded_by: user.id,
     organization_id: orgId,
@@ -109,15 +112,8 @@ export async function deleteFileAction(fileId: string) {
   const permError = await requirePermission(user.id, 'files', 'delete')
   if (permError) return permError
 
-  // Extract storage path from public URL
-  // Pattern: .../storage/v1/object/public/[bucket]/[path]
-  if (file.file_url) {
-    const marker = `/storage/v1/object/public/${BUCKET}/`
-    const parts = file.file_url.split(marker)
-    if (parts[1]) {
-      await supabase.storage.from(BUCKET).remove([parts[1]])
-    }
-  }
+  const storagePath = storagePathOf(file.file_url)
+  if (storagePath) await supabase.storage.from(BUCKET).remove([storagePath])
 
   const { error } = await supabase.from('files').delete().eq('id', fileId)
   if (error) return { error: friendlyDbError(error, { verb: 'удалить' }) }
@@ -128,4 +124,24 @@ export async function deleteFileAction(fileId: string) {
   if (file.deal_id) revalidatePath(`/deals/${file.deal_id}`)
 
   return { success: true }
+}
+
+/** Путь в бакете из `files.file_url`: новый формат — сам путь, старый — публичная ссылка. */
+function storagePathOf(fileUrl: string | null | undefined): string | null {
+  if (!fileUrl) return null
+  if (!/^https?:\/\//.test(fileUrl)) return fileUrl
+  const marker = `/storage/v1/object/public/${BUCKET}/`
+  const parts = fileUrl.split(marker)
+  return parts[1] ?? null
+}
+
+/** Подписанная ссылка на скачивание — на 10 минут; для старых публичных ссылок — они же. */
+export async function signedFileUrl(fileUrl: string | null | undefined): Promise<string | null> {
+  if (!fileUrl) return null
+  if (/^https?:\/\//.test(fileUrl) && !fileUrl.includes(`/${BUCKET}/`)) return fileUrl
+  const path = storagePathOf(fileUrl)
+  if (!path) return null
+  const supabase = await createClient()
+  const { data } = await supabase.storage.from(BUCKET).createSignedUrl(path, SIGNED_URL_TTL_SEC)
+  return data?.signedUrl ?? null
 }

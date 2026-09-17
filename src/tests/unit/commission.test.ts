@@ -107,8 +107,8 @@ describe('propertyStatusAfterDeal', () => {
     expect(propertyStatusAfterDeal('tenant_search')).toBe('rented')
   })
 
-  it('управление статус объекта не трогает', () => {
-    expect(propertyStatusAfterDeal('management')).toBeNull()
+  it('управление после заселения делает объект сданным', () => {
+    expect(propertyStatusAfterDeal('management')).toBe('rented')
   })
 })
 

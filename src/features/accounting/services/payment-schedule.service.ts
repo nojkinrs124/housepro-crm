@@ -42,6 +42,11 @@ export interface ScheduleInput {
    */
   prorateLastPeriod?: boolean
   /**
+   * Как называть периодический платёж в подписи строки. По умолчанию «Аренда»;
+   * для договора управления это «Платёж арендатора» (проход 17.09.2026, MG-3).
+   */
+  paymentLabel?: string
+  /**
    * Ежегодная индексация ставки, % (например, 7 — рост на 7%).
    * Прописана почти в каждом длинном договоре аренды, а считалась руками.
    */
@@ -226,8 +231,8 @@ export function buildPaymentSchedule(input: ScheduleInput): ScheduleItem[] {
       indexationSteps,
       label:
         (input.periodicity === 'monthly' && periodStart.getUTCDate() === anchorDay
-          ? `Аренда за ${monthLabel(periodStart)}`
-          : `Аренда за период ${shortDate(periodStart)} — ${shortDate(periodEnd)}`) +
+          ? `${input.paymentLabel ?? 'Аренда'} за ${monthLabel(periodStart)}`
+          : `${input.paymentLabel ?? 'Аренда'} за период ${shortDate(periodStart)} — ${shortDate(periodEnd)}`) +
         (indexationSteps > 0 ? ` (индексация +${input.indexationPercent}% ×${indexationSteps})` : ''),
     })
   }

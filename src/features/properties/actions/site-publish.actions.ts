@@ -7,6 +7,7 @@ import { requirePermission } from '@/lib/permissions'
 import { rateLimitMutation } from '@/lib/rate-limit'
 import { writeAuditLog } from '@/lib/audit'
 import { friendlyDbError } from '@/lib/errors'
+import { activeDealIdsForProperty, markChecklistItems } from '@/features/directions/services/checklist-sync'
 
 /**
  * Публикация объекта на публичном сайте «ХаусПро».
@@ -46,6 +47,14 @@ export async function togglePropertySitePublishAction(propertyId: string, publis
     .eq('id', propertyId)
 
   if (error) return { error: friendlyDbError(error, { entity: 'публикацию' }) }
+
+  // Опубликованный объект закрывает пункт «Объявление размещено» у сделок по нему.
+  if (publish) {
+    for (const dealId of await activeDealIdsForProperty(supabase, propertyId)) {
+      await markChecklistItems(supabase, dealId, [{ stage: 'showings', item: 'published' }])
+      revalidatePath(`/deals/${dealId}`)
+    }
+  }
 
   await writeAuditLog({
     userId: user.id,

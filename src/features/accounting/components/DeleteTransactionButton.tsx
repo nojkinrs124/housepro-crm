@@ -5,6 +5,7 @@ import { deleteTransactionAction } from '../actions/accounting.actions'
 import { Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { confirmDialog } from '@/components/forms/ConfirmDialog'
 
 interface Props {
  id: string
@@ -15,8 +16,8 @@ export function DeleteTransactionButton({ id, redirectAfter }: Props) {
  const [isPending, startTransition] = useTransition()
  const router = useRouter()
 
- function handleDelete() {
- if (!confirm('Удалить операцию? Она пропадёт из отчёта и доходности объекта — отменить нельзя.')) return
+ async function handleDelete() {
+ if (!(await confirmDialog('Удалить операцию? Она пропадёт из отчёта и доходности объекта — отменить нельзя.'))) return
  startTransition(async () => {
  const res = await deleteTransactionAction(id)
  if (res && 'error' in res) {

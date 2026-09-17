@@ -9,10 +9,36 @@ import { requirePermission } from '@/lib/permissions'
 import { normalizePhone } from '@/lib/utils'
 import { notifyNewLead } from '@/lib/telegram/notify-lead'
 import { emailLeadAssigned } from '@/lib/email/send'
-import { LEAD_STATUS_VALUES } from '@/features/leads/config/lead-statuses'
+import { LEAD_STATUS_LABELS, LEAD_STATUS_VALUES } from '@/features/leads/config/lead-statuses'
+import { contactRoleForLead } from '@/features/leads/config/lead-deal-types'
 import { friendlyDbError } from '@/lib/errors'
+import { localDateTimeToIso } from '@/lib/timezone'
 
 const VALID_STATUSES = LEAD_STATUS_VALUES
+
+
+type Supabase = Awaited<ReturnType<typeof createClient>>
+
+/**
+ * Текст предупреждения, если телефон уже есть у лида или контакта организации.
+ * Null — дублей нет. Ищем по нормализованному номеру, как он хранится.
+ */
+async function findDuplicateByPhone(supabase: Supabase, phone: string | null): Promise<string | null> {
+  if (!phone) return null
+  const [{ data: leads }, { data: contacts }] = await Promise.all([
+    supabase.from('leads').select('id, full_name, status').eq('phone', phone).limit(1),
+    supabase.from('contacts').select('id, full_name').eq('phone', phone).is('merged_into', null).limit(1),
+  ])
+  const lead = leads?.[0]
+  if (lead) {
+    return `Лид с телефоном ${phone} уже есть: «${lead.full_name || 'без имени'}» (${LEAD_STATUS_LABELS[lead.status] ?? lead.status}). Откройте его в списке лидов — или отметьте «Это повторное обращение», чтобы завести новый.`
+  }
+  const contact = contacts?.[0]
+  if (contact) {
+    return `Контакт с телефоном ${phone} уже есть: «${contact.full_name || 'без имени'}». Создайте сделку с карточки контакта — или отметьте «Это повторное обращение», чтобы завести новый лид.`
+  }
+  return null
+}
 
 function extractLeadFields(formData: FormData, userId?: string) {
   return {
@@ -31,7 +57,7 @@ function extractLeadFields(formData: FormData, userId?: string) {
     area_min:        formData.get('area_min')   ? Number(formData.get('area_min'))   : null,
     area_max:        formData.get('area_max')   ? Number(formData.get('area_max'))   : null,
     district:        (formData.get('district')    as string)?.trim() || null,
-    next_contact_at: (formData.get('next_contact_at') as string) || null,
+    next_contact_at: localDateTimeToIso(formData.get('next_contact_at') as string),
     assigned_to:     (formData.get('assigned_to') as string) || userId || null,
   }
 }
@@ -48,6 +74,11 @@ export async function createLeadAction(formData: FormData) {
 
   const permError = await requirePermission(user.id, 'leads', 'create')
   if (permError) return permError
+
+  // Подсказка под полем обещает предупредить о дубле — держим слово: второй
+  // лид с тем же телефоном не создаём молча (проход 17.09.2026, L-2).
+  const duplicate = await findDuplicateByPhone(supabase, fields.phone)
+  if (duplicate && formData.get('allow_duplicate') !== 'on') return { error: duplicate }
 
   const { data: lead, error } = await supabase
     .from('leads')
@@ -86,6 +117,15 @@ export async function updateLeadAction(id: string, formData: FormData) {
   const permError = await requirePermission(user.id, 'leads', 'update')
   if (permError) return permError
 
+  // Конвертированный лид — история: правки в нём не попадут в контакт и
+  // создадут расхождение (проход 17.09.2026, L-11).
+  const { data: current } = await supabase.from('leads').select('status, contact_id').eq('id', id).maybeSingle()
+  if (current?.status === 'converted') {
+    return { error: current.contact_id
+      ? 'Лид уже переведён в контакт — редактируйте карточку контакта, лид остаётся историей обращения'
+      : 'Лид уже переведён в контакт — редактируйте карточку контакта' }
+  }
+
   const { error } = await supabase
     .from('leads')
     .update({ ...fields, updated_at: new Date().toISOString() })
@@ -119,6 +159,17 @@ export async function updateLeadStatusAction(
   const permError = await requirePermission(user.id, 'leads', 'update')
   if (permError) return permError
 
+  // «Конвертирован» ставится только настоящей конвертацией («В контакты») и
+  // обратно не снимается: иначе лид выглядит клиентом без контакта или
+  // конвертируется второй раз (проход 17.09.2026, L-3/L-9).
+  if (status === 'converted') {
+    return { error: 'Статус «Конвертирован» ставится кнопкой «В контакты» — так создаётся контакт' }
+  }
+  const { data: current } = await supabase.from('leads').select('status').eq('id', id).maybeSingle()
+  if (current?.status === 'converted') {
+    return { error: 'Лид уже переведён в контакт — дальше работа идёт в карточке контакта' }
+  }
+
   const { error } = await supabase
     .from('leads')
     .update({ status, updated_at: new Date().toISOString() })
@@ -140,7 +191,7 @@ export async function addLeadActivityAction(formData: FormData) {
   const type    = formData.get('type') as string
   const content = (formData.get('content') as string)?.trim() || null
   const result  = (formData.get('result')  as string)?.trim() || null
-  const scheduled_at = (formData.get('scheduled_at') as string) || null
+  const scheduled_at = localDateTimeToIso(formData.get('scheduled_at') as string)
 
   if (!lead_id || !type) return { error: 'Некорректные данные' }
 
@@ -178,33 +229,55 @@ export async function convertLeadToClient(id: string) {
 
   const l = lead
 
-  const { data: contact, error } = await supabase
-    .from('contacts')
-    .insert({
-      full_name: l.full_name || 'Без имени',
-      phone:     l.phone    || null,
-      email:     l.email    || null,
-      telegram:  l.telegram || null,
-      whatsapp:  l.whatsapp || null,
-      source:    l.source   || null,
-      comment:   l.comment  || null,
-      role:   'client',
-      status: 'new',
-      organization_id: orgId,
-    })
-    .select()
-    .single()
+  // Повторная конвертация невозможна: контакт уже есть — идём в него.
+  if (l.status === 'converted' && l.contact_id) redirect(`/contacts/${l.contact_id}`)
 
-  if (error) return { error: friendlyDbError(error, { entity: 'лид' }) }
+  // Роль — по тому, чего хотел лид: «сдать/продать» — собственник,
+  // «снять/купить» — клиент (проход 17.09.2026, L-9: всегда был клиент, и
+  // собственник не попадал в список при создании объекта).
+  const role = contactRoleForLead(l.deal_type)
+
+  // Телефон уже есть у контакта — используем его, а не создаём дубль (L-10).
+  const { data: existing } = l.phone
+    ? await supabase.from('contacts').select('id, role').eq('phone', l.phone).is('merged_into', null).limit(1)
+    : { data: null }
+
+  let contactId: string
+  if (existing?.[0]) {
+    contactId = existing[0].id
+    if (existing[0].role !== role && existing[0].role !== 'both') {
+      await supabase.from('contacts').update({ role: 'both', updated_at: new Date().toISOString() }).eq('id', contactId)
+    }
+  } else {
+    const { data: contact, error } = await supabase
+      .from('contacts')
+      .insert({
+        full_name: l.full_name || 'Без имени',
+        phone:     l.phone    || null,
+        email:     l.email    || null,
+        telegram:  l.telegram || null,
+        whatsapp:  l.whatsapp || null,
+        source:    l.source   || null,
+        comment:   l.comment  || null,
+        role,
+        status: 'new',
+        organization_id: orgId,
+      })
+      .select('id')
+      .single()
+    if (error) return { error: friendlyDbError(error, { entity: 'лид' }) }
+    contactId = contact.id
+  }
 
   await supabase
     .from('leads')
-    .update({ status: 'converted', updated_at: new Date().toISOString() })
+    .update({ status: 'converted', contact_id: contactId, updated_at: new Date().toISOString() })
     .eq('id', id)
 
   revalidatePath('/leads')
+  revalidatePath(`/leads/${id}`)
   revalidatePath('/contacts')
-  redirect(`/contacts/${contact.id}`)
+  redirect(`/contacts/${contactId}`)
 }
 
 export async function deleteLeadAction(id: string) {

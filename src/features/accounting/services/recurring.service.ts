@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/supabase'
+import { todayIso } from '@/lib/timezone'
 
 /**
  * Общая логика генерации транзакций по периодическим правилам (аренда офиса,
@@ -47,7 +48,7 @@ export function getNextDate(from: string, frequency: string, dayOfMonth: number 
 export async function generateDueRecurringTransactions(
   supabase: SupabaseClient<Database>
 ): Promise<{ generated: number }> {
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayIso()
 
   const { data: rules } = await supabase
     .from('accounting_recurring_rules')

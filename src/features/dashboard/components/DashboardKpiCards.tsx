@@ -17,8 +17,9 @@ interface KpiCard {
  color: string
  iconBg: string
  href: string
- trend: string
- trendPos: boolean | null
+ /** Динамика за период — только настоящая; без данных бейдж не рисуется. */
+ trend?: string
+ trendPos?: boolean | null
 }
 
 export function DashboardKpiCards({ cards }: { cards: KpiCard[] }) {
@@ -58,9 +59,11 @@ export function DashboardKpiCards({ cards }: { cards: KpiCard[] }) {
  >
  {Icon && <Icon style={{ width: 20, height: 20, color: card.color }} />}
  </motion.div>
+ {card.trend && (
  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-[var(--hp-radius-badge)] ${trendClass}`}>
  {card.trend}
  </span>
+ )}
  </div>
  <p className="text-[32px] font-bold text-foreground leading-none tracking-tight">
  {card.value.toLocaleString('ru-RU')}

@@ -180,6 +180,12 @@ export async function createContractAction(_prevState: PrevState, formData: Form
 
   // Автоматизация: договор создан из карточки сделки — двигаем сделку на стадию «Договор».
   if (parsed.data.deal_id) {
+    // Тариф, выбранный в договоре, становится тарифом сделки, если у неё его
+    // ещё нет: без `deals.plan_id` не пройти «Подготовку» и не посчитать комиссию.
+    if (parsed.data.plan_id) {
+      await supabase.from('deals').update({ plan_id: parsed.data.plan_id })
+        .eq('id', parsed.data.deal_id).is('plan_id', null)
+    }
     await advanceDealStage(supabase, parsed.data.deal_id, 'contract')
     revalidatePath('/deals')
     revalidatePath(`/deals/${parsed.data.deal_id}`)
@@ -302,8 +308,24 @@ export async function updateContractStatusAction(id: string, status: string) {
   const permError = await requirePermission(user.id, 'contracts', 'update')
   if (permError) return permError
 
-  const { error } = await supabase.from('contracts').update({ status }).eq('id', id)
+  const { data: updated, error } = await supabase
+    .from('contracts')
+    .update({ status })
+    .eq('id', id)
+    .select('deal_id, contract_type')
+    .single()
   if (error) return { error: friendlyDbError(error, { entity: 'договор' }) }
+
+  // Подписанный договор — единственное событие, по которому автоматизация
+  // двигает сделку: агентский и договор управления — на стадию «Договор»,
+  // договор найма и купли-продажи — на «Заселение»/«Регистрацию». Переход
+  // всё равно проходит предусловия (advanceDealStage → canMoveStage).
+  if (status === 'signed' && updated?.deal_id) {
+    const milestone = ['rent_apartment', 'rent_commercial', 'sale'].includes(updated.contract_type) ? 'payment' : 'contract'
+    await advanceDealStage(supabase, updated.deal_id, milestone)
+    revalidatePath('/deals')
+    revalidatePath(`/deals/${updated.deal_id}`)
+  }
 
   revalidatePath('/contracts')
   revalidatePath('/analytics', 'page')

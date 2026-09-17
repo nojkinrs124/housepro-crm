@@ -2,6 +2,7 @@
 
 import { Download } from 'lucide-react'
 import type { AccountingTransaction } from '@/types/database'
+import { todayIso } from '@/lib/timezone'
 
 interface Props {
  transactions: AccountingTransaction[]
@@ -47,7 +48,7 @@ export function ExportCsvButton({ transactions, variant = 'button' }: Props) {
  const url = URL.createObjectURL(blob)
  const a = document.createElement('a')
  a.href = url
- a.download = `accounting_${new Date().toISOString().slice(0, 10)}.csv`
+ a.download = `accounting_${todayIso()}.csv`
  a.click()
  URL.revokeObjectURL(url)
  }

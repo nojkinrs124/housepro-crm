@@ -4,6 +4,7 @@ import { useTransition } from 'react'
 import { Star, Trash2, Loader2 } from 'lucide-react'
 import { setDefaultCompanyProfileAction, deleteCompanyProfileAction } from '@/features/settings/actions/company.actions'
 import { useRouter } from 'next/navigation'
+import { confirmDialog } from '@/components/forms/ConfirmDialog'
 
 export function CompanyProfileCardActions({ id, isDefault }: { id: string; isDefault: boolean }) {
  const [pending, startTransition] = useTransition()
@@ -16,8 +17,8 @@ export function CompanyProfileCardActions({ id, isDefault }: { id: string; isDef
  })
  }
 
- function handleDelete() {
- if (!confirm('Удалить профиль компании? Это действие нельзя отменить.')) return
+ async function handleDelete() {
+ if (!(await confirmDialog('Удалить профиль компании? Это действие нельзя отменить.'))) return
  startTransition(async () => {
  const result = await deleteCompanyProfileAction(id)
  if (result?.error) {

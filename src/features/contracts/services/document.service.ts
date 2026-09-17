@@ -144,6 +144,23 @@ export interface ContractVariables {
   СОГЛАСИЕ_СОБСТВЕННИКА: string
   ДОКУМЕНТ_СОГЛАСИЯ_СОБСТВЕННИКА: string
 
+  // ── Контрагент агентства (заказчик / принципал) ───────────
+  // В агентских договорах и договоре управления второй стороной бывает
+  // и клиент, и собственник; для юрлица подставляется организация, а не
+  // ФИО контактного лица (проход 17.09.2026, SL-2.5).
+  ФИО_КОНТРАГЕНТА: string
+  НАЗВАНИЕ_ОРГАНИЗАЦИИ_КОНТРАГЕНТА: string
+  ИНН_КОНТРАГЕНТА: string
+  КПП_КОНТРАГЕНТА: string
+  ОГРН_КОНТРАГЕНТА: string
+  ЮР_АДРЕС_КОНТРАГЕНТА: string
+  ТЕЛЕФОН_КОНТРАГЕНТА: string
+  СЕРИЯ_НОМЕР_ПАСПОРТА_КОНТРАГЕНТА: string
+  АДРЕС_РЕГИСТРАЦИИ_КОНТРАГЕНТА: string
+  ФИО_ПРЕДСТАВИТЕЛЯ_КОНТРАГЕНТА: string
+  ДОЛЖНОСТЬ_ПРЕДСТАВИТЕЛЯ_КОНТРАГЕНТА: string
+  ОСНОВАНИЕ_ПРЕДСТАВИТЕЛЯ_КОНТРАГЕНТА: string
+
   // ── Обратная совместимость (старые шаблоны) ───────────────
   CLIENT_NAME: string
   CLIENT_PHONE: string
@@ -233,6 +250,13 @@ function buildPassport(contact: Record<string, string> | null): string {
   }
   // Иначе legacy поле passport
   return contact.passport || '_______________'
+}
+
+// Имя стороны: для юрлица — организация, а не контактное лицо.
+function partyName(contact: Record<string, string> | null): string {
+  if (!contact) return '_______________'
+  if (contact.client_type === 'legal_entity' && contact.company_name) return contact.company_name
+  return contact.full_name || contact.company_name || '_______________'
 }
 
 // Адрес регистрации контакта
@@ -369,6 +393,11 @@ export async function buildContractVariables(
 
   const client = contract.client as Record<string, string> | null
   const owner = contract.owner as Record<string, string> | null
+  // Вторая сторона для агентства: заказчик, если он есть, иначе собственник.
+  const counterparty = client ?? owner
+  const counterpartyRep = client
+    ? (contract.client_representative as Record<string, string> | null)
+    : (contract.owner_representative as Record<string, string> | null)
   const ownerRep = contract.owner_representative as Record<string, string> | null
   const clientRep = contract.client_representative as Record<string, string> | null
   const property = contract.property as Record<string, string | number> | null
@@ -593,12 +622,26 @@ export async function buildContractVariables(
     СОГЛАСИЕ_СОБСТВЕННИКА: td.owner_consent_given ? 'получено' : 'не получено',
     ДОКУМЕНТ_СОГЛАСИЯ_СОБСТВЕННИКА: (td.owner_consent_document as string) || '_______________',
 
+    // ── Контрагент агентства ──
+    ФИО_КОНТРАГЕНТА: counterparty?.full_name || '_______________',
+    НАЗВАНИЕ_ОРГАНИЗАЦИИ_КОНТРАГЕНТА: counterparty?.company_name || '_______________',
+    ИНН_КОНТРАГЕНТА: counterparty?.inn || '_______________',
+    КПП_КОНТРАГЕНТА: counterparty?.kpp || '_______________',
+    ОГРН_КОНТРАГЕНТА: counterparty?.ogrn || '_______________',
+    ЮР_АДРЕС_КОНТРАГЕНТА: counterparty?.legal_address || '_______________',
+    ТЕЛЕФОН_КОНТРАГЕНТА: counterparty?.phone || '_______________',
+    СЕРИЯ_НОМЕР_ПАСПОРТА_КОНТРАГЕНТА: buildPassport(counterparty),
+    АДРЕС_РЕГИСТРАЦИИ_КОНТРАГЕНТА: buildAddress(counterparty),
+    ФИО_ПРЕДСТАВИТЕЛЯ_КОНТРАГЕНТА: counterpartyRep?.full_name || '_______________',
+    ДОЛЖНОСТЬ_ПРЕДСТАВИТЕЛЯ_КОНТРАГЕНТА: counterpartyRep?.position || '_______________',
+    ОСНОВАНИЕ_ПРЕДСТАВИТЕЛЯ_КОНТРАГЕНТА: buildBasis(counterpartyRep),
+
     // ── Обратная совместимость ──
-    CLIENT_NAME: client?.full_name || '_______________',
+    CLIENT_NAME: partyName(client),
     CLIENT_PHONE: client?.phone || '_______________',
     CLIENT_PASSPORT: buildPassport(client),
     CLIENT_ADDRESS: buildAddress(client),
-    PARTY2_NAME: client?.full_name || owner?.full_name || '_______________',
+    PARTY2_NAME: partyName(counterparty),
     PARTY2_PHONE: client?.phone || owner?.phone || '_______________',
     PARTY2_PASSPORT: client ? buildPassport(client) : buildPassport(owner),
     PROPERTY_ADDRESS: (property?.address as string) || '_______________',

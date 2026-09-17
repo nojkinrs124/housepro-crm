@@ -7,6 +7,7 @@ import { rateLimitMutation } from '@/lib/rate-limit'
 import { isValidEmail } from '@/lib/email/provider'
 import { sendShowingScheduledEmail } from '@/lib/email/send'
 import { addMinutes, buildSingleEventIcs } from '@/lib/calendar/ics'
+import { MAIL_NOT_CONFIGURED } from '@/lib/email/messages'
 
 interface ShowingRow {
   id: string
@@ -87,7 +88,7 @@ export async function sendShowingInviteAction(showingId: string, formData: FormD
 
   if (!result.ok) return { error: result.error ?? 'Не удалось отправить письмо' }
   if (result.skipped) {
-    return { error: 'Почта не настроена: задайте RESEND_API_KEY или UNISENDER_API_KEY в окружении' }
+    return { error: MAIL_NOT_CONFIGURED }
   }
 
   return { success: true, message: `Приглашение отправлено на ${to}` }

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { History, ChevronDown, ChevronUp, RotateCcw, FileText, Clock } from 'lucide-react'
 import { restoreContractVersionAction } from '../actions/contracts.actions'
+import { confirmDialog } from '@/components/forms/ConfirmDialog'
 
 interface ContractVersion {
  id: string
@@ -96,8 +97,8 @@ export function ContractVersionHistory({ contractId, versions }: Props) {
  {!!v.version_data && (
  <button
  disabled={!!restoring}
- onClick={() => {
- if (confirm(`Восстановить версию ${v.version}? Текущее состояние будет сохранено автоматически.`)) {
+ onClick={async () => {
+ if (await confirmDialog(`Восстановить версию ${v.version}? Текущее состояние будет сохранено автоматически.`, { confirmLabel: 'Восстановить', danger: false })) {
  handleRestore(v.id)
  }
  }}

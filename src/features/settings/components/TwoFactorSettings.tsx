@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { KeyRound, ShieldCheck, Trash2 } from 'lucide-react'
+import { confirmDialog } from '@/components/forms/ConfirmDialog'
 import {
  enrollMfaAction,
  listMfaFactorsAction,
@@ -78,7 +79,7 @@ export function TwoFactorSettings() {
  }
 
  async function removeFactor(factorId: string) {
- if (!confirm('Отключить двухфакторную аутентификацию? Вход снова будет защищён только паролем.')) return
+ if (!(await confirmDialog('Отключить двухфакторную аутентификацию? Вход снова будет защищён только паролем.', { confirmLabel: 'Отключить' }))) return
  setBusy(true)
  const res = await unenrollMfaAction(factorId)
  setBusy(false)

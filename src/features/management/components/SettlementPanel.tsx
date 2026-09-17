@@ -8,6 +8,7 @@ import {
   addExpenseAction,
 } from '@/features/management/actions/settlement.actions'
 import { OwnerPayoutForm } from '@/features/management/components/OwnerPayoutForm'
+import { todayIso } from '@/lib/timezone'
 
 type Form = 'payment' | 'payout' | 'expense' | null
 
@@ -41,7 +42,7 @@ export function SettlementPanel({
   const [open, setOpen] = useState<Form>(null)
   const [pending, start] = useTransition()
   const [borneBy, setBorneBy] = useState<'agency' | 'owner'>('agency')
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayIso()
 
   if (!scheme) {
     return (

@@ -12,6 +12,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { StatStrip } from '@/components/layout/StatStrip'
 import { EmptyState } from '@/components/layout/EmptyState'
 import { RecordActions } from '@/components/layout/RecordActions'
+import { plural } from '@/lib/utils'
 
 
 function fmt(n: number) { return n.toLocaleString('ru-RU') + ' ₽' }
@@ -62,7 +63,7 @@ export default async function AccountingPage() {
  <div className="space-y-5">
  <PageHeader
  title="Бухгалтерия"
- subtitle={`${transactions.length} операций`}
+ subtitle={plural(transactions.length, ['операция', 'операции', 'операций'])}
  actions={
  <RecordActions
  primary={

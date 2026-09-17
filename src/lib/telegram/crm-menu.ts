@@ -12,6 +12,7 @@ import {
   type SettlementOperation,
   type SettlementResult,
 } from '@/features/management/services/settlement.service'
+import { todayIso } from '@/lib/timezone'
 
 const BACK_TO_CRM: InlineKeyboardButton = { text: '⬅ CRM', callback_data: 'nav:crm' }
 
@@ -225,7 +226,7 @@ export async function buildFinanceScreen(orgId: string, page = 0): Promise<Scree
     else expense += Number(t.amount)
   }
 
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayIso()
   const lines: string[] = [
     `За месяц: приход ${moneyRu(income)} ₽ · расход ${moneyRu(expense)} ₽ · итог <b>${moneyRu(income - expense)} ₽</b>`,
   ]
@@ -673,7 +674,7 @@ export async function payOwnerFromBot(orgId: string, engagementId: string): Prom
     type: 'expense',
     status: 'completed',
     amount: settlement.balance,
-    date: new Date().toISOString().slice(0, 10),
+    date: todayIso(),
     paid_at: new Date().toISOString(),
     description: 'Выплата собственнику (из Telegram)',
     category_id: category?.id ?? null,

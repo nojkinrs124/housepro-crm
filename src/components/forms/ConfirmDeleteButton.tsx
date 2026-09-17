@@ -4,6 +4,7 @@ import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { confirmDialog } from './ConfirmDialog'
 
 // Экшены возвращают либо { error }, либо { success } / ничего — важен только error.
 type ActionResult = { error?: string; success?: boolean } | void | undefined
@@ -43,8 +44,8 @@ export function ConfirmDeleteButton({
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
 
-  const handleClick = () => {
-    if (!window.confirm(confirmText)) return
+  const handleClick = async () => {
+    if (!(await confirmDialog(confirmText, { confirmLabel: label }))) return
     startTransition(async () => {
       const res = await action()
       if (res && 'error' in res && res.error) {

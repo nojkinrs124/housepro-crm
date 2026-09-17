@@ -6,6 +6,7 @@ import { FormActions } from '@/components/forms/FormLayout'
 import { DealFormBody } from '@/features/deals/components/DealFormBody'
 import { PageHeader } from '@/components/layout/PageHeader'
 import type { RepresentativeOption } from '@/features/deals/components/DealFormBody'
+import { loadDealPlans } from '@/features/plans/data/deal-plans'
 
 export default async function NewDealPage({
   searchParams,
@@ -18,10 +19,11 @@ export default async function NewDealPage({
   const supabase = await createClient()
 
   // Загружаем контакты — единая база (owners + clients)
-  const [{ data: rawContacts }, { data: rawProperties }, { data: rawReps }] = await Promise.all([
-    supabase.from('contacts').select('id, full_name, phone, role, client_type').order('full_name'),
+  const [{ data: rawContacts }, { data: rawProperties }, { data: rawReps }, plans] = await Promise.all([
+    supabase.from('contacts').select('id, full_name, phone, role, client_type, company_name').order('full_name'),
     supabase.from('properties').select('id, title, address').order('title'),
     supabase.from('contact_representatives').select('id, contact_id, full_name, position, is_primary').order('is_primary', { ascending: false }),
+    loadDealPlans(supabase),
   ])
 
   const contacts = rawContacts ?? []
@@ -66,6 +68,7 @@ export default async function NewDealPage({
           owners={owners}
           clients={clients}
           properties={properties}
+          plans={plans}
           representativesByContact={representativesByContact}
           ownerDefaultId={ownerDefaultId}
           clientDefaultId={clientDefaultId}

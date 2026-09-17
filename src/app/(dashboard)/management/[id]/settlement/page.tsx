@@ -8,6 +8,7 @@ import { calcSettlement, isVacantOn } from '@/features/management/services/settl
 import { loadSettlementOperations } from '@/features/management/data/settlement.data'
 import { formatAmount } from '@/lib/utils'
 import { can, toUserRole } from '@/lib/permissions'
+import { todayIso } from '@/lib/timezone'
 
 export const dynamic = 'force-dynamic'
 
@@ -67,7 +68,7 @@ export default async function SettlementPage({ params }: { params: Promise<{ id:
     .eq('property_id', id)
     .in('contract_type', ['rent_apartment', 'rent_commercial'])
 
-  const vacant = isVacantOn(rentContracts ?? [], new Date().toISOString().slice(0, 10))
+  const vacant = isVacantOn(rentContracts ?? [], todayIso())
 
   const { data: txns } = await supabase
     .from('accounting_transactions')

@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
-import { deleteTransactionAction } from '@/features/accounting/actions/accounting.actions'
+import { completeTransactionAction, deleteTransactionAction } from '@/features/accounting/actions/accounting.actions'
+import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { ConfirmDeleteButton } from '@/components/forms/ConfirmDeleteButton'
 import { RecordActions } from '@/components/layout/RecordActions'
-import { Pencil, FileText, TrendingUp, User, Users } from 'lucide-react'
+import { Pencil, FileText, TrendingUp, User, Users, CheckCircle2 } from 'lucide-react'
 import { DEAL_TYPE_LABELS } from '@/features/deals/config/deal-stages'
 import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
 import Link from 'next/link'
@@ -16,7 +17,8 @@ import type { Row } from '@/types/database'
 type TransactionDetail = Pick<
   Row<'accounting_transactions'>,
   'id' | 'type' | 'amount' | 'date' | 'description' | 'status' | 'payment_method'
-  | 'due_date' | 'created_at' | 'legacy_payment_id' | 'property_id' | 'category_id'
+  | 'due_date' | 'paid_at' | 'created_at' | 'legacy_payment_id' | 'property_id' | 'category_id'
+  | 'contract_id' | 'deal_id'
 > & {
   category: { id: string; name: string; color: string } | null
   contract: { id: string; contract_number: string | null; contract_type: string } | null
@@ -50,8 +52,8 @@ export default async function TransactionDetailPage({
  const { data: raw, error: rawError } = await supabase
  .from('accounting_transactions')
  .select(`
- id, type, amount, date, description, status, payment_method, due_date,
- created_at, legacy_payment_id, property_id, category_id,
+ id, type, amount, date, description, status, payment_method, due_date, paid_at,
+ created_at, legacy_payment_id, property_id, category_id, contract_id, deal_id,
  category:accounting_categories(id, name, color),
  contract:contracts(id, contract_number, contract_type),
  deal:deals(id, deal_type),
@@ -92,6 +94,16 @@ export default async function TransactionDetailPage({
  }
  actions={
  <RecordActions
+ /* Главное действие запланированной операции — провести её; раньше статус
+ менялся только через полную форму редактирования (проход 17.09.2026, AC-2). */
+ primary={t.status === 'planned' && (
+ <ServerActionForm action={completeTransactionAction.bind(null, id)}>
+ <button type="submit" className="hp-btn-primary" data-testid="transaction-complete">
+ <CheckCircle2 className="w-4 h-4" />
+ Провести
+ </button>
+ </ServerActionForm>
+ )}
  secondary={
  <Link href={`/accounting/transactions/${id}/edit`} className="hp-btn-secondary">
  <Pencil className="w-4 h-4" />
@@ -119,6 +131,9 @@ export default async function TransactionDetailPage({
  <div className="hp-block-grid">
  <div className="hp-block-row"><span className="label">Сумма</span><span className={`value${isIncome ? ' good' : ' danger'}`}>{fmt(Number(t.amount))}</span></div>
  <div className="hp-block-row"><span className="label">Дата</span><span className="value">{fmtDate(t.date)}</span></div>
+ {t.paid_at && (
+ <div className="hp-block-row"><span className="label">Проведена</span><span className="value good">{fmtDate(t.paid_at)}</span></div>
+ )}
  <div className="hp-block-row"><span className="label">Срок оплаты</span><span className="value">{t.due_date ? fmtDate(t.due_date) : <span className="text-[var(--hp-tertiary)]">—</span>}</span></div>
  <div className="hp-block-row"><span className="label">Способ оплаты</span><span className="value">{t.payment_method ? (METHOD_LABEL[t.payment_method] ?? t.payment_method) : <span className="text-[var(--hp-tertiary)]">—</span>}</span></div>
  <div className="hp-block-row"><span className="label">Категория</span><span className="value">{t.category ? t.category.name : <span className="text-[var(--hp-tertiary)]">без категории</span>}</span></div>

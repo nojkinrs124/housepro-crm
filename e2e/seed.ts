@@ -136,6 +136,12 @@ export async function seed(): Promise<SeedResult> {
       phone: '+7 900 000-00-00',
       email: 'office@housepro.local',
       address: 'г. Москва, ул. Тестовая, д. 1',
+      // Банковские реквизиты — без них счёт (/accounting/invoice) выходит с
+      // прочерками (сквозной проход 17.09.2026, AC-8).
+      bank_name: 'АО «Тестовый банк»',
+      bik: '044525000',
+      bank_account: '40802810000000000001',
+      corr_account: '30101810000000000000',
       signatory_name: 'Тестов С.С.',
       signatory_position: 'Индивидуальный предприниматель',
       signatory_basis: 'свидетельства о регистрации',

@@ -50,6 +50,8 @@ export function createSupabaseMock(overrides: {
     or: vi.fn().mockReturnThis(),
     not: vi.fn().mockReturnThis(),
     in: vi.fn().mockReturnThis(),
+    is: vi.fn().mockReturnThis(),
+    contains: vi.fn().mockReturnThis(),
     order: vi.fn().mockReturnThis(),
     limit: vi.fn().mockReturnThis(),
     ilike: vi.fn().mockReturnThis(),
@@ -68,7 +70,7 @@ export function createSupabaseMock(overrides: {
     const tableError = spec.error ?? null
     const b: Record<string, unknown> = {}
     for (const m of ['select', 'insert', 'update', 'delete', 'upsert', 'eq', 'neq', 'lt', 'lte',
-                     'gt', 'gte', 'or', 'not', 'in', 'order', 'limit', 'ilike']) {
+                     'gt', 'gte', 'or', 'not', 'in', 'is', 'contains', 'order', 'limit', 'ilike']) {
       b[m] = vi.fn(() => b)
     }
     const first = spec.single ?? (Array.isArray(tableData) ? tableData[0] : tableData)

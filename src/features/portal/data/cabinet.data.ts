@@ -2,6 +2,7 @@ import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { calcSettlement, isVacantOn } from '@/features/management/services/settlement.service'
 import { buildMonthlyReport, type MonthlyReport } from '@/features/management/services/report.service'
 import { loadSettlementOperations } from '@/features/management/data/settlement.data'
+import { todayIso } from '@/lib/timezone'
 
 /**
  * Данные личного кабинета.
@@ -56,7 +57,7 @@ export async function loadOwnerView(grant: Grant): Promise<OwnerView | null> {
 
   if (!property) return null
 
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayIso()
   const active = (contracts ?? []).find(c =>
     ACTIVE_CONTRACT_STATUSES.includes(c.status) &&
     (!c.start_date || c.start_date <= today) &&
@@ -153,7 +154,7 @@ export async function loadTenantView(grant: Grant): Promise<TenantView | null> {
         .limit(24)
     : { data: [] }
 
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayIso()
   const planned = (txns ?? []).filter(t => t.status === 'planned' && t.due_date)
   const upcoming = planned
     .filter(t => (t.due_date as string) >= today)

@@ -4,18 +4,40 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { createCollectionAction } from '@/features/collections/actions/collections.actions'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
+import { contactDisplayName } from '@/features/contacts/config/display-name'
 
-export default async function NewCollectionPage() {
+export default async function NewCollectionPage({
+ searchParams,
+}: {
+ searchParams: Promise<{ deal_id?: string; lead_id?: string }>
+}) {
+ const params = await searchParams
  const supabase = await createClient()
  const { data: { user } } = await supabase.auth.getUser()
  if (!user) redirect('/login')
 
- const { data: leads } = await supabase
+ // Подборка живёт при сделке подбора (лид — для обращений, которых ещё не
+ // перевели в сделку). Сделки закрытые и отменённые не предлагаем.
+ const [{ data: leads }, { data: deals }] = await Promise.all([
+ supabase
  .from('leads')
  .select('id, full_name')
  .in('status', ['new','contacted','showing','searching'])
  .order('created_at', { ascending: false })
- .limit(100)
+ .limit(100),
+ supabase
+ .from('deals')
+ .select('id, deal_number, client_contact:contacts!deals_client_contact_id_fkey(full_name, company_name, client_type)')
+ .eq('deal_type', 'tenant_search')
+ .not('status', 'in', '(completed,cancelled)')
+ .order('created_at', { ascending: false })
+ .limit(100),
+ ])
+ const dealOptions = (deals ?? []).map(d => ({
+ id: d.id,
+ label: `СД-${d.deal_number ?? '?'} · ${contactDisplayName(d.client_contact as { full_name: string | null; company_name: string | null; client_type: string | null } | null, 'без клиента')}`,
+ }))
+ const preselectedDeal = dealOptions.find(d => d.id === params.deal_id)
 
  return (
  <div className="max-w-lg mx-auto space-y-6">
@@ -41,9 +63,25 @@ export default async function NewCollectionPage() {
  </div>
 
  <div>
+ <label className="block text-sm font-medium text-foreground mb-1.5">Сделка подбора</label>
+ <select
+ name="deal_id"
+ defaultValue={preselectedDeal?.id ?? ''}
+ className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] bg-[var(--hp-surface)] outline-none focus:border-[var(--hp-ink)]"
+ >
+ <option value="">— без сделки —</option>
+ {dealOptions.map(d => (
+ <option key={d.id} value={d.id}>{d.label}</option>
+ ))}
+ </select>
+ <p className="text-xs text-[var(--hp-sub)] mt-1">Подборка при сделке закрывает стадию «Подборка отправлена», когда её отправят клиенту</p>
+ </div>
+
+ <div>
  <label className="block text-sm font-medium text-foreground mb-1.5">Привязать к лиду</label>
  <select
  name="lead_id"
+ defaultValue={params.lead_id ?? ''}
  className="w-full px-3 py-2 text-sm border border-[var(--hp-border)] bg-[var(--hp-surface)] outline-none focus:border-[var(--hp-ink)]"
  >
  <option value="">— Выбрать лида (необязательно) —</option>

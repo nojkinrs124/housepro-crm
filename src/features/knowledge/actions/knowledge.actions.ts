@@ -7,6 +7,8 @@ import { requirePermission } from '@/lib/permissions'
 import { rateLimitMutation } from '@/lib/rate-limit'
 import { writeAuditLog } from '@/lib/audit'
 import { friendlyDbError } from '@/lib/errors'
+import { createHash } from 'node:crypto'
+import { loadHandbookChapters } from '@/features/knowledge/services/handbook'
 
 /**
  * Адрес статьи из заголовка. Кириллица транслитерируется: адрес должен
@@ -208,4 +210,78 @@ export async function deleteArticleAction(id: string) {
 
   revalidatePath('/knowledge')
   redirect('/knowledge')
+}
+
+/**
+ * Загрузка стандартного справочника (docs/handbook) в базу знаний организации.
+ *
+ * Идемпотентно: глава ищется по slug; статью, которую правили в CRM
+ * (текст не совпадает с отпечатком файла), не трогаем — как и сеятель с
+ * машины разработчика (`scripts/seed-handbook.mjs`).
+ */
+export async function loadStandardHandbookAction() {
+  const session = await getSessionContext()
+  if (!session.ok) return { error: session.error }
+  const { supabase, user, orgId } = session
+
+  const rl = await rateLimitMutation(user.id, 'knowledge')
+  if (!rl.success) return { error: 'Слишком много запросов' }
+
+  const permError = await requirePermission(user.id, 'knowledge', 'create')
+  if (permError) return permError
+
+  let chapters
+  try {
+    chapters = await loadHandbookChapters()
+  } catch {
+    return { error: 'Стандартный справочник не найден в сборке — обратитесь к администратору' }
+  }
+
+  const { data: existingRows } = await supabase
+    .from('knowledge_articles')
+    .select('id, slug, body, source_hash')
+    .eq('organization_id', orgId)
+  const existing = new Map((existingRows ?? []).map(r => [r.slug, r]))
+
+  let created = 0
+  let updated = 0
+  let skipped = 0
+  const now = new Date().toISOString()
+
+  for (const chapter of chapters) {
+    const row = {
+      title: chapter.title,
+      category: chapter.category,
+      summary: chapter.summary,
+      body: chapter.body,
+      sort_order: chapter.sort_order,
+      is_published: true,
+      updated_at: now,
+      source_hash: chapter.source_hash,
+      reviewed_at: now,
+      reviewed_by: user.id,
+    }
+    const current = existing.get(chapter.slug)
+    if (current) {
+      const editedInCrm = current.source_hash
+        ? createHash('sha256').update(current.body ?? '', 'utf8').digest('hex') !== current.source_hash
+        : (current.body ?? '') !== chapter.body
+      if (editedInCrm) { skipped += 1; continue }
+      const { error } = await supabase.from('knowledge_articles').update(row).eq('id', current.id)
+      if (error) return { error: friendlyDbError(error, { entity: 'статью' }) }
+      updated += 1
+    } else {
+      const { error } = await supabase.from('knowledge_articles').insert({
+        ...row, slug: chapter.slug, organization_id: orgId, created_by: user.id,
+      })
+      if (error) return { error: friendlyDbError(error, { entity: 'статью' }) }
+      created += 1
+    }
+  }
+
+  revalidatePath('/knowledge')
+  return {
+    success: true,
+    message: `Справочник загружен: новых ${created}, обновлено ${updated}${skipped ? `, пропущено (правили в CRM) ${skipped}` : ''}`,
+  }
 }

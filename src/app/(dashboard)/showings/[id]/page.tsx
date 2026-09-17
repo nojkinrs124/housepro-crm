@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
-import { User, Home, Zap, XCircle } from 'lucide-react'
+import { User, Home, Zap, XCircle, UserX } from 'lucide-react'
 import { ShowingStatusBadge } from '@/features/showings/components/ShowingStatusBadge'
 import { ShowingResultForm } from '@/features/showings/components/ShowingResultForm'
 import { deleteShowingAction, updateShowingStatusAction } from '@/features/showings/actions/showings.actions'
@@ -12,6 +12,7 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { RecordActions } from '@/components/layout/RecordActions'
 import { ConfirmDeleteButton } from '@/components/forms/ConfirmDeleteButton'
 import { formatAmount } from '@/lib/utils'
+import { formatDateTime } from '@/lib/timezone'
 
 const RESULT_LABELS: Record<string, string> = {
   interested: 'Заинтересован', thinking: 'Думает', not_interested: 'Не заинтересован',
@@ -44,8 +45,8 @@ export default async function ShowingDetailPage({ params }: { params: Promise<{ 
   const deal = showing.deal as { id: string; deal_number: number | null; deal_type: string } | null
 
   const cancelAction = updateShowingStatusAction.bind(null, id, 'cancelled')
-  const when = new Date(showing.scheduled_at)
-  const whenLabel = when.toLocaleString('ru-RU', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  const noShowAction = updateShowingStatusAction.bind(null, id, 'no_show')
+  const whenLabel = formatDateTime(showing.scheduled_at, { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
   const client = showing.contact ?? showing.lead
 
   return (
@@ -68,6 +69,14 @@ export default async function ShowingDetailPage({ params }: { params: Promise<{ 
                форма результата прямо под шапкой. Отмена — в «…». */
             more={
               <>
+                {showing.status === 'planned' && (
+                  <ServerActionForm action={noShowAction}>
+                    <button type="submit" className="hp-menu-item" role="menuitem">
+                      <UserX className="w-4 h-4" />
+                      Клиент не пришёл
+                    </button>
+                  </ServerActionForm>
+                )}
                 {showing.status !== 'cancelled' && (
                   <ServerActionForm action={cancelAction}>
                     <button type="submit" className="hp-menu-item" role="menuitem">

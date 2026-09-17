@@ -6,6 +6,7 @@ import { rateLimit } from '@/lib/rate-limit'
 import { grantFor } from '@/features/portal/services/access.service'
 import { computeConsumption, computeAmount } from '@/features/meters/services/anomalies'
 import { friendlyDbError } from '@/lib/errors'
+import { todayIso } from '@/lib/timezone'
 
 type Result = { error?: string; success?: boolean; message?: string }
 
@@ -50,7 +51,7 @@ export async function submitTenantReadingAction(formData: FormData): Promise<Res
     return { error: 'Слишком много показаний за час. Попробуйте позже.' }
   }
 
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayIso()
 
   const { data: previous } = await supabaseAdmin
     .from('meter_readings')

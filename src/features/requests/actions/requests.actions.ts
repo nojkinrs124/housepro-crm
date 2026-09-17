@@ -6,6 +6,7 @@ import { requirePermission } from '@/lib/permissions'
 import { writeAuditLog } from '@/lib/audit'
 import { canTransition, REQUEST_STATUS_LABELS } from '@/features/portal/config/request-categories'
 import { friendlyDbError } from '@/lib/errors'
+import { todayIso } from '@/lib/timezone'
 
 type Result = { error?: string; success?: boolean }
 
@@ -136,7 +137,7 @@ export async function addRequestExpenseAction(formData: FormData): Promise<Resul
       type: 'expense',
       status: 'completed',
       amount,
-      date: new Date().toISOString().slice(0, 10),
+      date: todayIso(),
       paid_at: new Date().toISOString(),
       description: `Заявка арендатора: ${request.description.slice(0, 120)}`,
       category_id: category?.id ?? null,

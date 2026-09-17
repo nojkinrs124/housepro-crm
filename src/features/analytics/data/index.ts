@@ -1,10 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
+import { todayIso } from '@/lib/timezone'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface AnalyticsRawData {
   deals: Array<{ status: string; deal_type: string; amount: number | null; commission: number | null; created_at: string | null; source: string | null }>
-  payments: Array<{ payment_status: string; amount: number | null; payment_date: string | null; due_date: string | null; created_at: string | null }>
+  payments: Array<{ payment_status: string; amount: number | null; payment_date: string | null; due_date: string | null; created_at: string | null; category_code: string | null }>
   leads: Array<{ status: string; created_at: string | null }>
   leadsConverted: Array<{ status: string; created_at: string | null }>
   properties: Array<{ status: string }>
@@ -35,9 +36,10 @@ export function monthLabel(isoMonth: string) {
  * выполненный доход = оплачен, запланированный до срока = ожидает, после срока =
  * просрочен. Так страница не зависит от того, из какой таблицы пришли данные.
  */
-function toPaymentShape(rows: Array<{ status: string; amount: number | null; paid_at: string | null; due_date: string | null; created_at: string | null }>): AnalyticsRawData['payments'] {
-  const today = new Date().toISOString().slice(0, 10)
+function toPaymentShape(rows: Array<{ status: string; amount: number | null; paid_at: string | null; due_date: string | null; created_at: string | null; category?: { code: string | null } | { code: string | null }[] | null }>): AnalyticsRawData['payments'] {
+  const today = todayIso()
   return rows.map(r => ({
+    category_code: (Array.isArray(r.category) ? r.category[0]?.code : r.category?.code) ?? null,
     payment_status: r.status === 'completed'
       ? 'paid'
       : r.status === 'planned'
@@ -78,7 +80,7 @@ async function fetchAnalyticsData(from?: string, to?: string): Promise<Analytics
     // 2026 (7 строк, открытых 0), аналитика по ней показывала застывшую картину.
     supabase
       .from('accounting_transactions')
-      .select('status, amount, paid_at, due_date, created_at')
+      .select('status, amount, paid_at, due_date, created_at, category:accounting_categories(code)')
       .eq('type', 'income')
       .gte('created_at', fromDate)
       .lte('created_at', toDate ?? new Date().toISOString()),
@@ -103,7 +105,7 @@ async function fetchAnalyticsData(from?: string, to?: string): Promise<Analytics
       .select('id, amount, due_date, contract:contracts(contract_number)')
       .eq('type', 'income')
       .eq('status', 'planned')
-      .lt('due_date', new Date().toISOString().slice(0, 10))
+      .lt('due_date', todayIso())
       .order('due_date', { ascending: true })
       .limit(6),
 

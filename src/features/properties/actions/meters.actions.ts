@@ -8,6 +8,7 @@ import { rateLimitMutation } from '@/lib/rate-limit'
 import { computeConsumption, computeAmount, detectAnomalies } from '@/features/meters/services/anomalies'
 import { METER_KINDS } from '@/features/meters/config/meter-kinds'
 import { friendlyDbError } from '@/lib/errors'
+import { todayIso } from '@/lib/timezone'
 
 export interface MeterResult {
   error?: string
@@ -93,12 +94,12 @@ export async function addMeterReadingAction(
   const value = parseNumber(formData.get('value'))
   if (value === null || value < 0) return { error: 'Введите показание счётчика' }
 
-  const readingDate = (formData.get('reading_date') as string) || new Date().toISOString().slice(0, 10)
+  const readingDate = (formData.get('reading_date') as string) || todayIso()
 
   // Показание из будущего снять нельзя. Раньше не проверялось, и дата с опечаткой
   // в году ломала расчёт расхода: следующее реальное показание оказывалось
   // «меньше предыдущего» и отклонялось.
-  if (readingDate > new Date().toISOString().slice(0, 10)) {
+  if (readingDate > todayIso()) {
     return { error: 'Дата показания в будущем — снять его ещё нельзя' }
   }
 

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { PrintButton } from '@/features/accounting/components/PrintButton'
 import { amountInWords } from '@/lib/invoice-words'
+import { contactDisplayName } from '@/features/contacts/config/display-name'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,15 +24,21 @@ interface TxRow {
  contracts: {
  contract_number: string | null
  start_date: string | null
- contacts: {
+ contacts: PartyRow | null
+ owner: PartyRow | null
+ properties: { address: string | null } | null
+ } | null
+ contact: PartyRow | null
+ deal: { client_contact: PartyRow | null; owner_contact: PartyRow | null } | null
+}
+
+interface PartyRow {
  full_name: string | null
  company_name: string | null
+ client_type?: string | null
  inn: string | null
  kpp: string | null
  legal_address: string | null
- } | null
- properties: { address: string | null } | null
- } | null
 }
 
 function fmtMoney(n: number): string {
@@ -56,8 +63,14 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
  id, amount, due_date, date, description, status,
  contracts:contract_id (
  contract_number, start_date,
- contacts:client_contact_id ( full_name, company_name, inn, kpp, legal_address ),
+ contacts:client_contact_id ( full_name, company_name, client_type, inn, kpp, legal_address ),
+ owner:owner_contact_id ( full_name, company_name, client_type, inn, kpp, legal_address ),
  properties:property_id ( address )
+ ),
+ contact:contact_id ( full_name, company_name, client_type, inn, kpp, legal_address ),
+ deal:deal_id (
+ client_contact:contacts!deals_client_contact_id_fkey ( full_name, company_name, client_type, inn, kpp, legal_address ),
+ owner_contact:contacts!deals_owner_contact_id_fkey ( full_name, company_name, client_type, inn, kpp, legal_address )
  )
  `)
  .eq('id', id)
@@ -73,8 +86,11 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
  if (!raw) notFound()
  const tx = raw as unknown as TxRow
 
- const client = tx.contracts?.contacts
- const clientName = client?.company_name || client?.full_name || 'Клиент'
+ // Плательщик — контакт операции, иначе сторона договора, иначе сторона сделки:
+ // «Покупатель: Клиент» на счёте — это не имя (проход 17.09.2026, AC-8).
+ const client = tx.contact ?? tx.contracts?.contacts ?? tx.contracts?.owner
+ ?? tx.deal?.client_contact ?? tx.deal?.owner_contact ?? null
+ const clientName = client ? contactDisplayName(client) : 'Плательщик не указан'
  const number = `${tx.contracts?.contract_number ?? 'Б/Н'}-${tx.id.slice(0, 4).toUpperCase()}`
  const amount = Number(tx.amount)
 

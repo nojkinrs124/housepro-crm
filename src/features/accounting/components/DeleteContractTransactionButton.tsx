@@ -4,14 +4,15 @@ import { useTransition } from 'react'
 import { Trash2, Loader2 } from 'lucide-react'
 import { deleteTransactionAction } from '../actions/accounting.actions'
 import { toast } from 'sonner'
+import { confirmDialog } from '@/components/forms/ConfirmDialog'
 
 export function DeleteContractTransactionButton({ transactionId }: { transactionId: string }) {
  const [isPending, startTransition] = useTransition()
 
  return (
  <button
- onClick={() => {
- if (!confirm('Удалить платёж? Он пропадёт из графика и из бухгалтерии — отменить нельзя.')) return
+ onClick={async () => {
+ if (!(await confirmDialog('Удалить платёж? Он пропадёт из графика и из бухгалтерии — отменить нельзя.'))) return
  startTransition(async () => {
  const res = await deleteTransactionAction(transactionId)
  if (res && 'error' in res) toast.error(res.error)

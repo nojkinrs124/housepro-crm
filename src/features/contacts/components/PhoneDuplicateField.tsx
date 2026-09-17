@@ -24,6 +24,7 @@ export function PhoneDuplicateField({
   className,
   placeholder = '+7 (999) 123-45-67',
   excludeId,
+  allowDuplicateToggle = false,
 }: {
   name?: string
   defaultValue?: string
@@ -31,6 +32,8 @@ export function PhoneDuplicateField({
   placeholder?: string
   /** Своя же карточка при редактировании — её из совпадений убираем */
   excludeId?: string
+  /** Показать флажок «создать всё равно» — сервер без него дубль не примет */
+  allowDuplicateToggle?: boolean
 }) {
   const [matches, setMatches] = useState<Match[]>([])
   const [, startCheck] = useTransition()
@@ -75,6 +78,12 @@ export function PhoneDuplicateField({
           ))}
           . Проверьте, не дубль ли это.
         </p>
+      )}
+      {matches.length > 0 && allowDuplicateToggle && (
+        <label className="flex items-center gap-2 text-xs text-[var(--hp-sub)] mt-1 cursor-pointer">
+          <input type="checkbox" name="allow_duplicate" className="w-3.5 h-3.5 accent-[var(--hp-accent)]" />
+          Это повторное обращение — создать всё равно
+        </label>
       )}
     </>
   )

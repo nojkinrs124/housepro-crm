@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/supabase'
 import { planTasksFor, type Regulation } from '@/features/management/services/regulation.service'
+import { todayIso } from '@/lib/timezone'
 
 type Client = SupabaseClient<Database>
 
@@ -31,7 +32,7 @@ export interface GenerationSummary {
  */
 export async function generateRegulationTasks(
   supabase: Client,
-  today: string = new Date().toISOString().slice(0, 10),
+  today: string = todayIso(),
 ): Promise<GenerationSummary> {
   const { data: engagements } = await supabase
     .from('management_engagements')

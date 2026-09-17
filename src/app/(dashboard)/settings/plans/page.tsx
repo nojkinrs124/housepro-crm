@@ -7,6 +7,7 @@ import { PlanActiveToggle } from '@/features/plans/components/PlanActiveToggle'
 import { CHARGE_TYPE_LABELS, getChargeType } from '@/features/plans/config/settlement'
 import { DIRECTION_SHORT_LABELS } from '@/features/directions/config/directions'
 import { can, toUserRole } from '@/lib/permissions'
+import { plural } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -49,7 +50,7 @@ export default async function PlansPage() {
     <div className="space-y-6">
       <PageHeader
         title="Тарифы агентства"
-        subtitle={`${plans.length} тарифов · условия работы с собственниками и клиентами`}
+        subtitle={`${plural(plans.length, ['тариф', 'тарифа', 'тарифов'])} · условия работы с собственниками и клиентами`}
         actions={canEdit ? (
           <Link href="/settings/plans/new" className="hp-btn-primary">
             <Plus style={{ width: 16, height: 16 }} />

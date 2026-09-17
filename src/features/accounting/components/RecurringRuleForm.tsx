@@ -3,6 +3,7 @@
 import { useActionState } from 'react'
 import { createRecurringRuleAction, updateRecurringRuleAction } from '../actions/recurring.actions'
 import type { AccountingRecurringRule, AccountingCategory, User } from '@/types/database'
+import { todayIso } from '@/lib/timezone'
 
 interface Props {
  rule?: AccountingRecurringRule
@@ -101,7 +102,7 @@ export function RecurringRuleForm({ rule, categories, employees }: Props) {
  <input
  type="date"
  name="start_date"
- defaultValue={rule?.start_date ?? new Date().toISOString().slice(0, 10)}
+ defaultValue={rule?.start_date ?? todayIso()}
  className="w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all"
  />
  </div>

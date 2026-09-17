@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { Toaster } from 'sonner'
 import { ThemeProvider } from '@/components/theme-provider'
+import { ConfirmHost } from '@/components/forms/ConfirmDialog'
 
 export const metadata: Metadata = {
   title: 'HousePro CRM',
@@ -36,6 +37,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           {children}
           <Toaster richColors position="top-right" />
+          <ConfirmHost />
         </ThemeProvider>
       </body>
     </html>

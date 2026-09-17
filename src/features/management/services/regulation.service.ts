@@ -1,3 +1,4 @@
+import { todayIso } from '@/lib/timezone'
 /**
  * Регламент обслуживания: когда какое плановое действие пора завести задачей.
  *
@@ -120,7 +121,7 @@ export interface PlannedTask {
 export function planTasksFor(
   regulations: Regulation[],
   context: { startedAt: string; rentEndDate: string | null },
-  today: string = new Date().toISOString().slice(0, 10),
+  today: string = todayIso(),
 ): PlannedTask[] {
   const planned: PlannedTask[] = []
 

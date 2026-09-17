@@ -24,6 +24,9 @@ function facts(over: Partial<DealFacts> = {}): DealFacts {
     hasIncome: true,
     advanceAmount: 300000,
     expectedCloseDate: '2026-10-15',
+    hasCollection: true,
+    collectionSent: true,
+    hasEngagement: true,
     ...over,
   }
 }
@@ -171,5 +174,24 @@ describe('canMoveStage — терминальные состояния и воз
     const v = canMoveStage(facts({ deal_type: 'subrent' }), 'sourcing')
     expect(v.allowed).toBe(false)
     expect(v.reason).toContain('неизвестное направление')
+  })
+})
+
+describe('предусловия, добавленные после сквозного прохода 17.09.2026', () => {
+  it('продажа не завершается без операции дохода', () => {
+    const v = canMoveStage(facts({ deal_type: 'sale', status: 'registration', hasIncome: false }), 'completed')
+    expect(v.allowed).toBe(false)
+    expect(v.reason).toBeTruthy()
+  })
+
+  it('подбор не уходит на «Подборка отправлена» без подборки при сделке', () => {
+    const v = canMoveStage(facts({ deal_type: 'tenant_search', status: 'searching', hasCollection: false }), 'collection_sent')
+    expect(v.allowed).toBe(false)
+  })
+
+  it('управление не уходит в обслуживание, пока объект не заведён в раздел «Управление»', () => {
+    const v = canMoveStage(facts({ deal_type: 'management', status: 'move_in', hasEngagement: false,
+      stage_progress: { move_in: ['signed', 'act', 'meters', 'keys', 'commission'] } }), 'in_service')
+    expect(v.allowed).toBe(false)
   })
 })

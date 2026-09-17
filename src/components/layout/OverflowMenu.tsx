@@ -46,7 +46,11 @@ export function OverflowMenu({ children, label = 'Ещё действия' }: { 
       {open && (
         <div
           role="menu"
-          onClick={() => setOpen(false)}
+          // Закрываем после того, как браузер выполнит действие пункта по
+          // умолчанию: submit-кнопка внутри формы теряла отправку, когда меню
+          // размонтировалось синхронно в этом же клике («Отменить показ» не
+          // работал — проход 17.09.2026, SH-2).
+          onClick={() => setTimeout(() => setOpen(false), 0)}
           className="absolute right-0 top-full mt-1 min-w-[200px] z-20 bg-[var(--hp-surface)] border border-[var(--hp-border)] rounded-[var(--hp-radius)] py-1"
         >
           {children}

@@ -14,6 +14,7 @@ import {
   type MatchCandidate,
   type PlannedTransaction,
 } from '@/lib/import/bank-statement'
+import { todayIso } from '@/lib/timezone'
 
 /** Выписка за месяц — это десятки строк; ограничение защищает от случайного дампа за год. */
 const MAX_FILE_BYTES = 5 * 1024 * 1024
@@ -185,7 +186,7 @@ export async function applyBankStatementAction(items: StatementApplyItem[]): Pro
 
   let applied = 0
   for (const item of items) {
-    const paidOn = item.paidOn ?? new Date().toISOString().slice(0, 10)
+    const paidOn = item.paidOn ?? todayIso()
 
     const { data: updated, error } = await supabase
       .from('accounting_transactions')

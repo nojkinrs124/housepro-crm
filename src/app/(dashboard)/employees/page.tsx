@@ -6,6 +6,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { StatStrip } from '@/components/layout/StatStrip'
 import { EmptyState } from '@/components/layout/EmptyState'
 import { EmployeesView, ROLE_LABELS, type EmployeeRow } from '@/features/employees/components/EmployeesView'
+import { plural } from '@/lib/utils'
 
 
 export default async function EmployeesPage() {
@@ -41,7 +42,7 @@ export default async function EmployeesPage() {
     <div className="space-y-5">
       <PageHeader
         title="Сотрудники"
-        subtitle={`${rows.length} сотрудников`}
+        subtitle={plural(rows.length, ['сотрудник', 'сотрудника', 'сотрудников'])}
         actions={
           <Link href="/employees/new" className={buttonVariants({ size: 'sm' })}>
             <Plus style={{ width: 16, height: 16 }} />

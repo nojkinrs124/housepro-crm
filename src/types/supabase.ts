@@ -1864,6 +1864,7 @@ export type Database = {
           bank_approval_date: string | null
           bank_name: string | null
           bargain_amount: number | null
+          cancel_reason: string | null
           client_contact_id: string | null
           client_representative_id: string | null
           commission: number | null
@@ -1894,6 +1895,7 @@ export type Database = {
           bank_approval_date?: string | null
           bank_name?: string | null
           bargain_amount?: number | null
+          cancel_reason?: string | null
           client_contact_id?: string | null
           client_representative_id?: string | null
           commission?: number | null
@@ -1924,6 +1926,7 @@ export type Database = {
           bank_approval_date?: string | null
           bank_name?: string | null
           bargain_amount?: number | null
+          cancel_reason?: string | null
           client_contact_id?: string | null
           client_representative_id?: string | null
           commission?: number | null
@@ -2381,6 +2384,7 @@ export type Database = {
           budget_max: number | null
           budget_min: number | null
           comment: string | null
+          contact_id: string | null
           consent_pd_at: string | null
           consent_pd_version: string | null
           consent_revoked_at: string | null
@@ -2411,6 +2415,7 @@ export type Database = {
           budget_max?: number | null
           budget_min?: number | null
           comment?: string | null
+          contact_id?: string | null
           consent_pd_at?: string | null
           consent_pd_version?: string | null
           consent_revoked_at?: string | null
@@ -2441,6 +2446,7 @@ export type Database = {
           budget_max?: number | null
           budget_min?: number | null
           comment?: string | null
+          contact_id?: string | null
           consent_pd_at?: string | null
           consent_pd_version?: string | null
           consent_revoked_at?: string | null
@@ -2465,6 +2471,13 @@ export type Database = {
           whatsapp?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "leads_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "leads_assigned_to_fkey"
             columns: ["assigned_to"]
@@ -3242,34 +3255,47 @@ export type Database = {
         Row: {
           created_at: string | null
           created_by: string | null
+          deal_id: string | null
           id: string
           is_public: boolean | null
           lead_id: string | null
           organization_id: string
           share_token: string | null
+          sent_at: string | null
           title: string
         }
         Insert: {
           created_at?: string | null
           created_by?: string | null
+          deal_id?: string | null
           id?: string
           is_public?: boolean | null
           lead_id?: string | null
           organization_id: string
           share_token?: string | null
+          sent_at?: string | null
           title: string
         }
         Update: {
           created_at?: string | null
           created_by?: string | null
+          deal_id?: string | null
           id?: string
           is_public?: boolean | null
           lead_id?: string | null
           organization_id?: string
           share_token?: string | null
+          sent_at?: string | null
           title?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "property_collections_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "property_collections_lead_id_fkey"
             columns: ["lead_id"]

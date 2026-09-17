@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { AlertCircle, CheckCircle2, FileSpreadsheet, Upload } from 'lucide-react'
+import { plural } from '@/lib/utils'
 import {
  parseImportFileAction,
  runImportAction,
@@ -74,7 +75,7 @@ export function ImportWizard() {
  setError(res.error)
  return
  }
- toast.success(`Импортировано ${res.inserted} записей`)
+ toast.success(`Импортировано: ${plural(res.inserted ?? 0, ['запись', 'записи', 'записей'])}`)
  })
  }
 

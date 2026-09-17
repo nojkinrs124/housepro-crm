@@ -12,6 +12,9 @@
  * юнит-тестами и одинаково работают на сервере и на клиенте.
  */
 
+import { getContractTypeConfig } from '@/features/contracts/config/contract-types'
+import { todayIso } from '@/lib/timezone'
+
 export type ReadinessLevel = 'blocker' | 'warn'
 
 export interface ReadinessIssue {
@@ -377,11 +380,22 @@ export function checkContract(c: ContractReadinessInput): ReadinessIssue[] {
     })
   }
 
-  if (empty(c.owner_contact_id) || empty(c.client_contact_id)) {
+  // Состав сторон зависит от типа: у агентского договора с собственником и
+  // договора управления второй стороны-клиента нет и быть не должно
+  // (проход 17.09.2026, RA-3/MG-3/SL-2.3 — подписанный договор показывал
+  // «не обе стороны»).
+  const cfg = getContractTypeConfig(c.contract_type)
+  const parties = cfg
+    ? [[cfg.party1Role, cfg.party1Label], [cfg.party2Role, cfg.party2Label]] as const
+    : [['owner', 'Собственник'], ['client', 'Клиент']] as const
+  const missingParties = parties
+    .filter(([role]) => (role === 'owner' && empty(c.owner_contact_id)) || (role === 'client' && empty(c.client_contact_id)))
+    .map(([, label]) => label)
+  if (missingParties.length > 0) {
     issues.push({
       id: 'contract.parties',
       level: 'blocker',
-      missing: 'Указаны не обе стороны',
+      missing: missingParties.length > 1 ? 'Указаны не обе стороны' : `Не указана сторона: ${missingParties[0]}`,
       effect: 'Документ сформируется с пропусками, отправить на подпись будет некому',
       href: edit,
     })
@@ -436,7 +450,7 @@ export interface TransactionReadinessInput {
 
 export function checkTransaction(
   t: TransactionReadinessInput,
-  todayStr: string = new Date().toISOString().slice(0, 10)
+  todayStr: string = todayIso()
 ): ReadinessIssue[] {
   const issues: ReadinessIssue[] = []
 
