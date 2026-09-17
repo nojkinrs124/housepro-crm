@@ -2384,11 +2384,11 @@ export type Database = {
           budget_max: number | null
           budget_min: number | null
           comment: string | null
-          contact_id: string | null
           consent_pd_at: string | null
           consent_pd_version: string | null
           consent_revoked_at: string | null
           consent_source: string | null
+          contact_id: string | null
           created_at: string | null
           deal_type: string | null
           district: string | null
@@ -2415,11 +2415,11 @@ export type Database = {
           budget_max?: number | null
           budget_min?: number | null
           comment?: string | null
-          contact_id?: string | null
           consent_pd_at?: string | null
           consent_pd_version?: string | null
           consent_revoked_at?: string | null
           consent_source?: string | null
+          contact_id?: string | null
           created_at?: string | null
           deal_type?: string | null
           district?: string | null
@@ -2446,11 +2446,11 @@ export type Database = {
           budget_max?: number | null
           budget_min?: number | null
           comment?: string | null
-          contact_id?: string | null
           consent_pd_at?: string | null
           consent_pd_version?: string | null
           consent_revoked_at?: string | null
           consent_source?: string | null
+          contact_id?: string | null
           created_at?: string | null
           deal_type?: string | null
           district?: string | null
@@ -2472,17 +2472,17 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "leads_contact_id_fkey"
-            columns: ["contact_id"]
-            isOneToOne: false
-            referencedRelation: "contacts"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "leads_assigned_to_fkey"
             columns: ["assigned_to"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
             referencedColumns: ["id"]
           },
           {
@@ -3260,8 +3260,8 @@ export type Database = {
           is_public: boolean | null
           lead_id: string | null
           organization_id: string
-          share_token: string | null
           sent_at: string | null
+          share_token: string | null
           title: string
         }
         Insert: {
@@ -3272,8 +3272,8 @@ export type Database = {
           is_public?: boolean | null
           lead_id?: string | null
           organization_id: string
-          share_token?: string | null
           sent_at?: string | null
+          share_token?: string | null
           title: string
         }
         Update: {
@@ -3284,8 +3284,8 @@ export type Database = {
           is_public?: boolean | null
           lead_id?: string | null
           organization_id?: string
-          share_token?: string | null
           sent_at?: string | null
+          share_token?: string | null
           title?: string
         }
         Relationships: [
@@ -4067,6 +4067,10 @@ export type Database = {
           closed_deals: number
           objects_in_management: number
         }[]
+      }
+      seed_org_accounting_categories: {
+        Args: { p_org_id: string }
+        Returns: undefined
       }
     }
     Enums: {
