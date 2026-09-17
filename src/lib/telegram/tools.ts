@@ -8,19 +8,20 @@
 
 import { ALL_STAGE_VALUES, DIRECTION_VALUES } from '@/features/directions/config/directions'
 import { todayIso } from '@/lib/timezone'
+import { LEAD_DEAL_TYPES, LEAD_DEAL_TYPE_LABELS } from '@/features/leads/config/lead-deal-types'
+import { money } from '@/features/telegram/services/intake-format'
 
+// Документы (паспорта, выписки, договоры) сюда не входят: с 17.09.2026 их
+// заводит кнопочный сценарий «Занести в CRM» (src/lib/telegram/intake.ts),
+// где тип задаёт пользователь, а не модель. Инструменты create_contact,
+// update_contact и три import_* из набора модели убраны — она выбирала между
+// ними наугад.
 export const MUTATING_TOOLS = [
   'add_transaction',
   'update_deal_status',
-  'generate_contract',
   'create_lead',
   'create_property',
   'update_property_status',
-  'create_contact',
-  'update_contact',
-  'import_rental_contract',
-  'import_client_request',
-  'import_property_extract',
   'create_task',
   'complete_task',
 ] as const
@@ -154,41 +155,26 @@ export const TOOL_DEFINITIONS = [
   {
     type: 'function',
     function: {
-      name: 'generate_contract',
-      description: 'Сгенерировать DOCX-файл договора по шаблону. МУТИРУЮЩЕЕ действие — требует подтверждения пользователя.',
-      parameters: {
-        type: 'object',
-        properties: { contract_id: { type: 'string', description: 'UUID договора' } },
-        required: ['contract_id'],
-      },
-    },
-  },
-  {
-    type: 'function',
-    function: {
-      name: 'check_contract',
-      description: 'Проверить договор на риски и пропущенные данные (юридический анализ). Read-only.',
-      parameters: {
-        type: 'object',
-        properties: { contract_id: { type: 'string', description: 'UUID договора' } },
-        required: ['contract_id'],
-      },
-    },
-  },
-  {
-    type: 'function',
-    function: {
       name: 'create_lead',
-      description: 'Создать новый лид/заявку. МУТИРУЮЩЕЕ действие — требует подтверждения пользователя.',
+      description:
+        'Создать новый лид/заявку по тексту («лид Петров 8912…, снять 1к до 30»). Для документов ' +
+        '(паспорт, выписка, договор) НЕ используй — их заводит кнопка «📥 Занести в CRM». ' +
+        'МУТИРУЮЩЕЕ действие — требует подтверждения пользователя.',
       parameters: {
         type: 'object',
         properties: {
           full_name: { type: 'string' },
           phone: { type: 'string' },
           email: { type: 'string' },
-          deal_type: { type: 'string', enum: ['rent', 'sale', 'commercial'] },
+          // Тот же словарь, что в форме лида CRM: снять/купить — клиент, сдать/продать — собственник.
+          deal_type: { type: 'string', enum: LEAD_DEAL_TYPES.map((t) => t.value), description: 'rent — снять, sale — купить, let — сдать, sell — продать, subrent — субаренда' },
+          rooms: { type: 'number' },
+          district: { type: 'string' },
+          budget_min: { type: 'number' },
+          budget_max: { type: 'number' },
           comment: { type: 'string' },
         },
+        required: ['full_name'],
       },
     },
   },
@@ -228,281 +214,6 @@ export const TOOL_DEFINITIONS = [
           status: { type: 'string', enum: ['available', 'reserved', 'rented', 'sold', 'inactive'] },
         },
         required: ['property_id', 'status'],
-      },
-    },
-  },
-  {
-    type: 'function',
-    function: {
-      name: 'create_contact',
-      description: 'Создать нового клиента/контакт (не лид, а именно контакт — владелец, клиент и т.п.). МУТИРУЮЩЕЕ действие.',
-      parameters: {
-        type: 'object',
-        properties: {
-          full_name: { type: 'string' },
-          phone: { type: 'string' },
-          email: { type: 'string' },
-          role: { type: 'string', enum: ['client', 'owner', 'both'] },
-          passport_series: { type: 'string' },
-          passport_number: { type: 'string' },
-          passport_issued_date: { type: 'string', description: 'YYYY-MM-DD' },
-          passport_issued_by: { type: 'string' },
-          passport_department_code: { type: 'string' },
-          birth_date: { type: 'string', description: 'YYYY-MM-DD' },
-          country: { type: 'string' },
-          region: { type: 'string' },
-          city: { type: 'string' },
-          street: { type: 'string' },
-          house_number: { type: 'string' },
-          building: { type: 'string' },
-          apartment: { type: 'string' },
-        },
-        required: ['full_name'],
-      },
-    },
-  },
-  {
-    type: 'function',
-    function: {
-      name: 'update_contact',
-      description:
-        'Обновить данные существующего контакта — паспорт, адрес регистрации, телефон, email и т.п. ' +
-        'Используй, когда нужно дополнить уже созданный контакт (например, паспортными данными для договора). ' +
-        'МУТИРУЮЩЕЕ действие. Если не знаешь contact_id — сначала найди контакт через get_client.',
-      parameters: {
-        type: 'object',
-        properties: {
-          contact_id: { type: 'string', description: 'UUID контакта' },
-          full_name: { type: 'string' },
-          phone: { type: 'string' },
-          email: { type: 'string' },
-          passport_series: { type: 'string' },
-          passport_number: { type: 'string' },
-          passport_issued_date: { type: 'string', description: 'YYYY-MM-DD' },
-          passport_issued_by: { type: 'string' },
-          passport_department_code: { type: 'string' },
-          birth_date: { type: 'string', description: 'YYYY-MM-DD' },
-          country: { type: 'string' },
-          region: { type: 'string' },
-          city: { type: 'string' },
-          street: { type: 'string' },
-          house_number: { type: 'string' },
-          building: { type: 'string' },
-          apartment: { type: 'string' },
-        },
-        required: ['contact_id'],
-      },
-    },
-  },
-  {
-    type: 'function',
-    function: {
-      name: 'import_rental_contract',
-      description:
-        'Разобрать договор аренды (или похожий документ) и ОДНИМ вызовом создать/связать: ' +
-        'собственника, арендатора, объект недвижимости и сделку между ними. Используй это ' +
-        'вместо create_contact/create_property по отдельности, когда из одного документа/сообщения ' +
-        'нужно завести НЕСКОЛЬКО связанных сущностей сразу (это единственный способ действительно ' +
-        'связать их друг с другом — owner_id, client_contact_id и т.п. проставляются автоматически). ' +
-        'Если в документе не хватает каких-то данных — передавай только то, что есть, остальное можно ' +
-        'дополнить потом через update_contact/update_property_status. МУТИРУЮЩЕЕ действие.',
-      parameters: {
-        type: 'object',
-        properties: {
-          owner: {
-            type: 'object',
-            description: 'Собственник объекта',
-            properties: {
-              full_name: { type: 'string' },
-              phone: { type: 'string' },
-              email: { type: 'string' },
-              passport_series: { type: 'string' },
-              passport_number: { type: 'string' },
-              passport_issued_date: { type: 'string' },
-              passport_issued_by: { type: 'string' },
-              passport_department_code: { type: 'string' },
-              country: { type: 'string' },
-              region: { type: 'string' },
-              city: { type: 'string' },
-              street: { type: 'string' },
-              house_number: { type: 'string' },
-              building: { type: 'string' },
-              apartment: { type: 'string' },
-            },
-            required: ['full_name'],
-          },
-          tenant: {
-            type: 'object',
-            description: 'Арендатор',
-            properties: {
-              full_name: { type: 'string' },
-              phone: { type: 'string' },
-              email: { type: 'string' },
-              passport_series: { type: 'string' },
-              passport_number: { type: 'string' },
-              passport_issued_date: { type: 'string' },
-              passport_issued_by: { type: 'string' },
-              passport_department_code: { type: 'string' },
-              country: { type: 'string' },
-              region: { type: 'string' },
-              city: { type: 'string' },
-              street: { type: 'string' },
-              house_number: { type: 'string' },
-              building: { type: 'string' },
-              apartment: { type: 'string' },
-            },
-            required: ['full_name'],
-          },
-          property: {
-            type: 'object',
-            description: 'Объект недвижимости',
-            properties: {
-              title: { type: 'string' },
-              property_type: { type: 'string', enum: ['apartment', 'house', 'commercial', 'office', 'warehouse', 'land'] },
-              deal_type: { type: 'string', enum: ['rent', 'sale', 'management', 'subrent'] },
-              address: { type: 'string' },
-              district: { type: 'string' },
-              price: { type: 'number' },
-              deposit: { type: 'number' },
-              area: { type: 'number' },
-              rooms: { type: 'number' },
-              floor: { type: 'number' },
-            },
-            required: ['title', 'property_type', 'deal_type', 'address'],
-          },
-          deal: {
-            type: 'object',
-            description: 'Параметры сделки (опционально — статус по умолчанию "contract")',
-            properties: {
-              deal_type: { type: 'string' },
-              status: { type: 'string' },
-              amount: { type: 'number' },
-              notes: { type: 'string' },
-            },
-          },
-        },
-        required: ['owner', 'tenant', 'property'],
-      },
-    },
-  },
-  {
-    type: 'function',
-    function: {
-      name: 'import_client_request',
-      description:
-        'Завести клиента из документа: ОДНИМ вызовом создаёт контакт и лид (заявку) по нему. ' +
-        'Используй для любого документа, где есть данные человека, обратившегося в агентство: ' +
-        'анкета, заявление, заявка, скан паспорта, договор оказания услуг. Это основной способ ' +
-        'занести присланный документ в CRM — не вызывай create_contact и create_lead по отдельности, ' +
-        'здесь они создаются одной транзакцией, а контакт с тем же телефоном переиспользуется, ' +
-        'а не дублируется. Передавай всё, что удалось вычитать из документа; чего нет — пропускай. ' +
-        'МУТИРУЮЩЕЕ действие.',
-      parameters: {
-        type: 'object',
-        properties: {
-          contact: {
-            type: 'object',
-            description: 'Человек из документа',
-            properties: {
-              full_name: { type: 'string' },
-              phone: { type: 'string' },
-              email: { type: 'string' },
-              role: { type: 'string', enum: ['client', 'owner', 'both'], description: 'По умолчанию client' },
-              passport_series: { type: 'string' },
-              passport_number: { type: 'string' },
-              passport_issued_date: { type: 'string', description: 'YYYY-MM-DD' },
-              passport_issued_by: { type: 'string' },
-              passport_department_code: { type: 'string' },
-              birth_date: { type: 'string', description: 'YYYY-MM-DD' },
-              country: { type: 'string' },
-              region: { type: 'string' },
-              city: { type: 'string' },
-              street: { type: 'string' },
-              house_number: { type: 'string' },
-              building: { type: 'string' },
-              apartment: { type: 'string' },
-            },
-            required: ['full_name'],
-          },
-          lead: {
-            type: 'object',
-            description: 'Чего человек хочет — то, что видно из документа',
-            properties: {
-              deal_type: { type: 'string', enum: ['rent', 'sale', 'management', 'subrent', 'commercial'] },
-              property_type: { type: 'string', enum: ['apartment', 'house', 'commercial', 'office', 'warehouse', 'land'] },
-              district: { type: 'string' },
-              rooms: { type: 'number' },
-              budget_min: { type: 'number' },
-              budget_max: { type: 'number' },
-              area_min: { type: 'number' },
-              area_max: { type: 'number' },
-              comment: { type: 'string', description: 'Суть заявки и что за документ — попадёт в карточку лида' },
-            },
-          },
-        },
-        required: ['contact'],
-      },
-    },
-  },
-  {
-    type: 'function',
-    function: {
-      name: 'import_property_extract',
-      description:
-        'Завести объект из выписки ЕГРН, свидетельства о праве собственности или похожего ' +
-        'правоустанавливающего документа: создаёт объект недвижимости и, если в документе указан ' +
-        'правообладатель, — контакт-собственника, сразу связав его с объектом. Используй вместо ' +
-        'create_property для любых документов о правах на недвижимость. Повторная загрузка той же ' +
-        'выписки не создаёт дубль — объект узнаётся по кадастровому номеру. МУТИРУЮЩЕЕ действие.',
-      parameters: {
-        type: 'object',
-        properties: {
-          property: {
-            type: 'object',
-            description: 'Объект из документа',
-            properties: {
-              title: { type: 'string', description: 'Короткое название; если не придумывается — можно не передавать, возьмётся адрес' },
-              property_type: { type: 'string', enum: ['apartment', 'house', 'commercial', 'office', 'warehouse', 'land'] },
-              deal_type: {
-                type: 'string',
-                enum: ['rent', 'sale', 'management', 'subrent'],
-                description: 'В выписке этого нет — передавай, только если пользователь сказал сам; иначе останется "sale"',
-              },
-              address: { type: 'string', description: 'Адрес из документа, как он там написан' },
-              district: { type: 'string' },
-              cadastral_number: { type: 'string', description: 'Кадастровый номер вида 77:01:0001001:1234' },
-              area: { type: 'number', description: 'Общая площадь, м²' },
-              living_area: { type: 'number' },
-              land_area: { type: 'number', description: 'Площадь земельного участка, м²' },
-              rooms: { type: 'number' },
-              floor: { type: 'number' },
-              total_floors: { type: 'number' },
-              year_built: { type: 'number' },
-              ownership_basis: { type: 'string', description: 'Вид и основание права: «собственность, договор купли-продажи от …»' },
-              encumbrances: { type: 'string', description: 'Ограничения и обременения: ипотека, аренда, арест' },
-              price: { type: 'number', description: 'Кадастровая стоимость, если указана' },
-              description: { type: 'string' },
-            },
-            required: ['address'],
-          },
-          owner: {
-            type: 'object',
-            description: 'Правообладатель — если в документе есть раздел о правах',
-            properties: {
-              full_name: { type: 'string' },
-              phone: { type: 'string' },
-              email: { type: 'string' },
-              passport_series: { type: 'string' },
-              passport_number: { type: 'string' },
-              passport_issued_date: { type: 'string', description: 'YYYY-MM-DD' },
-              passport_issued_by: { type: 'string' },
-              passport_department_code: { type: 'string' },
-              birth_date: { type: 'string', description: 'YYYY-MM-DD' },
-            },
-            required: ['full_name'],
-          },
-        },
-        required: ['property'],
       },
     },
   },
@@ -659,9 +370,6 @@ export async function dispatchReadOnlyTool(name: string, args: Record<string, un
       params.set('search', String(args.search ?? ''))
       return callApi(`/api/v1/contacts?${params.toString()}`)
     }
-    case 'check_contract': {
-      return callApi(`/api/v1/contracts/${encodeURIComponent(String(args.contract_id))}/check`, { method: 'POST' })
-    }
     case 'create_channel_post': {
       const { resolveBotOrgId } = await import('@/lib/telegram/org')
       const { createDraftRow, sendDraftForReview, getChannelSettings, getRubricByKey } = await import('@/lib/telegram/channel')
@@ -767,10 +475,9 @@ export async function executeConfirmedMutation(actionType: string, payload: Reco
         method: 'PATCH',
         body: JSON.stringify({ status: payload.status }),
       })
-    case 'generate_contract':
-      return callApi(`/api/v1/contracts/${encodeURIComponent(String(payload.contract_id))}/generate`, { method: 'POST' })
     case 'create_lead':
-      return callApi('/api/v1/leads', { method: 'POST', body: JSON.stringify(payload) })
+      // Источник — Telegram: без явного значения роут ставил 'api', которого нет в справочнике.
+      return callApi('/api/v1/leads', { method: 'POST', body: JSON.stringify({ ...payload, source: 'telegram' }) })
     case 'create_property':
       return callApi('/api/v1/properties', { method: 'POST', body: JSON.stringify(payload) })
     case 'update_property_status':
@@ -778,21 +485,6 @@ export async function executeConfirmedMutation(actionType: string, payload: Reco
         method: 'PATCH',
         body: JSON.stringify({ status: payload.status }),
       })
-    case 'create_contact':
-      return callApi('/api/v1/contacts', { method: 'POST', body: JSON.stringify(payload) })
-    case 'update_contact': {
-      const { contact_id, ...fields } = payload
-      return callApi(`/api/v1/contacts/${encodeURIComponent(String(contact_id))}`, {
-        method: 'PUT',
-        body: JSON.stringify(fields),
-      })
-    }
-    case 'import_rental_contract':
-      return callApi('/api/v1/import/rental-contract', { method: 'POST', body: JSON.stringify(payload) })
-    case 'import_client_request':
-      return callApi('/api/v1/import/client-request', { method: 'POST', body: JSON.stringify(payload) })
-    case 'import_property_extract':
-      return callApi('/api/v1/import/property-extract', { method: 'POST', body: JSON.stringify(payload) })
     case 'create_task':
       return callApi('/api/v1/tasks', { method: 'POST', body: JSON.stringify(payload) })
     case 'complete_task':
@@ -812,54 +504,24 @@ export function describeMutation(actionType: string, args: Record<string, unknow
       return `${args.type === 'income' ? '💰 Доход' : '💸 Расход'}: ${args.amount} ₽${args.description ? ` — ${args.description}` : ''}`
     case 'update_deal_status':
       return `📋 Изменить статус сделки ${args.deal_id} → ${args.status}`
-    case 'generate_contract':
-      return `📄 Сгенерировать DOCX договора ${args.contract_id}`
-    case 'create_lead':
-      return `👤 Новый лид: ${args.full_name ?? '(без имени)'}${args.phone ? `, ${args.phone}` : ''}`
+    case 'create_lead': {
+      const wish = [
+        args.deal_type ? LEAD_DEAL_TYPE_LABELS[String(args.deal_type)] ?? String(args.deal_type) : null,
+        args.rooms ? `${args.rooms}к` : null,
+        args.district ? String(args.district) : null,
+        args.budget_max ? `до ${money(Number(args.budget_max))}` : null,
+      ].filter(Boolean).join(', ')
+      return (
+        `🧲 Новый лид: ${args.full_name ?? '(без имени)'}${args.phone ? `, ${args.phone}` : ''}` +
+        (wish ? `\nХочет: ${wish}` : '') +
+        (args.comment ? `\n${args.comment}` : '') +
+        '\nИсточник: Telegram'
+      )
+    }
     case 'create_property':
       return `🏠 Новый объект: ${args.title}, ${args.address}`
     case 'update_property_status':
       return `🏠 Изменить статус объекта ${args.property_id} → ${args.status}`
-    case 'create_contact':
-      return `👤 Новый контакт: ${args.full_name}${args.phone ? `, ${args.phone}` : ''}`
-    case 'update_contact': {
-      const fields = Object.keys(args).filter((k) => k !== 'contact_id')
-      return `✏️ Обновить контакт ${args.contact_id}: ${fields.join(', ')}`
-    }
-    case 'import_rental_contract': {
-      const owner = args.owner as Record<string, unknown> | undefined
-      const tenant = args.tenant as Record<string, unknown> | undefined
-      const property = args.property as Record<string, unknown> | undefined
-      return (
-        `📥 Импорт договора аренды:\n` +
-        `• Собственник: ${owner?.full_name ?? '?'}${owner?.phone ? `, ${owner.phone}` : ''}\n` +
-        `• Арендатор: ${tenant?.full_name ?? '?'}${tenant?.phone ? `, ${tenant.phone}` : ''}\n` +
-        `• Объект: ${property?.title ?? '?'}, ${property?.address ?? ''}\n` +
-        `→ создаст 2 контакта, объект и сделку, всё связав между собой`
-      )
-    }
-    case 'import_client_request': {
-      const contact = args.contact as Record<string, unknown> | undefined
-      const lead = args.lead as Record<string, unknown> | undefined
-      const wish = [lead?.deal_type, lead?.property_type, lead?.district].filter(Boolean).join(', ')
-      return (
-        `📥 Заявка из документа:\n` +
-        `• Контакт: ${contact?.full_name ?? '?'}${contact?.phone ? `, ${contact.phone}` : ''}\n` +
-        `• Лид: ${wish || 'без уточнений'}\n` +
-        `→ создаст контакт и лид (контакт с тем же телефоном будет дополнен, а не продублирован)`
-      )
-    }
-    case 'import_property_extract': {
-      const property = args.property as Record<string, unknown> | undefined
-      const owner = args.owner as Record<string, unknown> | undefined
-      return (
-        `📥 Объект из правоустанавливающего документа:\n` +
-        `• Объект: ${property?.title ?? property?.address ?? '?'}${property?.area ? `, ${property.area} м²` : ''}\n` +
-        `• Кадастровый номер: ${property?.cadastral_number ?? 'не указан'}\n` +
-        `• Собственник: ${owner?.full_name ?? 'не указан в документе'}\n` +
-        `→ создаст объект${owner?.full_name ? ' и контакт-собственника, связав их' : ''}`
-      )
-    }
     case 'create_task':
       return `✅ Новая задача: ${args.title}${args.deadline ? ` — срок ${args.deadline}` : ''}`
     case 'complete_task':

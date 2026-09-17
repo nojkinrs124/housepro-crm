@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import * as Sentry from '@sentry/nextjs'
 import { randomUUID } from 'crypto'
-import { createClient } from '@supabase/supabase-js'
+import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { authenticateApiKey } from '@/lib/api-auth'
 import { rateLimitMutation } from '@/lib/rate-limit'
 import {
@@ -40,6 +40,18 @@ import {
   executeConfirmedMutation,
   describeMutation,
 } from '@/lib/telegram/tools'
+import { chatCompletion, type LlmContent, type LlmMessage } from '@/lib/telegram/llm'
+import {
+  getActiveIntake,
+  startIntake,
+  cancelIntake,
+  attachFileToIntake,
+  attachNoteToIntake,
+  runIntakeExtraction,
+  commitIntake,
+  intakeContentParts,
+} from '@/lib/telegram/intake'
+import { stripBinaryFromHistory, INTAKE_DATA_KINDS, type IntakeKind } from '@/features/telegram/services/intake-format'
 import {
   getChannelSettings,
   setAwaitingIntent,
@@ -93,138 +105,75 @@ export const dynamic = 'force-dynamic'
 // на дефолт, который на Hobby-плане конфигурируется максимум до 60с.
 export const maxDuration = 60
 
-const SYSTEM_PROMPT = `Ты — ассистент внутри Telegram-бота HousePro CRM (агентство недвижимости).
+/**
+ * Промпт диалога. Короче прежнего вдвое: разбор документов из него ушёл в
+ * кнопочный сценарий «Занести в CRM», блок про канал видит только владелец.
+ */
+const CRM_PROMPT = `Ты — ассистент внутри Telegram-бота HousePro CRM (агентство недвижимости).
 Отвечай кратко, по-деловому, на русском. У тебя есть инструменты для чтения и изменения данных CRM.
 Суммы — в рублях. Если пользователь не указал дату — используй сегодняшнюю.
 
-Для ВСЕХ мутирующих действий (add_transaction, update_deal_status, generate_contract, create_lead,
-create_property, update_property_status, create_contact, update_contact, import_rental_contract,
-import_client_request, import_property_extract, create_task, complete_task)
-НЕ считай, что действие уже выполнено — система сама покажет пользователю подтверждение и выполнит
-действие только после его согласия.
+Мутирующие инструменты (add_transaction, update_deal_status, create_lead, create_property,
+update_property_status, create_task, complete_task) НЕ считай выполненными: система сама покажет
+пользователю подтверждение и выполнит действие только после его согласия.
 
-Read-only инструменты list_tasks и list_overdue_payments — используй их для вопросов "что горит",
-"какие задачи на сегодня/просрочены", "какие оплаты ждут/просрочены", не только для явного "покажи список".
-get_finance_chart сам отправляет картинку в чат — после его вызова НЕ пересказывай цифры текстом ещё раз,
-просто коротко подтверди (график виден в сообщении выше). market_research — для составных вопросов
-с веб-поиском по рынку недвижимости (сравнить цены, узнать новости/правила) — не изобретай цифры сам,
-если вопрос требует актуальных внешних данных, вызови этот инструмент.
+Read-only инструменты list_tasks и list_overdue_payments — для вопросов «что горит», «какие задачи
+на сегодня / просрочены», «какие оплаты ждут». get_finance_chart сам отправляет картинку в чат —
+после него не пересказывай цифры, коротко подтверди. market_research — для вопросов, где нужны
+актуальные внешние данные (сравнить с рынком, новости, правила): не выдумывай цифры сам.
 
-Если не хватает данных для вызова инструмента (например, не найден deal_id или contact_id) —
-сначала используй read-only инструмент (get_deals, get_client, list_properties), чтобы его найти,
-и только потом предлагай мутацию. Если нашлось несколько похожих совпадений — уточни у пользователя,
-какое имелось в виду, вместо того чтобы гадать.
+Не хватает id (сделки, контакта, задачи) — сначала найди через read-only инструмент (get_deals,
+get_client, list_tasks). Несколько похожих совпадений — уточни у пользователя, не гадай.
 
-ПАКЕТНЫЕ запросы: если пользователь просит несколько независимых действий за раз
-("добавь трёх лидов: ...", "создай два объекта: ...") — вызови СООТВЕТСТВУЮЩИЙ инструмент
-НЕСКОЛЬКО РАЗ за один ответ (несколько tool_calls в одном сообщении), не по одному за раз —
-система сама соберёт их в одно общее подтверждение.
+Несколько независимых действий за раз («добавь трёх лидов: …») — вызови инструмент несколько
+раз в одном ответе, система соберёт их в одно подтверждение.
 
-СВЯЗАННЫЕ сущности из одного документа: если нужно создать НЕСКОЛЬКО СВЯЗАННЫХ между собой
-записей одновременно (например, из договора аренды — собственник + арендатор + объект + сделка,
-где сделка должна ссылаться на только что созданных собственника и арендатора) — НЕ используй
-create_contact/create_property по отдельности, потому что их ID заранее неизвестны и связь не
-получится. Вместо этого используй import_rental_contract — он создаёт и связывает всё правильно
-за один атомарный вызов. Если в документе не хватает каких-то полей — передай только то, что есть,
-остальное можно дополнить позже через update_contact/update_property_status.
+Документы (паспорт, выписка ЕГРН, договор, анкета) через тебя НЕ заводятся: у бота для этого
+кнопка «📥 Занести в CRM» (/menu → 📋 CRM) — если пользователь спрашивает, как занести документ,
+направь туда. Фото чека или квитанции — add_transaction: сумма, дата, назначение.
 
-Пользователь регулярно присылает документы, чтобы занести их содержимое в CRM. Это основной
-сценарий работы с вложениями — не отвечай на документ пересказом, а всегда предлагай конкретное
-действие. Разбирай так:
-- Фото чека/квитанции/расписки — сумма, дата, назначение → add_transaction.
-- Выписка ЕГРН, свидетельство о праве собственности, договор дарения/приватизации и другие
-  правоустанавливающие документы (признаки: кадастровый номер, «правообладатель», «вид права»,
-  «ограничения и обременения») → import_property_extract. Вычитывай кадастровый номер, адрес,
-  площади, этаж, год, вид права и обременения, а правообладателя передавай как owner — объект и
-  собственник заведутся связанными. deal_type в таких документах нет: не выдумывай его, оставь
-  пустым, если пользователь не сказал, аренда это или продажа.
-- Договор аренды/найма или купли-продажи, где есть ДВЕ стороны и объект → import_rental_contract
-  (создаст собственника, второго участника, объект и сделку разом).
-- Любой другой документ с данными обратившегося человека — анкета, заявление, заявка, скан
-  паспорта, договор оказания услуг → import_client_request: создаст контакт и лид одним действием.
-  Это поведение по умолчанию, если документ не подошёл под пункты выше и в нём есть человек.
-  Не вызывай для этого create_contact и create_lead по отдельности.
-- Если в одном документе есть и человек, и объект (например, анкета собственника с описанием
-  квартиры) — вызови оба инструмента в одном ответе, система соберёт их в одно подтверждение.
-- Чего в документе нет — не выдумывай: передавай только вычитанные поля, остальное дополняется
-  потом через update_contact/update_property_status.
-- Всегда явно проговаривай в подтверждении, что именно нашёл в документе, прежде чем создавать.
+У тебя есть история последних сообщений — используй её для контекста («а по нему» — смотри,
+о ком речь выше).
 
-У тебя есть история последних сообщений в этом чате — используй её для контекста
-(например, если пользователь пишет "а по нему" — посмотри, о ком речь, в предыдущих сообщениях).
+Форматирование (Telegram, НЕ markdown): только <b>, <i>, <code>; заголовки — <b>жирным</b> на
+отдельной строке; списки через «•»; никаких таблиц; символы «<», «>», «&» вне тегов не использовать.
+Простой вопрос — 2–4 строки. Списки — не больше 5–7 записей, дальше предложи уточнить фильтр.`
 
-У ЭТОГО ЖЕ бота есть ВТОРОЙ модуль — контент-ассистент Telegram-канала @housepro24 (посты, картинки
-к ним, статистика, CTA-ссылки). Это НЕ CRM-функции, но ты про них знаешь и можешь ими пользоваться:
-- create_channel_post(topic) — сгенерировать разовый пост для канала по теме (с иллюстрацией и веб-поиском
-  при необходимости), отправить тебе на утверждение кнопками. Используй, когда просят "сделай пост про...",
-  "напиши в канал про...", "выложи в группу/канал что-то про...".
-- get_channel_stats() — подписчики канала, посты/клики за 7 дней, сколько черновиков ждёт утверждения.
-Того, что НЕ умеет ни один инструмент бота: строить графики/диаграммы с числами (только иллюстративные
-картинки без цифр — так безопаснее, реальные цифры не выдумываются картинкой), редактировать уже
-опубликованные посты, публиковать в другие каналы/группы кроме @housepro24. Если просят именно это —
-честно скажи, что не умеешь, а не придумывай похожий ответ.
-Полное расписание рубрик (пн/ср/пт), кейсы из надиктовки, кнопочное меню — доступны только напрямую
-через /menu, /case, /post в этом же чате (не через тебя как диалог) — если пользователь спрашивает,
-как этим пользоваться, подскажи именно эти команды.
+const CHANNEL_PROMPT = `
+У этого же бота есть контент-ассистент Telegram-канала @housepro24:
+- create_channel_post(topic) — черновик разового поста на утверждение («сделай пост про…»).
+- get_channel_stats() — подписчики, посты и клики за 7 дней, черновики на утверждении.
+Не умеешь: графики с цифрами в картинке, правку опубликованных постов, публикацию в другие каналы —
+так и скажи. Расписание, рубрики, кейсы — в /menu → 📢 Канал.`
 
-Форматирование ответа (важно, Telegram, НЕ обычный markdown):
-- Разрешены только HTML-теги: <b>жирный</b>, <i>курсив</i>, <code>код</code>. Заголовки через ###
-  НЕ поддерживаются — вместо них используй <b>жирный текст</b> на отдельной строке.
-- Никаких markdown-таблиц (| --- |) — Telegram их не рендерит. Для списков с несколькими полями
-  используй такой вид, по одной записи на абзац:
-  <b>Иванов, аренда 2к, Ленина 10</b>
-  Статус: показы · Бюджет: 45 000 ₽/мес
-- Списки — через "•" в начале строки, не через "-" или "*".
-  Никогда не используй '<', '>', '&' в свободном тексте вне HTML-тегов (ломает разметку) —
-  если нужно сравнение чисел, пиши словами ("больше", "меньше"), а амперсанд заменяй на "и".
-- Не отвечай "простыней" на 15 строк, если пользователь спросил что-то простое — 2-4 строки.
-  Для списков сделок/транзакций — не больше 5-7 записей в одном ответе, дальше предложи уточнить период/фильтр.`
+function systemPrompt(role: BotActor['role']): string {
+  return role === 'admin' ? CRM_PROMPT + CHANNEL_PROMPT : CRM_PROMPT
+}
 
 const HELP_TEXT = `<b>HousePro CRM — бот-ассистент</b>
 
-Пиши обычным текстом, голосом, присылай фото чеков или PDF/DOCX документы — понимаю без специальных команд.
+<b>📥 Занести в CRM по документам</b> — /menu → 📋 CRM → 📥 Занести в CRM.
+Выбираешь: арендатор, собственник, объект или договор — присылаешь фото паспорта, выписку ЕГРН,
+договор, телефон текстом. Показываю, что прочитал, ты жмёшь «Создать» — контакт, лид, объект и
+сделка появляются в CRM уже связанными, сканы — в карточке. Можно и наоборот: сначала прислать
+фото, потом ответить на вопрос «что это?».
 
-<b>Можно спросить</b> (ответит сразу):
-• Какие сделки в работе?
-• Сколько заработали в этом месяце? (можно попросить графиком)
-• Какие объекты сдаются?
-• Найди клиента по телефону
-• Какие задачи горят / какие оплаты просрочены?
+<b>Спросить</b> (отвечу сразу):
+• Какие сделки в работе? Какие задачи горят? Какие оплаты просрочены?
+• Сколько заработали в этом месяце? (можно графиком)
+• Найди контакт по телефону
 • Сравни наши цены с рынком в этом районе (веб-поиск)
 
-<b>Можно попросить сделать</b> (спрошу подтверждение):
-• Добавь расход 5000 на бензин
-• Переведи сделку в статус завершена
+<b>Попросить сделать</b> (спрошу подтверждение):
+• Добавь расход 5000 на бензин · фото чека — разберу сам
+• Лид Петров 8912…, снять 1к до 30 тысяч
+• Переведи сделку на следующую стадию
 • Поставь задачу позвонить клиенту завтра
-• Создай трёх лидов: ... (несколько сразу — одним подтверждением)
-• Пришли договор аренды PDF/DOCX — сам заведу собственника, арендатора, объект и сделку, всё связав
-• Пришли анкету, заявление или скан паспорта — заведу контакт и лид по нему
-• Пришли выписку ЕГРН или свидетельство о собственности — заведу объект и его собственника
 
-Просто напиши или пришли файл.
-
-<b>Меню</b>
-• /menu — главное меню: ⚡ Сегодня (что горит), 📋 CRM, 📢 Канал, ⚙️ Настройки.
-• В CRM — лиды, сделки, объекты, контакты, задачи, деньги и анализ рынка.
-  Списки длиннее пяти записей листаются кнопкой «⬇ Ещё».
-
-<b>Канал (контент-ассистент)</b>
-• По расписанию сам присылаю черновики постов на утверждение (пн — аналитика, ср — кейс, пт — оффер).
-• /case &lt;текст&gt; или голосовое — надиктуй кейс, оформлю в пост.
-• /post &lt;тема&gt; — разовый пост вне расписания.
-• /pause /resume — приостановить/включить автопостинг по расписанию (отпуск и т.п.).
-• Ответь текстом на черновик — заменю текст твоим вариантом (без модели, картинка останется).`
+Голосом — тоже понимаю. Меню: /menu.`
 
 // Сколько последних сообщений диалога храним и передаём модели (не считая system prompt).
 const MAX_HISTORY_MESSAGES = 20
-
-function getSupabaseAdmin() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { global: { fetch: (url, options = {}) => fetch(url, { ...options, cache: 'no-store' }) } }
-  )
-}
 
 async function resolveBotOrgId(): Promise<string | null> {
   const key = process.env.HOUSEPRO_BOT_API_KEY
@@ -288,20 +237,8 @@ async function denyAdmin(chatId: number): Promise<void> {
   await sendMessage(chatId, '⛔ Это действие доступно только владельцу бота.')
 }
 
-type MessageContent =
-  | string
-  | Array<
-      | { type: 'text'; text: string }
-      | { type: 'image_url'; image_url: { url: string } }
-      | { type: 'file'; file: { filename: string; file_data: string } }
-    >
-
-interface OpenRouterMessage {
-  role: 'system' | 'user' | 'assistant' | 'tool'
-  content?: MessageContent | null
-  tool_calls?: Array<{ id: string; type: 'function'; function: { name: string; arguments: string } }>
-  tool_call_id?: string
-}
+type MessageContent = LlmContent
+type OpenRouterMessage = LlmMessage
 
 async function loadConversation(chatId: string): Promise<OpenRouterMessage[]> {
   const supabaseAdmin = getSupabaseAdmin()
@@ -314,7 +251,8 @@ async function loadConversation(chatId: string): Promise<OpenRouterMessage[]> {
 }
 
 async function saveConversation(chatId: string, orgId: string, messages: OpenRouterMessage[]): Promise<void> {
-  const trimmed = messages.slice(-MAX_HISTORY_MESSAGES)
+  // Без вложений: base64 фото и PDF в истории уходили модели на каждое сообщение.
+  const trimmed = stripBinaryFromHistory(messages.slice(-MAX_HISTORY_MESSAGES))
   const supabaseAdmin = getSupabaseAdmin()
   await supabaseAdmin.from('bot_conversations').upsert({
     telegram_chat_id: chatId,
@@ -322,29 +260,6 @@ async function saveConversation(chatId: string, orgId: string, messages: OpenRou
     messages: trimmed,
     updated_at: new Date().toISOString(),
   })
-}
-
-async function callOpenRouter(messages: OpenRouterMessage[]) {
-  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: process.env.OPENROUTER_MODEL ?? 'anthropic/claude-sonnet-5',
-      messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
-      tools: TOOL_DEFINITIONS,
-      tool_choice: 'auto',
-      // Разрешаем модели одновременно вызывать несколько tool_calls в одном ответе —
-      // это то, что делает пакетные запросы ("добавь трёх лидов") возможными.
-      parallel_tool_calls: true,
-    }),
-  })
-  if (!res.ok) {
-    throw new Error(`OpenRouter error ${res.status}: ${await res.text()}`)
-  }
-  return res.json()
 }
 
 async function handleUserTurn(actor: BotActor, content: MessageContent) {
@@ -367,7 +282,14 @@ async function handleUserTurn(actor: BotActor, content: MessageContent) {
   try {
     for (let round = 0; round < 4; round++) {
       if (round > 0) await sendChatAction(chatId, 'typing')
-      const completion = await callOpenRouter(messages)
+      const completion = await chatCompletion({
+        system: systemPrompt(actor.role),
+        messages,
+        tools: TOOL_DEFINITIONS,
+        toolChoice: 'auto',
+        // Несколько tool_calls в одном ответе — то, что делает пакетные запросы возможными.
+        parallelToolCalls: true,
+      })
       const choice = completion.choices?.[0]
       const message: OpenRouterMessage | undefined = choice?.message
 
@@ -470,7 +392,7 @@ async function sendMainMenu(actor: BotActor) {
   await showMenuScreen(actor.chatId, actor.orgId, 'root', actor.role)
 }
 
-const NAV_SCREENS: MenuScreen[] = ['root', 'today', 'crm', 'crm_leads', 'crm_deals', 'crm_properties', 'crm_contacts', 'crm_payments', 'crm_management', 'crm_tasks', 'channel', 'channel_posts', 'channel_schedule', 'channel_rubrics', 'multiagent', 'settings', 'settings_users']
+const NAV_SCREENS: MenuScreen[] = ['root', 'today', 'crm', 'crm_leads', 'crm_deals', 'crm_properties', 'crm_contacts', 'crm_payments', 'crm_management', 'crm_tasks', 'crm_intake', 'channel', 'channel_posts', 'channel_schedule', 'channel_rubrics', 'settings', 'settings_users']
 
 // Навигация верхнеуровневого меню: nav:<screen>[:<страница>] — перерисовывает "экран"
 // в том же сообщении. Номер страницы нужен кнопке «⬇ Ещё» в длинных списках.
@@ -558,30 +480,6 @@ async function tryHandleAddUserInput(actor: BotActor, text: string, forwardFromI
   }
   await showMenuScreen(chatId, orgId, 'settings_users', actor.role)
   return true
-}
-
-// Раздел "🤖 Мультиагент" — MVP делегированного исследования (см. src/lib/telegram/market-research.ts).
-async function handleMultiagentAction(action: string, actor: BotActor) {
-  const { chatId, orgId } = actor
-  if (actor.role !== 'admin') return denyAdmin(chatId)
-
-  if (action === 'research') {
-    await setAwaitingIntent(orgId, 'market_research', actor.telegramUserId)
-    await sendMessage(chatId, '🔎 Опиши одним сообщением, что исследовать (можно с веб-поиском по рынку недвижимости).')
-  }
-}
-
-async function handleMarketResearchInput(chatId: number, orgId: string, topic: string) {
-  await sendChatAction(chatId, 'typing')
-  try {
-    const { runMarketResearch } = await import('@/lib/telegram/market-research')
-    const text = await runMarketResearch(topic)
-    await sendMessage(chatId, text)
-  } catch (e) {
-    await sendMessage(chatId, `⚠️ Не удалось выполнить исследование: ${e instanceof Error ? e.message : 'ошибка'}`)
-  } finally {
-    await setAwaitingIntent(orgId, null)
-  }
 }
 
 // Действия в разделе "⏰ Расписание": toggle/delete слота, + запрос на добавление нового.
@@ -749,11 +647,6 @@ async function tryHandleScheduleOrRubricInput(actor: BotActor, text: string): Pr
       await sendMessage(chatId, value ? '✅ Стиль картинки для рубрики обновлён.' : '✅ Стиль картинки сброшен на общий.')
     }
     await showMenuScreen(chatId, orgId, 'channel_rubrics', actor.role)
-    return true
-  }
-
-  if (intent === 'market_research') {
-    await handleMarketResearchInput(chatId, orgId, text)
     return true
   }
 
@@ -931,6 +824,46 @@ async function handleChannelListAction(action: string, postId: string, actor: Bo
   await showMenuScreen(chatId, orgId, 'channel_posts', actor.role, messageId)
 }
 
+/**
+ * Кнопки сценария «Занести в CRM»: intake:<verb>:<sessionId|new>.
+ * Тип задаёт пользователь; модель вызывается один раз по «Готово».
+ */
+async function handleIntakeCallback(arg: string, actor: BotActor) {
+  if (!isAtLeastMember(actor.role)) return
+  const idx = arg.indexOf(':')
+  const verb = idx > 0 ? arg.slice(0, idx) : arg
+  const sessionId = idx > 0 ? arg.slice(idx + 1) : ''
+
+  if ((INTAKE_DATA_KINDS as readonly string[]).includes(verb)) {
+    await startIntake(actor, verb as IntakeKind)
+    return
+  }
+  if (verb === 'receipt') {
+    // Чек — не документ для карточки, а операция: уходит в обычный диалог с
+    // add_transaction, где уже есть разбор суммы и подтверждение.
+    const session = await getActiveIntake(actor.telegramUserId)
+    if (!session || session.id !== sessionId) return
+    const content = await intakeContentParts(
+      session,
+      'На фото чек, квитанция или расписка. Определи сумму, дату и назначение платежа и предложи add_transaction (доход или расход — по смыслу).',
+    )
+    await cancelIntake(session, { silent: true })
+    await handleUserTurn(actor, content)
+    return
+  }
+  if (verb === 'cancel') {
+    const session = await getActiveIntake(actor.telegramUserId)
+    if (session && session.id === sessionId) {
+      await cancelIntake(session)
+      await sendMessage(actor.chatId, '❌ Отменил, файлы удалил.')
+    }
+    return
+  }
+  if (verb === 'done') return runIntakeExtraction(actor, sessionId)
+  if (verb === 'create') return commitIntake(actor, sessionId, 'full')
+  if (verb === 'lead') return commitIntake(actor, sessionId, 'lead')
+}
+
 async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_query']>) {
   await answerCallbackQuery(update.id)
 
@@ -990,7 +923,7 @@ async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_
   if (action === 'chrubedit' || action === 'chrubtoggle' || action === 'chrubadd' || action === 'chrubimg') {
     return handleRubricAction(action, arg, actor, messageId)
   }
-  if (action === 'magent') return handleMultiagentAction(arg, actor)
+  if (action === 'intake') return handleIntakeCallback(arg, actor)
 
   if (action !== 'confirm' && action !== 'cancel') return
 
@@ -1170,37 +1103,10 @@ async function tryHandleChannelInput(
     }
   }
 
-  if (text === '/pause') {
-    await setSchedulePaused(orgId, true)
-    await sendMessage(chatId, '⏸ Автопостинг по расписанию приостановлен. Черновики по пн/ср/пт присылать не буду, пока не скажешь /resume.')
-    return true
-  }
-
-  if (text === '/resume') {
-    await setSchedulePaused(orgId, false)
-    await sendMessage(chatId, '▶️ Автопостинг по расписанию снова включён.')
-    return true
-  }
-
-  if (text.startsWith('/case')) {
-    const rawInput = text.replace('/case', '').trim()
-    if (!rawInput) {
-      await sendMessage(chatId, 'Опиши кейс текстом после команды или просто надиктуй голосовым — я жду.')
-      await setAwaitingIntent(orgId, 'case', actor.telegramUserId)
-      return true
-    }
-    await handleCaseInput(chatId, orgId, rawInput)
-    return true
-  }
-
-  if (text.startsWith('/post')) {
-    const topic = text.replace('/post', '').trim()
-    if (!topic) {
-      await sendMessage(chatId, 'Укажи тему: /post «тема поста»')
-      await setAwaitingIntent(orgId, 'post', actor.telegramUserId)
-      return true
-    }
-    await handleAdhocPostCommand(chatId, orgId, topic)
+  // Команды канала убраны 17.09.2026: те же действия есть кнопками в /menu → 📢 Канал,
+  // два входа в одно действие путали. Старую команду не глотаем молча.
+  if (/^\/(pause|resume|case|post)\b/.test(text)) {
+    await sendMessage(chatId, 'Команды канала переехали в меню: /menu → 📢 Канал (пост, кейс, статистика) и ⚙️ Настройки (пауза автопостинга).')
     return true
   }
 
@@ -1216,6 +1122,34 @@ async function tryHandleChannelInput(
   return false
 }
 
+type IntakeSessionRow = NonNullable<Awaited<ReturnType<typeof getActiveIntake>>>
+
+/** Сессия без типа живёт для текста только пока свежая: фото → «8912…» — одно
+ * действие, а забытая утром сессия не должна глотать «какие задачи?» днём. */
+const UNKNOWN_INTAKE_TEXT_WINDOW_MS = 10 * 60 * 1000
+
+/**
+ * Куда девать текст при открытой сессии «Занести в CRM». true — текст
+ * забрала сессия; false — сессии нет или она не при делах, дальше обычный поток.
+ */
+async function routeIntakeText(actor: BotActor, intake: IntakeSessionRow | null, text: string): Promise<boolean> {
+  if (!intake || text.startsWith('/')) return false
+  if (intake.kind === 'unknown') {
+    if (Date.now() - new Date(intake.updated_at).getTime() > UNKNOWN_INTAKE_TEXT_WINDOW_MS) {
+      await cancelIntake(intake, { silent: true })
+      return false
+    }
+    await attachNoteToIntake(actor, intake, text)
+    return true
+  }
+  if (intake.status === 'extracted') {
+    await runIntakeExtraction(actor, intake.id, text)
+  } else {
+    await attachNoteToIntake(actor, intake, text)
+  }
+  return true
+}
+
 export async function POST(request: Request) {
   const secret = request.headers.get('X-Telegram-Bot-Api-Secret-Token')
   if (!process.env.TELEGRAM_BOT_SECRET || secret !== process.env.TELEGRAM_BOT_SECRET) {
@@ -1227,6 +1161,21 @@ export async function POST(request: Request) {
     update = await request.json()
   } catch {
     return NextResponse.json({ ok: true })
+  }
+
+  // Telegram повторяет update, если не получил 200 за ~60 с — долгий ход модели
+  // заканчивался вторым таким же подтверждением. Первичный ключ — наш замок.
+  if (typeof update.update_id === 'number') {
+    const supabaseAdmin = getSupabaseAdmin()
+    const { error: dupError } = await supabaseAdmin.from('bot_processed_updates').insert({ update_id: update.update_id })
+    if (dupError) {
+      if (dupError.code === '23505') return NextResponse.json({ ok: true, duplicate: true })
+      console.error('[telegram webhook] processed_updates insert:', dupError.message)
+    }
+    // Хвост чистим здесь же, редко: раз в ~100 update, старше суток.
+    if (update.update_id % 100 === 0) {
+      await supabaseAdmin.from('bot_processed_updates').delete().lt('created_at', new Date(Date.now() - 86_400_000).toISOString())
+    }
   }
 
   try {
@@ -1262,60 +1211,48 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: true })
     }
 
+    // Открытая сессия «Занести в CRM»: текст и голос — заметки к документам
+    // (телефон, пожелания) или поправка к показанной карточке; модель не вызывается.
+    const intake = await getActiveIntake(actor.telegramUserId)
+
     if (message.voice) {
       const { base64 } = await downloadTelegramFile(message.voice.file_id)
       const transcript = await transcribeAudio(base64, 'ogg')
       await sendMessage(chatId, `🎤 <i>${transcript}</i>`)
-      // Голосом отвечают на те же кнопки, что и текстом: «найди Иванова»,
-      // «расход пять тысяч бензин».
-      if (!(await tryHandleCrmInput(actor, transcript)) && !(await tryHandleChannelInput(actor, transcript))) {
+      if (await routeIntakeText(actor, intake, transcript)) {
+        // забрала сессия «Занести в CRM»
+      } else if (!(await tryHandleCrmInput(actor, transcript)) && !(await tryHandleChannelInput(actor, transcript))) {
+        // Голосом отвечают на те же кнопки, что и текстом: «найди Иванова»,
+        // «расход пять тысяч бензин».
         await handleUserTurn(actor, transcript)
       }
     } else if (message.photo && message.photo.length > 0) {
       const largestPhoto = message.photo[message.photo.length - 1]
-      const { base64, mimeType } = await downloadTelegramFile(largestPhoto.file_id)
-      const caption = message.caption?.trim()
-      await handleUserTurn(actor, [
-        {
-          type: 'text',
-          text:
-            caption ||
-            'На фото чек, квитанция или расписка. Определи сумму, дату и назначение платежа, ' +
-              'предложи добавить как транзакцию (доход или расход — по смыслу).',
-        },
-        { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64}` } },
-      ])
+      await attachFileToIntake(actor, {
+        fileId: largestPhoto.file_id,
+        source: 'photo',
+        mediaGroupId: message.media_group_id,
+        caption: message.caption,
+      })
     } else if (message.document) {
       const doc = message.document
       const fileName = doc.file_name ?? 'document'
-      const caption = message.caption?.trim()
-      const prompt =
-        caption ||
-        'Это документ для занесения в CRM. Внимательно прочитай его целиком и определи тип: ' +
-          'правоустанавливающий документ на недвижимость (выписка ЕГРН, свидетельство) — заводи ' +
-          'объект через import_property_extract; договор между двумя сторонами по объекту — ' +
-          'import_rental_contract; документ с данными обратившегося человека (анкета, заявление, ' +
-          'заявка, паспорт) — import_client_request, то есть контакт и лид. Перечисли, что нашёл, ' +
-          'и предложи действие.'
-
-      await sendChatAction(chatId, 'typing')
-
-      if (doc.mime_type === 'application/pdf' || fileName.toLowerCase().endsWith('.pdf')) {
-        const { base64 } = await downloadTelegramFile(doc.file_id)
-        await handleUserTurn(actor, [
-          { type: 'text', text: prompt },
-          { type: 'file', file: { filename: fileName, file_data: `data:application/pdf;base64,${base64}` } },
-        ])
-      } else if (fileName.toLowerCase().endsWith('.docx')) {
-        const { base64 } = await downloadTelegramFile(doc.file_id)
-        try {
-          const text = extractTextFromDocx(Buffer.from(base64, 'base64'))
-          await handleUserTurn(actor, `${prompt}\n\n--- Текст документа "${fileName}" ---\n${text}`)
-        } catch (e) {
-          await sendMessage(chatId, `⚠️ Не смог прочитать DOCX: ${e instanceof Error ? e.message : 'ошибка'}`)
-        }
+      const lower = fileName.toLowerCase()
+      const isPdf = doc.mime_type === 'application/pdf' || lower.endsWith('.pdf')
+      const isDocx = lower.endsWith('.docx')
+      const isImage = /^image\/(jpeg|png|webp)$/.test(doc.mime_type ?? '') || /\.(jpe?g|png|webp)$/.test(lower)
+      if (!isPdf && !isDocx && !isImage) {
+        await sendMessage(chatId, '⚠️ Понимаю PDF, DOCX и картинки (JPG/PNG). Пришли документ в одном из этих форматов.')
       } else {
-        await sendMessage(chatId, '⚠️ Понимаю пока только PDF и DOCX документы.')
+        await attachFileToIntake(actor, {
+          fileId: doc.file_id,
+          source: 'document',
+          fileName,
+          mimeType: isPdf ? 'application/pdf' : isDocx ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : doc.mime_type,
+          fileSize: doc.file_size,
+          mediaGroupId: message.media_group_id,
+          caption: message.caption,
+        })
       }
     } else if (message.text) {
       const text = message.text.trim()
@@ -1335,6 +1272,8 @@ export async function POST(request: Request) {
         // перехвачено — поиск, операция или часовой пояс
       } else if (await tryHandleScheduleOrRubricInput(actor, text)) {
         // перехвачено — добавлен слот расписания или обновлён промпт рубрики
+      } else if (await routeIntakeText(actor, intake, text)) {
+        // забрала сессия «Занести в CRM»: заметка или поправка к карточке
       } else if (!(await tryHandleChannelInput(actor, text, message.reply_to_message?.message_id))) {
         await handleUserTurn(actor, text)
       }

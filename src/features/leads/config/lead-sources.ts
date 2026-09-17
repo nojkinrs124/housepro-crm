@@ -39,5 +39,9 @@ export const LEAD_SOURCES = [
  */
 export const LEAD_SOURCES_MANUAL = LEAD_SOURCES.filter(s => !s.value.startsWith('site_'))
 
-export const LEAD_SOURCE_LABELS: Record<string, string> =
-  Object.fromEntries(LEAD_SOURCES.map(s => [s.value, s.label]))
+export const LEAD_SOURCE_LABELS: Record<string, string> = {
+  ...Object.fromEntries(LEAD_SOURCES.map(s => [s.value, s.label])),
+  // Публичный API без явного источника (`/api/v1/leads`) — не «Другое»: это
+  // внешняя интеграция, и в аналитике её надо видеть отдельно.
+  api: 'API',
+}

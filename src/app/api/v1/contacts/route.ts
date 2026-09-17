@@ -75,6 +75,7 @@ export async function POST(request: Request) {
       email:     body.email   ?? null,
       role:      body.role    ?? 'client',
       status:    body.status  ?? 'new',
+      source:    body.source  ?? null,
       passport_series:          body.passport_series ?? null,
       passport_number:          body.passport_number ?? null,
       passport_issued_date:     body.passport_issued_date ?? null,

@@ -108,7 +108,8 @@ describe('canOpenScreen', () => {
     expect(canOpenScreen('member', 'channel_rubrics')).toBe(false)
     // а здесь правится список тех, у кого вообще есть доступ
     expect(canOpenScreen('member', 'settings_users')).toBe(false)
-    expect(canOpenScreen('member', 'multiagent')).toBe(false)
+    // заводить клиентов по документам — обычная работа сотрудника
+    expect(canOpenScreen('member', 'crm_intake')).toBe(true)
   })
 
   it('постороннему не открыто ничего', async () => {

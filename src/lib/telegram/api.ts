@@ -230,6 +230,8 @@ export interface TelegramUpdate {
     from?: { id: number; username?: string }
     text?: string
     caption?: string
+    /** Фото одного альбома приходят отдельными update с общим media_group_id. */
+    media_group_id?: string
     voice?: { file_id: string; duration: number; mime_type?: string }
     photo?: Array<{ file_id: string; width: number; height: number }>
     document?: { file_id: string; file_name?: string; mime_type?: string; file_size?: number }

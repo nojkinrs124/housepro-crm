@@ -102,6 +102,8 @@ export function ownsIntent(
  */
 export const MEMBER_SCREENS: readonly string[] = [
   'root', 'today', 'crm', 'crm_leads', 'crm_deals', 'crm_properties', 'crm_contacts', 'crm_tasks',
+  // Завести арендатора или собственника по документам — работа сотрудника.
+  'crm_intake',
 ]
 
 export function canOpenScreen(role: BotRole, screen: string): boolean {

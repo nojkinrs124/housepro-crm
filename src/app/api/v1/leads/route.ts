@@ -73,6 +73,11 @@ export async function POST(request: Request) {
       source:     body.source     ?? 'api',
       comment:    body.comment    ?? null,
       deal_type:  body.deal_type  ?? null,
+      property_type: body.property_type ?? null,
+      district:   body.district   ?? null,
+      rooms:      Number.isFinite(Number(body.rooms)) && body.rooms !== null && body.rooms !== undefined ? Number(body.rooms) : null,
+      budget_min: Number.isFinite(Number(body.budget_min)) && body.budget_min != null ? Number(body.budget_min) : null,
+      budget_max: Number.isFinite(Number(body.budget_max)) && body.budget_max != null ? Number(body.budget_max) : null,
       status: 'new',
       organization_id: auth.orgId,
     })

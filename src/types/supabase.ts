@@ -520,6 +520,65 @@ export type Database = {
           },
         ]
       }
+      bot_intake_sessions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          extracted: Json | null
+          files: Json
+          id: string
+          kind: string
+          notes: string[]
+          organization_id: string
+          result: Json | null
+          status: string
+          status_message_id: number | null
+          telegram_chat_id: string
+          telegram_user_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          extracted?: Json | null
+          files?: Json
+          id?: string
+          kind?: string
+          notes?: string[]
+          organization_id: string
+          result?: Json | null
+          status?: string
+          status_message_id?: number | null
+          telegram_chat_id: string
+          telegram_user_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          extracted?: Json | null
+          files?: Json
+          id?: string
+          kind?: string
+          notes?: string[]
+          organization_id?: string
+          result?: Json | null
+          status?: string
+          status_message_id?: number | null
+          telegram_chat_id?: string
+          telegram_user_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bot_intake_sessions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bot_menu_state: {
         Row: {
           current_screen: string
@@ -601,6 +660,21 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      bot_processed_updates: {
+        Row: {
+          created_at: string
+          update_id: number
+        }
+        Insert: {
+          created_at?: string
+          update_id: number
+        }
+        Update: {
+          created_at?: string
+          update_id?: number
+        }
+        Relationships: []
       }
       channel_bot_settings: {
         Row: {
@@ -4045,6 +4119,10 @@ export type Database = {
         Args: { p_contact: Json; p_lead: Json; p_org_id: string }
         Returns: Json
       }
+      import_intake: {
+        Args: { p_kind: string; p_org_id: string; p_payload: Json }
+        Returns: Json
+      }
       import_property_extract: {
         Args: { p_org_id: string; p_owner?: Json; p_property: Json }
         Returns: Json
@@ -4057,6 +4135,35 @@ export type Database = {
           p_property: Json
           p_tenant: Json
         }
+        Returns: Json
+      }
+      intake_append: {
+        Args: { p_file?: Json; p_id: string; p_note?: string }
+        Returns: {
+          created_at: string
+          expires_at: string
+          extracted: Json | null
+          files: Json
+          id: string
+          kind: string
+          notes: string[]
+          organization_id: string
+          result: Json | null
+          status: string
+          status_message_id: number | null
+          telegram_chat_id: string
+          telegram_user_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bot_intake_sessions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      intake_upsert_contact: {
+        Args: { p_contact: Json; p_org_id: string; p_role: string }
         Returns: Json
       }
       is_org_admin: { Args: never; Returns: boolean }

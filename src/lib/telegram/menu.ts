@@ -27,11 +27,11 @@ export type MenuScreen =
   | 'crm_payments'
   | 'crm_management'
   | 'crm_tasks'
+  | 'crm_intake'
   | 'channel'
   | 'channel_posts'
   | 'channel_schedule'
   | 'channel_rubrics'
-  | 'multiagent'
   | 'settings'
   | 'settings_users'
 
@@ -64,8 +64,8 @@ function rootScreen(role: BotRole): ScreenContent {
   return {
     text:
       '🏠 <b>Главное меню HousePro</b>\nВыбери раздел.\n\n' +
-      '<i>Можно и без меню: напиши или надиктуй, что нужно, пришли фото чека или ' +
-      'документ — разберу сам. Что умею — /help.</i>',
+      '<i>Можно и без меню: напиши или надиктуй, что нужно. Пришлёшь фото или документ — ' +
+      'спрошу, что это, и заведу в CRM. Что умею — /help.</i>',
     keyboard,
   }
 }
@@ -101,6 +101,8 @@ async function todayScreen(orgId: string, role: BotRole): Promise<ScreenContent>
 
 function crmScreen(role: BotRole): ScreenContent {
   const keyboard: InlineKeyboardButton[][] = [
+    // Главное действие раздела — завести человека или объект по документам.
+    [{ text: '📥 Занести в CRM', callback_data: 'nav:crm_intake' }],
     [
       { text: '🧲 Лиды', callback_data: 'nav:crm_leads' },
       { text: '🤝 Сделки', callback_data: 'nav:crm_deals' },
@@ -111,29 +113,48 @@ function crmScreen(role: BotRole): ScreenContent {
     ],
     [{ text: '✅ Задачи', callback_data: 'nav:crm_tasks' }],
   ]
-  // Деньги и анализ рынка — владельцу: первое показывает выручку агентства,
-  // второе тратит платный веб-поиск.
+  // Деньги — владельцу: раздел показывает выручку агентства.
   if (role === 'admin') {
     keyboard.push([
       { text: '💰 Деньги', callback_data: 'nav:crm_payments' },
       { text: '🏢 Управление', callback_data: 'nav:crm_management' },
     ])
-    keyboard.push([{ text: '🔎 Анализ рынка', callback_data: 'nav:multiagent' }])
   }
   keyboard.push([BACK_TO_ROOT])
 
-  return { text: '📋 <b>CRM</b>\nВыбери раздел:', keyboard }
+  // Анализ рынка отсюда убран 17.09.2026: та же функция есть в диалоге
+  // («сравни наши цены с рынком»), два входа в одно действие путали.
+  return {
+    text: '📋 <b>CRM</b>\nВыбери раздел.\n\n<i>Вопрос по рынку с веб-поиском — просто напиши его в чат.</i>',
+    keyboard,
+  }
 }
 
-function marketResearchScreen(): ScreenContent {
+/**
+ * «Занести в CRM» — тип документа выбирает пользователь, а не модель.
+ * Дальше материалы копятся в сессии (src/lib/telegram/intake.ts).
+ */
+function intakeScreen(): ScreenContent {
   return {
     text:
-      '🔎 <b>Анализ рынка</b>\n\n' +
-      'Делегируй составную задачу на анализ рынка — бот включит веб-поиск, соберёт данные ' +
-      'и вернёт сводку с источниками. Например: «сравни наши цены на аренду 2к на Ленина с рынком ' +
-      'в этом районе» или «какие новые правила ипотеки вступают в силу».\n\n' +
-      'То же самое можно спросить и прямо в обычном диалоге с ботом, без меню.',
-    keyboard: [[{ text: '🔎 Задать вопрос по рынку', callback_data: 'magent:research' }], [{ text: '⬅ CRM', callback_data: 'nav:crm' }]],
+      '📥 <b>Занести в CRM</b>\n\n' +
+      'Выбери, кого или что заводим, затем пришли документы: фото паспорта, выписку ЕГРН, договор — ' +
+      'и текстом телефон или пожелания. Я покажу, что прочитал, и только после «Создать» запишу в CRM.\n\n' +
+      '• <b>Арендатор</b> — контакт, лид и сделка «Подбор»\n' +
+      '• <b>Собственник</b> — контакт (и объект, если есть выписка), лид и сделка «Аренда»\n' +
+      '• <b>Объект</b> — объект по выписке ЕГРН с правообладателем\n' +
+      '• <b>Договор</b> — обе стороны, объект и сделка разом',
+    keyboard: [
+      [
+        { text: '👤 Арендатор', callback_data: 'intake:tenant:new' },
+        { text: '🏠 Собственник', callback_data: 'intake:owner:new' },
+      ],
+      [
+        { text: '🗂 Объект', callback_data: 'intake:property:new' },
+        { text: '📄 Договор', callback_data: 'intake:contract:new' },
+      ],
+      [{ text: '⬅ CRM', callback_data: 'nav:crm' }],
+    ],
   }
 }
 
@@ -226,8 +247,8 @@ async function buildScreen(screen: MenuScreen, orgId: string, role: BotRole, pag
       return buildManagementScreen(orgId, page)
     case 'crm_tasks':
       return buildTasksScreen(orgId, page)
-    case 'multiagent':
-      return marketResearchScreen()
+    case 'crm_intake':
+      return intakeScreen()
     case 'channel':
       return channelScreen()
     case 'channel_posts':
