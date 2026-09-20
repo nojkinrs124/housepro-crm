@@ -106,7 +106,10 @@ export async function GET(request: Request) {
     `Реакций: ${totalReactions}`,
   ]
   if (topPost) {
-    lines.push('', `Лучший пост (${topPost.rubric}): ${(topPost.final_text ?? '').slice(0, 80)}...`)
+    // Без тегов: обрезка на 80 символах оставляла незакрытый <b>, Telegram отвечал
+    // «can't parse entities», и ретрай без разметки показывал всю сводку с тегами текстом.
+    const preview = (topPost.final_text ?? '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().slice(0, 80)
+    lines.push('', `Лучший пост (${topPost.rubric}): ${preview}...`)
   }
 
   await sendMessage(settings.admin_telegram_user_id, lines.join('\n'))

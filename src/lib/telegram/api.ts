@@ -10,12 +10,15 @@ function botToken(): string {
   return token
 }
 
-// Экранирует "<", ">", "&" везде, КРОМЕ трёх разрешённых тегов (<b> <i> <code> и их закрывающих
-// пар). Без этого любой сырой текст — от модели, из БД, напечатанный вручную ("<тема поста>" и т.п.) —
-// мог сломать HTML-парсинг Telegram ("can't parse entities") и уронить отправку целиком, особенно
-// критично для sendPhoto/editMessageText, у которых (в отличие от sendMessage) нет ретрая без разметки.
-const ALLOWED_TAG_RE = /<\/?(b|i|code)>/gi
-function sanitizeTelegramHtml(text: string): string {
+// Экранирует "<", ">", "&" везде, КРОМЕ разрешённых тегов: <b> <i> <code> с закрывающими парами
+// и <a href="http(s)://…"> — ссылка-CTA в постах канала. Без этого любой сырой текст — от модели,
+// из БД, напечатанный вручную ("<тема поста>" и т.п.) — мог сломать HTML-парсинг Telegram
+// ("can't parse entities") и уронить отправку целиком, особенно критично для sendPhoto/editMessageText,
+// у которых (в отличие от sendMessage) нет ретрая без разметки.
+// <a> добавлен 20.09.2026: CTA-ссылка появилась 05.09, и до этого дня каждый пост в канале
+// выходил с тегом <a href="…"> буквально текстом.
+const ALLOWED_TAG_RE = /<\/?(b|i|code)>|<a href="https?:\/\/[^"<>\s]+">|<\/a>/gi
+export function sanitizeTelegramHtml(text: string): string {
   const placeholders: string[] = []
   const protectedText = text.replace(ALLOWED_TAG_RE, (match) => {
     placeholders.push(match)
@@ -200,6 +203,25 @@ export async function editMessageText(
     if (!errText.includes('message is not modified')) {
       console.error('[telegram] editMessageText failed:', errText)
     }
+    return false
+  }
+  return true
+}
+
+/** Правит подпись к уже отправленному фото (посты канала с картинкой). */
+export async function editMessageCaption(
+  chatId: string | number,
+  messageId: number,
+  caption: string
+): Promise<boolean> {
+  const res = await fetch(`${TELEGRAM_API}/bot${botToken()}/editMessageCaption`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: chatId, message_id: messageId, caption: sanitizeTelegramHtml(caption), parse_mode: 'HTML' }),
+  })
+  if (!res.ok) {
+    const errText = await res.text()
+    if (!errText.includes('message is not modified')) console.error('[telegram] editMessageCaption failed:', errText)
     return false
   }
   return true

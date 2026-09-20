@@ -1261,6 +1261,17 @@ export async function POST(request: Request) {
       if (text === '/start' || text === '/help') {
         await sendMessage(chatId, HELP_TEXT)
         await sendMainMenu(actor)
+      } else if (text === '/repair_cta') {
+        // Разовая починка постов канала, вышедших с тегом <a href> текстом (см. channel.ts).
+        if (actor.role !== 'admin') {
+          await denyAdmin(chatId)
+        } else {
+          const { repairPublishedCtaLinks } = await import('@/lib/telegram/channel')
+          const r = await repairPublishedCtaLinks(actor.orgId)
+          await sendMessage(chatId, r.total
+            ? `🔧 Постов с тегом: ${r.total}. Исправлено: ${r.fixed}${r.failed ? `, не удалось: ${r.failed} (см. логи)` : ''}.`
+            : '🔧 Постов с тегом в канале не найдено.')
+        }
       } else if (text === '/menu') {
         // Общая команда, а не часть контент-модуля канала: сотруднику меню
         // тоже нужно — просто в нём меньше разделов.

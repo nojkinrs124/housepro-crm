@@ -1,5 +1,5 @@
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
-import { sendMessage, sendPhoto } from '@/lib/telegram/api'
+import { sendMessage, sendPhoto, editMessageCaption, editMessageText } from '@/lib/telegram/api'
 import { createChannelLink } from '@/lib/telegram/channel-links'
 import { generateChannelImage } from '@/lib/telegram/channel-generate'
 import { uploadChannelImage } from '@/lib/telegram/channel-image'
@@ -393,6 +393,36 @@ export async function publishPost(postId: string): Promise<{ error?: string }> {
     await supabaseAdmin.from('channel_posts').update({ status: 'failed' }).eq('id', postId)
     return { error: e instanceof Error ? e.message : 'Ошибка публикации' }
   }
+}
+
+/**
+ * Перепечатывает в канале посты, вышедшие с тегом <a href="…"> буквально текстом
+ * (05.09–20.09.2026: санитайзер не знал тега <a>). Идемпотентно: Telegram на
+ * неизменившийся текст отвечает «not modified», это не ошибка.
+ */
+export async function repairPublishedCtaLinks(orgId: string): Promise<{ fixed: number; failed: number; total: number }> {
+  const supabaseAdmin = getSupabaseAdmin()
+  const settings = await getChannelSettings(orgId)
+  if (!settings?.channel_chat_id) return { fixed: 0, failed: 0, total: 0 }
+  const { data: posts } = await supabaseAdmin
+    .from('channel_posts')
+    .select('id, final_text, image_url, channel_message_id')
+    .eq('organization_id', orgId)
+    .eq('status', 'published')
+    .not('channel_message_id', 'is', null)
+    .gte('published_at', '2026-09-05')
+    .like('final_text', '%<a href%')
+  let fixed = 0
+  let failed = 0
+  for (const post of posts ?? []) {
+    if (!post.final_text || !post.channel_message_id) continue
+    const ok = post.image_url && post.final_text.length <= 1024
+      ? await editMessageCaption(settings.channel_chat_id, post.channel_message_id, post.final_text)
+      : await editMessageText(settings.channel_chat_id, post.channel_message_id, post.final_text)
+    if (ok) fixed++
+    else failed++
+  }
+  return { fixed, failed, total: posts?.length ?? 0 }
 }
 
 export async function rejectPost(postId: string): Promise<void> {
