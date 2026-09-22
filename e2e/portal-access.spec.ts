@@ -30,7 +30,9 @@ function throwawayPhone(): string {
 }
 
 async function codeFlowAvailable(page: import('@playwright/test').Page, phone: string) {
-  await page.locator('input[name="phone"]').fill(phone)
+  // Вход один на всех: поле принимает и email сотрудника, и телефон клиента,
+  // поэтому имя у него email, а телефонный шаг включает сам ввод.
+  await page.locator('input[name="email"]').fill(phone)
   await page.getByRole('button', { name: /Получить код/ }).click()
   const codeField = page.locator('input[name="code"]')
   try {
@@ -41,15 +43,29 @@ async function codeFlowAvailable(page: import('@playwright/test').Page, phone: s
   }
 }
 
-test('без сессии кабинет отправляет на вход', async ({ page }) => {
+/** Именно общий вход, а не старый /cabinet/login, который тоже кончается на login. */
+const LOGIN_URL = /\/login(\?|$)/
+
+test('без сессии кабинет отправляет на общий вход', async ({ page }) => {
   await page.goto('/cabinet', { waitUntil: 'domcontentloaded' })
-  await expect(page).toHaveURL(/\/cabinet\/login/)
+  await expect(page).toHaveURL(LOGIN_URL)
 })
 
-test('форма входа спрашивает телефон, а не пароль', async ({ page }) => {
+test('старый адрес входа в кабинет ведёт на общий', async ({ page }) => {
+  // Адрес разошёлся по письмам клиентам — он обязан продолжать работать.
   await page.goto('/cabinet/login', { waitUntil: 'domcontentloaded' })
-  await expect(page.locator('input[name="phone"]')).toBeVisible()
+  await expect(page).toHaveURL(LOGIN_URL)
+})
+
+test('телефон в поле входа убирает пароль', async ({ page }) => {
+  // Клиенту пароль не выдают: увидев поле пароля, он решит, что кабинет не
+  // для него. Роль не спрашиваем — её видно по тому, что введено.
+  await page.goto('/login', { waitUntil: 'domcontentloaded' })
+  await expect(page.locator('input[type="password"]')).toBeVisible()
+
+  await page.locator('input[name="email"]').fill('+79001234567')
   await expect(page.locator('input[type="password"]')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: /Получить код/ })).toBeVisible()
 })
 
 test('чужой объект отдаёт 404, а не 403', async ({ page }) => {
@@ -63,7 +79,7 @@ test('чужой объект отдаёт 404, а не 403', async ({ page }) =
 })
 
 test('ответ на запрос кода не выдаёт, знаком ли номер', async ({ page }) => {
-  await page.goto('/cabinet/login', { waitUntil: 'domcontentloaded' })
+  await page.goto('/login', { waitUntil: 'domcontentloaded' })
   test.skip(!(await codeFlowAvailable(page, throwawayPhone())), 'кабинет не настроен в этом окружении')
   // Именно форма с полем кода: на странице есть ещё форма выхода в шапке,
   // и locator('form') ловит обе.
@@ -71,7 +87,7 @@ test('ответ на запрос кода не выдаёт, знаком ли
 
   // Тот же путь для заведомо другого несуществующего номера — текст обязан
   // совпасть, иначе форма входа превращается в способ проверять номера.
-  await page.goto('/cabinet/login', { waitUntil: 'domcontentloaded' })
+  await page.goto('/login', { waitUntil: 'domcontentloaded' })
   await codeFlowAvailable(page, throwawayPhone())
   const secondText = await page.locator('form:has(input[name="code"])').innerText()
 
@@ -82,7 +98,7 @@ test('ответ на запрос кода не выдаёт, знаком ли
 })
 
 test('неверный код не пускает и не объясняет почему именно', async ({ page }) => {
-  await page.goto('/cabinet/login', { waitUntil: 'domcontentloaded' })
+  await page.goto('/login', { waitUntil: 'domcontentloaded' })
   test.skip(!(await codeFlowAvailable(page, throwawayPhone())), 'кабинет не настроен в этом окружении')
   await page.locator('input[name="code"]').fill('000000')
   await page.getByRole('button', { name: /^Войти$/ }).click()
@@ -92,7 +108,7 @@ test('неверный код не пускает и не объясняет п�
   // сквозном тесте ненадёжно: оно живёт секунды и в длинном прогоне ловится
   // через раз. Формулировку отказа держит юнит-тест на действии входа.
   await page.waitForTimeout(2000)
-  await expect(page).toHaveURL(/\/cabinet\/login/)
+  await expect(page).toHaveURL(LOGIN_URL)
   // Остались на шаге ввода кода: внутрь кабинета не пустило.
   await expect(page.locator('input[name="code"]')).toBeVisible()
 })

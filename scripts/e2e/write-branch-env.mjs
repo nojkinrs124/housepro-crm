@@ -53,6 +53,11 @@ const lines = [
   `NEXT_PUBLIC_SUPABASE_URL=${vars.API_URL}`,
   `NEXT_PUBLIC_SUPABASE_ANON_KEY=${vars.ANON_KEY}`,
   `SUPABASE_SERVICE_ROLE_KEY=${vars.SERVICE_ROLE_KEY}`,
+  // Секрет хеширования одноразовых кодов — им пользуются электронная подпись и
+  // личный кабинет. Без него кабинет отвечает «пока не настроен» и потыкать его
+  // нельзя. Значение локальное и фиксированное: оно защищает коды в боевой базе,
+  // а в докерном стеке защищать нечего.
+  'API_KEY_PEPPER=local-portal-pepper-2026',
   'NEXT_PUBLIC_SITE_URL=http://localhost:3100',
   'E2E_BASE_URL=http://localhost:3100',
   '# Пользователь, которого заводит e2e/seed.ts — существует только в локальной базе',

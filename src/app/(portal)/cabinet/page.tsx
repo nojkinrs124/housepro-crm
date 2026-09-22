@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic'
  */
 export default async function CabinetPage() {
   const scope = await currentScope()
-  if (!scope) redirect('/cabinet/login')
+  if (!scope) redirect('/login')
 
   const supabaseAdmin = getSupabaseAdmin()
   const propertyIds = [...new Set(scope.grants.map(g => g.propertyId))]

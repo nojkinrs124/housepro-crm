@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { getSessionContext } from '@/lib/org'
+import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { requirePermission } from '@/lib/permissions'
 import { writeAuditLog } from '@/lib/audit'
 import { normalizePhone } from '@/lib/utils'
@@ -157,7 +158,12 @@ export async function issuePortalCodeAction(accessId: string): Promise<IssueResu
   const token = generateSignToken()
   const code = generateSignCode()
 
-  const { error } = await supabase.from('portal_otp').insert({
+  // Коды пишутся сервисным клиентом: на portal_otp нет ни одной политики,
+  // кроме запрещающей чтение, — таблицу намеренно закрыли от всех, кто ходит
+  // в базу с правами пользователя. Обычный клиент упирался здесь в RLS, и
+  // кнопка «Выдать код» не работала ни разу с момента появления кабинета.
+  // Право выдать код проверено выше: сессия, организация и разрешение.
+  const { error } = await getSupabaseAdmin().from('portal_otp').insert({
     organization_id: orgId,
     phone: access.phone,
     token,

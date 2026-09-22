@@ -1,17 +1,13 @@
 import { redirect } from 'next/navigation'
-import { PortalLoginForm } from '@/features/portal/components/PortalLoginForm'
-import { currentScope } from '@/features/portal/services/access.service'
 
-export const dynamic = 'force-dynamic'
-
-export default async function PortalLoginPage() {
-  // Уже вошедшего незачем спрашивать снова.
-  const scope = await currentScope()
-  if (scope) redirect('/cabinet')
-
-  return (
-    <div className="max-w-md mx-auto pt-8">
-      <PortalLoginForm />
-    </div>
-  )
+/**
+ * Старый адрес входа в кабинет.
+ *
+ * Вход теперь один на всех — /login: там одно поле принимает и email
+ * сотрудника, и телефон собственника или арендатора. Страницу не удаляем:
+ * адрес разошёлся по письмам и закладкам клиентов, и «страница не найдена»
+ * вместо входа — худшее, что можно им показать.
+ */
+export default function PortalLoginPage() {
+  redirect('/login')
 }

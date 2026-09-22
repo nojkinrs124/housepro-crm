@@ -37,6 +37,12 @@ const GENERIC_OK = 'Если номер привязан к объекту, ко
  * которого в базе нет), SMS-провайдер не подключён. Поэтому код здесь только
  * создаётся, а передаёт его менеджер — см. issuePortalCodeAction в CRM.
  *
+ * Пока жив код, выданный менеджером, новый не выпускается. Вход проверяет
+ * самый свежий код, и без этой оговорки система была неработоспособна:
+ * менеджер диктовал код, клиент открывал форму, нажимал «Получить код» —
+ * другого пути к полю ввода нет — и продиктованный код переставал подходить,
+ * а новый ему никто не доставлял.
+ *
  * Когда канал появится, отправка добавится сюда без изменения формы входа.
  */
 export async function requestPortalCodeAction(formData: FormData): Promise<RequestResult> {
@@ -72,6 +78,21 @@ export async function requestPortalCodeAction(formData: FormData): Promise<Reque
 
   // Номер не найден — отвечаем тем же самым и ничего не создаём.
   if (!access) return { ok: true, maskedTarget: maskPhone(phone) }
+
+  // Код менеджера в силе — оставляем его. Признак выдачи менеджером —
+  // issued_by: самостоятельный запрос сотрудника за собой не оставляет.
+  const { data: issued } = await supabaseAdmin
+    .from('portal_otp')
+    .select('id')
+    .eq('phone', phone)
+    .is('consumed_at', null)
+    .not('issued_by', 'is', null)
+    .gt('expires_at', new Date().toISOString())
+    .lt('attempts', MAX_CODE_ATTEMPTS)
+    .limit(1)
+    .maybeSingle()
+
+  if (issued) return { ok: true, maskedTarget: maskPhone(phone) }
 
   const token = generateSignToken()
   const code = generateSignCode()
@@ -171,5 +192,5 @@ export async function verifyPortalCodeAction(formData: FormData): Promise<Verify
 export async function logoutPortalAction(): Promise<void> {
   const store = await cookies()
   store.delete(PORTAL_COOKIE)
-  redirect('/cabinet/login')
+  redirect('/login')
 }

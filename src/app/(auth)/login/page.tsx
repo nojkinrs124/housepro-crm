@@ -94,7 +94,7 @@ export default function LoginPage() {
                 Вход в систему
               </h2>
               <p className="mt-1.5 text-sm font-medium" style={{ color: 'var(--hp-sub)' }}>
-                Введите свои данные для входа
+                Сотрудникам — email и пароль, собственникам и арендаторам — телефон
               </p>
             </div>
 
