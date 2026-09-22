@@ -20,20 +20,75 @@ import {
  getAnalyticsData,
  getLast12Months,
  monthLabel,
+ type AnalyticsRawData,
+ type AnalyticsFilters as Filters,
 } from '@/features/analytics/data'
 import { formatMoney, plural } from '@/lib/utils'
-import { DateRangePicker } from '@/features/analytics/components/DateRangePicker'
+import { AnalyticsFilters } from '@/features/analytics/components/AnalyticsFilters'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { StatStrip } from '@/components/layout/StatStrip'
+import { createClient } from '@/lib/supabase/server'
+import { todayIso } from '@/lib/timezone'
+import type { DirectionCode } from '@/features/directions/config/directions'
+
+/** Те же 4 формулы для текущего и предыдущего периода — иначе дельта считалась бы иначе, чем сама цифра. */
+function computeKpis(data: Pick<AnalyticsRawData, 'payments' | 'deals' | 'leads' | 'leadsConverted'>) {
+ const totalRevenue = data.payments
+ .filter(p => p.payment_status === 'paid' && isAgencyRevenue(p.category_code, 'income'))
+ .reduce((s, p) => s + Number(p.amount ?? 0), 0)
+ const totalDealsAmount = data.deals
+ .filter(d => isDealSucceeded(d.status, d.deal_type))
+ .reduce((s, d) => s + Number(d.amount ?? 0), 0)
+ const paidTotal = data.payments
+ .filter(p => p.payment_status === 'paid')
+ .reduce((s, p) => s + Number(p.amount ?? 0), 0)
+ const conversionRate = data.leads.length > 0
+ ? Math.round((data.leadsConverted.length / data.leads.length) * 100)
+ : 0
+ return { totalRevenue, totalDealsAmount, paidTotal, conversionRate }
+}
+
+/** «+12% к прошлому периоду» — null, когда сравнивать не с чем (прошлый период пуст). */
+function delta(current: number, previous: number): string | null {
+ if (previous === 0) return current === 0 ? null : 'нет данных за прошлый период'
+ const pct = Math.round(((current - previous) / previous) * 100)
+ return `${pct > 0 ? '+' : ''}${pct}% к прошлому периоду`
+}
+
+/** Конверсия — уже проценты, разницу показываем в процентных пунктах, а не в % от процента. */
+function deltaPoints(current: number, previous: number): string | null {
+ const diff = current - previous
+ if (diff === 0) return null
+ return `${diff > 0 ? '+' : ''}${diff} п.п. к прошлому периоду`
+}
 
 export default async function AnalyticsPage({
  searchParams,
 }: {
- searchParams: Promise<{ from?: string; to?: string }>
+ searchParams: Promise<{ from?: string; to?: string; employee?: string; property?: string; direction?: string }>
 }) {
- const { from, to } = await searchParams
+ const { from, to, employee, property, direction } = await searchParams
+ const filters: Filters = {
+ ...(employee && { employeeId: employee }),
+ ...(property && { propertyId: property }),
+ ...(direction && { direction: direction as DirectionCode }),
+ }
 
- const {
+ const last12 = getLast12Months()
+ const resolvedFrom = from ?? `${last12[0]}-01`
+ const resolvedTo = to ?? todayIso()
+
+ // Предыдущий период той же длины, сразу перед текущим — для дельты в KPI.
+ const prevToDate = new Date(resolvedFrom)
+ prevToDate.setDate(prevToDate.getDate() - 1)
+ const prevFromDate = new Date(prevToDate.getTime() - (new Date(resolvedTo).getTime() - new Date(resolvedFrom).getTime()))
+ const prevFrom = prevFromDate.toISOString().slice(0, 10)
+ const prevTo = prevToDate.toISOString().slice(0, 10)
+
+ const supabase = await createClient()
+
+ const [
+ {
  deals,
  payments,
  leads,
@@ -41,9 +96,16 @@ export default async function AnalyticsPage({
  properties,
  overdueTasks,
  contracts,
- } = await getAnalyticsData(from, to)
-
- const last12 = getLast12Months()
+ },
+ previousData,
+ employeesRes,
+ propertiesRes,
+ ] = await Promise.all([
+ getAnalyticsData(from, to, filters),
+ getAnalyticsData(prevFrom, prevTo, filters),
+ supabase.from('users').select('id, full_name').order('full_name'),
+ supabase.from('properties').select('id, title, address').order('title').limit(300),
+ ])
 
  // ── KPI ──────────────────────────────────────────────────────────────────────
 
@@ -52,23 +114,11 @@ export default async function AnalyticsPage({
  // RA-11/TS-7). Платежи арендаторов и депозиты — не доход агентства; то же
  // определение (money-classification.ts) использует и Бухгалтерия, поэтому
  // цифры на двух страницах за один период не расходятся.
- const totalRevenue = payments
- .filter(p => p.payment_status === 'paid' && isAgencyRevenue(p.category_code, 'income'))
- .reduce((s, p) => s + Number(p.amount ?? 0), 0)
-
- const totalDealsAmount = deals
- .filter(d => isDealSucceeded(d.status, d.deal_type))
- .reduce((s, d) => s + Number(d.amount ?? 0), 0)
+ const { totalRevenue, totalDealsAmount, paidTotal, conversionRate } = computeKpis({ payments, deals, leads, leadsConverted })
+ const previousKpis = computeKpis(previousData)
 
  const activeDeals = deals.filter(d => !isDealClosed(d.status, d.deal_type)).length
  const completedDeals = deals.filter(d => isDealSucceeded(d.status, d.deal_type)).length
- const conversionRate = leads.length > 0
- ? Math.round((leadsConverted.length / leads.length) * 100)
- : 0
-
- const paidTotal = payments
- .filter(p => p.payment_status === 'paid')
- .reduce((s, p) => s + Number(p.amount ?? 0), 0)
 
  const overdueTotal = payments
  .filter(p => p.payment_status === 'overdue')
@@ -91,17 +141,17 @@ export default async function AnalyticsPage({
  }
  })
 
- // Общей воронки больше нет: у каждого направления своя. Сводная диаграмма
- // строится по самому массовому направлению в выборке — рисовать вперемешку
- // стадии четырёх разных процессов значит показывать бессмыслицу.
+ // Общей воронки больше нет: у каждого направления своя. Когда направление не
+ // выбрано фильтром явно, сводная диаграмма строится по самому массовому в
+ // выборке — рисовать вперемешку стадии четырёх разных процессов бессмысленно.
  const dealsByDirection = new Map<string, typeof deals>()
  for (const d of deals) {
  const list = dealsByDirection.get(d.deal_type) ?? []
  list.push(d)
  dealsByDirection.set(d.deal_type, list)
  }
- const mainDirection = [...dealsByDirection.entries()]
- .sort((a, b) => b[1].length - a[1].length)[0]?.[0] ?? 'rent_agent'
+ const mainDirection = filters.direction ?? ([...dealsByDirection.entries()]
+ .sort((a, b) => b[1].length - a[1].length)[0]?.[0] ?? 'rent_agent')
  const mainDirectionDeals = dealsByDirection.get(mainDirection) ?? []
 
  const funnelStages: FunnelData[] = stagesOf(mainDirection)
@@ -179,15 +229,38 @@ export default async function AnalyticsPage({
  <PageHeader
  title="Аналитика"
  subtitle={from && to ? `${from} — ${to}` : 'Данные за последние 12 месяцев'}
- actions={<DateRangePicker from={from} to={to} />}
+ actions={
+ <AnalyticsFilters
+ from={from}
+ to={to}
+ direction={direction}
+ employee={employee}
+ property={property}
+ employees={employeesRes.data ?? []}
+ properties={propertiesRes.data ?? []}
+ />
+ }
  />
 
  <StatStrip
  items={[
- { label: 'Доход агентства', value: formatMoney(totalRevenue), hint: `${plural(completedDeals, ['сделка закрыта', 'сделки закрыто', 'сделок закрыто'])}` },
- { label: 'Объём сделок', value: formatMoney(totalDealsAmount), hint: `${activeDeals} в работе` },
- { label: 'Платежи получены', value: formatMoney(paidTotal), hint: overdueTotal > 0 ? `просрочено ${formatMoney(overdueTotal)}` : 'просроченных нет', alert: overdueTotal > 0 },
- { label: 'Конверсия лидов', value: `${conversionRate}%`, hint: `${plural(leads.length, ['лид', 'лида', 'лидов'])}, ${leadsConverted.length} стали клиентами` },
+ {
+ label: 'Доход агентства', value: formatMoney(totalRevenue),
+ hint: [plural(completedDeals, ['сделка закрыта', 'сделки закрыто', 'сделок закрыто']), delta(totalRevenue, previousKpis.totalRevenue)].filter(Boolean).join(' · '),
+ },
+ {
+ label: 'Объём сделок', value: formatMoney(totalDealsAmount),
+ hint: [`${activeDeals} в работе`, delta(totalDealsAmount, previousKpis.totalDealsAmount)].filter(Boolean).join(' · '),
+ },
+ {
+ label: 'Платежи получены', value: formatMoney(paidTotal),
+ hint: [overdueTotal > 0 ? `просрочено ${formatMoney(overdueTotal)}` : 'просроченных нет', delta(paidTotal, previousKpis.paidTotal)].filter(Boolean).join(' · '),
+ alert: overdueTotal > 0,
+ },
+ {
+ label: 'Конверсия лидов', value: `${conversionRate}%`,
+ hint: [`${plural(leads.length, ['лид', 'лида', 'лидов'])}, ${leadsConverted.length} стали клиентами`, deltaPoints(conversionRate, previousKpis.conversionRate)].filter(Boolean).join(' · '),
+ },
  ]}
  />
 

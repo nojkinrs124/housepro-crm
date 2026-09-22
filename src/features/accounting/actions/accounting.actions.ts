@@ -16,6 +16,7 @@ import type {
 import { friendlyDbError } from '@/lib/errors'
 import { todayIso } from '@/lib/timezone'
 import { isAgencyRevenue, isAgencyExpense } from '@/features/accounting/utils/money-classification'
+import { transactionDirection, type AccountingFilters } from '@/features/accounting/utils/direction'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -77,7 +78,37 @@ function parseBorneBy(raw: FormDataEntryValue | null): 'agency' | 'owner' | null
 
 // ─── Stats ────────────────────────────────────────────────────────────────────
 
-export async function getAccountingStats(): Promise<AccountingStats> {
+/** Поля, нужные, чтобы сопоставить операцию с AccountingFilters — не вся строка. */
+type FilterableRow = {
+  employee_id: string | null
+  property_id: string | null
+  engagement_id: string | null
+  contract: { contract_type: string | null } | { contract_type: string | null }[] | null
+  deal: { deal_type: string | null } | { deal_type: string | null }[] | null
+}
+type CategoryRow = { category: { code: string | null } | { code: string | null }[] | null }
+
+const oneOf = <T,>(v: T | T[] | null): T | null => Array.isArray(v) ? v[0] ?? null : v
+
+/** Общий select-фрагмент и JS-фильтр по направлению — направление не колонка. */
+const FILTERABLE_SELECT = 'employee_id, property_id, engagement_id, category:accounting_categories(code), contract:contracts(contract_type), deal:deals(deal_type)'
+
+function matchesFilters(r: FilterableRow, filters?: AccountingFilters): boolean {
+  if (!filters) return true
+  if (filters.employeeId && r.employee_id !== filters.employeeId) return false
+  if (filters.propertyId && r.property_id !== filters.propertyId) return false
+  if (filters.direction) {
+    const direction = transactionDirection({
+      contractType: oneOf(r.contract)?.contract_type ?? null,
+      engagementId: r.engagement_id,
+      dealType: oneOf(r.deal)?.deal_type ?? null,
+    })
+    if (direction !== filters.direction) return false
+  }
+  return true
+}
+
+export async function getAccountingStats(filters?: AccountingFilters): Promise<AccountingStats> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return {
@@ -92,17 +123,18 @@ export async function getAccountingStats(): Promise<AccountingStats> {
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
   const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10)
 
-  const { data } = await supabase
+  let query = supabase
     .from('accounting_transactions')
-    .select('type, amount, status, date, borne_by, category:accounting_categories(code)')
+    .select(`type, amount, status, date, borne_by, ${FILTERABLE_SELECT}`)
+  if (filters?.employeeId) query = query.eq('employee_id', filters.employeeId)
+  if (filters?.propertyId) query = query.eq('property_id', filters.propertyId)
 
-  type Row = {
-    type: string; amount: number; status: string; date: string
-    borne_by: string | null
-    category: { code: string | null } | { code: string | null }[] | null
-  }
-  const rows = (data ?? []) as unknown as Row[]
-  const codeOf = (r: Row) => Array.isArray(r.category) ? r.category[0]?.code ?? null : r.category?.code ?? null
+  const { data } = await query
+
+  type Row = FilterableRow & CategoryRow & { type: string; amount: number; status: string; date: string; borne_by: string | null }
+  const allRows = (data ?? []) as unknown as Row[]
+  const rows = allRows.filter(r => matchesFilters(r, filters))
+  const codeOf = (r: Row) => oneOf(r.category)?.code ?? null
   const borneByOf = (r: Row) => r.borne_by === 'agency' || r.borne_by === 'owner' ? r.borne_by : null
 
   const sum = (arr: Row[]) => arr.reduce((a, r) => a + Number(r.amount ?? 0), 0)
@@ -144,7 +176,7 @@ export async function getAccountingStats(): Promise<AccountingStats> {
 
 // ─── Monthly P&L for chart ────────────────────────────────────────────────────
 
-export async function getMonthlyPnL(months = 12) {
+export async function getMonthlyPnL(months = 12, filters?: AccountingFilters) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
@@ -153,14 +185,19 @@ export async function getMonthlyPnL(months = 12) {
   since.setMonth(since.getMonth() - months + 1)
   since.setDate(1)
 
-  const { data } = await supabase
+  let query = supabase
     .from('accounting_transactions')
-    .select('type, amount, date')
+    .select(`type, amount, date, ${FILTERABLE_SELECT}`)
     .eq('status', 'completed')
     .gte('date', since.toISOString().slice(0, 10))
     .order('date', { ascending: true })
+  if (filters?.employeeId) query = query.eq('employee_id', filters.employeeId)
+  if (filters?.propertyId) query = query.eq('property_id', filters.propertyId)
 
-  const rows = (data ?? []) as Array<{ type: string; amount: number; date: string }>
+  const { data } = await query
+
+  type Row = FilterableRow & { type: string; amount: number; date: string }
+  const rows = ((data ?? []) as unknown as Row[]).filter(r => matchesFilters(r, filters))
 
   const map = new Map<string, { month: string; income: number; expense: number; profit: number }>()
 
@@ -183,14 +220,14 @@ export async function getMonthlyPnL(months = 12) {
 
 // ─── Category breakdown ───────────────────────────────────────────────────────
 
-export async function getCategoryBreakdown(type: AccountingTransactionType, period?: 'month' | 'year') {
+export async function getCategoryBreakdown(type: AccountingTransactionType, period?: 'month' | 'year', filters?: AccountingFilters) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
 
   let query = supabase
     .from('accounting_transactions')
-    .select('amount, category:accounting_categories(id, name, color)')
+    .select('amount, category:accounting_categories(id, name, color), employee_id, property_id, engagement_id, contract:contracts(contract_type), deal:deals(deal_type)')
     .eq('type', type)
     .eq('status', 'completed')
 
@@ -202,9 +239,12 @@ export async function getCategoryBreakdown(type: AccountingTransactionType, peri
     const start = `${new Date().getFullYear()}-01-01`
     query = query.gte('date', start)
   }
+  if (filters?.employeeId) query = query.eq('employee_id', filters.employeeId)
+  if (filters?.propertyId) query = query.eq('property_id', filters.propertyId)
 
   const { data } = await query
-  const rows = (data ?? []) as unknown as Array<{ amount: number; category: { id: string; name: string; color: string } | null }>
+  type Row = FilterableRow & { amount: number; category: { id: string; name: string; color: string } | null }
+  const rows = ((data ?? []) as unknown as Row[]).filter(r => matchesFilters(r, filters))
 
   const map = new Map<string, { name: string; color: string; value: number }>()
   for (const r of rows) {
