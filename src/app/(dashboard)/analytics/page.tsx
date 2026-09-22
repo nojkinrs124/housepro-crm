@@ -1,7 +1,7 @@
 import { stagesOf, DIRECTION_SHORT_LABELS } from '@/features/directions/config/directions'
 import { isDealSucceeded, isDealClosed, DEAL_TYPE_LABELS } from '@/features/deals/config/deal-stages'
 import { DEAL_SOURCE_LABELS } from '@/features/deals/config/deal-sources'
-import { CheckCircle2, Clock, AlertTriangle } from 'lucide-react'
+import { CheckCircle2, Clock } from 'lucide-react'
 import {
  DealsAreaChart,
  DealFunnelChart,
@@ -15,6 +15,7 @@ import {
  type DealTypeData,
 } from '@/features/analytics/components/AnalyticsCharts'
 import { CHART, CHART_SERIES } from '@/lib/design/chartColors'
+import { isAgencyRevenue } from '@/features/accounting/utils/money-classification'
 import {
  getAnalyticsData,
  getLast12Months,
@@ -38,7 +39,6 @@ export default async function AnalyticsPage({
  leads,
  leadsConverted,
  properties,
- overduePayments,
  overdueTasks,
  contracts,
  } = await getAnalyticsData(from, to)
@@ -49,10 +49,11 @@ export default async function AnalyticsPage({
 
  // Доход агентства — по проведённым операциям, а не по полю deals.commission:
  // поле заполняют не всегда, а деньги в бухгалтерии есть (проход 17.09.2026,
- // RA-11/TS-7). Платежи арендаторов и депозиты — не доход агентства.
- const PASS_THROUGH = new Set(['tenant_payment', 'deposit'])
+ // RA-11/TS-7). Платежи арендаторов и депозиты — не доход агентства; то же
+ // определение (money-classification.ts) использует и Бухгалтерия, поэтому
+ // цифры на двух страницах за один период не расходятся.
  const totalRevenue = payments
- .filter(p => p.payment_status === 'paid' && !PASS_THROUGH.has(p.category_code ?? ''))
+ .filter(p => p.payment_status === 'paid' && isAgencyRevenue(p.category_code, 'income'))
  .reduce((s, p) => s + Number(p.amount ?? 0), 0)
 
  const totalDealsAmount = deals
@@ -253,52 +254,9 @@ export default async function AnalyticsPage({
  <LeadsConversionChart data={leadsConversionData} />
  </div>
 
- {/* Alerts row */}
- <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
- {/* Overdue payments */}
- <div className="bg-[var(--hp-surface)] border border-[var(--hp-border)] p-5">
- <div className="flex items-center gap-2 mb-4">
- <div className="w-7 h-7 bg-[var(--hp-danger-tint)] flex items-center justify-center">
- <AlertTriangle style={{ width: 14, height: 14, color: CHART.danger }} />
- </div>
- <h2 className="text-sm font-semibold text-[var(--hp-ink)]">Просроченные платежи</h2>
- {overduePayments.length > 0 && (
- <span className="ml-auto text-xs font-semibold bg-[var(--hp-danger-tint)] text-[var(--hp-danger)] px-2 py-0.5 rounded-[var(--hp-radius-badge)]">
- {overduePayments.length}
- </span>
- )}
- </div>
- {overduePayments.length === 0 ? (
- <div className="flex items-center gap-2 p-3 bg-[var(--hp-good-tint)] border border-[var(--hp-border)]">
- <CheckCircle2 style={{ width: 16, height: 16, color: 'var(--hp-accent)' }} />
- <p className="text-sm text-[var(--hp-good)] font-medium">Просроченных платежей нет</p>
- </div>
- ) : (
- <div className="space-y-2">
- {overduePayments.map(p => {
- const contract = p.contract as { contract_number?: string } | null
- const daysOverdue = p.due_date
- ? Math.floor((Date.now() - new Date(p.due_date).getTime()) / 86400000)
- : 0
- return (
- <a key={p.id} href={`/accounting/transactions/${p.id}`}
- className="flex items-center justify-between p-3 border border-[var(--hp-border)] hover:border-[var(--hp-border)] hover:bg-[var(--hp-danger-tint)]/40 transition-all group">
- <div>
- <p className="text-sm font-medium text-[var(--hp-ink)] group-hover:text-[var(--hp-danger)] transition-colors">
- Договор № {contract?.contract_number ?? '—'}
- </p>
- <p className="text-xs text-[var(--hp-danger)]">Просрочен на {daysOverdue} дн.</p>
- </div>
- <p className="text-sm font-bold text-[var(--hp-danger)]">
- {formatMoney(Number(p.amount ?? 0))}
- </p>
- </a>
- )
- })}
- </div>
- )}
- </div>
-
+ {/* Alerts row — просроченные платежи здесь не дублируются: тот же виджет уже
+ есть на /dashboard, а полный список — в Бухгалтерии. */}
+ <div className="grid grid-cols-1 gap-6">
  {/* Overdue tasks */}
  <div className="bg-[var(--hp-surface)] border border-[var(--hp-border)] p-5">
  <div className="flex items-center gap-2 mb-4">

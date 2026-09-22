@@ -15,6 +15,7 @@ import type {
 } from '@/types/database'
 import { friendlyDbError } from '@/lib/errors'
 import { todayIso } from '@/lib/timezone'
+import { isAgencyRevenue, isAgencyExpense } from '@/features/accounting/utils/money-classification'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -83,6 +84,8 @@ export async function getAccountingStats(): Promise<AccountingStats> {
     totalIncome: 0, totalExpense: 0, profit: 0,
     incomeThisMonth: 0, expenseThisMonth: 0, profitThisMonth: 0,
     plannedIncome: 0, plannedExpense: 0,
+    agencyIncomeTotal: 0, agencyExpenseTotal: 0, agencyProfitTotal: 0,
+    agencyIncomeThisMonth: 0, agencyExpenseThisMonth: 0, agencyProfitThisMonth: 0,
   }
 
   const now = new Date()
@@ -91,11 +94,18 @@ export async function getAccountingStats(): Promise<AccountingStats> {
 
   const { data } = await supabase
     .from('accounting_transactions')
-    .select('type, amount, status, date')
+    .select('type, amount, status, date, borne_by, category:accounting_categories(code)')
 
-  const rows = (data ?? []) as Array<{ type: string; amount: number; status: string; date: string }>
+  type Row = {
+    type: string; amount: number; status: string; date: string
+    borne_by: string | null
+    category: { code: string | null } | { code: string | null }[] | null
+  }
+  const rows = (data ?? []) as unknown as Row[]
+  const codeOf = (r: Row) => Array.isArray(r.category) ? r.category[0]?.code ?? null : r.category?.code ?? null
+  const borneByOf = (r: Row) => r.borne_by === 'agency' || r.borne_by === 'owner' ? r.borne_by : null
 
-  const sum = (arr: typeof rows) => arr.reduce((a, r) => a + Number(r.amount ?? 0), 0)
+  const sum = (arr: Row[]) => arr.reduce((a, r) => a + Number(r.amount ?? 0), 0)
 
   const completed = rows.filter(r => r.status === 'completed')
   const planned   = rows.filter(r => r.status === 'planned')
@@ -106,6 +116,14 @@ export async function getAccountingStats(): Promise<AccountingStats> {
   const incomeThisMonth  = sum(thisMonth.filter(r => r.type === 'income'))
   const expenseThisMonth = sum(thisMonth.filter(r => r.type === 'expense'))
 
+  const agencyIncome  = (arr: Row[]) => sum(arr.filter(r => isAgencyRevenue(codeOf(r), r.type as 'income' | 'expense')))
+  const agencyExpense = (arr: Row[]) => sum(arr.filter(r => isAgencyExpense(codeOf(r), r.type as 'income' | 'expense', borneByOf(r))))
+
+  const agencyIncomeTotal  = agencyIncome(completed)
+  const agencyExpenseTotal = agencyExpense(completed)
+  const agencyIncomeThisMonth  = agencyIncome(thisMonth)
+  const agencyExpenseThisMonth = agencyExpense(thisMonth)
+
   return {
     totalIncome,
     totalExpense,
@@ -115,6 +133,12 @@ export async function getAccountingStats(): Promise<AccountingStats> {
     profitThisMonth: incomeThisMonth - expenseThisMonth,
     plannedIncome:  sum(planned.filter(r => r.type === 'income')),
     plannedExpense: sum(planned.filter(r => r.type === 'expense')),
+    agencyIncomeTotal,
+    agencyExpenseTotal,
+    agencyProfitTotal: agencyIncomeTotal - agencyExpenseTotal,
+    agencyIncomeThisMonth,
+    agencyExpenseThisMonth,
+    agencyProfitThisMonth: agencyIncomeThisMonth - agencyExpenseThisMonth,
   }
 }
 

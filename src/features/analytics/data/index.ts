@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { todayIso } from '@/lib/timezone'
+import { toPaymentStatus } from '@/features/accounting/utils/money-classification'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -9,7 +10,6 @@ export interface AnalyticsRawData {
   leads: Array<{ status: string; created_at: string | null }>
   leadsConverted: Array<{ status: string; created_at: string | null }>
   properties: Array<{ status: string }>
-  overduePayments: Array<{ id: string; amount: number | null; due_date: string | null; contract: { contract_number?: string } | null }>
   overdueTasks: Array<{ id: string; title: string; priority: string | null; deadline: string | null; assignee: { full_name?: string } | null }>
   contracts: Array<{ status: string; contract_type: string }>
 }
@@ -40,11 +40,7 @@ function toPaymentShape(rows: Array<{ status: string; amount: number | null; pai
   const today = todayIso()
   return rows.map(r => ({
     category_code: (Array.isArray(r.category) ? r.category[0]?.code : r.category?.code) ?? null,
-    payment_status: r.status === 'completed'
-      ? 'paid'
-      : r.status === 'planned'
-        ? (r.due_date && r.due_date < today ? 'overdue' : 'pending')
-        : 'cancelled',
+    payment_status: toPaymentStatus(r.status, r.due_date, today),
     amount: r.amount,
     payment_date: r.paid_at,
     due_date: r.due_date,
@@ -66,7 +62,6 @@ async function fetchAnalyticsData(from?: string, to?: string): Promise<Analytics
     leadsResult,
     leadsConvertedResult,
     propertiesResult,
-    overduePaymentsResult,
     overdueTasksResult,
     contractsResult,
   ] = await Promise.all([
@@ -101,15 +96,6 @@ async function fetchAnalyticsData(from?: string, to?: string): Promise<Analytics
     supabase.from('properties').select('status'),
 
     supabase
-      .from('accounting_transactions')
-      .select('id, amount, due_date, contract:contracts(contract_number)')
-      .eq('type', 'income')
-      .eq('status', 'planned')
-      .lt('due_date', todayIso())
-      .order('due_date', { ascending: true })
-      .limit(6),
-
-    supabase
       .from('tasks')
       .select('id, title, priority, deadline, assignee:users!tasks_assigned_to_fkey(full_name)')
       .lt('deadline', new Date().toISOString())
@@ -126,7 +112,6 @@ async function fetchAnalyticsData(from?: string, to?: string): Promise<Analytics
     leads: leadsResult.data ?? [],
     leadsConverted: leadsConvertedResult.data ?? [],
     properties: propertiesResult.data ?? [],
-    overduePayments: (overduePaymentsResult.data ?? []) as AnalyticsRawData['overduePayments'],
     overdueTasks: (overdueTasksResult.data ?? []) as AnalyticsRawData['overdueTasks'],
     contracts: contractsResult.data ?? [],
   }

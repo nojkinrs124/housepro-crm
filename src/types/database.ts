@@ -455,4 +455,11 @@ export interface AccountingStats {
   profitThisMonth: number
   plannedIncome: number
   plannedExpense: number
+  /** Без транзитных категорий (аренда клиентов, депозиты) и расходов за счёт собственника. */
+  agencyIncomeTotal: number
+  agencyExpenseTotal: number
+  agencyProfitTotal: number
+  agencyIncomeThisMonth: number
+  agencyExpenseThisMonth: number
+  agencyProfitThisMonth: number
 }

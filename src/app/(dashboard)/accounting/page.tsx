@@ -94,14 +94,24 @@ export default async function AccountingPage() {
  />
 
  {transactions.length > 0 && (
+ <>
  <StatStrip
  items={[
- { label: 'Доходы за месяц', value: fmt(stats.incomeThisMonth), hint: `всего ${fmt(stats.totalIncome)}` },
- { label: 'Расходы за месяц', value: fmt(stats.expenseThisMonth), hint: `всего ${fmt(stats.totalExpense)}` },
- { label: 'Прибыль за месяц', value: fmt(stats.profitThisMonth), hint: `всего ${fmt(stats.profit)}`, alert: stats.profitThisMonth < 0 },
+ { label: 'Приход за месяц', value: fmt(stats.incomeThisMonth), hint: `всего ${fmt(stats.totalIncome)}` },
+ { label: 'Расход за месяц', value: fmt(stats.expenseThisMonth), hint: `всего ${fmt(stats.totalExpense)}` },
+ { label: 'Сальдо за месяц', value: fmt(stats.profitThisMonth), hint: `всего ${fmt(stats.profit)}`, alert: stats.profitThisMonth < 0 },
  { label: 'Запланировано', value: fmt(stats.plannedIncome - stats.plannedExpense), hint: `+${fmt(stats.plannedIncome)} / −${fmt(stats.plannedExpense)}` },
  ]}
  />
+ <StatStrip
+ items={[
+ { label: 'Доход агентства за месяц', value: fmt(stats.agencyIncomeThisMonth), hint: `всего ${fmt(stats.agencyIncomeTotal)}` },
+ { label: 'Расход агентства за месяц', value: fmt(stats.agencyExpenseThisMonth), hint: `всего ${fmt(stats.agencyExpenseTotal)}` },
+ { label: 'Прибыль агентства за месяц', value: fmt(stats.agencyProfitThisMonth), hint: `всего ${fmt(stats.agencyProfitTotal)}`, alert: stats.agencyProfitThisMonth < 0 },
+ { label: 'Транзит за месяц', value: fmt(stats.incomeThisMonth - stats.agencyIncomeThisMonth), hint: 'аренда клиентов и депозиты — не доход агентства' },
+ ]}
+ />
+ </>
  )}
 
  {/* Charts row */}
