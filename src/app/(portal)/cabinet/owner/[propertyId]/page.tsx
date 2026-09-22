@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { grantFor } from '@/features/portal/services/access.service'
 import { loadOwnerView } from '@/features/portal/data/cabinet.data'
-import { formatAmount } from '@/lib/utils'
+import { formatAmount, formatDate } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -49,7 +49,7 @@ export default async function OwnerCabinetPage({ params }: { params: Promise<{ p
         {view.rentEnd && (
           <div className="hp-block-row">
             <span className="label">Договор найма до</span>
-            <span className="value">{view.rentEnd}</span>
+            <span className="value">{formatDate(view.rentEnd)}</span>
           </div>
         )}
         <div className="hp-block-row">
@@ -101,7 +101,7 @@ export default async function OwnerCabinetPage({ params }: { params: Promise<{ p
               ) : (
                 meter.readings.map(r => (
                   <div key={r.reading_date} className="hp-block-row">
-                    <span className="label">{r.reading_date}</span>
+                    <span className="label">{formatDate(r.reading_date)}</span>
                     <span className="value">
                       {r.value} {meter.unit}
                       {r.consumption != null && (

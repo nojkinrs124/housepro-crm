@@ -19,6 +19,23 @@ interface Grant {
   contractId: string | null
 }
 
+/**
+ * Показания от свежих к старым.
+ *
+ * Дня для сравнения мало: показание передают тем же числом, каким уже
+ * передавали (менеджер внёс утром, жилец уточнил вечером), и при равной дате
+ * порядок был произвольным — кабинет показывал «последним» старое значение, а
+ * жилец передавал его заново. Разрешает ничью время записи.
+ */
+function byFreshest(
+  a: { reading_date: string; created_at?: string | null },
+  b: { reading_date: string; created_at?: string | null },
+): number {
+  const byDate = b.reading_date.localeCompare(a.reading_date)
+  if (byDate !== 0) return byDate
+  return (b.created_at ?? '').localeCompare(a.created_at ?? '')
+}
+
 const RENT_TYPES = ['rent_apartment', 'rent_commercial']
 const ACTIVE_CONTRACT_STATUSES = ['generated', 'signed', 'completed']
 
@@ -51,7 +68,7 @@ export async function loadOwnerView(grant: Grant): Promise<OwnerView | null> {
       .in('contract_type', RENT_TYPES)
       .order('start_date', { ascending: false, nullsFirst: false }),
     supabaseAdmin.from('utility_meters')
-      .select('id, title, kind, unit, readings:meter_readings(reading_date, value, consumption)')
+      .select('id, title, kind, unit, readings:meter_readings(reading_date, value, consumption, created_at)')
       .eq('property_id', grant.propertyId).eq('is_active', true),
   ])
 
@@ -110,7 +127,7 @@ export async function loadOwnerView(grant: Grant): Promise<OwnerView | null> {
       title: m.title || m.kind,
       unit: m.unit,
       readings: [...(Array.isArray(m.readings) ? m.readings : [])]
-        .sort((a, b) => b.reading_date.localeCompare(a.reading_date))
+        .sort(byFreshest)
         .slice(0, 6),
     })),
   }
@@ -137,7 +154,7 @@ export async function loadTenantView(grant: Grant): Promise<TenantView | null> {
           .eq('id', grant.contractId).maybeSingle()
       : Promise.resolve({ data: null }),
     supabaseAdmin.from('utility_meters')
-      .select('id, title, kind, unit, readings:meter_readings(reading_date, value)')
+      .select('id, title, kind, unit, readings:meter_readings(reading_date, value, created_at)')
       .eq('property_id', grant.propertyId).eq('is_active', true),
   ])
 
@@ -181,7 +198,7 @@ export async function loadTenantView(grant: Grant): Promise<TenantView | null> {
     debt,
     meters: (meters ?? []).map(m => {
       const readings = [...(Array.isArray(m.readings) ? m.readings : [])]
-        .sort((a, b) => b.reading_date.localeCompare(a.reading_date))
+        .sort(byFreshest)
       return {
         id: m.id,
         title: m.title || m.kind,

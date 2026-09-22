@@ -10,7 +10,7 @@ import {
   REQUEST_STATUS_LABELS,
   REQUEST_STATUS_BADGE,
 } from '@/features/portal/config/request-categories'
-import { formatAmount } from '@/lib/utils'
+import { formatAmount, formatDate } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -59,7 +59,7 @@ export default async function TenantCabinetPage({ params }: { params: Promise<{ 
         {view.contract?.endDate && (
           <div className="hp-block-row">
             <span className="label">Договор до</span>
-            <span className="value">{view.contract.endDate}</span>
+            <span className="value">{formatDate(view.contract.endDate)}</span>
           </div>
         )}
         {view.nextPaymentDate && (
@@ -67,7 +67,7 @@ export default async function TenantCabinetPage({ params }: { params: Promise<{ 
             <span className="label">Ближайший платёж</span>
             <span className="value">
               {view.nextPaymentAmount != null && `${formatAmount(view.nextPaymentAmount)} ₽ · `}
-              до {view.nextPaymentDate}
+              до {formatDate(view.nextPaymentDate)}
             </span>
           </div>
         )}
@@ -85,7 +85,7 @@ export default async function TenantCabinetPage({ params }: { params: Promise<{ 
           {view.payments.slice(0, 12).map(p => (
             <div key={p.id} className="hp-block-row">
               <span className="label">
-                {p.dueDate ?? p.date}
+                {formatDate(p.dueDate ?? p.date)}
                 {p.description && <span className="block text-[12px]">{p.description}</span>}
               </span>
               <span className={`value ${p.status === 'completed' ? 'good' : ''}`}>
@@ -108,7 +108,7 @@ export default async function TenantCabinetPage({ params }: { params: Promise<{ 
                 <span>{meter.title}</span>
                 <span className="tracking-normal text-[11px] font-normal text-[var(--hp-sub)]">
                   {meter.lastValue !== null
-                    ? `последнее: ${meter.lastValue} ${meter.unit} от ${meter.lastDate}`
+                    ? `последнее: ${meter.lastValue} ${meter.unit} от ${formatDate(meter.lastDate)}`
                     : 'показаний ещё не было'}
                 </span>
               </div>
