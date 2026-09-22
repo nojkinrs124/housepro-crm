@@ -153,7 +153,7 @@ export async function payOwnerAction(formData: FormData): Promise<Result> {
   const operations = await loadSettlementOperations(supabase, engagementId)
   const settlement = calcSettlement(
     {
-      scheme: engagement.settlement_scheme as 'percent' | 'fixed' | null,
+      scheme: engagement.settlement_scheme as 'percent' | 'fixed' | 'fixed_capped' | null,
       rate: engagement.rate,
       ownerFixedAmount: engagement.owner_fixed_amount,
       ownerPayoutDay: engagement.owner_payout_day,

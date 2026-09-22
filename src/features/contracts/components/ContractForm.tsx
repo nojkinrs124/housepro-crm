@@ -344,7 +344,7 @@ export function ContractForm({
  </div>
  </div>
 
- {scheme === 'fixed' && (
+ {(scheme === 'fixed' || scheme === 'fixed_capped') && (
  <div className="grid grid-cols-2 gap-4">
  <div className="space-y-1.5">
  <label className={lbl}>Выплата собственнику (₽/мес)</label>

@@ -12,6 +12,11 @@
  *             оговорённую сумму, а сколько агентство собрало сверх неё — его
  *             коммерческий риск и не касается собственника.
  *
+ *   fixed_capped — как fixed, но выплата ограничена поступлениями, и это надо
+ *             показать явно: иначе собственник не поймёт, почему получил меньше
+ *             оговорённой суммы. Поступления видны, доход агентства — нет, по
+ *             той же причине, что и у fixed.
+ *
  * Файл намеренно без 'use client' и без 'use server'.
  */
 
@@ -36,7 +41,7 @@ export interface MonthlyReport {
   month: number
   from: string
   to: string
-  scheme: 'percent' | 'fixed' | null
+  scheme: 'percent' | 'fixed' | 'fixed_capped' | null
   /** Строки отчёта в порядке показа. */
   lines: ReportLine[]
   /** Итог: сколько причитается собственнику за период. */
@@ -111,6 +116,23 @@ export function buildMonthlyReport(
       label: `Удержание агентства${terms.rate != null ? ` (${terms.rate}%)` : ''}`,
       amount: period.agencyFee,
       negative: true,
+    })
+    lines.push(...expenseLines)
+    lines.push({ label: 'Выплачено собственнику', amount: period.paidToOwner, negative: true })
+  } else if (terms.scheme === 'fixed_capped') {
+    // Поступления показываем явно: в отличие от чистого fixed, сумма
+    // собственнику от них зависит — иначе будет непонятно, почему за пустой
+    // месяц причиталось меньше оговорённого.
+    const scheduled = period.obligationMonths > 0
+      ? money(Number(terms.ownerFixedAmount ?? 0) * period.obligationMonths)
+      : 0
+    lines.push({ label: 'Поступило от арендатора', amount: period.tenantPayments })
+    lines.push({
+      label: 'Причитается собственнику',
+      amount: period.ownerObligation,
+      hint: period.ownerObligation < scheduled
+        ? 'меньше оговорённой суммы — ограничено поступлениями от арендатора'
+        : 'фиксированная выплата по договору',
     })
     lines.push(...expenseLines)
     lines.push({ label: 'Выплачено собственнику', amount: period.paidToOwner, negative: true })

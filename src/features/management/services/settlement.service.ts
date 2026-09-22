@@ -6,20 +6,26 @@ import { todayIso } from '@/lib/timezone'
  * должно собственнику и сколько заработало само. Ошибка здесь — это неверная
  * выплата живыми деньгами, поэтому расчёт обязан проверяться тестом.
  *
- * Две схемы, и разница между ними принципиальна:
+ * Три схемы, и разница между ними принципиальна:
  *
- *   percent — обязательство перед собственником рождается из фактического
- *             поступления от арендатора. Нет арендатора — нет ни выплаты, ни
- *             вознаграждения. Риск простоя на собственнике.
+ *   percent      — обязательство перед собственником рождается из фактического
+ *                  поступления от арендатора. Нет арендатора — нет ни выплаты,
+ *                  ни вознаграждения. Риск простоя на собственнике.
  *
- *   fixed   — обязательство наступает по календарю, в оговорённый день месяца,
- *             заплатил арендатор или нет. Всё, что собрано сверх выплаты, —
- *             доход агентства; пустой месяц — его убыток. Риск на агентстве.
+ *   fixed        — обязательство наступает по календарю, в оговорённый день
+ *                  месяца, заплатил арендатор или нет. Всё, что собрано сверх
+ *                  выплаты, — доход агентства; пустой месяц — его убыток.
+ *                  Риск на агентстве.
+ *
+ *   fixed_capped — обязательство по календарю, как у fixed, но ограничено
+ *                  фактическими поступлениями: агентство не платит из своего
+ *                  кармана за пустой месяц. Риск простоя на собственнике, как
+ *                  при percent, но выплата — фиксированная сумма, а не доля.
  *
  * Файл намеренно без 'use client' и без 'use server'.
  */
 
-export type SettlementScheme = 'percent' | 'fixed'
+export type SettlementScheme = 'percent' | 'fixed' | 'fixed_capped'
 
 export interface SettlementOperation {
   type: 'income' | 'expense'
@@ -162,25 +168,53 @@ export function calcSettlement(
     }
   }
 
-  // fixed: обязательство по календарю, независимо от поступлений.
+  if (terms.scheme === 'fixed') {
+    // fixed: обязательство по календарю, независимо от поступлений.
+    const fixedAmount = Number(terms.ownerFixedAmount ?? 0)
+    const payoutDay = Number(terms.ownerPayoutDay ?? 1)
+    const untilDate = terms.endedAt && terms.endedAt < asOf ? terms.endedAt : asOf
+    const months = obligationMonths(terms.startedAt, untilDate, payoutDay)
+    const ownerObligation = money(fixedAmount * months)
+
+    return {
+      tenantPayments,
+      // Вознаграждения как отдельной величины при фиксированной схеме нет:
+      // агентство зарабатывает разницу, и она уже в agencyResult.
+      agencyFee: 0,
+      managementFee,
+      ownerExpenses,
+      agencyExpenses,
+      paidToOwner,
+      ownerObligation,
+      // Расходы за счёт собственника уменьшают то, что мы ему должны: агентство
+      // потратило за него, а не сверх обязательства.
+      balance: money(ownerObligation - paidToOwner - ownerExpenses),
+      agencyResult: money(tenantPayments + managementFee - ownerObligation - agencyExpenses),
+      obligationMonths: months,
+    }
+  }
+
+  // fixed_capped: та же фиксированная сумма по календарю, что и у fixed, но
+  // обязательство не может превысить фактические поступления от арендатора —
+  // агентство не платит из своего кармана за пустой месяц. Расчёт агрегирован
+  // за весь период (как и у fixed), поэтому избыток одного месяца может
+  // компенсировать недобор другого — это огрубление уже присуще существующей
+  // модели, здесь оно не выходит за её рамки.
   const fixedAmount = Number(terms.ownerFixedAmount ?? 0)
   const payoutDay = Number(terms.ownerPayoutDay ?? 1)
   const untilDate = terms.endedAt && terms.endedAt < asOf ? terms.endedAt : asOf
   const months = obligationMonths(terms.startedAt, untilDate, payoutDay)
-  const ownerObligation = money(fixedAmount * months)
+  const scheduledAmount = money(fixedAmount * months)
+  const ownerObligation = money(Math.min(scheduledAmount, tenantPayments))
 
   return {
     tenantPayments,
-    // Вознаграждения как отдельной величины при фиксированной схеме нет:
-    // агентство зарабатывает разницу, и она уже в agencyResult.
     agencyFee: 0,
     managementFee,
     ownerExpenses,
     agencyExpenses,
     paidToOwner,
     ownerObligation,
-    // Расходы за счёт собственника уменьшают то, что мы ему должны: агентство
-    // потратило за него, а не сверх обязательства.
     balance: money(ownerObligation - paidToOwner - ownerExpenses),
     agencyResult: money(tenantPayments + managementFee - ownerObligation - agencyExpenses),
     obligationMonths: months,

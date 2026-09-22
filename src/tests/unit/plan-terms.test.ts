@@ -53,6 +53,15 @@ describe('validateSchemeFields — согласованность схемы р�
   it('процентная схема полна сама по себе', () => {
     expect(validateSchemeFields({ contract_type: 'property_management', settlement_scheme: 'percent' })).toBeNull()
   })
+
+  it('фиксированная выплата по факту поступлений требует тех же полей, что и fixed', () => {
+    const err = validateSchemeFields({ contract_type: 'property_management', settlement_scheme: 'fixed_capped' })
+    expect(err).toContain('ежемесячную выплату')
+    expect(validateSchemeFields({
+      contract_type: 'property_management', settlement_scheme: 'fixed_capped',
+      owner_fixed_amount: 30000, owner_payout_day: 5,
+    })).toBeNull()
+  })
 })
 
 describe('schemeFields — что попадает в договор', () => {
@@ -70,5 +79,13 @@ describe('schemeFields — что попадает в договор', () => {
       owner_fixed_amount: 40000, owner_payout_day: 5,
     })
     expect(f).toEqual({ settlement_scheme: 'fixed', owner_fixed_amount: 40000, owner_payout_day: 5 })
+  })
+
+  it('фиксированная по факту поступлений тоже сохраняет обе величины', () => {
+    const f = schemeFields({
+      contract_type: 'property_management', settlement_scheme: 'fixed_capped',
+      owner_fixed_amount: 30000, owner_payout_day: 5,
+    })
+    expect(f).toEqual({ settlement_scheme: 'fixed_capped', owner_fixed_amount: 30000, owner_payout_day: 5 })
   })
 })

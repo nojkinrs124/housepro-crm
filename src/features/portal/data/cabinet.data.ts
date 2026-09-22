@@ -88,7 +88,7 @@ export async function loadOwnerView(grant: Grant): Promise<OwnerView | null> {
 
   if (engagement && scheme) {
     const terms = {
-      scheme: scheme as 'percent' | 'fixed',
+      scheme: scheme as 'percent' | 'fixed' | 'fixed_capped',
       rate: engagement.rate,
       ownerFixedAmount: engagement.owner_fixed_amount,
       ownerPayoutDay: engagement.owner_payout_day,

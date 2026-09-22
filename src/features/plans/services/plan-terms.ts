@@ -38,7 +38,7 @@ export function validateSchemeFields(input: PlanTermsInput): string | null {
   if (needsScheme && !input.settlement_scheme) {
     return 'Выберите схему расчёта с собственником — процент от платежа или фиксированную выплату'
   }
-  if (input.settlement_scheme === 'fixed') {
+  if (input.settlement_scheme === 'fixed' || input.settlement_scheme === 'fixed_capped') {
     if (!input.owner_fixed_amount) {
       return 'Укажите ежемесячную выплату собственнику: при фиксированной схеме она и есть обязательство агентства'
     }
@@ -72,7 +72,7 @@ export function schemeFields(input: PlanTermsInput): {
   owner_fixed_amount: number | null
   owner_payout_day: number | null
 } {
-  const fixed = input.settlement_scheme === 'fixed'
+  const fixed = input.settlement_scheme === 'fixed' || input.settlement_scheme === 'fixed_capped'
   return {
     settlement_scheme: input.settlement_scheme ?? null,
     // При процентной схеме сумма и день выплаты не заполняются: их отсутствие —
@@ -106,7 +106,7 @@ export function validateEngagementTerms(input: {
       return 'Процент удержания должен быть от 0 до 100'
     }
   }
-  if (input.settlement_scheme === 'fixed') {
+  if (input.settlement_scheme === 'fixed' || input.settlement_scheme === 'fixed_capped') {
     if (!input.owner_fixed_amount) {
       return 'Укажите ежемесячную выплату собственнику: при фиксированной схеме она и есть обязательство агентства'
     }

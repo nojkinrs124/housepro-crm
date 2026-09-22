@@ -62,7 +62,7 @@ export default async function ManagementDetailPage({ params }: { params: Promise
   const settlement = engagement?.settlement_scheme
     ? calcSettlement(
         {
-          scheme: engagement.settlement_scheme as 'percent' | 'fixed',
+          scheme: engagement.settlement_scheme as 'percent' | 'fixed' | 'fixed_capped',
           rate: engagement.rate,
           ownerFixedAmount: engagement.owner_fixed_amount,
           ownerPayoutDay: engagement.owner_payout_day,

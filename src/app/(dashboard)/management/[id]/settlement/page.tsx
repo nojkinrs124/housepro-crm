@@ -48,7 +48,7 @@ export default async function SettlementPage({ params }: { params: Promise<{ id:
 
   const operations = await loadSettlementOperations(supabase, engagement.id)
   const terms = {
-    scheme: engagement.settlement_scheme as 'percent' | 'fixed' | null,
+    scheme: engagement.settlement_scheme as 'percent' | 'fixed' | 'fixed_capped' | null,
     rate: engagement.rate,
     ownerFixedAmount: engagement.owner_fixed_amount,
     ownerPayoutDay: engagement.owner_payout_day,
@@ -105,7 +105,7 @@ export default async function SettlementPage({ params }: { params: Promise<{ id:
               value: `${formatAmount(Math.abs(settlement.agencyResult))} ₽`,
               alert: settlement.agencyResult < 0,
             },
-            terms.scheme === 'fixed'
+            terms.scheme === 'fixed' || terms.scheme === 'fixed_capped'
               ? { label: 'Начислено обязательств', value: `${formatAmount(settlement.ownerObligation)} ₽ · ${settlement.obligationMonths} мес.` }
               : { label: 'Удержано агентством', value: `${formatAmount(settlement.agencyFee)} ₽` },
           ]}
@@ -117,7 +117,9 @@ export default async function SettlementPage({ params }: { params: Promise<{ id:
           Объект простаивает — действующего договора найма нет.
           {terms.scheme === 'fixed'
             ? ' При фиксированной выплате обязательство перед собственником продолжает начисляться: каждый пустой месяц агентство платит из своих средств.'
-            : ' При процентной схеме за простой не начисляется ничего — ни собственнику, ни агентству.'}
+            : terms.scheme === 'fixed_capped'
+              ? ' При выплате по факту поступлений за простой собственник не получает ничего, а агентство не доплачивает из своих средств.'
+              : ' При процентной схеме за простой не начисляется ничего — ни собственнику, ни агентству.'}
         </p>
       )}
 

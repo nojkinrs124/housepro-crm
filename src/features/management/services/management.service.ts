@@ -173,7 +173,7 @@ export async function collectManagement(supabase: Client): Promise<ManagementRow
       // Вознаграждение: при фиксированной схеме показываем выплату собственнику,
       // при процентной — сумму договора управления. Величины разные по смыслу,
       // поэтому в колонке подписаны схемой.
-      fee: engagement.settlement_scheme === 'fixed' && engagement.owner_fixed_amount != null
+      fee: (engagement.settlement_scheme === 'fixed' || engagement.settlement_scheme === 'fixed_capped') && engagement.owner_fixed_amount != null
         ? Number(engagement.owner_fixed_amount)
         : contract?.amount != null ? Number(contract.amount)
         : property.management_fee != null ? Number(property.management_fee) : null,

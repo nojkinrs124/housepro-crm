@@ -113,7 +113,7 @@ export default async function OwnerReportPage({
   }))
 
   const terms = {
-    scheme: (engagement?.settlement_scheme ?? null) as 'percent' | 'fixed' | null,
+    scheme: (engagement?.settlement_scheme ?? null) as 'percent' | 'fixed' | 'fixed_capped' | null,
     rate: engagement?.rate ?? null,
     ownerFixedAmount: engagement?.owner_fixed_amount ?? null,
     ownerPayoutDay: engagement?.owner_payout_day ?? null,
@@ -377,6 +377,13 @@ export default async function OwnerReportPage({
             Выплата по договору — {formatAmount(Number(terms.ownerFixedAmount))} ₽/мес,
             {terms.ownerPayoutDay != null && ` ${terms.ownerPayoutDay}-го числа`}. Наступает
             независимо от того, заплатил ли арендатор.
+          </p>
+        )}
+        {terms.scheme === 'fixed_capped' && terms.ownerFixedAmount != null && (
+          <p className="text-xs text-[var(--hp-sub)]">
+            Выплата по договору — до {formatAmount(Number(terms.ownerFixedAmount))} ₽/мес,
+            {terms.ownerPayoutDay != null && ` ${terms.ownerPayoutDay}-го числа`}. Ограничена
+            фактическими поступлениями от арендатора: за пустой месяц не начисляется.
           </p>
         )}
 

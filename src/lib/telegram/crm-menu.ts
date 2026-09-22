@@ -542,7 +542,7 @@ async function loadEngagementBalances(
   for (const term of terms ?? []) {
     result.set(term.id, calcSettlement(
       {
-        scheme: term.settlement_scheme as 'percent' | 'fixed' | null,
+        scheme: term.settlement_scheme as 'percent' | 'fixed' | 'fixed_capped' | null,
         rate: term.rate,
         ownerFixedAmount: term.owner_fixed_amount,
         ownerPayoutDay: term.owner_payout_day,

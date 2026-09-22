@@ -221,7 +221,7 @@ export const ContractSchema = z.object({
   // браузера — там их можно поправить в инструментах разработчика.
   plan_id: uuid,
   // Схема расчёта с собственником при управлении и субаренде.
-  settlement_scheme: z.enum(['percent', 'fixed']).nullable().optional()
+  settlement_scheme: z.enum(['percent', 'fixed', 'fixed_capped']).nullable().optional()
     .or(z.literal('').transform(() => null)),
   owner_fixed_amount: optPositiveNum,
   owner_payout_day: z

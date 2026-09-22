@@ -40,7 +40,7 @@ export type DealStage =
   | 'in_service' | 'completed' | 'cancelled'
 
 /** Схема расчёта с собственником при управлении — `contracts.settlement_scheme`. */
-export type SettlementScheme = 'percent' | 'fixed'
+export type SettlementScheme = 'percent' | 'fixed' | 'fixed_capped'
 
 /** Способ начисления вознаграждения — `service_plans.charge_type`. */
 export type ChargeType = 'deal_percent' | 'monthly_percent' | 'owner_fixed' | 'flat_fee' | 'negotiated'

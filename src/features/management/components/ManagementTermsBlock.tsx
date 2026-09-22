@@ -143,13 +143,13 @@ export function ManagementTermsBlock({
           </span>
         </div>
       )}
-      {schemeValue === 'fixed' && (
+      {(schemeValue === 'fixed' || schemeValue === 'fixed_capped') && (
         <div className="hp-block-row">
           <span className="label">Выплата собственнику</span>
           <span className={`value${fixedAmount == null ? ' muted' : ''}`}>
             {fixedAmount == null
               ? 'сумма не задана'
-              : `${formatAmount(Number(fixedAmount))} ₽/мес${payoutDay != null ? `, ${payoutDay}-го числа` : ''}`}
+              : `${formatAmount(Number(fixedAmount))} ₽/мес${payoutDay != null ? `, ${payoutDay}-го числа` : ''}${schemeValue === 'fixed_capped' ? ' (не больше поступлений)' : ''}`}
           </span>
         </div>
       )}

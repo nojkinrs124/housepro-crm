@@ -153,6 +153,68 @@ describe('calcSettlement — схема «фиксированная выпла�
   })
 })
 
+describe('calcSettlement — схема «фиксированная выплата по факту поступлений»', () => {
+  const terms = {
+    scheme: 'fixed_capped' as const, rate: null,
+    ownerFixedAmount: 30000, ownerPayoutDay: 5,
+    startedAt: '2026-08-01',
+  }
+
+  it('поступлений достаточно: собственник получает полную фиксированную сумму, остальное — агентству', () => {
+    const result = calcSettlement(terms, [
+      op('income', 'tenant_payment', 50000, '2026-08-10'),
+    ], '2026-08-31')
+
+    expect(result.obligationMonths).toBe(1)
+    expect(result.ownerObligation).toBe(30000)
+    expect(result.agencyResult).toBe(20000)
+  })
+
+  it('простой: собственник не получает ничего, агентство не доплачивает из своих денег', () => {
+    const result = calcSettlement(terms, [], '2026-08-31')
+
+    expect(result.obligationMonths).toBe(1)
+    expect(result.ownerObligation).toBe(0)
+    expect(result.balance).toBe(0)
+    expect(result.agencyResult).toBe(0)
+  })
+
+  it('поступлений меньше фиксированной суммы: собственник получает то, что реально поступило', () => {
+    const result = calcSettlement(terms, [
+      op('income', 'tenant_payment', 18000, '2026-08-10'),
+    ], '2026-08-31')
+
+    expect(result.ownerObligation).toBe(18000)
+    expect(result.agencyResult).toBe(0)
+  })
+
+  it('ставка (rate) на расчёт не влияет', () => {
+    const withRate = calcSettlement({ ...terms, rate: 10 }, [
+      op('income', 'tenant_payment', 50000, '2026-08-10'),
+    ], '2026-08-31')
+    const withoutRate = calcSettlement(terms, [
+      op('income', 'tenant_payment', 50000, '2026-08-10'),
+    ], '2026-08-31')
+
+    expect(withRate.ownerObligation).toBe(withoutRate.ownerObligation)
+    expect(withRate.agencyResult).toBe(withoutRate.agencyResult)
+  })
+
+  it('вознаграждение отдельной величиной не выделяется — агентство зарабатывает разницу', () => {
+    const result = calcSettlement(terms, [op('income', 'tenant_payment', 50000, '2026-08-10')], '2026-08-31')
+    expect(result.agencyFee).toBe(0)
+  })
+
+  it('расход за счёт собственника уменьшает то, что мы ему должны', () => {
+    const result = calcSettlement(terms, [
+      op('income', 'tenant_payment', 50000, '2026-08-10'),
+      op('expense', 'cleaning', 3000, '2026-08-20', 'owner'),
+    ], '2026-08-31')
+
+    expect(result.balance).toBe(27000)
+  })
+})
+
 describe('calcSettlement — без схемы', () => {
   it('расчёт не делается и объясняет причину', () => {
     const result = calcSettlement(
