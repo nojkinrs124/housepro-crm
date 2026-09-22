@@ -20,6 +20,10 @@ export async function login(page: Page): Promise<void> {
   if (!email || !password) throw new Error('E2E_TEST_EMAIL / E2E_TEST_PASSWORD не заданы')
 
   await page.goto('/login')
+  // Вход начинается с выбора роли. Выбор запоминается в браузере, а у свежего
+  // контекста памяти нет — дверь открываем сами, если она показана.
+  const staffDoor = page.getByRole('button', { name: /Я сотрудник агентства/ })
+  if (await staffDoor.isVisible().catch(() => false)) await staffDoor.click()
   await page.getByTestId('login-email').fill(email)
   await page.getByTestId('login-password').fill(password)
   await page.getByTestId('login-submit').click()

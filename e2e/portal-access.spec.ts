@@ -29,10 +29,15 @@ function throwawayPhone(): string {
   return `+7900${tail}`
 }
 
+/** Вход начинается с выбора роли — клиентская форма за правой дверью. */
+async function openClientDoor(page: import('@playwright/test').Page) {
+  const door = page.getByRole('button', { name: /Я собственник или арендатор/ })
+  if (await door.isVisible().catch(() => false)) await door.click()
+}
+
 async function codeFlowAvailable(page: import('@playwright/test').Page, phone: string) {
-  // Вход один на всех: поле принимает и email сотрудника, и телефон клиента,
-  // поэтому имя у него email, а телефонный шаг включает сам ввод.
-  await page.locator('input[name="email"]').fill(phone)
+  await openClientDoor(page)
+  await page.locator('input[name="phone"]').fill(phone)
   await page.getByRole('button', { name: /Получить код/ }).click()
   const codeField = page.locator('input[name="code"]')
   try {
@@ -57,15 +62,27 @@ test('старый адрес входа в кабинет ведёт на об�
   await expect(page).toHaveURL(LOGIN_URL)
 })
 
-test('телефон в поле входа убирает пароль', async ({ page }) => {
-  // Клиенту пароль не выдают: увидев поле пароля, он решит, что кабинет не
-  // для него. Роль не спрашиваем — её видно по тому, что введено.
+test('вход начинается с выбора роли, и клиенту не показывают пароль', async ({ page }) => {
+  // Клиенту пароля не выдают: увидев поле пароля, он решит, что кабинет не
+  // для него. Поэтому сначала дверь, а за ней только нужные поля.
   await page.goto('/login', { waitUntil: 'domcontentloaded' })
-  await expect(page.locator('input[type="password"]')).toBeVisible()
+  await expect(page.getByRole('button', { name: /Я сотрудник агентства/ })).toBeVisible()
+  await expect(page.locator('input')).toHaveCount(0)
 
-  await page.locator('input[name="email"]').fill('+79001234567')
+  await page.getByRole('button', { name: /Я собственник или арендатор/ }).click()
+  await expect(page.locator('input[name="phone"]')).toBeVisible()
   await expect(page.locator('input[type="password"]')).toHaveCount(0)
-  await expect(page.getByRole('button', { name: /Получить код/ })).toBeVisible()
+
+  // «Это не я» возвращает к выбору: ошибиться дверью не страшно.
+  await page.getByRole('button', { name: /Это не я/ }).click()
+  await expect(page.getByRole('button', { name: /Я сотрудник агентства/ })).toBeVisible()
+})
+
+test('сотруднику за своей дверью дают email и пароль', async ({ page }) => {
+  await page.goto('/login', { waitUntil: 'domcontentloaded' })
+  await page.getByRole('button', { name: /Я сотрудник агентства/ }).click()
+  await expect(page.locator('input[name="email"]')).toBeVisible()
+  await expect(page.locator('input[type="password"]')).toBeVisible()
 })
 
 test('чужой объект отдаёт 404, а не 403', async ({ page }) => {

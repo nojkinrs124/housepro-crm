@@ -121,26 +121,6 @@ export function formatPhone(phone: string | null | undefined): string {
  * Нероссийские/нестандартные номера сохраняются как есть с ведущим `+`.
  * Пустая строка/undefined/null → null (нечего сохранять).
  */
-/**
- * Похоже ли введённое на телефон, а не на email.
- *
- * Нужно там, где одно поле принимает и то, и другое: вход в систему у
- * сотрудника идёт по email с паролем, у собственника и арендатора — по
- * телефону с одноразовым кодом, и спрашивать человека, кто он такой, значит
- * перекладывать на него устройство системы.
- *
- * Решает первый символ и состав строки: цифры, пробелы, скобки, дефисы и
- * ведущий плюс — телефон. Любая буква или собака — email. Длину не проверяем:
- * пока номер набирают, он короткий, а поле уже должно вести себя как
- * телефонное, иначе подпись и кнопка прыгают на последней цифре.
- */
-export function looksLikePhone(value: string): boolean {
-  const trimmed = value.trim()
-  if (!trimmed) return false
-  if (!/^\+?[\d\s()\-]+$/.test(trimmed)) return false
-  return /\d/.test(trimmed)
-}
-
 export function normalizePhone(phone: string | null | undefined): string | null {
   if (!phone) return null
   const trimmed = phone.trim()
