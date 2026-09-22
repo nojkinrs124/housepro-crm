@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic'
 
 const CATEGORY_LABELS: Record<string, string> = {
   tenant_payment: 'Поступление от арендатора',
-  agency_fee: 'Удержание агентства',
+  agency_fee: 'Комиссия агентства',
   owner_payout: 'Выплата собственнику',
   repair_minor: 'Мелкий ремонт',
   cleaning: 'Клининг',
@@ -80,7 +80,7 @@ export default async function SettlementPage({ params }: { params: Promise<{ id:
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Взаиморасчёт с собственником"
+        title="Расчёты с собственником"
         subtitle={`${property.title}${ownerName ? ` · ${ownerName}` : ''}`}
         backHref={`/management/${id}`}
         backLabel="Объект"
@@ -101,7 +101,7 @@ export default async function SettlementPage({ params }: { params: Promise<{ id:
             },
             { label: 'Поступило от арендатора', value: `${formatAmount(settlement.tenantPayments)} ₽` },
             {
-              label: settlement.agencyResult < 0 ? 'Убыток агентства' : 'Заработано агентством',
+              label: settlement.agencyResult < 0 ? 'Агентство доплатило' : 'Комиссия за месяц',
               value: `${formatAmount(Math.abs(settlement.agencyResult))} ₽`,
               alert: settlement.agencyResult < 0,
             },
@@ -132,7 +132,7 @@ export default async function SettlementPage({ params }: { params: Promise<{ id:
       )}
 
       <div className="hp-block">
-        <div className="hp-block-header">Операции взаиморасчёта</div>
+        <div className="hp-block-header">Операции</div>
         {canEdit && (
           <SettlementPanel
             engagementId={engagement.id}

@@ -223,7 +223,7 @@ export function EngagementTermsForm({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <label className={lbl} htmlFor="plan_id">Тариф</label>
+            <label className={lbl} htmlFor="plan_id">Тарифный план обслуживания</label>
             <select id="plan_id" name="plan_id" value={planId}
               onChange={e => setPlanId(e.target.value)} className={inp}>
               <option value="">Не выбран</option>
@@ -256,7 +256,7 @@ export function EngagementTermsForm({
 
       <div className="hp-card p-5 space-y-4">
         <div className="space-y-1.5">
-          <span className={lbl}>Схема расчёта с собственником</span>
+          <span className={lbl}>Как считаем выплату собственнику</span>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {SETTLEMENT_SCHEMES.map(s => (
               <label key={s.value}
@@ -278,7 +278,7 @@ export function EngagementTermsForm({
 
         {scheme === 'percent' ? (
           <div className="space-y-1.5 sm:max-w-xs">
-            <label className={lbl} htmlFor="rate">Удержание агентства, %</label>
+            <label className={lbl} htmlFor="rate">Комиссия агентства, %</label>
             <input id="rate" name="rate" type="number" step="0.01" min="0" max="100" required
               value={rate} onChange={e => setRate(e.target.value)} placeholder="10" className={inp} />
           </div>

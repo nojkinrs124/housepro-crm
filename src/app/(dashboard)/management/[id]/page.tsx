@@ -20,6 +20,7 @@ import { formatAmount, formatDateCompact } from '@/lib/utils'
 import { OwnerPayoutBlock } from '@/features/management/components/OwnerPayoutForm'
 import { ManagementTermsBlock } from '@/features/management/components/ManagementTermsBlock'
 import { PropertyTasksBlock } from '@/features/management/components/PropertyTasksBlock'
+import { ManagementDetailTabs, type DetailTab } from '@/features/management/components/ManagementDetailTabs'
 import { calcSettlement } from '@/features/management/services/settlement.service'
 import { loadSettlementOperations } from '@/features/management/data/settlement.data'
 
@@ -33,10 +34,13 @@ const RENT_CONTRACT_TYPES = ['rent_apartment', 'rent_commercial', 'sublease']
  * объекту, счётчики и задачи. Данные те же, что в остальных разделах: ничего
  * не дублируется, всё связано через property_id.
  *
- * Порядок сверху вниз — по частоте вопроса: что дозаполнить → деньги за
- * месяц → сколько должен собственнику → условия → платежи → счётчики.
- * Справа — люди и задачи. Каждый блок с одним действием внутри, поэтому
- * в шапке только то, чему внутри блоков места нет.
+ * До 23.09.2026 все 12 блоков стояли одной колонкой на весь экран — при любом
+ * вопросе риелтор листал всю карточку целиком. Теперь общее (что дозаполнить)
+ * — над вкладками, а остальное разложено по вопросу: «Обзор» — сколько должен
+ * собственнику и куда движется месяц, «Финансы» — из чего сложился баланс и
+ * платежи, «Условия» — договор и тариф, «Люди» — стороны, арендатор, задачи,
+ * доступ. Одна главная кнопка на вкладку: отметка выплаты собственнику —
+ * вторичная, единственная главная — «Платёж» в шапке.
  */
 export default async function ManagementDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -189,75 +193,39 @@ export default async function ManagementDetailPage({ params }: { params: Promise
   const contactOption = (c: { id: string; full_name: string; company_name: string | null; phone: string | null }) =>
     ({ id: c.id, label: c.company_name || c.full_name, hasPhone: Boolean(c.phone) })
 
-  return (
-    <div className="space-y-5">
-      <PageHeader
-        title={property.title}
-        subtitle={property.address ?? 'Объект в управлении'}
-        backHref="/management"
-        backLabel="Управление"
-        actions={
-          <RecordActions
-            primary={
-              <Link href={`/accounting/transactions/new?property_id=${id}`} className="hp-btn-primary">
-                <Plus className="w-4 h-4" />
-                Платёж
-              </Link>
-            }
-            secondary={
-              <Link href={`/management/${id}/report`} className="hp-btn-secondary">
-                <Receipt className="w-4 h-4" />
-                Отчёт собственнику
-              </Link>
-            }
-            more={engagement && (
-              <>
-                <Link href={`/management/${id}/terms`} className="hp-menu-item" role="menuitem">
-                  <Settings2 className="w-4 h-4" />
-                  Условия обслуживания
-                </Link>
-                <Link href={`/management/${id}/handover`} className="hp-menu-item" role="menuitem">
-                  <ClipboardCheck className="w-4 h-4" />
-                  Акт приёма-передачи
-                </Link>
-              </>
-            )}
+  const tabs: DetailTab[] = [
+    {
+      key: 'overview',
+      label: 'Обзор',
+      content: (
+        <>
+          <StatStrip
+            items={[
+              { label: 'Доход за месяц', value: `${formatAmount(incomeMonth)} ₽` },
+              { label: 'Расход за месяц', value: `${formatAmount(expenseMonth)} ₽` },
+              { label: 'Прибыль за месяц', value: `${formatAmount(incomeMonth - expenseMonth)} ₽`, alert: incomeMonth - expenseMonth < 0 },
+              {
+                label: 'Просрочено',
+                value: `${formatAmount(sum(overdue))} ₽`,
+                hint: overdue.length > 0 ? `${overdue.length} просрочено` : 'нет',
+                alert: overdue.length > 0,
+              },
+              {
+                label: 'Ближайший платёж',
+                value: upcoming[0] ? formatDateCompact(upcoming[0].due_date) : '—',
+                hint: upcoming[0] ? `${formatAmount(Number(upcoming[0].amount))} ₽` : 'не запланирован',
+                small: true,
+              },
+            ]}
           />
-        }
-      />
 
-      <ReadinessPanel issues={issues} title="Что заполнить" />
-
-      <StatStrip
-        items={[
-          { label: 'Доход за месяц', value: `${formatAmount(incomeMonth)} ₽` },
-          { label: 'Расход за месяц', value: `${formatAmount(expenseMonth)} ₽` },
-          { label: 'Прибыль за месяц', value: `${formatAmount(incomeMonth - expenseMonth)} ₽`, alert: incomeMonth - expenseMonth < 0 },
-          {
-            label: 'Просрочено',
-            value: `${formatAmount(sum(overdue))} ₽`,
-            hint: overdue.length > 0 ? `${overdue.length} просрочено` : 'нет',
-            alert: overdue.length > 0,
-          },
-          {
-            label: 'Ближайший платёж',
-            value: upcoming[0] ? formatDateCompact(upcoming[0].due_date) : '—',
-            hint: upcoming[0] ? `${formatAmount(Number(upcoming[0].amount))} ₽` : 'не запланирован',
-            small: true,
-          },
-        ]}
-      />
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 space-y-4">
-          {/* Взаиморасчёт с собственником */}
           {engagement && settlement && !settlement.error && (
             <div className="hp-block">
               <div className="hp-block-header flex items-center justify-between gap-2">
-                <span>Взаиморасчёт с собственником</span>
+                <span>Расчёты с собственником</span>
                 <Link href={`/management/${id}/settlement`}
                   className="text-[12.5px] font-semibold normal-case tracking-normal text-[var(--hp-sub)] hover:text-[var(--hp-ink)] transition-colors">
-                  Подробно
+                  Все операции
                 </Link>
               </div>
               <OwnerPayoutBlock
@@ -265,13 +233,27 @@ export default async function ManagementDetailPage({ params }: { params: Promise
                 balance={settlement.balance}
                 ownerName={ownerName}
               />
+            </div>
+          )}
+        </>
+      ),
+    },
+    {
+      key: 'money',
+      label: 'Финансы',
+      alert: overdue.length > 0,
+      content: (
+        <>
+          {engagement && settlement && !settlement.error && (
+            <div className="hp-block">
+              <div className="hp-block-header">Из чего сложился баланс</div>
               <div className="hp-block-row">
                 <span className="label">Поступило от арендатора</span>
                 <span className="value">{formatAmount(settlement.tenantPayments)} ₽</span>
               </div>
               <div className="hp-block-row">
                 <span className="label">
-                  {settlement.agencyResult < 0 ? 'Убыток агентства' : 'Заработано агентством'}
+                  {settlement.agencyResult < 0 ? 'Агентство доплатило' : 'Комиссия за месяц'}
                 </span>
                 <span className={`value ${settlement.agencyResult < 0 ? 'danger' : ''}`}>
                   {formatAmount(Math.abs(settlement.agencyResult))} ₽
@@ -283,13 +265,6 @@ export default async function ManagementDetailPage({ params }: { params: Promise
               </div>
             </div>
           )}
-
-          <ManagementTermsBlock
-            propertyId={id}
-            engagement={engagement}
-            contract={mgmtContract}
-            propertyFee={property.management_fee}
-          />
 
           {/* Платежи: просроченные и ближайшие — начисления, затем последние проведённые */}
           <div className="hp-block">
@@ -357,9 +332,28 @@ export default async function ManagementDetailPage({ params }: { params: Promise
           </div>
 
           <MetersPanel propertyId={id} meters={meters} />
-        </div>
-
-        <div className="space-y-4">
+        </>
+      ),
+    },
+    {
+      key: 'terms',
+      label: 'Условия',
+      alert: !engagement?.settlement_scheme,
+      content: (
+        <ManagementTermsBlock
+          propertyId={id}
+          engagement={engagement}
+          contract={mgmtContract}
+          propertyFee={property.management_fee}
+        />
+      ),
+    },
+    {
+      key: 'people',
+      label: 'Люди',
+      alert: tenantDebt > 0,
+      content: (
+        <>
           {/* Стороны */}
           <div className="hp-block">
             <div className="hp-block-header">Стороны</div>
@@ -505,8 +499,51 @@ export default async function ManagementDetailPage({ params }: { params: Promise
               tenants={(portalContacts ?? []).filter(c => c.role === 'client' || c.role === 'both').map(contactOption)}
             />
           )}
-        </div>
-      </div>
+        </>
+      ),
+    },
+  ]
+
+  return (
+    <div className="space-y-5">
+      <PageHeader
+        title={property.title}
+        subtitle={property.address ?? 'Объект в управлении'}
+        backHref="/management"
+        backLabel="Управление"
+        actions={
+          <RecordActions
+            primary={
+              <Link href={`/accounting/transactions/new?property_id=${id}`} className="hp-btn-primary">
+                <Plus className="w-4 h-4" />
+                Платёж
+              </Link>
+            }
+            secondary={
+              <Link href={`/management/${id}/report`} className="hp-btn-secondary">
+                <Receipt className="w-4 h-4" />
+                Отчёт собственнику
+              </Link>
+            }
+            more={engagement && (
+              <>
+                <Link href={`/management/${id}/terms`} className="hp-menu-item" role="menuitem">
+                  <Settings2 className="w-4 h-4" />
+                  Условия обслуживания
+                </Link>
+                <Link href={`/management/${id}/handover`} className="hp-menu-item" role="menuitem">
+                  <ClipboardCheck className="w-4 h-4" />
+                  Акт приёма-передачи
+                </Link>
+              </>
+            )}
+          />
+        }
+      />
+
+      <ReadinessPanel issues={issues} title="Что заполнить" />
+
+      <ManagementDetailTabs tabs={tabs} />
     </div>
   )
 }

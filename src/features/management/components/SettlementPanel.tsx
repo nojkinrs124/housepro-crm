@@ -47,7 +47,7 @@ export function SettlementPanel({
   if (!scheme) {
     return (
       <div className="p-[18px] text-sm text-[var(--hp-sub)]">
-        Схема расчёта не выбрана — операции взаиморасчёта заводить не по чему.
+        Не выбрано, как считать выплату собственнику — операции заводить не по чему.
         Сначала заполните условия обслуживания.
       </div>
     )
@@ -107,7 +107,7 @@ export function SettlementPanel({
           </div>
           {scheme === 'percent' && (
             <p className="text-xs text-[var(--hp-sub)]">
-              Удержание агентства проведётся отдельной операцией автоматически — по ставке из условий
+              Комиссия агентства спишется отдельной операцией автоматически — по ставке из условий
             </p>
           )}
           <button type="submit" disabled={pending} className="hp-btn-primary">

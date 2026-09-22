@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowUpRight, FileText, Plus } from 'lucide-react'
+import { ArrowUpRight, ChevronDown, FileText, Plus } from 'lucide-react'
 import { getSettlementScheme } from '@/features/plans/config/settlement'
 import {
   PROPERTY_MANAGEMENT_SERVICE_OPTIONS,
@@ -99,7 +99,7 @@ export function ManagementTermsBlock({
         <Link href={`/contracts/${contract.id}`} className="hp-block-item">
           <FileText className="w-4 h-4 shrink-0 text-[var(--hp-sub)]" />
           <span className="flex-1 min-w-0 truncate text-[var(--hp-ink)] font-semibold">
-            {contract.contract_number ?? 'Договор управления'}
+            {contract.contract_number ? `Договор № ${contract.contract_number}` : 'Договор управления'}
           </span>
           <span className="shrink-0 text-[12px] text-[var(--hp-sub)]">
             {contract.start_date ? formatDateCompact(contract.start_date) : '—'}
@@ -119,11 +119,11 @@ export function ManagementTermsBlock({
       )}
 
       <div className="hp-block-row">
-        <span className="label">Тариф</span>
+        <span className="label">Тарифный план обслуживания</span>
         <span className={`value${plan?.title ? '' : ' muted'}`}>{plan?.title ?? 'не выбран'}</span>
       </div>
       <div className="hp-block-row">
-        <span className="label">Схема расчёта</span>
+        <span className="label">Как считаем выплату собственнику</span>
         <span className={`value${scheme ? '' : ' muted'}`}>
           {scheme
             ? <>
@@ -137,7 +137,7 @@ export function ManagementTermsBlock({
       </div>
       {schemeValue === 'percent' && (
         <div className="hp-block-row">
-          <span className="label">Удержание агентства</span>
+          <span className="label">Комиссия агентства</span>
           <span className={`value${rate == null ? ' muted' : ''}`}>
             {rate == null ? 'ставка не задана' : `${rate}% от платежа`}
           </span>
@@ -154,42 +154,51 @@ export function ManagementTermsBlock({
         </div>
       )}
       <div className="hp-block-row">
-        <span className="label">Вознаграждение</span>
+        <span className="label">Комиссия по договору</span>
         <span className={`value${fee == null ? ' muted' : ''}`}>
           {fee == null
             ? 'не указано'
             : `${formatAmount(Number(fee))} ₽/мес${contract?.amount == null ? ' (из карточки объекта)' : ''}`}
         </span>
       </div>
-      {repairLimit != null && (
-        <div className="hp-block-row">
-          <span className="label">Мелкий ремонт за счёт агентства</span>
-          <span className="value">до {formatAmount(Number(repairLimit))} ₽</span>
-        </div>
-      )}
-      {obligations.length > 0 && (
-        <div className="hp-block-row">
-          <span className="label">Что входит</span>
-          <span className="value">{obligations.join(' · ')}</span>
-        </div>
-      )}
-      {services.length > 0 && (
-        <div className="hp-block-row">
-          <span className="label">Услуги по договору</span>
-          <span className="value">{services.join(', ')}</span>
-        </div>
-      )}
-      {contract && (
-        <div className="hp-block-row">
-          <span className="label">Отчёт собственнику</span>
-          <span className="value">{REPORT_FREQUENCY_LABELS[extra.report_frequency ?? 'monthly']}</span>
-        </div>
-      )}
-      {engagement?.notes && (
-        <div className="hp-block-row">
-          <span className="label">Примечание</span>
-          <span className="value muted">{engagement.notes}</span>
-        </div>
+
+      {(repairLimit != null || obligations.length > 0 || services.length > 0 || contract || engagement?.notes) && (
+        <details className="group">
+          <summary className="hp-block-item justify-between cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+            <span className="text-[var(--hp-sub)]">Ещё об условиях</span>
+            <ChevronDown className="w-4 h-4 shrink-0 text-[var(--hp-sub)] transition-transform group-open:rotate-180" />
+          </summary>
+          {repairLimit != null && (
+            <div className="hp-block-row">
+              <span className="label">Мелкий ремонт за счёт агентства</span>
+              <span className="value">до {formatAmount(Number(repairLimit))} ₽</span>
+            </div>
+          )}
+          {obligations.length > 0 && (
+            <div className="hp-block-row">
+              <span className="label">Что входит</span>
+              <span className="value">{obligations.join(' · ')}</span>
+            </div>
+          )}
+          {services.length > 0 && (
+            <div className="hp-block-row">
+              <span className="label">Услуги по договору</span>
+              <span className="value">{services.join(', ')}</span>
+            </div>
+          )}
+          {contract && (
+            <div className="hp-block-row">
+              <span className="label">Отчёт собственнику</span>
+              <span className="value">{REPORT_FREQUENCY_LABELS[extra.report_frequency ?? 'monthly']}</span>
+            </div>
+          )}
+          {engagement?.notes && (
+            <div className="hp-block-row">
+              <span className="label">Примечание</span>
+              <span className="value muted">{engagement.notes}</span>
+            </div>
+          )}
+        </details>
       )}
     </div>
   )

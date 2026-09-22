@@ -369,7 +369,7 @@ export default async function OwnerReportPage({
             не находилось случайно. */}
         {terms.scheme === 'percent' && terms.rate != null && (
           <p className="text-xs text-[var(--hp-sub)]">
-            Удержание агентства — {terms.rate}% от поступлений, посчитано в строке выше.
+            Комиссия агентства — {terms.rate}% от поступлений, посчитано в строке выше.
           </p>
         )}
         {terms.scheme === 'fixed' && terms.ownerFixedAmount != null && (

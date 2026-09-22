@@ -68,11 +68,11 @@ export function OwnerPayoutForm({
       <label className="flex items-center gap-2 text-sm text-[var(--hp-ink)]">
         <input type="checkbox" name="as_advance" checked={advance}
           onChange={e => setAdvance(e.target.checked)} className="w-4 h-4 accent-[var(--hp-accent)]" />
-        Это аванс — выплата больше текущего сальдо
+        Это аванс — выплата больше начисленного к выплате
       </label>
       <p className="text-xs text-[var(--hp-sub)]">
-        Сальдо сейчас: {balance.toLocaleString('ru-RU')} ₽. Больше этой суммы без пометки
-        «аванс» провести нельзя — иначе след денег теряется
+        Начислено к выплате сейчас: {balance.toLocaleString('ru-RU')} ₽. Больше этой суммы без
+        пометки «аванс» провести нельзя — иначе не будет видно, за какой период платили
       </p>
       <button type="submit" disabled={pending} className="hp-btn-primary">
         {pending ? 'Проводим…' : 'Провести выплату'}
@@ -113,7 +113,7 @@ export function OwnerPayoutBlock({
             {Math.abs(balance).toLocaleString('ru-RU')} ₽
           </p>
         </div>
-        <button type="button" onClick={() => setOpen(!open)} className="hp-btn-primary shrink-0">
+        <button type="button" onClick={() => setOpen(!open)} className="hp-btn-secondary shrink-0">
           <ArrowUpRight style={{ width: 16, height: 16 }} />
           {open ? 'Свернуть' : 'Я перевёл деньги собственнику'}
         </button>
