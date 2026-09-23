@@ -50,43 +50,52 @@ export default async function SdatKvartiruPage() {
   const stats = await fetchSiteStats()
   return (
     <>
-      {/* ── Экран 1: заголовок + калькулятор ─────────────────────────── */}
+      {/* ── Экран 1: заголовок ────────────────────────────────────────── */}
       <section id={HERO_ID} className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-10 sm:pt-14">
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] gap-8 lg:gap-10 items-start">
-          <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--hp-sub)' }}>
-              Собственникам · Красноярск и Берёзовка
-            </p>
-            <h1
-              className="mt-4 text-[30px] sm:text-[40px] font-bold tracking-tight leading-[1.08] break-words"
-              style={{ color: 'var(--hp-ink)' }}
-            >
-              Сдать квартиру в Красноярске — и перестать быть на связи 24/7
-            </h1>
-            <p className="mt-5 text-[16px] sm:text-[17px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
-              Находим нанимателя, проверяем его по базам, оформляем договор под вашу квартиру и ведём её
-              дальше, сколько нужно. Вы получаете деньги на карту, а не звонки про потёкший кран.
-            </p>
+        <div className="max-w-[760px]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--hp-sub)' }}>
+            Собственникам · Красноярск и Берёзовка
+          </p>
+          <h1
+            className="mt-4 text-[30px] sm:text-[40px] font-bold tracking-tight leading-[1.08] break-words"
+            style={{ color: 'var(--hp-ink)' }}
+          >
+            Сдать квартиру в Красноярске — и перестать быть на связи 24/7
+          </h1>
+          <p className="mt-5 text-[16px] sm:text-[17px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+            Находим нанимателя, проверяем его по базам, оформляем договор под вашу квартиру и ведём её
+            дальше, сколько нужно. Вы получаете деньги на карту, а не звонки про потёкший кран.
+          </p>
 
-            <div
-              className="mt-6 p-4 sm:p-5 border"
-              style={{
-                background: 'var(--hp-good-tint)',
-                borderColor: 'var(--hp-good)',
-                borderRadius: 'var(--hp-radius)',
-              }}
-            >
-              <p className="text-[15px] font-bold" style={{ color: 'var(--hp-good)' }}>
-                Первая сделка — бесплатно.
-              </p>
-              <p className="mt-1 text-[14px] leading-relaxed" style={{ color: 'var(--hp-ink)' }}>
-                Комиссию за подбор нанимателя не берём: {objectsPhrase(USLUGI.freeFirstDeal.objectsPerOwner)} на
-                собственника, для тех, кто обращается к нам впервые.
-              </p>
-            </div>
+          <div
+            className="mt-6 p-4 sm:p-5 border"
+            style={{
+              background: 'var(--hp-good-tint)',
+              borderColor: 'var(--hp-good)',
+              borderRadius: 'var(--hp-radius)',
+            }}
+          >
+            <p className="text-[15px] font-bold" style={{ color: 'var(--hp-good)' }}>
+              Первая сделка — бесплатно.
+            </p>
+            <p className="mt-1 text-[14px] leading-relaxed" style={{ color: 'var(--hp-ink)' }}>
+              Комиссию за подбор нанимателя не берём: {objectsPhrase(USLUGI.freeFirstDeal.objectsPerOwner)} на
+              собственника, для тех, кто обращается к нам впервые.
+            </p>
           </div>
 
-          <IncomeCalculator id={USLUGI_ANCHORS.calculator} />
+          <div className="mt-7 flex flex-col sm:flex-row gap-3">
+            <a href={`#${USLUGI_ANCHORS.calculator}`} className="hp-btn-primary h-11 justify-center">
+              Посчитать доход
+            </a>
+            <a
+              href={USLUGI_CONTACTS.phoneHref}
+              className="hp-btn-secondary h-11 justify-center"
+              {...analyticsAttrs(ANALYTICS_EVENTS.phoneClick)}
+            >
+              Позвонить {USLUGI_CONTACTS.phone}
+            </a>
+          </div>
         </div>
       </section>
 
@@ -123,6 +132,11 @@ export default async function SdatKvartiruPage() {
 
       {/* ── Экран 2: тарифы ──────────────────────────────────────────── */}
       <TariffCards id={USLUGI_ANCHORS.tariffs} />
+
+      {/* ── Экран 2.5: калькулятор дохода ─────────────────────────────── */}
+      <section className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-16 sm:pt-20">
+        <IncomeCalculator id={USLUGI_ANCHORS.calculator} />
+      </section>
 
       {/* ── Экран 3: гарантия платежа ────────────────────────────────── */}
       <PaymentGuarantee id="garantiya" />
