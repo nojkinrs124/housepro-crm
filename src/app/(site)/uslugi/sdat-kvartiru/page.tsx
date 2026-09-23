@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Phone, Send } from 'lucide-react'
+import { Phone, Send, X } from 'lucide-react'
 import { ANALYTICS_EVENTS, analyticsAttrs } from '@/features/site/uslugi/analytics'
 import {
   USLUGI,
@@ -29,6 +29,12 @@ export const metadata: Metadata = {
 
 const HERO_ID = 'sdat-hero'
 
+const PAIN_POINTS = [
+  'Наниматель перестал платить, а вы узнаёте об этом от соседей',
+  'Наниматель испортил технику — и непонятно, кто платит за ремонт',
+  'Квартира стоит пустая, потому что искать нанимателя самому — это время, которого нет',
+]
+
 /** «один объект» / «два объекта» — из USLUGI.freeFirstDeal.objectsPerOwner */
 function objectsPhrase(n: number): string {
   const words: Record<number, string> = { 1: 'один объект', 2: 'два объекта', 3: 'три объекта' }
@@ -55,7 +61,7 @@ export default async function SdatKvartiruPage() {
               className="mt-4 text-[30px] sm:text-[40px] font-bold tracking-tight leading-[1.08] break-words"
               style={{ color: 'var(--hp-ink)' }}
             >
-              Сдать квартиру в Красноярске — и получать деньги вовремя
+              Сдать квартиру в Красноярске — и перестать быть на связи 24/7
             </h1>
             <p className="mt-5 text-[16px] sm:text-[17px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
               Находим нанимателя, проверяем его по базам, оформляем договор под вашу квартиру и ведём её
@@ -81,6 +87,37 @@ export default async function SdatKvartiruPage() {
           </div>
 
           <IncomeCalculator id={USLUGI_ANCHORS.calculator} />
+        </div>
+      </section>
+
+      {/* ── Экран 1.5: узнали себя? ──────────────────────────────────── */}
+      <section className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-12 sm:pt-16">
+        <div
+          className="border p-5 sm:p-6"
+          style={{
+            background: 'var(--hp-surface)',
+            borderColor: 'var(--hp-border)',
+            borderRadius: 'var(--hp-radius)',
+          }}
+        >
+          <h2 className="text-[17px] sm:text-[19px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
+            Узнали себя?
+          </h2>
+          <ul className="mt-4 space-y-3">
+            {PAIN_POINTS.map(point => (
+              <li
+                key={point}
+                className="flex items-start gap-2.5 text-[14px] leading-relaxed"
+                style={{ color: 'var(--hp-ink)' }}
+              >
+                <X
+                  aria-hidden="true"
+                  style={{ width: 15, height: 15, marginTop: 3, color: 'var(--hp-warn)', flexShrink: 0 }}
+                />
+                <span className="break-words">{point}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 

@@ -1,14 +1,19 @@
-import { Check } from 'lucide-react'
+'use client'
+
+import { useState } from 'react'
+import { Check, ChevronDown } from 'lucide-react'
 import { formatRub } from '../calc'
 import { TARIFFS, TARIFF_IDS, USLUGI, tariffCommissionLabel, type TariffId } from '../config'
 
 /**
- * Экран 4 страницы «Сдать квартиру» — таблица сравнения тарифов.
+ * Экран 4 страницы «Сдать квартиру» — сравнение тарифов.
  *
- * Серверный компонент: интерактивности нет, только разметка. Подписи строк —
- * дословно из docs/uslugi/sdat-kvartiru-texts.md, числа в них — из config.ts.
- * Включённость описана данными: у каждой строки `from` — минимальный тариф,
- * начиная с которого пункт входит (порядок тарифов — TARIFF_IDS).
+ * По умолчанию видна только «дельта» — что добавляется на следующем уровне,
+ * посчитанная из тех же ROWS, что и полная таблица (не отдельный текст, чтобы
+ * не разъезжалось с конфигом). Полная таблица на 20+ строк — под кнопкой,
+ * на мобильном она едет вбок и как первый экран сравнения читается тяжело.
+ * Подписи строк — дословно из docs/uslugi/sdat-kvartiru-texts.md, числа —
+ * из config.ts. Клиентский из-за useState на кнопке разворота.
  */
 
 interface Props {
@@ -75,6 +80,23 @@ function isIncluded(row: ComparisonRow, tariffId: TariffId): boolean {
   return TARIFF_IDS.indexOf(tariffId) >= TARIFF_IDS.indexOf(row.from)
 }
 
+/** Строки, которые появляются именно на этом тарифе (для блока «что добавляется») */
+function rowsAddedAt(tariffId: TariffId): string[] {
+  return ROWS.filter(row => row.from === tariffId).map(row => row.label)
+}
+
+interface DeltaStep {
+  fromLabel: string
+  toLabel: string
+  added: string[]
+}
+
+const DELTA_STEPS: DeltaStep[] = TARIFF_IDS.slice(1).map((tariffId, index) => ({
+  fromLabel: TARIFFS[TARIFF_IDS[index]].shortName,
+  toLabel: TARIFFS[tariffId].shortName,
+  added: rowsAddedAt(tariffId),
+}))
+
 // ─── Ячейки ────────────────────────────────────────────────────────────────
 
 function Included() {
@@ -105,19 +127,73 @@ const highlight = (tariffId: TariffId) =>
 // ─── Компонент ─────────────────────────────────────────────────────────────
 
 export function TariffComparison({ id }: Props) {
+  const [fullTableOpen, setFullTableOpen] = useState(false)
+
   return (
     <section id={id} className="scroll-mt-20 pt-16 sm:pt-20">
       <div className="max-w-[1180px] mx-auto px-4 sm:px-6">
         <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
-          Сравнение тарифов
+          Что добавляется на следующем уровне
         </h2>
+
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {DELTA_STEPS.map(step => (
+            <div
+              key={step.toLabel}
+              className="border p-5"
+              style={{
+                background: 'var(--hp-surface)',
+                borderColor: 'var(--hp-border)',
+                borderRadius: 'var(--hp-radius)',
+              }}
+            >
+              <p className="text-[13px] font-bold" style={{ color: 'var(--hp-accent)' }}>
+                {step.fromLabel} → {step.toLabel}
+              </p>
+              <ul className="mt-3 space-y-2">
+                {step.added.map(label => (
+                  <li
+                    key={label}
+                    className="flex items-start gap-2 text-[13.5px] leading-relaxed"
+                    style={{ color: 'var(--hp-ink)' }}
+                  >
+                    <Check
+                      aria-hidden="true"
+                      style={{ width: 15, height: 15, marginTop: 2, color: 'var(--hp-accent)', flexShrink: 0 }}
+                    />
+                    <span className="break-words">{label}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setFullTableOpen(v => !v)}
+          aria-expanded={fullTableOpen}
+          className="mt-6 inline-flex items-center gap-1.5 text-[13.5px] font-semibold"
+          style={{ color: 'var(--hp-accent)' }}
+        >
+          {fullTableOpen ? 'Скрыть полное сравнение' : 'Показать полное сравнение построчно'}
+          <ChevronDown
+            aria-hidden="true"
+            className={`transition-transform${fullTableOpen ? ' rotate-180' : ''}`}
+            style={{ width: 14, height: 14 }}
+          />
+        </button>
+
         {/* На телефоне видна одна колонка тарифа — без подсказки не очевидно, что таблица едет вбок */}
-        <p className="mt-2 text-[13px] sm:hidden" style={{ color: 'var(--hp-tertiary)' }}>
-          Таблица прокручивается вбок →
-        </p>
+        {fullTableOpen && (
+          <p className="mt-4 text-[13px] sm:hidden" style={{ color: 'var(--hp-tertiary)' }}>
+            Таблица прокручивается вбок →
+          </p>
+        )}
 
         <div
-          className="mt-4 sm:mt-8 border overflow-x-auto"
+          hidden={!fullTableOpen}
+          className="mt-4 border overflow-x-auto"
           style={{
             background: 'var(--hp-surface)',
             borderColor: 'var(--hp-border)',

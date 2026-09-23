@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Check } from 'lucide-react'
+import { X } from 'lucide-react'
 import { ANALYTICS_EVENTS, analyticsAttrs } from '@/features/site/uslugi/analytics'
 import { formatRub } from '@/features/site/uslugi/calc'
 import {
@@ -13,6 +13,7 @@ import {
 } from '@/features/site/uslugi/config'
 import { UslugiLeadForm } from '@/features/site/uslugi/components/UslugiLeadForm'
 import { WhatIf, type WhatIfItem } from '@/features/site/uslugi/components/WhatIf'
+import { ExpandableList } from '@/features/site/uslugi/components/ExpandableList'
 
 /**
  * Страница «Снять квартиру» — для нанимателей.
@@ -26,6 +27,12 @@ export const metadata: Metadata = {
   title: 'Снять квартиру в Красноярске — подбор с проверкой документов | ХаусПро',
   description: `Подберём квартиру под бюджет и район, включая закрытую базу. Проверяем собственника до залога, составляем договор и акт с описью. Комиссия ${tenantCommissionLabel()}, платится после заселения.`,
 }
+
+const PAIN_POINTS = [
+  'Внесли залог — а собственник продал квартиру и просит съехать',
+  'Хозяин приходит без предупреждения, когда захочет',
+  'Через месяц неожиданно подняли цену',
+]
 
 const WHAT_WE_DO = [
   'Разбираемся, что вам нужно: бюджет, район, срок, животные, дети, мебель — чтобы не возить вас по неподходящим вариантам',
@@ -127,26 +134,43 @@ export default function SnyatKvartiruPage() {
         </div>
       </section>
 
+      {/* ── Узнали себя? ───────────────────────────────────────────────── */}
+      <section className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-12 sm:pt-16">
+        <div
+          className="border p-5 sm:p-6"
+          style={{
+            background: 'var(--hp-surface)',
+            borderColor: 'var(--hp-border)',
+            borderRadius: 'var(--hp-radius)',
+          }}
+        >
+          <h2 className="text-[17px] sm:text-[19px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
+            Узнали себя?
+          </h2>
+          <ul className="mt-4 space-y-3">
+            {PAIN_POINTS.map(point => (
+              <li
+                key={point}
+                className="flex items-start gap-2.5 text-[14px] leading-relaxed"
+                style={{ color: 'var(--hp-ink)' }}
+              >
+                <X
+                  aria-hidden="true"
+                  style={{ width: 15, height: 15, marginTop: 3, color: 'var(--hp-warn)', flexShrink: 0 }}
+                />
+                <span className="break-words">{point}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
       {/* ── Что делаем ─────────────────────────────────────────────────── */}
       <section className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-16 sm:pt-20">
         <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
           Что делаем
         </h2>
-        <ul className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
-          {WHAT_WE_DO.map(item => (
-            <li
-              key={item}
-              className="flex items-start gap-2.5 text-[14px] leading-relaxed"
-              style={{ color: 'var(--hp-ink)' }}
-            >
-              <Check
-                aria-hidden="true"
-                style={{ width: 16, height: 16, marginTop: 3, color: 'var(--hp-accent)', flexShrink: 0 }}
-              />
-              <span className="break-words">{item}</span>
-            </li>
-          ))}
-        </ul>
+        <ExpandableList items={WHAT_WE_DO} className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3" />
       </section>
 
       {/* ── Сколько стоит ──────────────────────────────────────────────── */}

@@ -1,6 +1,7 @@
 'use client'
 
-import { Check } from 'lucide-react'
+import { useState } from 'react'
+import { Check, ChevronDown } from 'lucide-react'
 import { ANALYTICS_EVENTS, analyticsAttrs } from '../analytics'
 import { formatRub } from '../calc'
 import { TARIFFS, TARIFF_IDS, USLUGI, type TariffId } from '../config'
@@ -136,6 +137,59 @@ const COPY: Record<TariffId, TariffCopy> = {
 
 const POPULAR_BADGE = 'выбирают чаще всего'
 
+const FEATURES_VISIBLE_COUNT = 5
+
+/**
+ * Раскрывающийся список пунктов тарифа: по умолчанию первые 5, остальное —
+ * под кнопкой. Локальный компонент этого файла (не отдельный экспорт), потому
+ * что пункты — составные (`{ lead, text }`) и рендерятся функцией; вынести это
+ * в отдельный переиспользуемый компонент нельзя — серверные страницы раздела
+ * не могут передавать функции клиентским компонентам (см. ExpandableList.tsx).
+ */
+function FeatureList({ features }: { features: Feature[] }) {
+  const [expanded, setExpanded] = useState(false)
+  const hasMore = features.length > FEATURES_VISIBLE_COUNT
+  const shown = expanded ? features : features.slice(0, FEATURES_VISIBLE_COUNT)
+
+  return (
+    <>
+      <ul className="space-y-2.5">
+        {shown.map(f => (
+          <li
+            key={f.text}
+            className="flex items-start gap-2.5 text-[13.5px] leading-relaxed"
+            style={{ color: 'var(--hp-ink)' }}
+          >
+            <Check
+              aria-hidden="true"
+              style={{ width: 16, height: 16, marginTop: 2, color: 'var(--hp-accent)', flexShrink: 0 }}
+            />
+            <span className="break-words">
+              {f.lead && <strong className="font-bold">{f.lead} </strong>}
+              {f.text}
+            </span>
+          </li>
+        ))}
+      </ul>
+      {hasMore && (
+        <button
+          type="button"
+          onClick={() => setExpanded(v => !v)}
+          className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold"
+          style={{ color: 'var(--hp-accent)' }}
+        >
+          {expanded ? 'Свернуть' : `Показать все ${features.length} пунктов`}
+          <ChevronDown
+            aria-hidden="true"
+            className={`transition-transform${expanded ? ' rotate-180' : ''}`}
+            style={{ width: 14, height: 14 }}
+          />
+        </button>
+      )}
+    </>
+  )
+}
+
 // ─── Компонент ─────────────────────────────────────────────────────────────
 
 export function TariffCards({ id }: Props) {
@@ -205,24 +259,7 @@ export function TariffCards({ id }: Props) {
                       {copy.linkLine}
                     </p>
                   )}
-                  <ul className="space-y-2.5">
-                    {copy.features.map(f => (
-                      <li
-                        key={f.text}
-                        className="flex items-start gap-2.5 text-[13.5px] leading-relaxed"
-                        style={{ color: 'var(--hp-ink)' }}
-                      >
-                        <Check
-                          aria-hidden="true"
-                          style={{ width: 16, height: 16, marginTop: 2, color: 'var(--hp-accent)', flexShrink: 0 }}
-                        />
-                        <span className="break-words">
-                          {f.lead && <strong className="font-bold">{f.lead} </strong>}
-                          {f.text}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
+                  <FeatureList features={copy.features} />
                   {copy.footnote && (
                     <p
                       className="mt-4 pt-3 text-[12.5px] leading-relaxed border-t"

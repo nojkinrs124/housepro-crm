@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Check } from 'lucide-react'
+import { X } from 'lucide-react'
 import { ANALYTICS_EVENTS, analyticsAttrs } from '@/features/site/uslugi/analytics'
 import { formatRub } from '@/features/site/uslugi/calc'
 import {
@@ -13,6 +13,7 @@ import {
 } from '@/features/site/uslugi/config'
 import { UslugiLeadForm } from '@/features/site/uslugi/components/UslugiLeadForm'
 import { WhatIf, type WhatIfItem } from '@/features/site/uslugi/components/WhatIf'
+import { ExpandableList } from '@/features/site/uslugi/components/ExpandableList'
 
 /**
  * Страница «Продать или купить» — сопровождение сделки купли-продажи и
@@ -40,6 +41,12 @@ export const metadata: Metadata = {
     .filter(Boolean)
     .join(' '),
 }
+
+const PAIN_POINTS = [
+  'Покупатель ищется месяцами, а объект висит на завышенной цене',
+  'Сделка срывается в последний момент, деньги «зависают»',
+  'Собственник — несовершеннолетний, непонятно, дадут ли добро органы опеки',
+]
 
 const SELLING = [
   'Оцениваем объект по реальным сделкам, а не по ценам из объявлений, где квартиры висят месяцами',
@@ -83,26 +90,6 @@ const PRODAT_WHAT_IF: WhatIfItem[] = [
 ]
 
 const LEAD_FOOTNOTE = `Перезвоним в течение ${USLUGI.callback.withinMinutes} минут. ${USLUGI.callback.workingHours}.`
-
-function CheckList({ items }: { items: string[] }) {
-  return (
-    <ul className="mt-4 space-y-2.5">
-      {items.map(item => (
-        <li
-          key={item}
-          className="flex items-start gap-2.5 text-[14px] leading-relaxed"
-          style={{ color: 'var(--hp-ink)' }}
-        >
-          <Check
-            aria-hidden="true"
-            style={{ width: 16, height: 16, marginTop: 3, color: 'var(--hp-accent)', flexShrink: 0 }}
-          />
-          <span className="break-words">{item}</span>
-        </li>
-      ))}
-    </ul>
-  )
-}
 
 export default function ProdatKupitPage() {
   return (
@@ -154,6 +141,37 @@ export default function ProdatKupitPage() {
         </div>
       </section>
 
+      {/* ── Узнали себя? ───────────────────────────────────────────────── */}
+      <section className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-12 sm:pt-16">
+        <div
+          className="border p-5 sm:p-6"
+          style={{
+            background: 'var(--hp-surface)',
+            borderColor: 'var(--hp-border)',
+            borderRadius: 'var(--hp-radius)',
+          }}
+        >
+          <h2 className="text-[17px] sm:text-[19px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
+            Узнали себя?
+          </h2>
+          <ul className="mt-4 space-y-3">
+            {PAIN_POINTS.map(point => (
+              <li
+                key={point}
+                className="flex items-start gap-2.5 text-[14px] leading-relaxed"
+                style={{ color: 'var(--hp-ink)' }}
+              >
+                <X
+                  aria-hidden="true"
+                  style={{ width: 15, height: 15, marginTop: 3, color: 'var(--hp-warn)', flexShrink: 0 }}
+                />
+                <span className="break-words">{point}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
       {/* ── Продаёте / покупаете ───────────────────────────────────────── */}
       <section className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-16 sm:pt-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -168,7 +186,7 @@ export default function ProdatKupitPage() {
             <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
               Если вы продаёте
             </h2>
-            <CheckList items={SELLING} />
+            <ExpandableList items={SELLING} className="mt-4 space-y-2.5" />
           </article>
 
           <article
@@ -182,7 +200,7 @@ export default function ProdatKupitPage() {
             <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
               Если вы покупаете
             </h2>
-            <CheckList items={BUYING} />
+            <ExpandableList items={BUYING} className="mt-4 space-y-2.5" />
           </article>
         </div>
       </section>
