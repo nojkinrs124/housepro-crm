@@ -114,7 +114,7 @@ const CRM_PROMPT = `Ты — ассистент внутри Telegram-бота H
 Суммы — в рублях. Если пользователь не указал дату — используй сегодняшнюю.
 
 Мутирующие инструменты (add_transaction, update_deal_status, create_lead, create_property,
-update_property_status, create_task, complete_task) НЕ считай выполненными: система сама покажет
+update_property_status, create_task, complete_task, add_meter_readings) НЕ считай выполненными: система сама покажет
 пользователю подтверждение и выполнит действие только после его согласия.
 
 Read-only инструменты list_tasks и list_overdue_payments — для вопросов «что горит», «какие задачи
@@ -124,6 +124,12 @@ Read-only инструменты list_tasks и list_overdue_payments — для 
 
 Не хватает id (сделки, контакта, задачи) — сначала найди через read-only инструмент (get_deals,
 get_client, list_tasks). Несколько похожих совпадений — уточни у пользователя, не гадай.
+
+Показания счётчиков («ГВС 163.47, ХВС 426.38, свет 7612 по Соколовской 72», фото таблицы или
+квитанции со счётчиками) — сначала get_meters(search) по адресу, затем ОДИН add_meter_readings со
+всеми приборами. Передавай значения приборов (что на счётчике), не расход; тарифы — если они названы
+или видны. Столбец с предыдущей датой — это прошлые показания, их не вноси, если они уже есть в CRM.
+Аренду из такой таблицы в показания не включай.
 
 Несколько независимых действий за раз («добавь трёх лидов: …») — вызови инструмент несколько
 раз в одном ответе, система соберёт их в одно подтверждение.
@@ -169,6 +175,7 @@ const HELP_TEXT = `<b>HousePro CRM — бот-ассистент</b>
 • Лид Петров 8912…, снять 1к до 30 тысяч
 • Переведи сделку на следующую стадию
 • Поставь задачу позвонить клиенту завтра
+• Показания по Соколовской 72: ГВС 163.47, ХВС 426.38, свет 7612 · или фото таблицы
 
 Голосом — тоже понимаю. Меню: /menu.`
 
@@ -975,6 +982,16 @@ async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_
 
     if (result?.error) {
       results.push(`⚠️ Не получилось (${row.action_type}): ${result.error}`)
+    } else if (row.action_type === 'add_meter_readings' && result?.data) {
+      // Расход и сумма считаются на сервере — показываем их, а не пересказ запроса.
+      const d = result.data as { property: string; reading_date: string; saved: string[]; total_utilities: number; warnings: string[]; errors: string[] }
+      results.push(
+        `✅ Показания внесены: ${d.property} (${d.reading_date})\n` +
+          d.saved.map(l => `• ${l}`).join('\n') +
+          (d.total_utilities ? `\n<b>Коммуналка: ${d.total_utilities.toLocaleString('ru-RU')} ₽</b>` : '') +
+          (d.errors.length ? `\n⚠️ ${d.errors.join('\n⚠️ ')}` : '') +
+          (d.warnings.length ? `\nℹ️ ${d.warnings.join('\nℹ️ ')}` : ''),
+      )
     } else if (row.action_type === 'generate_contract' && result?.data?.docxUrl) {
       await sendDocument(chatId, result.data.docxUrl, row.summary_text)
       results.push(`✅ ${row.summary_text}`)

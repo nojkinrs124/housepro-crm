@@ -45,7 +45,9 @@ export function daysBetween(from: string, to: string): number {
  */
 export function computeConsumption(previousValue: number | null, currentValue: number): number | null {
   if (previousValue === null) return null
-  const delta = currentValue - previousValue
+  // До тысячных: показания дробные, и без округления 163.47 − 160.17 даёт
+  // 3.3000000000000114 — такой «расход» уходил бы в базу и в сумму начисления.
+  const delta = Math.round((currentValue - previousValue) * 1000) / 1000
   return delta < 0 ? null : delta
 }
 

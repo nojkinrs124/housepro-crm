@@ -24,6 +24,7 @@ export const MUTATING_TOOLS = [
   'update_property_status',
   'create_task',
   'complete_task',
+  'add_meter_readings',
 ] as const
 
 function apiBase(): string {
@@ -339,6 +340,54 @@ export const TOOL_DEFINITIONS = [
       },
     },
   },
+  {
+    type: 'function',
+    function: {
+      name: 'get_meters',
+      description:
+        'Найти объект по адресу/названию и показать его счётчики: тип, тариф, последние показания. ' +
+        'Вызывай перед add_meter_readings, чтобы получить property_id.',
+      parameters: {
+        type: 'object',
+        properties: {
+          search: { type: 'string', description: 'Адрес или часть названия, например «Соколовская 72»' },
+        },
+        required: ['search'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'add_meter_readings',
+      description:
+        'Внести показания счётчиков объекта (одним пакетом на одну дату). Расход и сумму считает CRM по ' +
+        'предыдущему показанию и тарифу; недостающий счётчик заводится сам. Передавай ТЕКУЩЕЕ показание прибора ' +
+        '(значение на счётчике), а не расход. Тариф — если пользователь его назвал или он есть на фото. ' +
+        'ГВС = hot_water, ХВС = cold_water, эл/свет = electricity. МУТИРУЮЩЕЕ действие — требует подтверждения.',
+      parameters: {
+        type: 'object',
+        properties: {
+          property_id: { type: 'string', description: 'UUID объекта из get_meters' },
+          property_title: { type: 'string', description: 'Название объекта — для текста подтверждения' },
+          reading_date: { type: 'string', description: 'YYYY-MM-DD, по умолчанию сегодня' },
+          readings: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                kind: { type: 'string', enum: ['electricity', 'cold_water', 'hot_water', 'gas', 'heating', 'other'] },
+                value: { type: 'number', description: 'Показание прибора' },
+                tariff: { type: 'number', description: 'Тариф за единицу, ₽' },
+              },
+              required: ['kind', 'value'],
+            },
+          },
+        },
+        required: ['property_id', 'readings'],
+      },
+    },
+  },
 ] as const
 
 /** Выполняет read-only инструмент. Мутирующие сюда не должны попадать — их перехватывает вебхук.
@@ -460,6 +509,11 @@ export async function dispatchReadOnlyTool(name: string, args: Record<string, un
         return { error: e instanceof Error ? e.message : 'Не удалось выполнить исследование' }
       }
     }
+    case 'get_meters': {
+      const search = String(args.search ?? '').trim()
+      if (!search) return { error: 'Не указан адрес объекта' }
+      return callApi(`/api/v1/meters?search=${encodeURIComponent(search)}`)
+    }
     default:
       return { error: `Неизвестный read-only инструмент: ${name}` }
   }
@@ -492,6 +546,11 @@ export async function executeConfirmedMutation(actionType: string, payload: Reco
         method: 'PATCH',
         body: JSON.stringify({ status: 'done' }),
       })
+    case 'add_meter_readings': {
+      // property_title нужен только тексту подтверждения, в API он лишний.
+      const { property_title: _title, ...body } = payload
+      return callApi('/api/v1/meters', { method: 'POST', body: JSON.stringify(body) })
+    }
     default:
       return { error: `Неизвестное мутирующее действие: ${actionType}` }
   }
@@ -526,6 +585,19 @@ export function describeMutation(actionType: string, args: Record<string, unknow
       return `✅ Новая задача: ${args.title}${args.deadline ? ` — срок ${args.deadline}` : ''}`
     case 'complete_task':
       return `☑️ Отметить задачу выполненной: ${args.task_id}`
+    case 'add_meter_readings': {
+      const labels: Record<string, string> = {
+        hot_water: 'ГВС', cold_water: 'ХВС', electricity: 'Свет', gas: 'Газ', heating: 'Отопление', other: 'Другой',
+      }
+      const rows = Array.isArray(args.readings) ? (args.readings as Array<Record<string, unknown>>) : []
+      const lines = rows.map(r =>
+        `• ${labels[String(r.kind)] ?? String(r.kind)}: ${r.value}${r.tariff ? ` (тариф ${r.tariff} ₽)` : ''}`,
+      )
+      return (
+        `🔢 Показания${args.property_title ? ` — ${args.property_title}` : ''}` +
+        `${args.reading_date ? ` на ${args.reading_date}` : ''}\n${lines.join('\n')}`
+      )
+    }
     default:
       return `Действие: ${actionType}`
   }
