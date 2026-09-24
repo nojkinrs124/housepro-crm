@@ -8,6 +8,9 @@ const KIND_VALUES = METER_KINDS.map(k => k.value) as [string, ...string[]]
 
 export const MeterReadingLineSchema = z.object({
   kind: z.enum(KIND_VALUES, { message: 'Неизвестный тип счётчика' }),
+  // Название прибора: «ХВС кухня», «ГВС ванная». Нужно, когда приборов
+  // одного вида на объекте несколько.
+  title: z.string().trim().max(100).nullable().optional(),
   value: z.coerce.number().min(0, 'Показание не может быть отрицательным'),
   // Тариф необязателен: если передан — обновляет тариф счётчика и участвует
   // в расчёте этого показания; если нет — берётся текущий тариф счётчика.

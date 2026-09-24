@@ -42,3 +42,31 @@ describe('planReading', () => {
     expect(planReading(history, '2026-09-23', 150, 1)).toMatchObject({ consumption: 50, amount: 50 })
   })
 })
+
+import { pickMeter } from '@/features/meters/services/reading-batch'
+
+describe('pickMeter — несколько приборов одного вида', () => {
+  const meters = [
+    { id: '1', kind: 'cold_water', title: 'ХВС кухня' },
+    { id: '2', kind: 'cold_water', title: 'ХВС ванная' },
+    { id: '3', kind: 'electricity', title: 'Свет' },
+  ]
+
+  it('находит по точному названию и по части', () => {
+    expect(pickMeter(meters, 'cold_water', 'ХВС ванная')).toMatchObject({ id: '2' })
+    expect(pickMeter(meters, 'cold_water', 'кухня')).toMatchObject({ id: '1' })
+  })
+
+  it('единственный прибор вида находится и без названия', () => {
+    expect(pickMeter(meters, 'electricity')).toMatchObject({ id: '3' })
+  })
+
+  it('без названия при двух приборах — ошибка, а не угадывание', () => {
+    expect(pickMeter(meters, 'cold_water')).toHaveProperty('error')
+  })
+
+  it('нового прибора нет — null, заводится новый', () => {
+    expect(pickMeter(meters, 'hot_water', 'ГВС кухня')).toBeNull()
+    expect(pickMeter(meters, 'cold_water', 'ХВС туалет')).toBeNull()
+  })
+})

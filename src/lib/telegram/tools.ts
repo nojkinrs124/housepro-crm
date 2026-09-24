@@ -377,6 +377,10 @@ export const TOOL_DEFINITIONS = [
               type: 'object',
               properties: {
                 kind: { type: 'string', enum: ['electricity', 'cold_water', 'hot_water', 'gas', 'heating', 'other'] },
+                title: {
+                  type: 'string',
+                  description: 'Название прибора, если их несколько одного вида: «ХВС кухня», «ГВС ванная». Бери как в get_meters',
+                },
                 value: { type: 'number', description: 'Показание прибора' },
                 tariff: { type: 'number', description: 'Тариф за единицу, ₽' },
               },
@@ -591,7 +595,7 @@ export function describeMutation(actionType: string, args: Record<string, unknow
       }
       const rows = Array.isArray(args.readings) ? (args.readings as Array<Record<string, unknown>>) : []
       const lines = rows.map(r =>
-        `• ${labels[String(r.kind)] ?? String(r.kind)}: ${r.value}${r.tariff ? ` (тариф ${r.tariff} ₽)` : ''}`,
+        `• ${r.title ? String(r.title) : labels[String(r.kind)] ?? String(r.kind)}: ${r.value}${r.tariff ? ` (тариф ${r.tariff} ₽)` : ''}`,
       )
       return (
         `🔢 Показания${args.property_title ? ` — ${args.property_title}` : ''}` +

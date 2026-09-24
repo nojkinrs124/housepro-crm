@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { authenticateApiKey, hasScope } from '@/lib/api-auth'
 import { MeterReadingsBatchSchema } from '@/lib/schemas/meters-api'
 import { writeAuditLogServiceRole } from '@/lib/audit'
-import { planReading } from '@/features/meters/services/reading-batch'
+import { planReading, pickMeter } from '@/features/meters/services/reading-batch'
 import { METER_KIND_LABELS, METER_KIND_UNITS } from '@/features/meters/config/meter-kinds'
 import { todayIso } from '@/lib/timezone'
 
@@ -118,7 +118,7 @@ export async function POST(request: Request) {
 
   const { data: existing } = await supabase
     .from('utility_meters')
-    .select('id, kind, tariff, unit')
+    .select('id, kind, title, tariff, unit')
     .eq('property_id', property_id)
     .eq('is_active', true)
 
@@ -128,8 +128,14 @@ export async function POST(request: Request) {
   let total = 0
 
   for (const line of readings) {
-    const label = METER_KIND_LABELS[line.kind] ?? line.kind
-    let meter = (existing ?? []).find(m => m.kind === line.kind) ?? null
+    const kindLabel = METER_KIND_LABELS[line.kind] ?? line.kind
+    const picked = pickMeter(existing ?? [], line.kind, line.title)
+    if (picked && 'error' in picked) {
+      errors.push(`${line.title || kindLabel}: ${picked.error}`)
+      continue
+    }
+    let meter = picked
+    const label = meter?.title || line.title || kindLabel
 
     if (!meter) {
       const { data: created, error } = await supabase
@@ -138,16 +144,19 @@ export async function POST(request: Request) {
           organization_id: auth.orgId,
           property_id,
           kind: line.kind,
+          title: line.title || null,
           unit: METER_KIND_UNITS[line.kind] || 'ед.',
           tariff: line.tariff ?? null,
         })
-        .select('id, kind, tariff, unit')
+        .select('id, kind, title, tariff, unit')
         .single()
       if (error || !created) {
         errors.push(`${label}: не удалось завести счётчик`)
         continue
       }
       meter = created
+      // Следующая строка пакета с тем же прибором должна его найти, а не завести второй.
+      ;(existing ?? []).push(created)
     } else if (line.tariff != null && Number(meter.tariff) !== line.tariff) {
       await supabase.from('utility_meters').update({ tariff: line.tariff }).eq('id', meter.id)
       meter = { ...meter, tariff: line.tariff }
