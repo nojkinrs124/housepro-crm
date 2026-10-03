@@ -86,6 +86,19 @@ export async function generatePaymentScheduleAction(
   if (!startDate) return { error: 'У договора не заполнена дата начала — укажите её в карточке' }
   if (!amount || amount <= 0) return { error: 'Укажите сумму периодического платежа' }
 
+  // Залог, который уже поступил, второй раз в график не попадает: иначе он
+  // висит плановым начислением и утренняя сводка просит оплатить то, что
+  // оплачено (договор HP-2026-0013, 03.10.2026).
+  const { data: receivedDeposit } = await supabase
+    .from('accounting_transactions')
+    .select('id')
+    .eq('contract_id', contractId)
+    .eq('type', 'income')
+    .eq('status', 'completed')
+    .ilike('description', '%депозит%')
+    .limit(1)
+  const depositAlreadyReceived = (receivedDeposit ?? []).length > 0
+
   const items = buildPaymentSchedule({
     startDate,
     endDate,
@@ -94,7 +107,7 @@ export async function generatePaymentScheduleAction(
       : contract.contract_type === 'sale' ? 'Платёж по договору' : 'Аренда',
     periodicity,
     dayOfMonth: dayOfMonth ?? null,
-    depositAmount,
+    depositAmount: depositAlreadyReceived ? null : depositAmount,
     prorateLastPeriod,
     indexationPercent,
     indexationPeriodMonths,
@@ -132,11 +145,12 @@ export async function generatePaymentScheduleAction(
   // Начисления по графику — платежи арендатора: без объекта и категории они не
   // попадали ни в карточку объекта в управлении, ни во взаиморасчёт с
   // собственником (проход 17.09.2026, MG-8).
-  const [{ data: engagement }, categoryId] = await Promise.all([
+  const [{ data: engagement }, categoryId, depositCategoryId] = await Promise.all([
     contract.property_id
       ? supabase.from('management_engagements').select('id').eq('property_id', contract.property_id).is('ended_at', null).maybeSingle()
       : Promise.resolve({ data: null }),
     categoryIdByCode(supabase, contract.contract_type === 'property_management' ? 'management_fee' : 'tenant_payment'),
+    categoryIdByCode(supabase, 'deposit'),
   ])
 
   const today = todayIso()
@@ -151,7 +165,9 @@ export async function generatePaymentScheduleAction(
     deal_id: contract.deal_id ?? null,
     property_id: contract.property_id ?? null,
     engagement_id: engagement?.id ?? null,
-    category_id: categoryId,
+    // Депозит — не арендный платёж: в категории «Арендный платёж» он попал бы
+    // в долю собственника при взаиморасчёте.
+    category_id: item.kind === 'deposit' ? (depositCategoryId ?? categoryId) : categoryId,
     created_by: user.id,
     organization_id: orgId,
     schedule_seq: item.seq,

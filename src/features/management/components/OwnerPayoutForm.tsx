@@ -2,8 +2,8 @@
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
-import { ArrowUpRight } from 'lucide-react'
-import { payOwnerAction } from '@/features/management/actions/settlement.actions'
+import { ArrowUpRight, ArrowDownLeft } from 'lucide-react'
+import { payOwnerAction, registerTenantPaymentAction } from '@/features/management/actions/settlement.actions'
 import { todayIso } from '@/lib/timezone'
 
 const inp = 'hp-input'
@@ -93,12 +93,17 @@ export function OwnerPayoutBlock({
   engagementId,
   balance,
   ownerName,
+  tenantPayment,
 }: {
   engagementId: string
   balance: number
   ownerName: string | null
+  /** Ближайший арендный платёж: сумма подставляется в форму «получено от арендатора». */
+  tenantPayment?: { amount: number; label: string; scheme: string | null; rate: number | null } | null
 }) {
-  const [open, setOpen] = useState(false)
+  const [mode, setMode] = useState<'owner' | 'tenant' | null>(null)
+  const open = mode === 'owner'
+  const setOpen = (v: boolean) => setMode(v ? 'owner' : null)
   const owed = balance > 0
 
   return (
@@ -113,11 +118,23 @@ export function OwnerPayoutBlock({
             {Math.abs(balance).toLocaleString('ru-RU')} ₽
           </p>
         </div>
-        <button type="button" onClick={() => setOpen(!open)} className="hp-btn-secondary shrink-0">
-          <ArrowUpRight style={{ width: 16, height: 16 }} />
-          {open ? 'Свернуть' : 'Я перевёл деньги собственнику'}
-        </button>
+        <div className="flex flex-wrap gap-2 shrink-0">
+          {tenantPayment && (
+            <button type="button" onClick={() => setMode(mode === 'tenant' ? null : 'tenant')} className="hp-btn-secondary shrink-0">
+              <ArrowDownLeft style={{ width: 16, height: 16 }} />
+              {mode === 'tenant' ? 'Свернуть' : 'Получено от арендатора'}
+            </button>
+          )}
+          <button type="button" onClick={() => setMode(open ? null : 'owner')} className="hp-btn-secondary shrink-0">
+            <ArrowUpRight style={{ width: 16, height: 16 }} />
+            {open ? 'Свернуть' : 'Я перевёл деньги собственнику'}
+          </button>
+        </div>
       </div>
+
+      {mode === 'tenant' && tenantPayment && (
+        <TenantPaymentForm engagementId={engagementId} payment={tenantPayment} onDone={() => setMode(null)} />
+      )}
 
       {!open && !owed && (
         <p className="text-xs text-[var(--hp-sub)]">
@@ -128,5 +145,65 @@ export function OwnerPayoutBlock({
 
       {open && <OwnerPayoutForm engagementId={engagementId} balance={balance} onDone={() => setOpen(false)} />}
     </div>
+  )
+}
+
+/**
+ * Получено от арендатора: сумма уже подставлена из ближайшего начисления,
+ * комиссия и доля собственника показываются сразу и пересчитываются при
+ * правке суммы. Проводка и закрытие начисления — одним нажатием.
+ */
+function TenantPaymentForm({
+  engagementId,
+  payment,
+  onDone,
+}: {
+  engagementId: string
+  payment: { amount: number; label: string; scheme: string | null; rate: number | null }
+  onDone: () => void
+}) {
+  const [pending, start] = useTransition()
+  const [amount, setAmount] = useState(String(payment.amount))
+  const today = todayIso()
+  const value = Number(amount.replace(',', '.')) || 0
+  const fee = payment.scheme === 'percent' ? Math.round(value * Number(payment.rate ?? 0)) / 100 : 0
+
+  function submit(formData: FormData) {
+    start(async () => {
+      const res = await registerTenantPaymentAction(formData)
+      if (res.error) {
+        toast.error(res.error)
+        return
+      }
+      toast.success('Поступление проведено, расчёт обновлён')
+      onDone()
+    })
+  }
+
+  return (
+    <form action={submit} className="space-y-3">
+      <input type="hidden" name="engagement_id" value={engagementId} />
+      <p className="text-xs text-[var(--hp-sub)]">{payment.label}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <label className={lbl}>Сумма, ₽</label>
+          <input name="amount" type="number" min="0" step="0.01" required value={amount}
+            onChange={e => setAmount(e.target.value)} className={inp} />
+        </div>
+        <div className="space-y-1.5">
+          <label className={lbl}>Дата</label>
+          <input name="date" type="date" max={today} defaultValue={today} className={inp} />
+        </div>
+      </div>
+      {payment.scheme === 'percent' && value > 0 && (
+        <p className="text-sm text-[var(--hp-ink)]">
+          Комиссия агентства {payment.rate}%: {fee.toLocaleString('ru-RU')} ₽ · собственнику:{' '}
+          {(Math.round((value - fee) * 100) / 100).toLocaleString('ru-RU')} ₽
+        </p>
+      )}
+      <button type="submit" disabled={pending} className="hp-btn-primary">
+        {pending ? 'Проводим…' : 'Подтвердить получение'}
+      </button>
+    </form>
   )
 }

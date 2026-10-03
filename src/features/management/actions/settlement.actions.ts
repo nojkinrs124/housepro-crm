@@ -66,23 +66,76 @@ export async function registerTenantPaymentAction(formData: FormData): Promise<R
 
   const tenantCategory = await categoryIdByCode(supabase, 'tenant_payment')
 
-  const { error } = await supabase.from('accounting_transactions').insert({
-    type: 'income',
-    status: 'completed',
-    amount,
-    date,
-    paid_at: new Date().toISOString(),
-    period_start: periodStart,
-    period_end: periodEnd,
-    description: 'Поступление от арендатора',
-    category_id: tenantCategory,
-    engagement_id: engagementId,
-    property_id: engagement.property_id,
-    payment_method: str(formData.get('payment_method')) || 'bank',
-    created_by: user.id,
-    organization_id: orgId,
-  })
-  if (error) return { error: friendlyDbError(error) }
+  // Если по этому платежу уже есть плановое начисление из графика — закрываем
+  // его, а не заводим второй раз: иначе начисление остаётся «неоплаченным» и
+  // утренняя сводка продолжает просить деньги, которые уже получены.
+  const horizon = new Date(`${date}T00:00:00Z`)
+  horizon.setUTCDate(horizon.getUTCDate() + 15)
+  const { data: plannedRows } = await supabase
+    .from('accounting_transactions')
+    .select('id, amount, due_date, period_start, period_end, contract_id, description')
+    .eq('engagement_id', engagementId)
+    .eq('type', 'income')
+    .eq('status', 'planned')
+    .eq('category_id', tenantCategory ?? '')
+    .not('schedule_seq', 'is', null)
+    .lte('due_date', horizon.toISOString().slice(0, 10))
+    .order('due_date', { ascending: true })
+    .limit(1)
+  const planned = plannedRows?.[0] ?? null
+
+  if (planned) {
+    const { error: closeError } = await supabase
+      .from('accounting_transactions')
+      .update({
+        status: 'completed',
+        amount,
+        date,
+        paid_at: new Date().toISOString(),
+        payment_method: str(formData.get('payment_method')) || 'bank',
+      })
+      .eq('id', planned.id)
+    if (closeError) return { error: friendlyDbError(closeError) }
+
+    // Заплатили меньше начисленного — остаток остаётся долгом отдельной строкой.
+    const rest = Math.round((Number(planned.amount) - amount) * 100) / 100
+    if (rest > 0) {
+      await supabase.from('accounting_transactions').insert({
+        type: 'income',
+        status: 'planned',
+        amount: rest,
+        date: planned.due_date ?? date,
+        due_date: planned.due_date,
+        description: `${planned.description ?? 'Аренда'} — остаток`,
+        category_id: tenantCategory,
+        engagement_id: engagementId,
+        contract_id: planned.contract_id,
+        property_id: engagement.property_id,
+        period_start: planned.period_start,
+        period_end: planned.period_end,
+        created_by: user.id,
+        organization_id: orgId,
+      })
+    }
+  } else {
+    const { error } = await supabase.from('accounting_transactions').insert({
+      type: 'income',
+      status: 'completed',
+      amount,
+      date,
+      paid_at: new Date().toISOString(),
+      period_start: periodStart,
+      period_end: periodEnd,
+      description: 'Поступление от арендатора',
+      category_id: tenantCategory,
+      engagement_id: engagementId,
+      property_id: engagement.property_id,
+      payment_method: str(formData.get('payment_method')) || 'bank',
+      created_by: user.id,
+      organization_id: orgId,
+    })
+    if (error) return { error: friendlyDbError(error) }
+  }
 
   // Удержание агентства при процентной схеме — отдельной проводкой, чтобы в
   // бухгалтерии было видно, откуда взялся доход, а не только итоговое сальдо.

@@ -190,6 +190,26 @@ export default async function ManagementDetailPage({ params }: { params: Promise
     : 0
 
   const ownerName = owner ? (owner.company_name || owner.full_name) : null
+
+  // Ближайший арендный платёж (не депозит): его сумма подставляется в «Получено
+  // от арендатора». Нет графика — берём сумму из договора аренды.
+  const nextRent = activeRent
+    ? planned
+        .filter(t => t.type === 'income' && t.contract_id === activeRent.id
+          && !/депозит/i.test(t.description ?? ''))
+        .sort((a, b) => (a.due_date as string).localeCompare(b.due_date as string))[0] ?? null
+    : null
+  const rentAmount = nextRent ? Number(nextRent.amount) : Number(activeRent?.amount ?? 0)
+  const tenantPayment = rentAmount > 0
+    ? {
+        amount: rentAmount,
+        label: nextRent
+          ? `${nextRent.description ?? 'Аренда'} · срок ${formatDateCompact(nextRent.due_date)}`
+          : 'Арендная плата по договору',
+        scheme: engagement?.settlement_scheme ?? null,
+        rate: engagement?.rate != null ? Number(engagement.rate) : null,
+      }
+    : null
   const contactOption = (c: { id: string; full_name: string; company_name: string | null; phone: string | null }) =>
     ({ id: c.id, label: c.company_name || c.full_name, hasPhone: Boolean(c.phone) })
 
@@ -232,6 +252,7 @@ export default async function ManagementDetailPage({ params }: { params: Promise
                 engagementId={engagement.id}
                 balance={settlement.balance}
                 ownerName={ownerName}
+                tenantPayment={tenantPayment}
               />
             </div>
           )}
