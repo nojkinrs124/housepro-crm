@@ -83,3 +83,31 @@ export function formatDateTime(
 export function formatTime(value: string | Date | null | undefined): string {
   return formatDateTime(value, { hour: '2-digit', minute: '2-digit' })
 }
+
+/**
+ * Границы календарного месяца как строки YYYY-MM-DD. `month` — 1..12.
+ *
+ * Через Date.UTC, а не через локальную полночь + toISOString(): на сервере в
+ * Europe/Moscow локальная полночь 1-го числа уезжала на 30-е предыдущего
+ * месяца, и «доход за месяц» считался за 30.09–30.10 (аудит 22.10.2026, P1-5).
+ */
+export function monthBounds(year: number, month: number): { from: string; to: string } {
+  const from = `${year}-${String(month).padStart(2, '0')}-01`
+  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate()
+  return { from, to: `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}` }
+}
+
+/** Границы текущего месяца по поясу агентства. */
+export function currentMonthBounds(now: Date = new Date()): { from: string; to: string } {
+  const p = partsIn(now)
+  return monthBounds(p.y, p.mo)
+}
+
+/** Первое число месяца `monthsBack` месяцев назад — для графиков и отчётов. */
+export function monthStartIso(monthsBack: number, now: Date = new Date()): string {
+  const p = partsIn(now)
+  const total = p.y * 12 + (p.mo - 1) - monthsBack
+  const year = Math.floor(total / 12)
+  const month = (total % 12) + 1
+  return `${year}-${String(month).padStart(2, '0')}-01`
+}

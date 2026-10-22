@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { resolveFeedAccess } from '@/lib/export-feed'
 import { buildRealtyFeed, type FeedProperty } from '@/features/properties/services/realty-feed.service'
 import { getSiteUrl } from '@/lib/telegram/site-url'
 import { FALLBACK_CONTACTS } from '@/features/site/config'
@@ -12,8 +13,10 @@ import { FALLBACK_CONTACTS } from '@/features/site/config'
 // потом живут годами, склеивать их в один нельзя.
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
-  const supabase = await createClient()
+export async function GET(request: Request) {
+  const access = await resolveFeedAccess(request, 'domclick')
+  if (!access.ok) return new NextResponse(access.message, { status: access.status })
+  const supabase = getSupabaseAdmin()
 
   const [{ data: properties }, { data: company }] = await Promise.all([
     supabase
@@ -23,11 +26,13 @@ export async function GET() {
          area, living_area, kitchen_area, rooms, floor, total_floors, year_built,
          latitude, longitude, metro, photo_urls, created_at, updated_at`
       )
+      .eq('organization_id', access.orgId)
       .eq('status', 'available')
       .order('created_at', { ascending: false }),
     supabase
       .from('company_settings')
       .select('name, phone, email')
+      .eq('organization_id', access.orgId)
       .order('is_default', { ascending: false })
       .limit(1)
       .maybeSingle(),

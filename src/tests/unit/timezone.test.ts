@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest'
-import { localDateTimeToIso, isoToLocalDateTime, todayIso, formatDateTime } from '@/lib/timezone'
+import {
+  localDateTimeToIso,
+  isoToLocalDateTime,
+  todayIso,
+  formatDateTime,
+  monthBounds,
+  currentMonthBounds,
+  monthStartIso,
+} from '@/lib/timezone'
 
 /**
  * Пояс агентства — Europe/Moscow (UTC+3, без перехода на летнее время).
@@ -31,5 +39,31 @@ describe('timezone', () => {
 
   it('форматирование показывает московское время', () => {
     expect(formatDateTime('2026-09-20T08:00:00.000Z', { hour: '2-digit', minute: '2-digit' })).toBe('11:00')
+  })
+
+  it('границы месяца — календарные, без сдвига на день', () => {
+    // Регрессия P1-5: локальная полночь + toISOString() давала 2026-09-30..2026-10-30.
+    expect(monthBounds(2026, 10)).toEqual({ from: '2026-10-01', to: '2026-10-31' })
+    expect(monthBounds(2026, 9)).toEqual({ from: '2026-09-01', to: '2026-09-30' })
+    expect(monthBounds(2028, 2)).toEqual({ from: '2028-02-01', to: '2028-02-29' })
+  })
+
+  it('текущий месяц считается по поясу агентства', () => {
+    // 21:30 UTC 30 сентября — в Москве уже 1 октября.
+    expect(currentMonthBounds(new Date('2026-09-30T21:30:00Z'))).toEqual({
+      from: '2026-10-01',
+      to: '2026-10-31',
+    })
+    expect(currentMonthBounds(new Date('2026-10-15T09:00:00Z'))).toEqual({
+      from: '2026-10-01',
+      to: '2026-10-31',
+    })
+  })
+
+  it('начало окна графика: N месяцев назад, включая переход через год', () => {
+    const now = new Date('2026-01-15T09:00:00Z')
+    expect(monthStartIso(0, now)).toBe('2026-01-01')
+    expect(monthStartIso(11, now)).toBe('2025-02-01')
+    expect(monthStartIso(12, now)).toBe('2025-01-01')
   })
 })

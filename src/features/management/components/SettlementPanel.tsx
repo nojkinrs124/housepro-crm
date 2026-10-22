@@ -105,6 +105,10 @@ export function SettlementPanel({
               <input name="period_end" type="date" className={inp} />
             </div>
           </div>
+          <label className="flex items-center gap-2 text-sm text-[var(--hp-ink)]">
+            <input type="checkbox" name="is_deposit" className="h-4 w-4" />
+            Это залог — в доход месяца и в комиссию агентства он не идёт
+          </label>
           {scheme === 'percent' && (
             <p className="text-xs text-[var(--hp-sub)]">
               Комиссия агентства спишется отдельной операцией автоматически — по ставке из условий

@@ -187,11 +187,27 @@ export async function applyBankStatementAction(items: StatementApplyItem[]): Pro
   let applied = 0
   for (const item of items) {
     const paidOn = item.paidOn ?? todayIso()
+    // Сумма из выписки — факт, а не подсказка: раньше item.amount игнорировался,
+    // и частичная оплата закрывала начисление целиком, завышая доход
+    // (аудит 22.10.2026, P0-3).
+    const paid = Number(item.amount || 0)
+    if (!(paid > 0)) continue
+
+    const { data: planned } = await supabase
+      .from('accounting_transactions')
+      .select('id, amount, deal_id, contract_id, property_id, engagement_id, category_id, description, due_date, schedule_seq, period_start, period_end')
+      .eq('id', item.transactionId)
+      .eq('organization_id', orgId)
+      .eq('status', 'planned')
+      .maybeSingle()
+
+    if (!planned) continue
 
     const { data: updated, error } = await supabase
       .from('accounting_transactions')
       .update({
         status: 'completed',
+        amount: paid,
         date: paidOn,
         paid_at: new Date(`${paidOn}T12:00:00Z`).toISOString(),
         payment_method: 'bank',
@@ -200,7 +216,7 @@ export async function applyBankStatementAction(items: StatementApplyItem[]): Pro
         // а номера платёжек повторяются от банка к банку и год от года.
         bank_document_number: item.documentNumber,
       })
-      .eq('id', item.transactionId)
+      .eq('id', planned.id)
       .eq('organization_id', orgId)
       .eq('status', 'planned')
       .select('id, deal_id')
@@ -209,6 +225,30 @@ export async function applyBankStatementAction(items: StatementApplyItem[]): Pro
     if (error || !updated) continue
 
     applied += 1
+
+    // Заплатили меньше начисленного — остаток остаётся долгом отдельной строкой.
+    const rest = Math.round((Number(planned.amount || 0) - paid) * 100) / 100
+    if (rest > 0) {
+      await supabase.from('accounting_transactions').insert({
+        type: 'income',
+        status: 'planned',
+        amount: rest,
+        date: planned.due_date ?? paidOn,
+        due_date: planned.due_date,
+        description: `${planned.description ?? 'Начисление'} — остаток`,
+        category_id: planned.category_id,
+        engagement_id: planned.engagement_id,
+        contract_id: planned.contract_id,
+        property_id: planned.property_id,
+        deal_id: planned.deal_id,
+        schedule_seq: planned.schedule_seq,
+        period_start: planned.period_start,
+        period_end: planned.period_end,
+        created_by: user.id,
+        organization_id: orgId,
+      })
+    }
+
     // Та же автоматизация, что при ручной отметке оплаты и при эквайринге.
     if (updated.deal_id) await advanceDealStage(supabase, updated.deal_id, 'completed')
   }

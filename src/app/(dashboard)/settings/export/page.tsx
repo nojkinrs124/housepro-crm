@@ -1,9 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { Download, Home, AlertCircle, FileText, Lightbulb } from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { getSiteUrl } from '@/lib/telegram/site-url'
 
 export default async function ExportPage() {
  const supabase = await createClient()
+ // Токен фида: по нему площадка тянет XML без входа в CRM. Без токена фид
+ // отдавался бы всем — это была утечка (аудит 22.10.2026, P1-1).
+ const { data: feedToken } = await supabase.rpc('ensure_property_feed_token')
  const { count } = await supabase
  .from('properties')
  .select('id', { count: 'exact', head: true })
@@ -103,8 +107,17 @@ export default async function ExportPage() {
  ))}
  </div>
 
+ {feedToken && (
+ <div className="space-y-1">
+ <p className="text-xs text-[var(--hp-sub)]">Постоянная ссылка для площадки</p>
+ <code className="block text-[11px] leading-relaxed break-all bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)] p-2 text-[var(--hp-ink)]">
+ {getSiteUrl()}{p.url}?token={feedToken}
+ </code>
+ </div>
+ )}
+
  <div className="flex flex-col sm:flex-row gap-2">
- <a href={p.url} target="_blank" rel="noopener noreferrer"
+ <a href={feedToken ? `${p.url}?token=${feedToken}` : p.url} target="_blank" rel="noopener noreferrer"
  className="flex-1 flex items-center justify-center gap-2 py-2.5 text-white text-sm font-semibold transition-colors"
  style={{ background: 'var(--hp-accent)' }}>
  <Download style={{ width: 16, height: 16 }} />
@@ -175,7 +188,7 @@ export default async function ExportPage() {
  <div>
  <p className="text-[var(--hp-info)] font-semibold text-sm">Авто-обновление</p>
  <p className="text-[var(--hp-info)] mt-1 text-sm leading-relaxed break-words">
- Укажите ссылку <code className="bg-[var(--hp-info-tint)] px-1.5 py-0.5 text-xs break-all">/api/export/avito</code> в настройках площадки для автоматического обновления объявлений.
+ Скопируйте «Постоянную ссылку для площадки» из карточки нужной площадки — в ней есть токен, и только с ним фид открывается. Ссылка без токена теперь закрыта: объекты агентства не отдаются тому, кто просто угадал адрес.
  </p>
  </div>
  </div>

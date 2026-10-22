@@ -22,8 +22,16 @@ export function createPublicClient(revalidateSeconds = 60) {
       detectSessionInUrl: false,
     },
     global: {
+      // Таймаут обязателен: публичные страницы рендерятся и при сборке. Без
+      // него недоступный Supabase подвешивал пререндер до лимита Next (60 с на
+      // страницу, три попытки), и билд раздувался на минуты (аудит 22.10.2026,
+      // P0-5). 4 секунды — заведомо больше нормального ответа PostgREST.
       fetch: (url, options = {}) =>
-        fetch(url, { ...options, next: { revalidate: revalidateSeconds } }),
+        fetch(url, {
+          ...options,
+          signal: options.signal ?? AbortSignal.timeout(4000),
+          next: { revalidate: revalidateSeconds },
+        }),
     },
   })
 }

@@ -64,7 +64,11 @@ export async function registerTenantPaymentAction(formData: FormData): Promise<R
     return { error: 'Не выбрана схема расчёта — сначала заполните условия обслуживания' }
   }
 
-  const tenantCategory = await categoryIdByCode(supabase, 'tenant_payment')
+  // Залог — не арендный платёж: в категории «Арендный платёж» он попадал в базу
+  // процента агентства, и комиссия считалась с возвратных денег собственника
+  // (аудит 22.10.2026, P0-2).
+  const isDeposit = str(formData.get('is_deposit')) === 'on'
+  const chargeCategory = await categoryIdByCode(supabase, isDeposit ? 'deposit' : 'tenant_payment')
 
   // Если по этому платежу уже есть плановое начисление из графика — закрываем
   // его, а не заводим второй раз: иначе начисление остаётся «неоплаченным» и
@@ -73,11 +77,11 @@ export async function registerTenantPaymentAction(formData: FormData): Promise<R
   horizon.setUTCDate(horizon.getUTCDate() + 15)
   const { data: plannedRows } = await supabase
     .from('accounting_transactions')
-    .select('id, amount, due_date, period_start, period_end, contract_id, description')
+    .select('id, amount, due_date, period_start, period_end, contract_id, description, schedule_seq')
     .eq('engagement_id', engagementId)
     .eq('type', 'income')
     .eq('status', 'planned')
-    .eq('category_id', tenantCategory ?? '')
+    .eq('category_id', chargeCategory ?? '')
     .not('schedule_seq', 'is', null)
     .lte('due_date', horizon.toISOString().slice(0, 10))
     .order('due_date', { ascending: true })
@@ -98,6 +102,8 @@ export async function registerTenantPaymentAction(formData: FormData): Promise<R
     if (closeError) return { error: friendlyDbError(closeError) }
 
     // Заплатили меньше начисленного — остаток остаётся долгом отдельной строкой.
+    // schedule_seq переносим: без него следующая оплата не найдёт эту строку,
+    // и остаток висел бы «долгом» навсегда (аудит 22.10.2026, P1-4).
     const rest = Math.round((Number(planned.amount) - amount) * 100) / 100
     if (rest > 0) {
       await supabase.from('accounting_transactions').insert({
@@ -107,12 +113,13 @@ export async function registerTenantPaymentAction(formData: FormData): Promise<R
         date: planned.due_date ?? date,
         due_date: planned.due_date,
         description: `${planned.description ?? 'Аренда'} — остаток`,
-        category_id: tenantCategory,
+        category_id: chargeCategory,
         engagement_id: engagementId,
         contract_id: planned.contract_id,
         property_id: engagement.property_id,
         period_start: planned.period_start,
         period_end: planned.period_end,
+        schedule_seq: planned.schedule_seq,
         created_by: user.id,
         organization_id: orgId,
       })
@@ -126,8 +133,8 @@ export async function registerTenantPaymentAction(formData: FormData): Promise<R
       paid_at: new Date().toISOString(),
       period_start: periodStart,
       period_end: periodEnd,
-      description: 'Поступление от арендатора',
-      category_id: tenantCategory,
+      description: isDeposit ? 'Залог от арендатора' : 'Поступление от арендатора',
+      category_id: chargeCategory,
       engagement_id: engagementId,
       property_id: engagement.property_id,
       payment_method: str(formData.get('payment_method')) || 'bank',
@@ -139,7 +146,8 @@ export async function registerTenantPaymentAction(formData: FormData): Promise<R
 
   // Удержание агентства при процентной схеме — отдельной проводкой, чтобы в
   // бухгалтерии было видно, откуда взялся доход, а не только итоговое сальдо.
-  if (engagement.settlement_scheme === 'percent') {
+  // С залога процент не берём: это возвратные деньги, а не аренда.
+  if (engagement.settlement_scheme === 'percent' && !isDeposit) {
     const rate = Number(engagement.rate ?? 0)
     const fee = Math.round(amount * rate) / 100
     if (fee > 0) {
@@ -185,6 +193,10 @@ export async function payOwnerAction(formData: FormData): Promise<Result> {
   const ctx = await getSessionContext()
   if (!ctx.ok) return { error: ctx.error }
   const { supabase, user, orgId } = ctx
+
+  // Деньги наружу: без лимита двойной клик по кнопке выплачивал дважды.
+  const rl = await rateLimitMutation(user.id, 'owner_payout')
+  if (!rl.success) return { error: 'Слишком много запросов' }
 
   const permError = await requirePermission(user.id, 'accounting', 'create')
   if (permError) return permError
@@ -273,6 +285,9 @@ export async function addExpenseAction(formData: FormData): Promise<Result> {
   const ctx = await getSessionContext()
   if (!ctx.ok) return { error: ctx.error }
   const { supabase, user, orgId } = ctx
+
+  const rl = await rateLimitMutation(user.id, 'expense')
+  if (!rl.success) return { error: 'Слишком много запросов' }
 
   const permError = await requirePermission(user.id, 'accounting', 'create')
   if (permError) return permError

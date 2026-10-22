@@ -221,12 +221,13 @@ export function calcSettlement(
   }
 }
 
-/** Границы календарного месяца в виде строк YYYY-MM-DD. */
-export function monthBounds(year: number, month: number): { from: string; to: string } {
-  const from = `${year}-${String(month).padStart(2, '0')}-01`
-  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate()
-  return { from, to: `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}` }
-}
+/**
+ * Границы календарного месяца в виде строк YYYY-MM-DD.
+ *
+ * Реализация живёт в `@/lib/timezone` — там же, где «сегодня» агентства:
+ * две копии одного расчёта уже разъезжались по поясу.
+ */
+export { monthBounds } from '@/lib/timezone'
 
 /**
  * Простой объекта: есть ли действующий договор найма на дату.

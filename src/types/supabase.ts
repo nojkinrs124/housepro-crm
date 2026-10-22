@@ -3386,6 +3386,32 @@ export type Database = {
           },
         ]
       }
+      property_feed_tokens: {
+        Row: {
+          created_at: string
+          organization_id: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          organization_id: string
+          token?: string
+        }
+        Update: {
+          created_at?: string
+          organization_id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "property_feed_tokens_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       property_handovers: {
         Row: {
           completed_at: string | null
@@ -4044,6 +4070,7 @@ export type Database = {
       }
       check_expiring_contracts: { Args: never; Returns: undefined }
       check_overdue_payments: { Args: never; Returns: undefined }
+      ensure_property_feed_token: { Args: never; Returns: string }
       get_avito_feed_contact_phone: {
         Args: { p_token: string }
         Returns: string
@@ -4311,4 +4338,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-

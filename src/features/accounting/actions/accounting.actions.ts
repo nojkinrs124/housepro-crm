@@ -14,7 +14,7 @@ import type {
   Update,
 } from '@/types/database'
 import { friendlyDbError } from '@/lib/errors'
-import { todayIso } from '@/lib/timezone'
+import { currentMonthBounds, monthBounds, monthStartIso, todayIso } from '@/lib/timezone'
 import { isAgencyRevenue, isAgencyExpense } from '@/features/accounting/utils/money-classification'
 import { transactionDirection, type AccountingFilters } from '@/features/accounting/utils/direction'
 
@@ -119,9 +119,9 @@ export async function getAccountingStats(filters?: AccountingFilters): Promise<A
     agencyIncomeThisMonth: 0, agencyExpenseThisMonth: 0, agencyProfitThisMonth: 0,
   }
 
-  const now = new Date()
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
-  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10)
+  // Границы месяца — по поясу агентства. Раньше: локальная полночь + toISOString(),
+  // из-за чего «доход за месяц» включал 30 сентября и терял 31 октября (P1-5).
+  const { from: monthStart, to: monthEnd } = currentMonthBounds()
 
   let query = supabase
     .from('accounting_transactions')
@@ -181,15 +181,13 @@ export async function getMonthlyPnL(months = 12, filters?: AccountingFilters) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
 
-  const since = new Date()
-  since.setMonth(since.getMonth() - months + 1)
-  since.setDate(1)
+  const since = monthStartIso(months - 1)
 
   let query = supabase
     .from('accounting_transactions')
     .select(`type, amount, date, ${FILTERABLE_SELECT}`)
     .eq('status', 'completed')
-    .gte('date', since.toISOString().slice(0, 10))
+    .gte('date', since)
     .order('date', { ascending: true })
   if (filters?.employeeId) query = query.eq('employee_id', filters.employeeId)
   if (filters?.propertyId) query = query.eq('property_id', filters.propertyId)
@@ -232,11 +230,10 @@ export async function getCategoryBreakdown(type: AccountingTransactionType, peri
     .eq('status', 'completed')
 
   if (period === 'month') {
-    const now = new Date()
-    const start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
-    query = query.gte('date', start)
+    const { from } = currentMonthBounds()
+    query = query.gte('date', from)
   } else if (period === 'year') {
-    const start = `${new Date().getFullYear()}-01-01`
+    const start = monthBounds(new Date().getFullYear(), 1).from
     query = query.gte('date', start)
   }
   if (filters?.employeeId) query = query.eq('employee_id', filters.employeeId)
@@ -346,15 +343,26 @@ export async function createContractPaymentAction(
   const orgId = await requireOrgId().catch(() => null)
   if (!orgId) return { error: 'Организация не найдена' }
 
+  const { rateLimitMutation } = await import('@/lib/rate-limit')
+  const rl = await rateLimitMutation(user.id, 'contract_payment')
+  if (!rl.success) return { error: 'Слишком много запросов. Подождите минуту.' }
+
   const amount   = parseAmount(formData.get('amount'))
   const dueDate  = (formData.get('due_date') as string) || null
   const category = (formData.get('category') as string) || null
   const notes    = (formData.get('description') as string) || null
+  // Вид платежа: залог — не аренда. Без категории платёж не попадал ни в
+  // взаиморасчёт с собственником, ни в отчёты по видам дохода (аудит 22.10.2026, P0-4).
+  const kind     = (formData.get('kind') as string) === 'deposit' ? 'deposit' : 'rent'
 
   if (!amount) return { error: 'Укажите корректную сумму (больше 0)' }
 
   const permError = await requirePermission(user.id, 'accounting', 'create')
   if (permError) return permError
+
+  const { categoryIdByCode } = await import('@/features/management/data/settlement.data')
+  const { chargeCategoryCode } = await import('@/features/accounting/services/charges')
+  const categoryId = await categoryIdByCode(supabase, chargeCategoryCode(kind))
 
   const today = todayIso()
 
@@ -374,6 +382,7 @@ export async function createContractPaymentAction(
     status: 'planned' as AccountingTransactionStatus,
     contract_id: contractId,
     deal_id: contract?.deal_id ?? null,
+    category_id: categoryId,
     // Объект и обслуживание берутся из договора: без них начисление не видно
     // ни в доходности объекта, ни во взаиморасчёте с собственником.
     ...(await resolvePropertyLinks(supabase, null, contractId)),

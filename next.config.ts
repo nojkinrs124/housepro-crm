@@ -3,6 +3,9 @@ import { withSentryConfig } from '@sentry/nextjs'
 
 const nextConfig: NextConfig = {
   typescript: { ignoreBuildErrors: false },
+  // Dev-сервер открывают по LAN IP сервера (192.168.3.14), не только с localhost —
+  // Next 16 по умолчанию блокирует cross-origin запросы к dev-ресурсам с других хостов.
+  allowedDevOrigins: ['192.168.3.14'],
   // Смоук-тесты поднимают свой Next рядом с рабочим dev-сервером; Next 16 держит
   // lock в distDir, поэтому у смоука он свой (playwright.smoke.config.ts задаёт
   // NEXT_DIST_DIR=.next-smoke). В обычной работе переменной нет — остаётся .next.

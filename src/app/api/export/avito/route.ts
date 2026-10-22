@@ -1,5 +1,6 @@
-import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { resolveFeedAccess } from '@/lib/export-feed'
 
 // КРИТИЧНО: этот роут отдаёт данные, специфичные для конкретной организации/пользователя
 // (RLS или ручная фильтрация по organization_id). Next.js по умолчанию может закэшировать
@@ -7,11 +8,14 @@ import { NextResponse } from 'next/server'
 // одному URL — это утечка данных между тенантами. force-dynamic отключает это кэширование.
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
-  const supabase = await createClient()
-  const { data: properties } = await supabase
+export async function GET(request: Request) {
+  const access = await resolveFeedAccess(request, 'avito')
+  if (!access.ok) return new NextResponse(access.message, { status: access.status })
+
+  const { data: properties } = await getSupabaseAdmin()
     .from('properties')
     .select('*')
+    .eq('organization_id', access.orgId)
     .eq('status', 'available')
     .order('created_at', { ascending: false })
 

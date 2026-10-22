@@ -60,6 +60,17 @@ export function AddContractPaymentForm({ contractId }: { contractId: string }) {
  </div>
 
  <div className="space-y-1">
+ <label className="text-xs text-muted-foreground">Что это</label>
+ <select
+ name="kind" defaultValue="rent"
+ className="w-full h-10 px-4 border border-input bg-background text-sm outline-none focus:border-[var(--hp-ink)] transition-all"
+ >
+ <option value="rent">Арендный платёж</option>
+ <option value="deposit">Залог (возвратный)</option>
+ </select>
+ </div>
+
+ <div className="space-y-1">
  <label className="text-xs text-muted-foreground">Примечание</label>
  <input
  name="description" type="text" placeholder="Аренда за март..."

@@ -11,8 +11,7 @@ import {
   scheduleTotal,
   type SchedulePeriodicity,
 } from '@/features/accounting/services/payment-schedule.service'
-import { todayIso } from '@/lib/timezone'
-import { categoryIdByCode } from '@/features/management/data/settlement.data'
+import { chargeKindFor, insertCharges } from '@/features/accounting/services/charges'
 
 const VALID_PERIODICITY: SchedulePeriodicity[] = ['monthly', 'quarterly', 'semiannual', 'yearly', 'once']
 
@@ -145,38 +144,39 @@ export async function generatePaymentScheduleAction(
   // Начисления по графику — платежи арендатора: без объекта и категории они не
   // попадали ни в карточку объекта в управлении, ни во взаиморасчёт с
   // собственником (проход 17.09.2026, MG-8).
-  const [{ data: engagement }, categoryId, depositCategoryId] = await Promise.all([
-    contract.property_id
-      ? supabase.from('management_engagements').select('id').eq('property_id', contract.property_id).is('ended_at', null).maybeSingle()
-      : Promise.resolve({ data: null }),
-    categoryIdByCode(supabase, contract.contract_type === 'property_management' ? 'management_fee' : 'tenant_payment'),
-    categoryIdByCode(supabase, 'deposit'),
-  ])
+  //
+  // Категория — только через charges.ts: залог там отдельный вид, иначе он
+  // попадает в базу процента агентства (находка аудита 22.10.2026, P0-1).
+  const { data: engagement } = contract.property_id
+    ? await supabase
+        .from('management_engagements')
+        .select('id')
+        .eq('property_id', contract.property_id)
+        .is('ended_at', null)
+        .maybeSingle()
+    : { data: null }
 
-  const today = todayIso()
-  const rows = items.map((item) => ({
-    type: 'income' as const,
-    amount: item.amount,
-    date: item.dueDate || today,
-    due_date: item.dueDate,
-    status: 'planned' as const,
-    description: item.label,
-    contract_id: contractId,
-    deal_id: contract.deal_id ?? null,
-    property_id: contract.property_id ?? null,
-    engagement_id: engagement?.id ?? null,
-    // Депозит — не арендный платёж: в категории «Арендный платёж» он попал бы
-    // в долю собственника при взаиморасчёте.
-    category_id: item.kind === 'deposit' ? (depositCategoryId ?? categoryId) : categoryId,
-    created_by: user.id,
-    organization_id: orgId,
-    schedule_seq: item.seq,
-    period_start: item.periodStart,
-    period_end: item.periodEnd,
-  }))
-
-  const { error: insertError } = await supabase.from('accounting_transactions').insert(rows)
-  if (insertError) return { error: insertError.message }
+  const { error: insertError } = await insertCharges(
+    supabase,
+    items.map((item) => ({
+      kind: chargeKindFor(item.kind, contract.contract_type),
+      amount: item.amount,
+      label: item.label,
+      dueDate: item.dueDate,
+      seq: item.seq,
+      periodStart: item.periodStart,
+      periodEnd: item.periodEnd,
+    })),
+    {
+      organizationId: orgId,
+      createdBy: user.id,
+      contractId,
+      dealId: contract.deal_id ?? null,
+      propertyId: contract.property_id ?? null,
+      engagementId: engagement?.id ?? null,
+    },
+  )
+  if (insertError) return { error: `Не удалось создать график: ${insertError}` }
 
   // Условие индексации запоминаем на договоре: при пересоздании графика
   // и при печати документов оно должно быть тем же, а не вводиться заново.

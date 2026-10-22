@@ -22,8 +22,8 @@ import {
   requiredForContract,
   taskTitleForContract,
 } from '../services/deal-completion'
-import { todayIso } from '@/lib/timezone'
 import { categoryIdByCode } from '@/features/management/data/settlement.data'
+import { chargeKindFor, insertCharges } from '@/features/accounting/services/charges'
 
 const VALID_PERIODICITY: SchedulePeriodicity[] = ['monthly', 'quarterly', 'semiannual', 'yearly', 'once']
 
@@ -120,6 +120,24 @@ export async function completeDealAction(
 
   const created: string[] = []
 
+  // ─── 0. Защита от повторного оформления ─────────────────────────────────
+  // Без неё второй сабмит создавал второй договор, второй график и вторую
+  // комиссию — при том что стадия сделки уже сдвинута (аудит 22.10.2026, P1-6).
+  const { data: existingContract } = await supabase
+    .from('contracts')
+    .select('id, contract_number, status')
+    .eq('deal_id', dealId)
+    .eq('contract_type', contractType)
+    .maybeSingle()
+
+  if (existingContract) {
+    return {
+      error:
+        `По этой сделке уже есть договор ${existingContract.contract_number ?? ''} `.trim() +
+        'этого типа — оформление не повторяем. Откройте договор, если нужно что-то изменить.',
+    }
+  }
+
   // ─── 1. Договор ─────────────────────────────────────────────────────────
   const { data: contract, error: contractError } = await supabase
     .from('contracts')
@@ -176,28 +194,42 @@ export async function completeDealAction(
       : []
 
     if (items.length > 0) {
-      const today = todayIso()
-      const tenantCategory = await categoryIdByCode(supabase, 'tenant_payment')
-      const { error: scheduleError } = await supabase.from('accounting_transactions').insert(
-        items.map(item => ({
-          type: 'income' as const,
+      // Обслуживание ищем так же, как график договора: без engagement_id
+      // начисления не видны во взаиморасчёте с собственником.
+      const { data: engagement } = deal.property_id
+        ? await supabase
+            .from('management_engagements')
+            .select('id')
+            .eq('property_id', deal.property_id)
+            .is('ended_at', null)
+            .maybeSingle()
+        : { data: null }
+
+      // Категория — через charges.ts. Здесь был залог в категории «Арендный
+      // платёж», то есть в базе процента агентства (аудит 22.10.2026, P0-1).
+      const { error: scheduleError, count } = await insertCharges(
+        supabase,
+        items.map((item) => ({
+          kind: chargeKindFor(item.kind, contractType),
           amount: item.amount,
-          date: item.dueDate || today,
-          due_date: item.dueDate,
-          status: 'planned' as const,
-          description: item.label,
-          category_id: tenantCategory,
-          contract_id: contract.id,
-          deal_id: dealId,
-          property_id: deal.property_id,
-          created_by: user.id,
-          organization_id: orgId,
-          schedule_seq: item.seq,
-          period_start: item.periodStart,
-          period_end: item.periodEnd,
-        }))
+          label: item.label,
+          dueDate: item.dueDate,
+          seq: item.seq,
+          periodStart: item.periodStart,
+          periodEnd: item.periodEnd,
+        })),
+        {
+          organizationId: orgId,
+          createdBy: user.id,
+          contractId: contract.id,
+          dealId,
+          propertyId: deal.property_id,
+          engagementId: engagement?.id ?? null,
+        },
       )
-      if (!scheduleError) created.push(`${items.length} начислений`)
+      // Сорвавшийся график больше не молчит: строка попадает в итог оформления.
+      if (scheduleError) created.push(`график не создан (${scheduleError})`)
+      else created.push(`${count} начислений`)
     }
   }
 
@@ -275,13 +307,27 @@ export async function completeDealAction(
       agreedFee: agencyContracts?.[0]?.amount ?? null,
     })
 
-    if (commission.amount > 0) {
+    const feeCategoryId = await categoryIdByCode(supabase, 'agency_fee')
+    // Вторая комиссия по той же сделке — это двойной доход агентства в отчётах.
+    const { data: existingFee } = feeCategoryId
+      ? await supabase
+          .from('accounting_transactions')
+          .select('id')
+          .eq('deal_id', dealId)
+          .eq('category_id', feeCategoryId)
+          .limit(1)
+          .maybeSingle()
+      : { data: null }
+
+    if (existingFee) {
+      created.push('комиссия уже начислена ранее — вторую не создаём')
+    } else if (commission.amount > 0) {
       const { error: feeError } = await supabase.from('accounting_transactions').insert({
         type: 'income',
         status: 'planned',
         amount: commission.amount,
         date: startDate,
-        category_id: await categoryIdByCode(supabase, 'agency_fee'),
+        category_id: feeCategoryId,
         description: `Вознаграждение агентства${commission.basis ? ` — ${commission.basis}` : ''}`,
         deal_id: dealId,
         contract_id: contract.id,
