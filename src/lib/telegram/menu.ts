@@ -1,6 +1,6 @@
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { editMessageText, sendMessage, type InlineKeyboardButton } from '@/lib/telegram/api'
-import { getChannelSettings, setSchedulePaused, type ChannelSettings } from '@/lib/telegram/channel'
+import { getChannelSettings, setSchedulePaused, invalidateChannelSettingsCache, type ChannelSettings } from '@/lib/telegram/channel'
 import {
   buildLeadsScreen,
   buildDealsScreen,
@@ -356,6 +356,7 @@ export async function setTimezone(orgId: string, timezone: string): Promise<{ er
     .from('channel_bot_settings')
     .update({ timezone, updated_at: new Date().toISOString() })
     .eq('organization_id', orgId)
+  invalidateChannelSettingsCache(orgId)
   return { error: error?.message }
 }
 
@@ -368,4 +369,5 @@ export async function setAddUserAwaiting(orgId: string, awaiting: boolean, owner
       awaiting_intent_user_id: awaiting ? (ownerUserId ?? null) : null,
     })
     .eq('organization_id', orgId)
+  invalidateChannelSettingsCache(orgId)
 }

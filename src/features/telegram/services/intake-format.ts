@@ -454,3 +454,56 @@ export function stripBinaryFromHistory<T extends HistoryMessage>(messages: T[]):
     return { ...m, content }
   })
 }
+
+export interface ToolCallHistoryMessage extends HistoryMessage {
+  tool_calls?: Array<{ id: string; type: 'function'; function: { name: string; arguments: string } }>
+  tool_call_id?: string
+}
+
+/**
+ * Чинит историю так, чтобы в ней не осталось assistant-сообщения с `tool_calls`,
+ * у которого нет пары `{role:'tool', tool_call_id}` на каждый вызов сразу следом.
+ *
+ * Такое рассогласование и так возникает в рабочем пути: мутирующая ветка в
+ * `handleUserTurn` после `message.tool_calls` делает `return` до того, как
+ * появится хоть один `tool`-ответ (подтверждение уходит пользователю отдельным
+ * сообщением) — а `finally` сохраняет историю как есть. OpenAI-совместимые API
+ * (включая OpenRouter) отвечают 400 на следующий же вопрос, если в истории есть
+ * «висящий» tool_call без ответа — весь диалог ломается молча для пользователя.
+ *
+ * Чиним, а не выбрасываем сообщение целиком: assistant-текст (если был) и сами
+ * tool_calls остаются видны модели как контекст «что уже спросили», а каждому
+ * непарному вызову дозаполняется синтетический tool-ответ — так модель не
+ * решит повторить вызов, думая, что его не было.
+ */
+export function normalizeToolHistory<T extends ToolCallHistoryMessage>(messages: T[]): T[] {
+  const result: T[] = []
+  let i = 0
+  while (i < messages.length) {
+    const m = messages[i]
+    result.push(m)
+    i++
+    if (m.role !== 'assistant' || !m.tool_calls || m.tool_calls.length === 0) continue
+
+    // Переносим подряд идущие `tool`-сообщения этого раунда как есть, собирая
+    // по дороге id, на которые ответ уже есть — именно так их кладёт сам цикл
+    // в handleUserTurn (все tool-ответы раунда идут одним блоком сразу за assistant).
+    const answered = new Set<string>()
+    while (i < messages.length && messages[i].role === 'tool') {
+      const next = messages[i]
+      if (next.tool_call_id) answered.add(next.tool_call_id)
+      result.push(next)
+      i++
+    }
+
+    const missing = m.tool_calls.filter((tc) => !answered.has(tc.id))
+    for (const tc of missing) {
+      result.push({
+        role: 'tool',
+        tool_call_id: tc.id,
+        content: JSON.stringify({ status: 'Действие показано пользователю на подтверждение в отдельном сообщении.' }),
+      } as unknown as T)
+    }
+  }
+  return result
+}

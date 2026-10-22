@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import * as Sentry from '@sentry/nextjs'
 import { randomUUID } from 'crypto'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
-import { authenticateApiKey } from '@/lib/api-auth'
+import { resolveBotOrgId } from '@/lib/telegram/org'
 import { rateLimitMutation } from '@/lib/rate-limit'
 import {
   sendMessage,
@@ -51,7 +51,7 @@ import {
   commitIntake,
   intakeContentParts,
 } from '@/lib/telegram/intake'
-import { stripBinaryFromHistory, INTAKE_DATA_KINDS, type IntakeKind } from '@/features/telegram/services/intake-format'
+import { stripBinaryFromHistory, normalizeToolHistory, INTAKE_DATA_KINDS, type IntakeKind } from '@/features/telegram/services/intake-format'
 import {
   getChannelSettings,
   setAwaitingIntent,
@@ -184,13 +184,14 @@ const HELP_TEXT = `<b>HousePro CRM — бот-ассистент</b>
 // Сколько последних сообщений диалога храним и передаём модели (не считая system prompt).
 const MAX_HISTORY_MESSAGES = 20
 
-async function resolveBotOrgId(): Promise<string | null> {
-  const key = process.env.HOUSEPRO_BOT_API_KEY
-  if (!key) return null
-  const fakeReq = new Request('http://internal.local/', { headers: { Authorization: `Bearer ${key}` } })
-  const auth = await authenticateApiKey(fakeReq)
-  return auth.orgId ?? null
-}
+// Reclaim-окно идемпотентности апдейтов: maxDuration = 60с, то есть ровно столько
+// может протянуться воркер, которого Vercel убил без finally. Чуть больше запаса (90с),
+// чтобы не перехватить тот же update у ещё живого воркера.
+const UPDATE_CLAIM_TTL_MS = 90_000
+
+// resolveBotOrgId живёт в lib/telegram/org.ts (кешируется там же, см. комментарий) —
+// здесь локальной копии больше нет: cron-роуты и tools.ts звали свою, webhook route
+// свою, и кеш в одной не спасал вызовы из другой.
 
 /**
  * Кто пишет боту и что ему можно — один раз на входящее обновление.
@@ -256,12 +257,17 @@ async function loadConversation(chatId: string): Promise<OpenRouterMessage[]> {
     .select('messages')
     .eq('telegram_chat_id', chatId)
     .maybeSingle()
-  return (data?.messages as OpenRouterMessage[] | undefined) ?? []
+  const raw = (data?.messages as OpenRouterMessage[] | undefined) ?? []
+  // Старые записи могли сохраниться до починки normalizeToolHistory в saveConversation —
+  // чиним и на чтении, иначе один раз сломанная история чата остаётся сломанной навсегда.
+  return normalizeToolHistory(raw)
 }
 
 async function saveConversation(chatId: string, orgId: string, messages: OpenRouterMessage[]): Promise<void> {
   // Без вложений: base64 фото и PDF в истории уходили модели на каждое сообщение.
-  const trimmed = stripBinaryFromHistory(messages.slice(-MAX_HISTORY_MESSAGES))
+  // normalizeToolHistory — следом, а не до среза: обрезка по MAX_HISTORY_MESSAGES
+  // сама может отрезать историю ровно между assistant.tool_calls и его tool-ответом.
+  const trimmed = normalizeToolHistory(stripBinaryFromHistory(messages.slice(-MAX_HISTORY_MESSAGES)))
   const supabaseAdmin = getSupabaseAdmin()
   await supabaseAdmin.from('bot_conversations').upsert({
     telegram_chat_id: chatId,
@@ -977,10 +983,31 @@ async function handleCallbackQuery(update: NonNullable<TelegramUpdate['callback_
     await sendChatAction(chatId, 'upload_document')
   }
 
+  // Атомарный захват батча ОДНИМ UPDATE по batch_id — раньше статус 'confirmed'
+  // выставлялся отдельным update на каждую строку ПОСЛЕ её исполнения: двойное
+  // нажатие «Подтвердить» (двойной тап или повтор доставки Telegram) успевало
+  // прочитать тот же pendingRows ДО первой отметки и исполнить мутации дважды
+  // (вторая сделка, второй расход). WHERE status='pending' — compare-and-set:
+  // кто первый обновил строки, тот их и исполняет; остальным claimed.length === 0.
+  const { data: claimed, error: claimError } = await supabaseAdmin
+    .from('bot_pending_actions')
+    .update({ status: 'confirmed' })
+    .eq('batch_id', batchId)
+    .eq('status', 'pending')
+    .select('*')
+
+  if (claimError) {
+    await sendMessage(chatId, '⚠️ Не удалось подтвердить действие, попробуй ещё раз.')
+    return
+  }
+  if (!claimed || claimed.length === 0) {
+    // Кто-то (другой тап, повтор апдейта) успел подтвердить раньше нас.
+    return
+  }
+
   const results: string[] = []
-  for (const row of pendingRows) {
+  for (const row of claimed.sort((a, b) => a.created_at.localeCompare(b.created_at))) {
     const result = await executeConfirmedMutation(row.action_type, row.payload)
-    await supabaseAdmin.from('bot_pending_actions').update({ status: 'confirmed' }).eq('id', row.id)
 
     if (result?.error) {
       results.push(`⚠️ Не получилось (${row.action_type}): ${result.error}`)
@@ -1183,14 +1210,36 @@ export async function POST(request: Request) {
   }
 
   // Telegram повторяет update, если не получил 200 за ~60 с — долгий ход модели
-  // заканчивался вторым таким же подтверждением. Первичный ключ — наш замок.
+  // заканчивался вторым таким же подтверждением. До 22.10.2026 строка вставлялась
+  // как «обработано» ДО работы: воркер, убитый по maxDuration без доступа к finally,
+  // навечно запирал update_id — повторная доставка получала duplicate:true, и ответ
+  // пользователю не приходил никогда (аудит P0-7). Теперь статус claimed→done/failed,
+  // а claimed старше UPDATE_CLAIM_TTL_MS и любой failed можно забрать повторно.
+  let updateHandled = false
   if (typeof update.update_id === 'number') {
     const supabaseAdmin = getSupabaseAdmin()
-    const { error: dupError } = await supabaseAdmin.from('bot_processed_updates').insert({ update_id: update.update_id })
-    if (dupError) {
-      if (dupError.code === '23505') return NextResponse.json({ ok: true, duplicate: true })
-      console.error('[telegram webhook] processed_updates insert:', dupError.message)
+    const nowIso = new Date().toISOString()
+    const { error: insertError } = await supabaseAdmin
+      .from('bot_processed_updates')
+      .insert({ update_id: update.update_id, status: 'claimed', claimed_at: nowIso })
+
+    if (insertError) {
+      if (insertError.code === '23505') {
+        const reclaimBefore = new Date(Date.now() - UPDATE_CLAIM_TTL_MS).toISOString()
+        const { data: reclaimed } = await supabaseAdmin
+          .from('bot_processed_updates')
+          .update({ status: 'claimed', claimed_at: nowIso })
+          .eq('update_id', update.update_id)
+          .or(`status.eq.failed,and(status.eq.claimed,claimed_at.lt.${reclaimBefore})`)
+          .select('update_id')
+          .maybeSingle()
+        if (!reclaimed) return NextResponse.json({ ok: true, duplicate: true })
+        // reclaimed: другой воркер либо упал (failed), либо завис дольше TTL — обрабатываем заново.
+      } else {
+        console.error('[telegram webhook] processed_updates insert:', insertError.message)
+      }
     }
+    updateHandled = true
     // Хвост чистим здесь же, редко: раз в ~100 update, старше суток.
     if (update.update_id % 100 === 0) {
       await supabaseAdmin.from('bot_processed_updates').delete().lt('created_at', new Date(Date.now() - 86_400_000).toISOString())
@@ -1314,6 +1363,24 @@ export async function POST(request: Request) {
     const chatId = update.message?.chat.id ?? update.callback_query?.message?.chat.id
     if (chatId) {
       await sendMessage(chatId, '⚠️ Произошла ошибка при обработке запроса. Попробуй ещё раз.').catch(() => {})
+    }
+    // failed — не claimed: следующая доставка того же update_id от Telegram (или наш
+    // собственный повтор) не ждёт TTL, а забирает его немедленно через reclaim выше.
+    if (updateHandled && typeof update.update_id === 'number') {
+      const { error } = await getSupabaseAdmin().from('bot_processed_updates').update({ status: 'failed' }).eq('update_id', update.update_id)
+      if (error) console.error('[telegram webhook] processed_updates mark failed:', error.message)
+    }
+    return NextResponse.json({ ok: true })
+  } finally {
+    // Все пути try (включая ранние return внутри switch по типу сообщения) доходят
+    // сюда — finally гарантирует отметку 'done', даже когда внутри несколько `return`.
+    if (updateHandled && typeof update.update_id === 'number') {
+      const { error } = await getSupabaseAdmin()
+        .from('bot_processed_updates')
+        .update({ status: 'done' })
+        .eq('update_id', update.update_id)
+        .eq('status', 'claimed')
+      if (error) console.error('[telegram webhook] processed_updates mark done:', error.message)
     }
   }
 

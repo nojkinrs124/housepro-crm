@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { createHmac, randomBytes } from 'crypto'
+import { createHmac, randomBytes, timingSafeEqual } from 'crypto'
 import { rateLimit } from '@/lib/rate-limit'
 
 // API-ключи (hp_<48 hex>, 192 бита энтропии) хешируются HMAC-SHA256 с
@@ -32,10 +32,25 @@ export interface ApiAuthResult {
   status?: number
 }
 
+/**
+ * Собственный ключ бота (`HOUSEPRO_BOT_API_KEY`, см. `lib/telegram/org.ts`) —
+ * внутренний трафик CRM, а не внешняя интеграция; у него отдельный бюджет лимита.
+ * Сравнение константным временем — ключ приходит в заголовке Authorization,
+ * как и обычный hp_-ключ, и не должен давать канал для таймингового угадывания.
+ */
+function isBotApiKey(apiKey: string): boolean {
+  const botKey = process.env.HOUSEPRO_BOT_API_KEY
+  if (!botKey) return false
+  const a = Buffer.from(apiKey)
+  const b = Buffer.from(botKey)
+  if (a.length !== b.length) return false
+  return timingSafeEqual(a, b)
+}
+
 export async function authenticateApiKey(request: Request): Promise<ApiAuthResult> {
   const authHeader = request.headers.get('Authorization')
   if (!authHeader?.startsWith('Bearer hp_')) {
-    return { error: 'Invalid API key format. Expected: Authorization: Bearer hp_...', status: 401 }
+    return { error: 'Invalid API key format. Expected: Authorization: Bearer ***', status: 401 }
   }
 
   const apiKey  = authHeader.replace('Bearer ', '')
@@ -61,9 +76,24 @@ export async function authenticateApiKey(request: Request): Promise<ApiAuthResul
   // в новом роуте. Считаем по организации, а не по ключу: ключей у неё может быть
   // несколько, а защищаем мы базу, а не ключ. Роуты уже отдают auth.error со своим
   // статусом — 429 доезжает до клиента без правок в них.
-  const rl = await rateLimit(`api:${key.organization_id}`, { limit: 120, windowSeconds: 60 })
+  //
+  // Внутренний трафик бота (HOUSEPRO_BOT_API_KEY, см. lib/telegram/org.ts, tools.ts)
+  // ходит через тот же authenticateApiKey несколько раз на одно сообщение
+  // (resolveActor → resolveBotOrgId, читающие/мутирующие tool'ы) и раньше делил
+  // с внешними интеграциями организации один лимит 120/мин — поток собственного
+  // бота мог упереть организацию в 429 на реальных внешних вызовах (аудит, фаза 1,
+  // п. 1.4). У бота свой бюджет и свой ключ Redis, не пересекающийся с api:{orgId}.
+  const isInternalBotTraffic = isBotApiKey(apiKey)
+  const rl = isInternalBotTraffic
+    ? await rateLimit(`internal-bot:${key.organization_id}`, { limit: 300, windowSeconds: 60 })
+    : await rateLimit(`api:${key.organization_id}`, { limit: 120, windowSeconds: 60 })
   if (!rl.success) {
-    return { error: 'Too many requests. Limit: 120 requests per minute.', status: 429 }
+    return {
+      error: isInternalBotTraffic
+        ? 'Too many internal bot requests. Limit: 300 requests per minute.'
+        : 'Too many requests. Limit: 120 requests per minute.',
+      status: 429,
+    }
   }
 
   // Fire-and-forget last_used_at update

@@ -156,14 +156,31 @@ export async function hasPostForSchedule(scheduleId: string, scheduledFor: strin
   return !!data
 }
 
+// Мемо на один апдейт/запрос, а не постоянный кеш: раньше getChannelSettings вызывался
+// до 4 раз на одно сообщение (навигация меню, settings-экран, CRM/channel intent-роутеры —
+// каждый читал настройки заново), хотя между ними никто settings не меняет (аудит, фаза 1,
+// п. 1.6). TTL короткий — не про долгую свежесть, а чтобы не держать объект годами при
+// тёплом serverless-инстансе; любой `update`/`upsert` в этом файле инвалидирует кеш явно.
+const CHANNEL_SETTINGS_CACHE_TTL_MS = 5_000
+const channelSettingsCache = new Map<string, { value: ChannelSettings | null; expiresAt: number }>()
+
+export function invalidateChannelSettingsCache(orgId: string): void {
+  channelSettingsCache.delete(orgId)
+}
+
 export async function getChannelSettings(orgId: string): Promise<ChannelSettings | null> {
+  const cached = channelSettingsCache.get(orgId)
+  if (cached && cached.expiresAt > Date.now()) return cached.value
+
   const supabaseAdmin = getSupabaseAdmin()
   const { data } = await supabaseAdmin
     .from('channel_bot_settings')
     .select('*')
     .eq('organization_id', orgId)
     .maybeSingle()
-  return (data as ChannelSettings | null) ?? null
+  const value = (data as ChannelSettings | null) ?? null
+  channelSettingsCache.set(orgId, { value, expiresAt: Date.now() + CHANNEL_SETTINGS_CACHE_TTL_MS })
+  return value
 }
 
 // Черновик пока не готов к показу — используется, когда генерация ещё пишется
@@ -377,6 +394,19 @@ export async function publishPost(postId: string): Promise<{ error?: string }> {
   const textToPublish = post.final_text || post.draft_text
   if (!textToPublish) return { error: 'Пустой текст поста' }
 
+  // Compare-and-set, как в commitIntake (lib/telegram/intake.ts): кнопка «Опубликовать»
+  // нажата дважды (двойной тап, повтор доставки callback_query от Telegram) и обе
+  // доставки читали один и тот же post со status='pending_review' ДО публикации —
+  // без захвата статуса обе уходят в sendPostVisual и пост публикуется в канал дважды.
+  const { data: claimed } = await supabaseAdmin
+    .from('channel_posts')
+    .update({ status: 'publishing' })
+    .eq('id', postId)
+    .in('status', ['pending_review', 'draft'])
+    .select('id')
+    .maybeSingle()
+  if (!claimed) return { error: 'Пост уже публикуется или опубликован другим запросом' }
+
   try {
     const { message_id: channelMessageId } = await sendPostVisual(settings.channel_chat_id, textToPublish, post.image_url)
     await supabaseAdmin
@@ -461,6 +491,7 @@ export async function setAwaitingIntent(
       awaiting_intent_user_id: intent ? (ownerUserId ?? null) : null,
     })
     .eq('organization_id', orgId)
+  invalidateChannelSettingsCache(orgId)
 }
 
 // --- Phase 3: управление рубриками и расписанием из бот-меню ---
@@ -584,6 +615,7 @@ export async function toggleScheduleSlot(id: string, enabled: boolean): Promise<
 export async function setSchedulePaused(orgId: string, paused: boolean): Promise<void> {
   const supabaseAdmin = getSupabaseAdmin()
   await supabaseAdmin.from('channel_bot_settings').update({ schedule_paused: paused }).eq('organization_id', orgId)
+  invalidateChannelSettingsCache(orgId)
 }
 
 // Обновляет счётчик реакций поста по данным апдейта message_reaction_count (агрегированные,

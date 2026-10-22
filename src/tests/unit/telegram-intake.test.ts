@@ -5,6 +5,7 @@ import {
   describeIntakePlan,
   renderCollectingStatus,
   stripBinaryFromHistory,
+  normalizeToolHistory,
   directionFor,
   stageFor,
   plural,
@@ -172,5 +173,55 @@ describe('промпты и схема извлечения', () => {
     expect(INTAKE_TOOL.function.name).toBe('submit_extraction')
     // Словарь лида совпадает с CRM-формой (rent/sale/let/sell/subrent).
     expect(INTAKE_TOOL.function.parameters.properties.lead.properties.deal_type.enum).toEqual(['rent', 'sale', 'let', 'sell', 'subrent'])
+  })
+})
+
+describe('normalizeToolHistory', () => {
+  it('дозаполняет tool-ответ висящему tool_call без пары (P0-6)', () => {
+    const out = normalizeToolHistory([
+      { role: 'user', content: 'добавь лида' },
+      {
+        role: 'assistant',
+        content: null,
+        tool_calls: [{ id: 'call_1', type: 'function' as const, function: { name: 'create_lead', arguments: '{}' } }],
+      },
+      // Мутирующая ветка делает return до появления tool-ответа — это сохранённая история.
+    ])
+    expect(out).toHaveLength(3)
+    expect(out[2]).toMatchObject({ role: 'tool', tool_call_id: 'call_1' })
+  })
+
+  it('не трогает assistant с уже полным набором tool-ответов', () => {
+    const msgs = [
+      {
+        role: 'assistant',
+        content: null,
+        tool_calls: [{ id: 'call_1', type: 'function' as const, function: { name: 'list_tasks', arguments: '{}' } }],
+      },
+      { role: 'tool', tool_call_id: 'call_1', content: '{}' },
+      { role: 'assistant', content: 'готово' },
+    ]
+    expect(normalizeToolHistory(msgs)).toEqual(msgs)
+  })
+
+  it('дозаполняет только недостающие из нескольких параллельных вызовов', () => {
+    const out = normalizeToolHistory([
+      {
+        role: 'assistant',
+        content: null,
+        tool_calls: [
+          { id: 'call_1', type: 'function' as const, function: { name: 'create_lead', arguments: '{}' } },
+          { id: 'call_2', type: 'function' as const, function: { name: 'create_task', arguments: '{}' } },
+        ],
+      },
+      { role: 'tool', tool_call_id: 'call_1', content: '{}' },
+    ])
+    expect(out).toHaveLength(3)
+    expect(out[2]).toMatchObject({ role: 'tool', tool_call_id: 'call_2' })
+  })
+
+  it('не вставляет ничего без assistant.tool_calls', () => {
+    const msgs = [{ role: 'user', content: 'привет' }, { role: 'assistant', content: 'привет!' }]
+    expect(normalizeToolHistory(msgs)).toEqual(msgs)
   })
 })
