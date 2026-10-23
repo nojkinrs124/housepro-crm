@@ -16,18 +16,12 @@ import { checkContact } from '@/lib/readiness'
 import { DEAL_TYPE_LABELS as dealTypeLabels, DEAL_STATUS_LABELS as dealStatusLabels } from '@/features/deals/config/deal-stages'
 import { formatDate, formatAmount, formatDeadline } from '@/lib/utils'
 import { FilesSection } from '@/features/files/components/FilesSection'
+import { CONTACT_STATUS_LABELS, CONTACT_STATUS_BADGES } from '@/features/contacts/config/contact-status-labels'
 
 const roleLabels: Record<string, string> = {
   client: 'Клиент',
   owner:  'Собственник',
   both:   'Клиент + Собственник',
-}
-
-const statusLabels: Record<string, { label: string; badgeCls: string }> = {
-  new:      { label: 'Новый',      badgeCls: 'hp-badge-info' },
-  active:   { label: 'Активный',   badgeCls: 'hp-badge-good' },
-  vip:      { label: 'VIP',        badgeCls: 'hp-badge-warn' },
-  inactive: { label: 'Неактивный', badgeCls: 'hp-badge-neutral' },
 }
 
 const taskStatusLabels: Record<string, string> = {
@@ -58,7 +52,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
   const deals = rawDeals
   const representatives = (rawReps ?? [])
   const isLegalEntity = c.client_type === 'legal_entity'
-  const statusInfo = statusLabels[c.status] ?? statusLabels.new
+  const statusInfo = { label: CONTACT_STATUS_LABELS[c.status] ?? CONTACT_STATUS_LABELS.new, badgeCls: CONTACT_STATUS_BADGES[c.status] ?? CONTACT_STATUS_BADGES.new }
 
   const issues = checkContact(c)
 

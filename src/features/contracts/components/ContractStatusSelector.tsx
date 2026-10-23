@@ -6,14 +6,9 @@ import { toast } from 'sonner'
 import { ChevronDown, Loader2 } from 'lucide-react'
 import { updateContractStatusAction } from '@/features/contracts/actions/contracts.actions'
 import { confirmDialog } from '@/components/forms/ConfirmDialog'
+import { CONTRACT_STATUS_LABELS, CONTRACT_STATUS_BADGES } from '@/features/contracts/config/contract-status-labels'
 
-const statuses = [
- { value: 'draft', label: 'Черновик', color: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]' },
- { value: 'generated', label: 'Создан', color: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]' },
- { value: 'signed', label: 'Подписан', color: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]' },
- { value: 'completed', label: 'Завершён', color: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]' },
- { value: 'cancelled', label: 'Отменён', color: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]' },
-]
+const statuses = Object.entries(CONTRACT_STATUS_LABELS).map(([value, label]) => ({ value, label, color: CONTRACT_STATUS_BADGES[value] ?? 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]' }))
 
 export function ContractStatusSelector({ contractId, currentStatus }: { contractId: string; currentStatus: string }) {
  const [open, setOpen] = useState(false)

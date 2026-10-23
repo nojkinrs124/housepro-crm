@@ -5,6 +5,7 @@ import type { Contact } from '@/types/database'
 import { RegistryTable, type RegistryColumn } from '@/features/registry/components/RegistryTable'
 import type { Selection } from '@/hooks/useSelection'
 import { formatPhone, formatDateCompact } from '@/lib/utils'
+import { CONTACT_STATUS_LABELS, CONTACT_STATUS_BADGES } from '@/features/contacts/config/contact-status-labels'
 
 /** Данные, которых нет в самой таблице contacts: объект и риелтор по последней сделке. */
 export interface ContactMeta {
@@ -16,12 +17,7 @@ export interface ContactMeta {
 const roleLabels: Record<string, string> = {
   client: 'Клиент', owner: 'Собственник', both: 'Кл.+Собств.',
 }
-const statusConfig: Record<string, { label: string; badgeCls: string }> = {
-  new:      { label: 'Новый',      badgeCls: 'hp-badge-info' },
-  active:   { label: 'Активный',   badgeCls: 'hp-badge-good' },
-  vip:      { label: 'VIP',        badgeCls: 'hp-badge-warn' },
-  inactive: { label: 'Неактивный', badgeCls: 'hp-badge-neutral' },
-}
+
 
 /**
  * Реестр контактов — плотная таблица с капс-заголовками колонок и постраничным
@@ -57,7 +53,7 @@ export function ContactsRegistry({
     {
       key: 'status', title: 'Статус',
       cell: c => {
-        const status = statusConfig[c.status] ?? statusConfig.new
+        const status = { label: CONTACT_STATUS_LABELS[c.status] ?? CONTACT_STATUS_LABELS.new, badgeCls: CONTACT_STATUS_BADGES[c.status] ?? CONTACT_STATUS_BADGES.new }
         return <span className={`hp-badge ${status.badgeCls}`}>{status.label}</span>
       },
     },

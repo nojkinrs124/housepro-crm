@@ -3,17 +3,12 @@
 import { Phone, Mail, MessageCircle, TrendingUp, FileText, Tag } from 'lucide-react'
 import Link from 'next/link'
 import type { Contact } from '@/types/database'
+import { CONTACT_STATUS_LABELS, CONTACT_STATUS_BADGES } from '@/features/contacts/config/contact-status-labels'
 
 const roleConfig: Record<string, { label: string }> = {
   client: { label: 'Клиент' },
   owner:  { label: 'Собственник' },
   both:   { label: 'Кл.+Собств.' },
-}
-const statusConfig: Record<string, { label: string; badgeCls: string }> = {
-  new:      { label: 'Новый',      badgeCls: 'hp-badge-info' },
-  active:   { label: 'Активный',   badgeCls: 'hp-badge-good' },
-  vip:      { label: 'VIP',        badgeCls: 'hp-badge-warn' },
-  inactive: { label: 'Неактивный', badgeCls: 'hp-badge-neutral' },
 }
 
 interface ContactCardProps {
@@ -23,7 +18,7 @@ interface ContactCardProps {
 
 export function ContactCard({ contact }: ContactCardProps) {
   const role    = roleConfig[contact.role]    ?? roleConfig.client
-  const status  = statusConfig[contact.status] ?? statusConfig.new
+  const status  = { label: CONTACT_STATUS_LABELS[contact.status] ?? CONTACT_STATUS_LABELS.new, badgeCls: CONTACT_STATUS_BADGES[contact.status] ?? CONTACT_STATUS_BADGES.new }
   const initials = contact.full_name
     ?.split(' ').slice(0, 2).map(n => n.charAt(0).toUpperCase()).join('') ?? 'U'
 

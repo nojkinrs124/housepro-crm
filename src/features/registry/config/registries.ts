@@ -17,6 +17,8 @@
 import { LEAD_STATUSES } from '@/features/leads/config/lead-statuses'
 import { ALL_STAGE_OPTIONS } from '@/features/deals/config/deal-stages'
 import { PROPERTY_STATUS_LABELS } from '@/features/properties/config/property-labels'
+import { CONTACT_STATUS_LABELS } from '@/features/contacts/config/contact-status-labels'
+import { CONTRACT_STATUS_LABELS } from '@/features/contracts/config/contract-status-labels'
 
 export interface StatusOption { value: string; label: string }
 
@@ -44,20 +46,9 @@ export interface RegistryDef {
   deletable?: boolean
 }
 
-const CONTACT_STATUSES = [
-  { value: 'new',      label: 'Новый' },
-  { value: 'active',   label: 'Активный' },
-  { value: 'vip',      label: 'VIP' },
-  { value: 'inactive', label: 'Неактивный' },
-] as const
+const CONTACT_STATUSES = Object.entries(CONTACT_STATUS_LABELS).map(([value, label]) => ({ value, label }))
 
-export const CONTRACT_STATUSES = [
-  { value: 'draft',     label: 'Черновик' },
-  { value: 'generated', label: 'Создан' },
-  { value: 'signed',    label: 'Подписан' },
-  { value: 'completed', label: 'Завершён' },
-  { value: 'cancelled', label: 'Отменён' },
-] as const
+export const CONTRACT_STATUSES = Object.entries(CONTRACT_STATUS_LABELS).map(([value, label]) => ({ value, label }))
 
 export const SHOWING_STATUSES = [
   { value: 'planned',   label: 'Запланирован' },

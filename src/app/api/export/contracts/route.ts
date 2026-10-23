@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { CONTRACT_STATUS_LABELS } from '@/features/contracts/config/contract-status-labels'
 
 // КРИТИЧНО: этот роут отдаёт данные, специфичные для конкретной организации/пользователя
 // (RLS или ручная фильтрация по organization_id). Next.js по умолчанию может закэшировать
@@ -14,11 +15,6 @@ function csvEscape(value: unknown): string {
     return `"${s.replace(/"/g, '""')}"`
   }
   return s
-}
-
-const STATUS_LABELS: Record<string, string> = {
-  draft: 'Черновик', generated: 'Сформирован', signed: 'Подписан',
-  active: 'Действует', completed: 'Завершён', cancelled: 'Расторгнут',
 }
 
 export async function GET() {
@@ -38,7 +34,7 @@ export async function GET() {
   const rows = (contracts ?? []).map(c => [
     c.contract_number ?? '',
     c.contract_type ?? '',
-    STATUS_LABELS[c.status] ?? c.status,
+    CONTRACT_STATUS_LABELS[c.status] ?? c.status,
     c.property?.title ?? '',
     c.amount ?? '',
     c.start_date ? new Date(c.start_date).toLocaleDateString('ru-RU') : '',

@@ -16,6 +16,7 @@ import { formatAmount, formatDate } from '@/lib/utils'
 import { toAvitoStatus } from '@/features/avito/config/status'
 import { PROPERTY_TYPE_LABELS as typeLabels, PROPERTY_DEAL_LABELS as dealLabels, PROPERTY_STATUS_LABELS } from '@/features/properties/config/property-labels'
 import { DEAL_TYPE_LABELS, DEAL_STATUS_LABELS } from '@/features/deals/config/deal-stages'
+import { CONTRACT_STATUS_LABELS, CONTRACT_STATUS_DETAIL } from '@/features/contracts/config/contract-status-labels'
 import { ReadinessPanel } from '@/components/layout/ReadinessPanel'
 import { checkProperty } from '@/lib/readiness'
 import { FilesSection } from '@/features/files/components/FilesSection'
@@ -40,13 +41,7 @@ const heatingLabels: Record<string, string> = {
 const waterLabels: Record<string, string> = {
   central: 'Центральное', well: 'Скважина/колодец', none: 'Нет',
 }
-const contractStatusLabels: Record<string, { label: string; cls: string }> = {
-  draft:     { label: 'черновик',  cls: 'text-[var(--hp-tertiary)]' },
-  generated: { label: 'создан',    cls: 'text-[var(--hp-sub)]' },
-  signed:    { label: 'подписан',  cls: 'text-[var(--hp-good)]' },
-  completed: { label: 'завершён',  cls: 'text-[var(--hp-good)]' },
-  cancelled: { label: 'отменён',   cls: 'text-[var(--hp-danger)]' },
-}
+
 
 const yesNo = (v: boolean | null | undefined) => (v == null ? null : v ? 'да' : 'нет')
 
@@ -246,7 +241,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
               </div>
             ) : (
               contracts.map(c => {
-                const st = contractStatusLabels[c.status] ?? { label: c.status, cls: 'text-[var(--hp-sub)]' }
+                const st = CONTRACT_STATUS_DETAIL[c.status] ?? { label: CONTRACT_STATUS_LABELS[c.status] ?? c.status, cls: 'text-[var(--hp-sub)]' }
                 return (
                   <Link key={c.id} href={`/contracts/${c.id}`} className="hp-block-item">
                     <FileText className="w-4 h-4 shrink-0 text-[var(--hp-sub)]" />

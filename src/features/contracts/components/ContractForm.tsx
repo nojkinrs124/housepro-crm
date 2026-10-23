@@ -14,16 +14,11 @@ import { PropertyManagementExtraFields } from './PropertyManagementExtraFields'
 import { SETTLEMENT_SCHEMES, getChargeType } from '@/features/plans/config/settlement'
 import { SubleaseExtraFields } from './SubleaseExtraFields'
 import { Field, FormExtra } from '@/components/forms/FormLayout'
+import { CONTRACT_STATUSES } from '@/features/registry/config/registries'
 
 const AGENCY_SERVICE_TYPES = ['agency_owner', 'agency_client', 'agency_legal_entity']
 
-const statusOptions = [
- { value: 'draft', label: 'Черновик' },
- { value: 'generated', label: 'Создан' },
- { value: 'signed', label: 'Подписан' },
- { value: 'completed', label: 'Завершён' },
- { value: 'cancelled', label: 'Отменён' },
-]
+const statusOptions = CONTRACT_STATUSES
 
 interface CompanyProfileOption { id: string; name: string; legalForm: string; isDefault: boolean }
 interface Property { id: string; title: string; address?: string | null; property_type?: string | null }

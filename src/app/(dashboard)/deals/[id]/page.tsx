@@ -4,6 +4,8 @@ import {
 } from 'lucide-react'
 import { contactDisplayName } from '@/features/contacts/config/display-name'
 import { SHOWING_STATUS_LABELS, SHOWING_RESULT_LABELS } from '@/features/showings/config/showing-labels'
+import { CONTACT_STATUS_LABELS, CONTACT_STATUS_BADGES } from '@/features/contacts/config/contact-status-labels'
+import { CONTRACT_STATUS_LABELS, CONTRACT_STATUS_DETAIL } from '@/features/contracts/config/contract-status-labels'
 import { deleteDealAction } from '@/features/deals/actions/deals.actions'
 import { DealStageBar } from '@/features/deals/components/DealStageBar'
 import { StageChecklist } from '@/features/directions/components/StageChecklist'
@@ -25,20 +27,7 @@ import {
   formatRelative, initials, plural,
 } from '@/lib/utils'
 
-const contractStatusLabels: Record<string, { label: string; cls: string }> = {
-  draft:     { label: 'черновик',  cls: 'text-[var(--hp-tertiary)]' },
-  generated: { label: 'создан',    cls: 'text-[var(--hp-sub)]' },
-  signed:    { label: 'подписан',  cls: 'text-[var(--hp-good)]' },
-  completed: { label: 'завершён',  cls: 'text-[var(--hp-good)]' },
-  cancelled: { label: 'отменён',   cls: 'text-[var(--hp-danger)]' },
-}
 
-const contactStatusLabels: Record<string, { label: string; cls: string }> = {
-  new:      { label: 'Новый',      cls: 'hp-badge-info' },
-  active:   { label: 'Активный',   cls: 'hp-badge-good' },
-  vip:      { label: 'VIP',        cls: 'hp-badge-warn' },
-  inactive: { label: 'Неактивный', cls: 'hp-badge-neutral' },
-}
 
 interface PartyContact {
   id?: string
@@ -58,7 +47,7 @@ function Party({ role, contact, fallbackName, fallbackPhone }: {
 }) {
   const name = contact?.company_name || contact?.full_name || fallbackName
   const phone = contact?.phone ?? fallbackPhone
-  const status = contact?.status ? contactStatusLabels[contact.status] : null
+  const status = contact?.status && CONTACT_STATUS_LABELS[contact.status] ? { label: CONTACT_STATUS_LABELS[contact.status], cls: CONTACT_STATUS_BADGES[contact.status] } : null
 
   if (!name) {
     return (
@@ -507,7 +496,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
               </div>
             )}
             {contracts.map(c => {
-              const st = contractStatusLabels[c.status] ?? { label: c.status, cls: 'text-[var(--hp-sub)]' }
+              const st = CONTRACT_STATUS_DETAIL[c.status] ?? { label: CONTRACT_STATUS_LABELS[c.status] ?? c.status, cls: 'text-[var(--hp-sub)]' }
               return (
                 <Link key={c.id} href={`/contracts/${c.id}`} className="hp-block-item">
                   <FileText className="w-4 h-4 shrink-0 text-[var(--hp-sub)]" />

@@ -27,6 +27,7 @@ import { DashboardKpiCards } from '@/features/dashboard/components/DashboardKpiC
 import { PageHeader } from '@/components/layout/PageHeader'
 import { formatDate } from '@/lib/utils'
 import { DEAL_TYPE_LABELS as dealTypeLabels, DEAL_STATUS_LABELS as dealStatusLabels, dealStageBadgeClass } from '@/features/deals/config/deal-stages'
+import { CONTACT_STATUS_LABELS, CONTACT_STATUS_DASHBOARD_COLORS } from '@/features/contacts/config/contact-status-labels'
 import { todayIso } from '@/lib/timezone'
 
 export default async function DashboardPage() {
@@ -132,13 +133,7 @@ export default async function DashboardPage() {
  high: { bg: 'bg-[var(--hp-danger-tint)]', text: 'text-[var(--hp-danger)]', dot: 'bg-[var(--hp-danger)]' },
  }
  const priorityLabels: Record<string, string> = { low: 'Низкий', medium: 'Средний', high: 'Высокий' }
- const contactStatusColors: Record<string, string> = {
- new: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]', active: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]',
- vip: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]', inactive: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]',
- }
- const contactStatusLabels: Record<string, string> = {
- new: 'Новый', active: 'Активный', vip: 'VIP', inactive: 'Неактивный',
- }
+
 
  const today = new Date()
  const todayStr = today.toLocaleDateString('ru-RU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
@@ -321,8 +316,8 @@ export default async function DashboardPage() {
  <p className="text-xs text-muted-foreground">{roleLabels[c.role] ?? c.role}</p>
  </div>
  </div>
- <span className={`text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold shrink-0 ${contactStatusColors[c.status ?? ''] ?? 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]'}`}>
- {contactStatusLabels[c.status ?? ''] ?? c.status}
+ <span className={`text-[10px] px-2 py-0.5 rounded-[var(--hp-radius-badge)] font-bold shrink-0 ${CONTACT_STATUS_DASHBOARD_COLORS[c.status ?? ''] ?? 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]'}`}>
+ {CONTACT_STATUS_LABELS[c.status ?? ''] ?? c.status}
  </span>
  </Link>
  ))}

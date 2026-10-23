@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
+import { CONTRACT_STATUS_LABELS, CONTRACT_STATUS_BADGES } from '@/features/contracts/config/contract-status-labels'
 import { CONTRACT_STATUSES } from '@/features/registry/config/registries'
 import { RegistryToolbar } from '@/components/layout/RegistryToolbar'
 import { EmptyState } from '@/components/layout/EmptyState'
@@ -24,16 +25,9 @@ export interface ContractRow {
   createdAt: string | null
 }
 
-const STATUS_BADGE: Record<string, string> = {
-  draft:     'hp-badge-neutral',
-  generated: 'hp-badge-info',
-  signed:    'hp-badge-good',
-  completed: 'hp-badge-good',
-  cancelled: 'hp-badge-danger',
-}
+const STATUS_BADGE = CONTRACT_STATUS_BADGES
 
-const STATUS_LABELS: Record<string, string> =
-  Object.fromEntries(CONTRACT_STATUSES.map(s => [s.value, s.label]))
+const STATUS_LABELS = CONTRACT_STATUS_LABELS
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'Статус: все' },

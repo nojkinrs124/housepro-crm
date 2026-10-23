@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { rateLimitSearch } from '@/lib/rate-limit'
 import { likeFilterValue } from '@/lib/utils'
 import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
+import { CONTRACT_STATUS_LABELS } from '@/features/contracts/config/contract-status-labels'
+import { CONTACT_STATUS_LABELS } from '@/features/contacts/config/contact-status-labels'
 
 export interface SearchResult {
   id: string
@@ -62,14 +64,13 @@ export async function searchAction(query: string): Promise<SearchResults> {
   ])
 
   const statusLabels: Record<string, string> = {
-    new: 'Новый', in_progress: 'В работе', active: 'Активный',
-    closed: 'Закрыт', vip: 'VIP', blacklist: 'Чёрный список',
+    in_progress: 'В работе', closed: 'Закрыт', blacklist: 'Чёрный список',
     available: 'Свободен', reserved: 'Забронирован', rented: 'Сдан',
-    sold: 'Продан', inactive: 'Неактивен',
-    draft: 'Черновик', generated: 'Сформирован', signed: 'Подписан',
-    completed: 'Завершён', cancelled: 'Отменён',
+    sold: 'Продан',
     todo: 'К выполнению', done: 'Готово',
   }
+
+  Object.assign(statusLabels, CONTACT_STATUS_LABELS, CONTRACT_STATUS_LABELS)
 
   const roleLabels: Record<string, string> = {
     client: 'Клиент', owner: 'Собственник', both: 'Клиент/Собственник',

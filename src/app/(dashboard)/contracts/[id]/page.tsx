@@ -19,12 +19,10 @@ import { sendContractByEmailAction } from '@/features/contracts/actions/send-ema
 import { DEAL_TYPE_LABELS as dealTypeLabels, DEAL_STATUS_LABELS as dealStageLabels } from '@/features/deals/config/deal-stages'
 import { formatDate, formatAmount } from '@/lib/utils'
 
+import { CONTRACT_STATUS_LABELS } from '@/features/contracts/config/contract-status-labels'
+
 const contractTypeLabels = CONTRACT_TYPE_LABELS
 
-const statusLabels: Record<string, string> = {
- draft: 'Черновик', generated: 'Создан', signed: 'Подписан',
- completed: 'Завершён', cancelled: 'Отменён',
-}
 
 
 export default async function ContractPage({
