@@ -178,9 +178,16 @@ export async function updateDealAction(id: string, formData: FormData) {
   const permError = await requirePermission(user.id, 'deals', 'update')
   if (permError) return permError
 
+  // Стадию здесь не меняют: единственный проверенный путь — степпер
+  // (updateDealStatusAction → canMoveStage). Форма редактирования поле не
+  // присылает, но на случай ручного POST — `status` отсюда не применяется,
+  // иначе чек-листы и предусловия воронки стали бы необязательными (аудит
+  // 23.10.2026, K1).
+  const { status: _status, ...updateData } = parsed.data
+
   const { error } = await supabase
     .from('deals')
-    .update(parsed.data)
+    .update(updateData)
     .eq('id', id)
 
   if (error) return { error: friendlyDbError(error, { entity: 'сделку' }) }

@@ -271,6 +271,7 @@ build → тесты. **Шаги не нумеруются** — номера р
 | Изменить схему БД, RLS, PostgREST | skill `housepro-migration` |
 | Пуш, релиз, E2E | skill `housepro-release` |
 | Новый модуль целиком | skill `housepro-new-module` |
+| Устранение находок UX-аудита | skill `housepro-ux-simplify`, список находок — `docs/UX-AUDIT-2026-10-23.md` |
 | Правила API routes | `src/app/api/CLAUDE.md` |
 | Правила actions/components | `src/features/CLAUDE.md` |
 | Что делать дальше, приоритеты | `docs/IMPROVEMENTS.md` — единственный бэклог |

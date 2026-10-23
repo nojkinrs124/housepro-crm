@@ -23,6 +23,16 @@ export interface ChecklistItem {
   required: boolean
   /** Подсказка под пунктом — зачем он нужен. */
   hint?: string
+  /**
+   * Куда вести риелтора, чтобы закрыть пункт физически — не просто отметить
+   * галочку, а совершить действие (начислить доход, собрать подборку и т.п.).
+   * `hrefTemplate` — строка-шаблон с плейсхолдером `{dealId}`, не функция:
+   * файл без 'use client', а функции из серверных конфигов нельзя передавать
+   * как пропы в клиентские компоненты (граница Server/Client, CLAUDE.md).
+   * Добавлено по находке K8 аудита 23.10.2026 — у «Получена комиссия» не было
+   * входа в бухгалтерию с подставленной сделкой.
+   */
+  action?: { label: string; hrefTemplate: string }
 }
 
 export const STAGE_CHECKLISTS: Record<string, readonly ChecklistItem[]> = {
@@ -63,7 +73,10 @@ export const STAGE_CHECKLISTS: Record<string, readonly ChecklistItem[]> = {
     { code: 'act',        title: 'Подписан акт приёма-передачи',  required: true },
     { code: 'meters',     title: 'Сняты показания счётчиков',     required: true },
     { code: 'keys',       title: 'Переданы ключи',                required: true },
-    { code: 'commission', title: 'Получена комиссия',             required: true },
+    {
+      code: 'commission', title: 'Получена комиссия', required: true,
+      action: { label: 'Начислить комиссию', hrefTemplate: '/accounting/transactions/new?deal_id={dealId}&type=income' },
+    },
   ],
 
   // ── Управление ──

@@ -382,23 +382,27 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
                 <span className="label">Участок</span>
                 <span className="value">{property?.land_area ? `${property.land_area} сот.` : '—'}</span>
               </div>
-              <div className="hp-block-row">
-                <span className="label">Одобрение банка</span>
-                <span className={`value${deal.bank_approval_date ? ' good' : ''}`}>
-                  {deal.bank_approval_date ? `получено ${formatDateCompact(deal.bank_approval_date)}` : '—'}
-                </span>
-              </div>
+              {(isSale || deal.bank_approval_date) && (
+                <div className="hp-block-row">
+                  <span className="label">Одобрение банка</span>
+                  <span className={`value${deal.bank_approval_date ? ' good' : ''}`}>
+                    {deal.bank_approval_date ? `получено ${formatDateCompact(deal.bank_approval_date)}` : '—'}
+                  </span>
+                </div>
+              )}
 
               <div className="hp-block-row">
                 <span className="label">Кадастровый №</span>
                 <span className="value">{property?.cadastral_number ?? '—'}</span>
               </div>
-              <div className="hp-block-row">
-                <span className="label">Торг</span>
-                <span className={`value${bargain ? ' danger' : ''}`}>
-                  {bargain ? `−${formatAmount(bargain)} ₽ обсуждается` : 'без торга'}
-                </span>
-              </div>
+              {(isSale || bargain) && (
+                <div className="hp-block-row">
+                  <span className="label">Торг</span>
+                  <span className={`value${bargain ? ' danger' : ''}`}>
+                    {bargain ? `−${formatAmount(bargain)} ₽ обсуждается` : 'без торга'}
+                  </span>
+                </div>
+              )}
 
               <div className="hp-block-row">
                 <span className="label">Обременения</span>

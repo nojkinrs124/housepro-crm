@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Link from 'next/link'
 import { toast } from 'sonner'
 import { Check, Loader2 } from 'lucide-react'
 import { toggleChecklistItemAction } from '@/features/directions/actions/stages.actions'
@@ -73,35 +74,48 @@ export function StageChecklist({
         {items.map(item => {
           const isDone = done.has(item.code)
           return (
-            <button
-              key={item.code}
-              type="button"
-              onClick={() => toggle(item.code)}
-              disabled={pending}
-              className="w-full flex items-start gap-3 p-2.5 text-left rounded-[var(--hp-radius)] border border-[var(--hp-border)] transition-colors hover:border-[var(--hp-sub)] disabled:opacity-60"
-            >
-              {/* Галочка акцентом на своём фоне, а не белым по заливке: цвет текста
-                  поверх акцента пришлось бы задавать хексом, а палитра —
-                  только токены. */}
-              <span
-                className={`w-4 h-4 mt-0.5 shrink-0 flex items-center justify-center border ${
-                  isDone ? 'border-[var(--hp-accent)]' : 'border-[var(--hp-border)]'
-                }`}
+            <div key={item.code} className="space-y-1">
+              <button
+                type="button"
+                onClick={() => toggle(item.code)}
+                disabled={pending}
+                className="w-full flex items-start gap-3 p-2.5 text-left rounded-[var(--hp-radius)] border border-[var(--hp-border)] transition-colors hover:border-[var(--hp-sub)] disabled:opacity-60"
               >
-                {isDone && <Check className="w-3 h-3 text-[var(--hp-accent)]" />}
-              </span>
-              <span className="min-w-0">
-                <span className={`text-sm ${isDone ? 'text-[var(--hp-sub)] line-through' : 'text-[var(--hp-ink)]'}`}>
-                  {item.title}
+                {/* Галочка акцентом на своём фоне, а не белым по заливке: цвет текста
+                    поверх акцента пришлось бы задавать хексом, а палитра —
+                    только токены. */}
+                <span
+                  className={`w-4 h-4 mt-0.5 shrink-0 flex items-center justify-center border ${
+                    isDone ? 'border-[var(--hp-accent)]' : 'border-[var(--hp-border)]'
+                  }`}
+                >
+                  {isDone && <Check className="w-3 h-3 text-[var(--hp-accent)]" />}
                 </span>
-                {item.required && !isDone && (
-                  <span className="ml-2 text-[11px] text-[var(--hp-warn)]">обязательно</span>
-                )}
-                {item.hint && (
-                  <span className="block text-xs text-[var(--hp-sub)] mt-0.5">{item.hint}</span>
-                )}
-              </span>
-            </button>
+                <span className="min-w-0">
+                  <span className={`text-sm ${isDone ? 'text-[var(--hp-sub)] line-through' : 'text-[var(--hp-ink)]'}`}>
+                    {item.title}
+                  </span>
+                  {item.required && !isDone && (
+                    <span className="ml-2 text-[11px] text-[var(--hp-warn)]">обязательно</span>
+                  )}
+                  {item.hint && (
+                    <span className="block text-xs text-[var(--hp-sub)] mt-0.5">{item.hint}</span>
+                  )}
+                </span>
+              </button>
+              {/* Непройденный пункт с действием — ссылка на место, где это
+                  физически делается, с уже подставленной сделкой (аудит
+                  23.10.2026, K8: чек-бокс был, кнопки не было). Вне <button>:
+                  ссылка внутри кнопки — невалидный HTML. */}
+              {item.action && !isDone && (
+                <Link
+                  href={item.action.hrefTemplate.replace('{dealId}', dealId)}
+                  className="block pl-9 text-[11px] font-semibold text-[var(--hp-accent)] hover:underline"
+                >
+                  {item.action.label} →
+                </Link>
+              )}
+            </div>
           )
         })}
       </div>

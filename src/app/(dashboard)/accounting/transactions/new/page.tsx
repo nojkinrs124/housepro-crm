@@ -23,10 +23,28 @@ export default async function NewTransactionPage({
 
   const categories  = (categoriesRes.data  ?? []) as AccountingCategory[]
   const contracts   = (contractsRes.data   ?? []) as Pick<Contract, 'id' | 'contract_number' | 'contract_type'>[]
-  const deals       = (dealsRes.data       ?? []) as Pick<Deal, 'id' | 'deal_type' | 'deal_number'>[]
+  let deals         = (dealsRes.data       ?? []) as Pick<Deal, 'id' | 'deal_type' | 'deal_number'>[]
   const employees   = (employeesRes.data   ?? [])
   const contacts    = (contactsRes.data    ?? []) as Pick<Contact, 'id' | 'full_name' | 'company_name' | 'client_type'>[]
   const properties  = propertiesRes.data   ?? []
+
+  // Сделка пришла по ссылке (например «Получена комиссия» из чек-листа
+  // стадии), но может быть старше последних 100 — без неё в списке select
+  // отправил бы пустое значение, несмотря на то что в URL она явно указана
+  // (аудит 23.10.2026, K8).
+  if (dealId && !deals.some(d => d.id === dealId)) {
+    const { data: targetDeal } = await supabase
+      .from('deals')
+      .select('id, deal_type, deal_number')
+      .eq('id', dealId)
+      .maybeSingle()
+    if (targetDeal) {
+      deals = [
+        { ...targetDeal, deal_number: targetDeal.deal_number ?? undefined } as Pick<Deal, 'id' | 'deal_type' | 'deal_number'>,
+        ...deals,
+      ]
+    }
+  }
 
   // Объекты в управлении: по ним операция едет во взаиморасчёт с собственником,
   // и форма обязана это сказать — иначе деньги молча минуют сальдо.

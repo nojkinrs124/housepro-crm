@@ -245,7 +245,7 @@ export default async function ManagementDetailPage({ params }: { params: Promise
                 <span>Расчёты с собственником</span>
                 <Link href={`/management/${id}/settlement`}
                   className="text-[12.5px] font-semibold normal-case tracking-normal text-[var(--hp-sub)] hover:text-[var(--hp-ink)] transition-colors">
-                  Все операции
+                  Полная история и детали расчёта
                 </Link>
               </div>
               <OwnerPayoutBlock

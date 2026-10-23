@@ -15,12 +15,17 @@ export default async function EditDealPage({ params }: { params: Promise<{ id: s
   const { id } = await params
   const supabase = await createClient()
 
-  const [{ data: rawDeal }, { data: rawContacts }, { data: rawProperties }, { data: rawReps }, plans] = await Promise.all([
+  const [{ data: rawDeal }, { data: rawContacts }, { data: rawProperties }, { data: rawReps }, plans, { count: contractsCount }, { count: showingsCount }, { count: collectionsCount }] = await Promise.all([
     supabase.from('deals').select('*').eq('id', id).single(),
     supabase.from('contacts').select('id, full_name, phone, role, client_type, company_name').order('full_name'),
     supabase.from('properties').select('id, title, address').order('title'),
     supabase.from('contact_representatives').select('id, contact_id, full_name, position, is_primary').order('is_primary', { ascending: false }),
     loadDealPlans(supabase),
+    // Сколько записей уже привязано к сделке — предупредить при смене
+    // направления, что они не подхватятся сами (аудит 23.10.2026, K2).
+    supabase.from('contracts').select('id', { count: 'exact', head: true }).eq('deal_id', id),
+    supabase.from('showings').select('id', { count: 'exact', head: true }).eq('deal_id', id),
+    supabase.from('property_collections').select('id', { count: 'exact', head: true }).eq('deal_id', id),
   ])
 
   if (!rawDeal) notFound()
@@ -69,7 +74,7 @@ export default async function EditDealPage({ params }: { params: Promise<{ id: s
           ownerRepDefaultId={deal.owner_representative_id ?? ''}
           clientRepDefaultId={deal.client_representative_id ?? ''}
           propertyDefaultId={deal.property_id ?? ''}
-          showStatus
+          relatedCount={(contractsCount ?? 0) + (showingsCount ?? 0) + (collectionsCount ?? 0)}
         />
 
         <FormActions submitLabel="Сохранить изменения" cancelHref={`/deals/${id}`} />

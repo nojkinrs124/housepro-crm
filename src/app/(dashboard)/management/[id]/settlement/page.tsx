@@ -80,8 +80,8 @@ export default async function SettlementPage({ params }: { params: Promise<{ id:
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Расчёты с собственником"
-        subtitle={`${property.title}${ownerName ? ` · ${ownerName}` : ''}`}
+        title="Полная история расчётов"
+        subtitle={`${property.title}${ownerName ? ` · ${ownerName}` : ''} · быстрая выплата — на карточке объекта`}
         backHref={`/management/${id}`}
         backLabel="Объект"
       />

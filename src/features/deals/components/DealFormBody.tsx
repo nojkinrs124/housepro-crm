@@ -57,7 +57,7 @@ export function DealFormBody({
   ownerRepDefaultId = '',
   clientRepDefaultId = '',
   propertyDefaultId = '',
-  showStatus = false,
+  relatedCount = 0,
 }: {
   deal?: DealDefaults
   owners: ContactOption[]
@@ -70,20 +70,39 @@ export function DealFormBody({
   ownerRepDefaultId?: string
   clientRepDefaultId?: string
   propertyDefaultId?: string
-  showStatus?: boolean
+  /** Сколько договоров/показов/подборок уже привязано к сделке — только при
+   *  правке. Ненулевое значение предупреждает, что смена направления не
+   *  приводит эти записи в соответствие автоматически (аудит 23.10.2026, K2). */
+  relatedCount?: number
 }) {
   const d = deal ?? {}
+  // На /new направление выбирается кликом по radio в клиентском
+  // DirectionStagePicker — этот компонент серверный и не узнает о выборе до
+  // сабмита, поэтому поля продажи скрываем только при правке существующей
+  // сделки, где deal_type уже известен. Поле с уже введённым значением не
+  // прячем — не теряем видимость данных после смены направления (аудит
+  // 23.10.2026, «форма одна для всех направлений»).
+  const saleFieldsVisible = !deal || d.deal_type === 'sale'
 
   return (
     <>
-      {/* Направление и стадия — клиентский блок: список стадий зависит от направления */}
+      {/* Направление — клиентский блок: список тарифов зависит от направления.
+          Стадию здесь больше не меняют — только степпер на карточке сделки
+          (DealStageBar → updateDealStatusAction → canMoveStage) проверяет
+          чек-листы и предусловия перехода (аудит 23.10.2026, K1). */}
       <DirectionStagePicker
         direction={d.deal_type}
-        status={d.status}
         planId={d.plan_id}
         plans={plans}
-        showStatus={showStatus}
       />
+
+      {relatedCount > 0 && (
+        <p className="text-xs text-[var(--hp-warn)] -mt-2">
+          У сделки уже есть {relatedCount} связанных записей (договоры, показы,
+          подборки) — при смене направления они не приводятся в соответствие
+          автоматически.
+        </p>
+      )}
 
 
       {/* Стороны */}
@@ -146,18 +165,24 @@ export function DealFormBody({
               {PAYMENT_METHODS.map(m => <option key={m} value={m}>{m}</option>)}
             </select>
           </Field>
-          <Field label="Банк">
-            <input name="bank_name" defaultValue={d.bank_name ?? ''} placeholder="Сбер" className="hp-input" />
-          </Field>
-          <Field label="Дата одобрения банка">
-            <input name="bank_approval_date" type="date" defaultValue={d.bank_approval_date ?? ''} className="hp-input min-w-0" />
-          </Field>
+          {(saleFieldsVisible || d.bank_name) && (
+            <Field label="Банк">
+              <input name="bank_name" defaultValue={d.bank_name ?? ''} placeholder="Сбер" className="hp-input" />
+            </Field>
+          )}
+          {(saleFieldsVisible || d.bank_approval_date) && (
+            <Field label="Дата одобрения банка">
+              <input name="bank_approval_date" type="date" defaultValue={d.bank_approval_date ?? ''} className="hp-input min-w-0" />
+            </Field>
+          )}
           <Field label="Плановое закрытие">
             <input name="expected_close_date" type="date" defaultValue={d.expected_close_date ?? ''} className="hp-input min-w-0" />
           </Field>
-          <Field label="Торг, ₽" hint="На сколько снизили цену от заявленной — для отчётности по сделке">
-            <input step="any" name="bargain_amount" type="number" min="0" defaultValue={d.bargain_amount ?? ''} placeholder="1 500 000" className="hp-input" />
-          </Field>
+          {(saleFieldsVisible || d.bargain_amount) && (
+            <Field label="Торг, ₽" hint="На сколько снизили цену от заявленной — для отчётности по сделке">
+              <input step="any" name="bargain_amount" type="number" min="0" defaultValue={d.bargain_amount ?? ''} placeholder="1 500 000" className="hp-input" />
+            </Field>
+          )}
           <Field label="Источник" hint="Откуда пришла сделка — по нему считается, какая площадка окупается">
             <select name="source" defaultValue={d.source ?? ''} className="hp-input cursor-pointer">
               <option value="">— не выбрано —</option>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { DIRECTIONS, stagesOf } from '@/features/directions/config/directions'
+import { DIRECTIONS } from '@/features/directions/config/directions'
 import { getChargeType } from '@/features/plans/config/settlement'
 
 const radioCls =
@@ -31,19 +31,14 @@ export interface DealPlanOption {
  */
 export function DirectionStagePicker({
   direction,
-  status,
   planId,
   plans = [],
-  showStatus = false,
 }: {
   direction?: string | null
-  status?: string | null
   planId?: string | null
   plans?: DealPlanOption[]
-  showStatus?: boolean
 }) {
   const [selected, setSelected] = useState(direction ?? 'rent_agent')
-  const stages = stagesOf(selected)
   const directionPlans = plans.filter(p => p.directions.includes(selected))
   // Один тариф на направление — выбираем его без вопросов; при правке — тот, что уже в сделке.
   const defaultPlanId = planId && directionPlans.some(p => p.id === planId)
@@ -97,27 +92,6 @@ export function DirectionStagePicker({
           </p>
         </div>
       </div>
-
-      {showStatus && (
-        <div className="hp-card p-5 space-y-4">
-          <h2 className="hp-h2">Стадия</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {stages.map(s => (
-              <label key={s.value} className={radioCls}>
-                <input
-                  type="radio" name="status" value={s.value}
-                  defaultChecked={status === s.value}
-                  className="w-4 h-4 shrink-0 accent-[var(--hp-accent)]"
-                />
-                {s.label}
-              </label>
-            ))}
-          </div>
-          <p className="text-xs text-[var(--hp-sub)]">
-            Смена направления меняет и список стадий: воронки у направлений разные
-          </p>
-        </div>
-      )}
     </>
   )
 }
