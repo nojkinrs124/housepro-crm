@@ -100,7 +100,7 @@ export async function POST(request: Request) {
     entityId: data.id,
     entityLabel: `Задача создана через Telegram-бота: ${data.title}`,
   })
-  dispatchWebhook(auth.orgId!, 'task.created', { id: data.id, title: data.title })
+  await dispatchWebhook(auth.orgId!, 'task.created', { id: data.id, title: data.title })
 
   return NextResponse.json({ data }, { status: 201 })
 }
@@ -158,7 +158,7 @@ export async function PATCH(request: Request) {
     entityLabel: `Задача «${existing.title}»: статус изменён через Telegram-бота`,
     changes: { status: { old: existing.status, new: parsed.data.status } },
   })
-  if (parsed.data.status === 'done') dispatchWebhook(auth.orgId!, 'task.completed', { id: taskId, title: existing.title })
+  if (parsed.data.status === 'done') await dispatchWebhook(auth.orgId!, 'task.completed', { id: taskId, title: existing.title })
 
   return NextResponse.json({ data })
 }

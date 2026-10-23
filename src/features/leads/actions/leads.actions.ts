@@ -88,7 +88,7 @@ export async function createLeadAction(formData: FormData) {
 
   if (error) return { error: friendlyDbError(error, { entity: 'лид' }) }
 
-  dispatchWebhook(orgId, 'lead.created', {
+  await dispatchWebhook(orgId, 'lead.created', {
     id: lead.id, full_name: lead.full_name, phone: lead.phone, source: lead.source,
   })
 

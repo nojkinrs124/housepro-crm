@@ -191,7 +191,7 @@ export async function createContractAction(_prevState: PrevState, formData: Form
     revalidatePath(`/deals/${parsed.data.deal_id}`)
   }
 
-  dispatchWebhook(orgId, 'contract.created', {
+  await dispatchWebhook(orgId, 'contract.created', {
     id: contract.id, contract_type: parsed.data.contract_type, amount: parsed.data.amount,
   })
 

@@ -134,7 +134,7 @@ GitHub Actions — только CI и ручной E2E.
 | Поменять бота | `app/api/telegram/webhook/route.ts` (диспетчер) + `lib/telegram/*` |
 | Поменять кабинет | `features/portal/*`, `app/(portal)/cabinet/*` |
 | Поменять схему БД | `supabase/migrations` через `apply_migration`, затем `npm run db:types` |
-| Понять, почему упало | `lib/errors.ts` (`friendlyDbError`), Sentry, `docs/qa/WALKTHROUGH.md` |
+| Понять, почему упало | `lib/errors.ts` (`friendlyDbError`), Sentry, `docs/archive/qa/WALKTHROUGH.md` |
 
 ## 9. Где код тяжелее всего (кандидаты на распил)
 

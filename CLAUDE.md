@@ -5,10 +5,12 @@
 
 ## Стек
 
-Next.js 16 · React 19 · TypeScript · Tailwind v4 (только через postcss, без конфига
-классов) · Supabase (Postgres + Auth + Storage) · react-hook-form + zod ·
+Next.js 16 · React 19 · TypeScript · Tailwind v4 через `@config` на классический
+`tailwind.config.ts` (`globals.css:3`) — не «безконфигурный» режим, конфиг живой
+и в нём меняются темы/брейкпоинты · Supabase (Postgres + Auth + Storage) ·
+react-hook-form + zod ·
 docxtemplater + pizzip (DOCX) · pdf-lib (PDF) · recharts (графики) · sonner ·
-framer-motion · lucide-react · Upstash Redis (rate limit) · Stripe · Sentry ·
+framer-motion · lucide-react · Upstash Redis (rate limit) · Sentry ·
 vitest (юнит) + Playwright (E2E).
 
 Библиотеки компонентов в проекте нет: `src/components/ui/` — два своих файла,
@@ -80,7 +82,8 @@ const supabase = createClient()            // ← без await
 - Изменение схемы — **только `apply_migration`**, никогда `execute_sql` (заблокировано хуком).
   Подробности, шаблоны RLS и PostgREST-хинты — skill `housepro-migration`.
 - Актуальный список таблиц — через MCP `list_tables`, а не по памяти.
-- Прямые HTTP-запросы к `api.supabase.com` заблокированы — только MCP-коннектор.
+- Прямые HTTP-запросы к `api.supabase.com` не делать — только MCP-коннектор
+  (ничем не заблокировано технически, это соглашение, не hook).
 
 Ключевые сущности: `contacts` (единые клиенты и собственники, поле `role`:
 `client | owner | both`; `client_type`: `individual | legal_entity`, у юрлица —
@@ -254,8 +257,9 @@ npm run version:major   # ломающее изменение
 build → тесты. **Шаги не нумеруются** — номера разъезжались по документам, ссылаться
 на шаг по названию.
 
-Отдельно: `check:design`, `check:boundary`, `check:cron`, `check:server`, `check:any`.
-Переснять baseline после чистки легаси — `check:design:baseline`, `check:any:baseline`.
+Отдельно: `check:design`, `check:boundary`, `check:cron`, `check:server`, `check:stages`,
+`check:forms`, `check:any`. Переснять baseline после чистки легаси —
+`check:design:baseline`, `check:any:baseline`.
 
 ---
 
@@ -274,7 +278,7 @@ build → тесты. **Шаги не нумеруются** — номера р
 | Что происходило в прошлых сессиях | `docs/JOURNAL.md` (хроника, не правила) |
 | Долгосрочные фазы SaaS | `docs/ROADMAP.md` (статус сверять с кодом) |
 | Интеграции: почта, карты, площадки, подпись | `docs/INTEGRATIONS.md` |
-| История редизайнов, дизайн-долг | `docs/DESIGN_SYSTEM_AUDIT.md` |
+| История редизайнов, дизайн-долг | `docs/archive/DESIGN_SYSTEM_AUDIT.md` |
 | Что умеет система | `README.md` |
 | Как работать в системе (для сотрудников) | `docs/handbook/` — справочник по разделам |
 | Новая фича через спецификацию (Spec Kit) | `docs/SPEC_KIT.md` — цикл specify → clarify → plan → tasks → implement |

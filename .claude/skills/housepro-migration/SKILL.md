@@ -99,8 +99,7 @@ import { getSupabaseAdmin } from '@/lib/supabase/admin'
 
 ## Legacy-таблицы
 
-`clients` и `owners` — устаревшие, для новых фич использовать `contacts`
-(поле `role`: `client | owner | both`). **Но они ещё живые**: на 02.09.2026 к ним
-обращаются `contracts/page.tsx:56`, `employees/[id]/page.tsx:35`,
-`features/clients/actions/clients.actions.ts:19` и модуль `src/app/(dashboard)/clients/`.
-`DROP TABLE` не выполнять — сначала миграция этих мест, см. `docs/IMPROVEMENTS.md`.
+`clients` и `owners` больше не существуют — удалены 02.09.2026, для клиентов и
+собственников используется только `contacts` (поле `role`: `client | owner | both`).
+Ссылочные колонки `client_id`/`owner_id` в `deals`/`contracts`/`tasks` тоже удалены
+(16.09.2026). `list_tables` — источник истины по актуальной схеме.

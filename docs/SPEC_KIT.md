@@ -19,20 +19,16 @@ Spec Kit **не заменяет** правила проекта: `CLAUDE.md`, s
 | Шаг | Команда | Что получается |
 |---|---|---|
 | 1. Спецификация | `/speckit-specify <описание фичи>` | `specs/NNN-имя/spec.md` — что и зачем, без техники |
-| 2. Уточнение | `/speckit-clarify` | до 5 вопросов, ответы вписываются обратно в `spec.md` |
-| 3. План | `/speckit-plan` | `plan.md` + `research.md`, `data-model.md`, `contracts/` — со сверкой по конституции |
-| 4. Задачи | `/speckit-tasks` | `tasks.md` в порядке зависимостей |
-| 5. Сверка (по желанию) | `/speckit-analyze` | отчёт о расхождениях между spec / plan / tasks |
-| 6. Реализация | `/speckit-implement` | код по задачам |
-| 7. Выкат | skill `housepro-release` | `npm run check`, версия, коммит, пуш |
+| 2. План | `/speckit-plan` | `plan.md` + `research.md`, `data-model.md`, `contracts/` — со сверкой по конституции |
+| 3. Задачи | `/speckit-tasks` | `tasks.md` в порядке зависимостей |
+| 4. Реализация | `/speckit-implement` | код по задачам |
+| 5. Выкат | skill `housepro-release` | `npm run check`, версия, коммит, пуш |
 
-Дополнительно: `/speckit-constitution` — правка принципов проекта;
-`/speckit-checklist` — чек-лист качества требований; `/speckit-converge` — сверка
-кодовой базы со спекой и дозапись оставшейся работы в `tasks.md`;
-`/speckit-taskstoissues` — перенос задач в GitHub Issues.
-
-Шаги 2 и 5 необязательны, но окупаются: `clarify` снимает неоднозначности до того,
-как они попадут в план, `analyze` ловит рассинхрон между документами.
+**23.10.2026: шесть скиллов сняты** (`clarify`, `analyze`, `constitution`, `checklist`,
+`converge`, `taskstoissues`) — 2286 строк, использовались один раз на `specs/001` и
+не несли уникальной процедуры сверх `specify/plan/tasks/implement`. Оставлен базовый
+цикл из четырёх шагов; при повторной необходимости уточнения требований или сверки
+план/код — делать вручную, как обычный рабочий цикл.
 
 ## Что где лежит
 
@@ -41,7 +37,7 @@ Spec Kit **не заменяет** правила проекта: `CLAUDE.md`, s
 .specify/templates/               шаблоны spec / plan / tasks / checklist
 .specify/scripts/bash/            скрипты: создание фичи, проверка предусловий
 .specify/feature.json             указатель на текущую фичу (локальный, в .gitignore)
-.claude/skills/speckit-*/         сами команды
+.claude/skills/speckit-*/         сами команды (specify/plan/tasks/implement — остальные 6 сняты 23.10.2026)
 specs/NNN-имя-фичи/               артефакты фичи — коммитятся вместе с кодом
 ```
 

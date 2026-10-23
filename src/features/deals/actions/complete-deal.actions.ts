@@ -394,7 +394,7 @@ export async function completeDealAction(
     entityLabel: `Оформление сделки: ${created.join(', ')}`,
   })
 
-  dispatchWebhook(orgId, 'contract.created', {
+  await dispatchWebhook(orgId, 'contract.created', {
     id: contract.id, contract_type: contractType, amount,
   })
 

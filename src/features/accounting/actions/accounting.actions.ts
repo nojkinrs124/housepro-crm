@@ -520,7 +520,7 @@ export async function completeTransactionAction(id: string) {
   const { requireOrgId } = await import('@/lib/org')
   const orgId = await requireOrgId().catch(() => null)
   if (orgId) {
-    dispatchWebhook(orgId, 'payment.received', {
+    await dispatchWebhook(orgId, 'payment.received', {
       id: updated.id, amount: updated.amount, contract_id: updated.contract_id, deal_id: updated.deal_id,
     })
   }

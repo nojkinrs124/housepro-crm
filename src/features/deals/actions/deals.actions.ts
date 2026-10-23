@@ -82,7 +82,7 @@ export async function createDealAction(formData: FormData) {
     entityId: deal.id, entityLabel: `Сделка (${parsed.data.deal_type})`,
   })
 
-  dispatchWebhook(orgId, 'deal.created', {
+  await dispatchWebhook(orgId, 'deal.created', {
     id: deal.id, deal_type: parsed.data.deal_type, amount: parsed.data.amount,
   })
 
