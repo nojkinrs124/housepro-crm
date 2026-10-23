@@ -79,7 +79,9 @@ export default async function ManagementDetailPage({ params }: { params: Promise
 
   const { data: property } = await supabase
     .from('properties')
-    .select('id, title, address, deal_type, status, owner_id, manager_id, management_fee, price')
+    .select(
+      'id, title, address, description, deal_type, status, owner_id, manager_id, management_fee, price, latitude, longitude, site_publish, avito_publish',
+    )
     .eq('id', id)
     .maybeSingle()
 
