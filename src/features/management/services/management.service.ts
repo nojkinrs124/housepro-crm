@@ -170,13 +170,17 @@ export async function collectManagement(supabase: Client): Promise<ManagementRow
       contractId: contract?.id ?? null,
       contractNumber: contract?.contract_number ?? null,
       contractEnd: contract?.end_date ?? null,
-      // Вознаграждение: при фиксированной схеме показываем выплату собственнику,
-      // при процентной — сумму договора управления. Величины разные по смыслу,
-      // поэтому в колонке подписаны схемой.
-      fee: (engagement.settlement_scheme === 'fixed' || engagement.settlement_scheme === 'fixed_capped') && engagement.owner_fixed_amount != null
-        ? Number(engagement.owner_fixed_amount)
-        : contract?.amount != null ? Number(contract.amount)
-        : property.management_fee != null ? Number(property.management_fee) : null,
+      // Вознаграждение агентства — всегда то, что агентство реально
+      // зарабатывает за ведение объекта, а не то, что оно платит собственнику.
+      // До правки (аудит 23.10.2026) при фиксированной схеме сюда попадал
+      // owner_fixed_amount — выплата собственнику, которая на фиксированной
+      // схеме почти равна всей аренде, и колонка выглядела как «аренда»,
+      // а не вознаграждение. Источник один: карточка объекта
+      // (property.management_fee), договор управления — запасной вариант,
+      // когда комиссия не продублирована в карточке.
+      fee: property.management_fee != null
+        ? Number(property.management_fee)
+        : contract?.amount != null ? Number(contract.amount) : null,
       nextPaymentDate: upcoming?.due_date ?? null,
       nextPaymentAmount: upcoming ? Number(upcoming.amount) : null,
       overdueAmount,
