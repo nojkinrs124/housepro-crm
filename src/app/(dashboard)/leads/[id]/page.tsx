@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
-import { Phone, Mail, MessageCircle, UserCheck, Home, Edit, Plus, Users, FileText, Activity } from 'lucide-react'
+import { Phone, Mail, MessageCircle, UserCheck, Home, Edit, Plus, Users, FileText, Activity, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { convertLeadToClient } from '@/features/leads/actions/leads.actions'
+import { convertLeadToDeal, convertLeadToClient } from '@/features/leads/actions/leads.actions'
 import { deleteLeadAction } from '@/features/leads/actions/leads.actions'
 import { RecordActions } from '@/components/layout/RecordActions'
 import { ConfirmDeleteButton } from '@/components/forms/ConfirmDeleteButton'
@@ -115,30 +115,37 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
  }
  actions={
  <RecordActions
- /* Главное действие лида — сделать его контактом: после этого с карточки
- контакта одной кнопкой заводится сделка. Раньше «Создать сделку» была
- прямо здесь, но передавала id лида вместо контакта и молча ничего не
- подставляла. */
+ /* Главное действие — перейти к сделке. Если контакт ещё не создан,
+    сначала конвертируем лид в контакт, затем открываем предзаполненную форму. */
  primary={lead.status === 'converted' && lead.contact_id ? (
- /* Конвертированный лид — история обращения; работа идёт в контакте. */
- <Link href={`/contacts/${lead.contact_id}`} className="hp-btn-primary" data-testid="lead-open-contact">
- <UserCheck className="w-4 h-4" />
- Открыть контакт
- </Link>
+   <Link href={`/deals/new?contact_id=${lead.contact_id}`} className="hp-btn-primary" data-testid="lead-create-deal">
+     <TrendingUp className="w-4 h-4" />
+     Создать сделку
+   </Link>
  ) : !isConverted && (
- <ServerActionForm action={convertLeadToClient.bind(null, id)}>
- <button type="submit" className="hp-btn-primary" data-testid="lead-convert">
- <UserCheck className="w-4 h-4" />
- В контакты
- </button>
- </ServerActionForm>
+   <ServerActionForm action={convertLeadToDeal.bind(null, id)}>
+     <button type="submit" className="hp-btn-primary" data-testid="lead-create-deal">
+       <TrendingUp className="w-4 h-4" />
+       Создать сделку
+     </button>
+   </ServerActionForm>
  )}
- secondary={lead.status !== 'converted' && (
- <Link href={`/leads/${id}/edit`} className="hp-btn-secondary" data-testid="lead-edit">
- <Edit className="w-4 h-4" />
- Редактировать
- </Link>
- )}
+ secondary={
+   <>
+     {lead.contact_id && (
+       <Link href={`/contacts/${lead.contact_id}`} className="hp-btn-secondary" data-testid="lead-open-contact">
+         <UserCheck className="w-4 h-4" />
+         Открыть контакт
+       </Link>
+     )}
+     {lead.status !== 'converted' && (
+       <Link href={`/leads/${id}/edit`} className="hp-btn-secondary" data-testid="lead-edit">
+         <Edit className="w-4 h-4" />
+         Редактировать
+       </Link>
+     )}
+   </>
+ }
  more={
  <>
  <Link href={`/tasks/new?lead_id=${id}`} className="hp-menu-item" role="menuitem">

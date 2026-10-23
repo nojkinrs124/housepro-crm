@@ -361,25 +361,46 @@ export function ContractForm({
  </div>
  )}
 
- {/* Поля, специфичные для выбранного типа договора */}
- {selectedType === 'rent_apartment' && (
- <RentApartmentExtraFields key={selectedType} defaultValue={defaults.contract_type_data} />
- )}
- {selectedType === 'rent_commercial' && (
- <CommercialRentExtraFields key={selectedType} defaultValue={defaults.contract_type_data} />
- )}
- {selectedType === 'sale' && (
- <SaleExtraFields key={selectedType} defaultValue={defaults.contract_type_data} />
- )}
- {AGENCY_SERVICE_TYPES.includes(selectedType) && (
- <AgencyServiceExtraFields key={selectedType} defaultValue={defaults.contract_type_data} />
- )}
- {selectedType === 'property_management' && (
- <PropertyManagementExtraFields key={selectedType} defaultValue={defaults.contract_type_data} />
- )}
- {selectedType === 'sublease' && (
- <SubleaseExtraFields key={selectedType} defaultValue={defaults.contract_type_data} />
- )}
+ {/* Поля, специфичные для выбранного типа договора — опись имущества,
+         условия найма, сроки уведомлений и т.п. Раньше рендерились всегда
+         видимыми: 36 полей на экране разом, прямое нарушение правила
+         «≤6 полей на виду» (аудит 23.10.2026, K3). Это не метаданные
+         сделки — это пункты самого документа, которые обычно дозаполняют
+         перед подписанием, а не в момент выбора типа договора. */}
+     {(selectedType === 'rent_apartment' || selectedType === 'rent_commercial'
+       || selectedType === 'sale' || AGENCY_SERVICE_TYPES.includes(selectedType)
+       || selectedType === 'property_management' || selectedType === 'sublease') && (
+       <FormExtra
+         title="Условия договора"
+         summary={
+           selectedType === 'rent_apartment' ? 'проживающие, животные, уведомления, акт приёма и возврата'
+           : selectedType === 'rent_commercial' ? 'условия коммерческой аренды'
+           : selectedType === 'sale' ? 'расчёты, обременения, передача объекта'
+           : selectedType === 'property_management' ? 'услуги по управлению, отчётность'
+           : selectedType === 'sublease' ? 'условия субаренды'
+           : 'условия агентской услуги'
+         }
+       >
+         {selectedType === 'rent_apartment' && (
+           <RentApartmentExtraFields key={selectedType} defaultValue={defaults.contract_type_data} />
+         )}
+         {selectedType === 'rent_commercial' && (
+           <CommercialRentExtraFields key={selectedType} defaultValue={defaults.contract_type_data} />
+         )}
+         {selectedType === 'sale' && (
+           <SaleExtraFields key={selectedType} defaultValue={defaults.contract_type_data} />
+         )}
+         {AGENCY_SERVICE_TYPES.includes(selectedType) && (
+           <AgencyServiceExtraFields key={selectedType} defaultValue={defaults.contract_type_data} />
+         )}
+         {selectedType === 'property_management' && (
+           <PropertyManagementExtraFields key={selectedType} defaultValue={defaults.contract_type_data} />
+         )}
+         {selectedType === 'sublease' && (
+           <SubleaseExtraFields key={selectedType} defaultValue={defaults.contract_type_data} />
+         )}
+       </FormExtra>
+     )}
 
  {/* Всё, что не нужно для самого документа: связь со сделкой, статус,
  примечания. Раскрыто, если договор создаётся из сделки. */}

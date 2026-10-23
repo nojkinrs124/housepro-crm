@@ -217,6 +217,14 @@ export async function addLeadActivityAction(formData: FormData) {
 }
 
 export async function convertLeadToClient(id: string) {
+  return convertLead(id, false)
+}
+
+export async function convertLeadToDeal(id: string, _formData: FormData) {
+  return convertLead(id, true)
+}
+
+async function convertLead(id: string, createDeal: boolean) {
   const ctx = await getSessionContext()
   if (!ctx.ok) return { error: ctx.error }
   const { supabase, user, orgId } = ctx
@@ -229,8 +237,11 @@ export async function convertLeadToClient(id: string) {
 
   const l = lead
 
-  // Повторная конвертация невозможна: контакт уже есть — идём в него.
-  if (l.status === 'converted' && l.contact_id) redirect(`/contacts/${l.contact_id}`)
+  // Повторная конвертация невозможна: контакт уже есть — идём в него или
+  // сразу создаём сделку по прямому действию с карточки лида.
+  if (l.status === 'converted' && l.contact_id) {
+    redirect(createDeal ? `/deals/new?contact_id=${l.contact_id}` : `/contacts/${l.contact_id}`)
+  }
 
   // Роль — по тому, чего хотел лид: «сдать/продать» — собственник,
   // «снять/купить» — клиент (проход 17.09.2026, L-9: всегда был клиент, и
@@ -277,7 +288,7 @@ export async function convertLeadToClient(id: string) {
   revalidatePath('/leads')
   revalidatePath(`/leads/${id}`)
   revalidatePath('/contacts')
-  redirect(`/contacts/${contactId}`)
+  redirect(createDeal ? `/deals/new?contact_id=${contactId}` : `/contacts/${contactId}`)
 }
 
 export async function deleteLeadAction(id: string) {

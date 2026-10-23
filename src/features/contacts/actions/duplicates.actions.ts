@@ -105,6 +105,15 @@ async function countLinks(
   return counts
 }
 
+function normalizeContactName(value: string | null): string {
+  return (value ?? '')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toLocaleLowerCase('ru-RU')
+}
+
 /**
  * Ищет группы контактов-дублей по нормализованному телефону и по email.
  * Уже слитые карточки (merged_into не пуст) в выдачу не попадают.
@@ -147,7 +156,16 @@ export async function findDuplicateContactsAction(): Promise<{ error?: string; g
 
   const rawGroups: { reason: 'phone' | 'email'; key: string; contacts: ContactRow[] }[] = []
   for (const [key, list] of byPhone) {
-    if (list.length > 1) rawGroups.push({ reason: 'phone', key, contacts: list })
+    if (list.length < 2) continue
+
+    // Совпадение телефона недостаточно: в агентстве телефон иногда общий
+    // (например, супруги/собственник и арендатор). В список слияния попадают
+    // только карточки с одинаковым именем после нормализации; пары с разными
+    // именами намеренно скрываем, потому что «слить» здесь опаснее, чем
+    // оставить дубль на ручную проверку (аудит 23.10.2026, K6).
+    const normalizedNames = list.map(c => normalizeContactName(c.full_name))
+    const allSameName = normalizedNames.every(name => name && name === normalizedNames[0])
+    if (allSameName) rawGroups.push({ reason: 'phone', key, contacts: list })
   }
   const phoneGrouped = new Set(rawGroups.flatMap((g) => g.contacts.map((c) => c.id)))
   for (const [key, list] of byEmail) {
@@ -219,6 +237,20 @@ export async function mergeContactsAction(
   const duplicates = (contacts ?? []).filter((c) => c.id !== primaryId)
   if (!primary) return { error: 'Основная карточка не найдена' }
   if (duplicates.length === 0) return { error: 'Дубли не найдены' }
+
+  // Защита не только в выдаче: прямой вызов Server Action тоже не должен
+  // позволить слить разных людей с общим телефоном (аудит 23.10.2026, K6).
+  const selected = [primary, ...duplicates]
+  for (let i = 0; i < selected.length; i++) {
+    for (let j = i + 1; j < selected.length; j++) {
+      const leftPhone = normalizePhone(selected[i].phone)
+      const rightPhone = normalizePhone(selected[j].phone)
+      if (leftPhone && leftPhone === rightPhone
+        && normalizeContactName(selected[i].full_name) !== normalizeContactName(selected[j].full_name)) {
+        return { error: 'Нельзя объединить карточки с общим телефоном и разными именами — проверьте, не используют ли номер несколько человек' }
+      }
+    }
+  }
 
   // 1. Дополняем основную карточку тем, чего в ней нет.
   const patch: Record<string, unknown> = {}

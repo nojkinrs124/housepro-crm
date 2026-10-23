@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
+import type { ReactNode } from 'react'
 import type { ReadinessIssue } from '@/lib/readiness'
 
 /**
@@ -8,16 +9,23 @@ import type { ReadinessIssue } from '@/lib/readiness'
  * в договоре останется пропуск. Ничего не запрещает: заводить записи можно в
  * любом порядке, блок просто не даёт пропуску потеряться.
  *
- * Server Component: только данные и разметка, интерактива внутри нет.
+ * Server Component: только данные и разметка. `fixActions` — исключение:
+ * JSX-слот для конкретного issue.id, когда проблему можно закрыть одним
+ * кликом на месте, а не переходом в форму редактирования (аудит 23.10.2026,
+ * K4 — «статус объекта расходится с договором» была видна, но единственным
+ * действием был переход на /edit искать поле «Статус» среди остальных).
  */
 export function ReadinessPanel({
   issues,
   title = 'Чего не хватает',
   actionLabel = 'Заполнить',
+  fixActions = {},
 }: {
   issues: ReadinessIssue[]
   title?: string
   actionLabel?: string
+  /** issue.id → готовый клиентский компонент, который чинит проблему на месте. */
+  fixActions?: Record<string, ReactNode>
 }) {
   if (issues.length === 0) return null
 
@@ -43,7 +51,7 @@ export function ReadinessPanel({
             <span className="block text-[var(--hp-ink)] font-medium">{issue.missing}</span>
             <span className="block text-[12px] text-[var(--hp-sub)] mt-0.5">{issue.effect}</span>
           </span>
-          {issue.href && (
+          {fixActions[issue.id] ?? (issue.href && (
             <Link
               href={issue.href}
               className="shrink-0 inline-flex items-center gap-1 text-[12px] font-medium text-[var(--hp-accent)] hover:underline"
@@ -51,7 +59,7 @@ export function ReadinessPanel({
               {actionLabel}
               <ArrowUpRight className="w-3.5 h-3.5" />
             </Link>
-          )}
+          ))}
         </div>
       ))}
     </div>

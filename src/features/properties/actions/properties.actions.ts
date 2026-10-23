@@ -11,6 +11,7 @@ import { rateLimitMutation } from '@/lib/rate-limit'
 import { writeAuditLog } from '@/lib/audit'
 import { LISTING_BODY_MAX, LISTING_TITLE_MAX } from '@/lib/ai/listing/facts'
 import { friendlyDbError } from '@/lib/errors'
+import { isActiveRentContract } from '@/features/contracts/config/contract-types'
 
 function extractPropertyFields(formData: FormData) {
   return {
@@ -179,6 +180,70 @@ export async function deletePropertyAction(id: string) {
   revalidatePath('/properties')
   revalidateSiteForProperty(id)
   redirect('/properties')
+}
+
+/**
+ * Приводит статус объекта к фактическому наличию действующего договора
+ * аренды/найма одним кликом — без перехода в форму редактирования.
+ *
+ * Закрывает находку K4 аудита 23.10.2026: `ReadinessPanel` честно показывал
+ * рассинхрон статуса и договора, но единственным действием был переход на
+ * `/properties/[id]/edit`, где нужно было искать поле «Статус» среди
+ * остальных и выставлять его вручную.
+ */
+export async function fixPropertyStatusAction(id: string) {
+  const ctx = await getSessionContext()
+  if (!ctx.ok) return { error: ctx.error }
+  const { supabase, user, orgId } = ctx
+
+  const rl = await rateLimitMutation(user.id, 'property_status_fix')
+  if (!rl.success) return { error: 'Слишком много запросов. Подождите минуту.' }
+
+  const permError = await requirePermission(user.id, 'properties', 'update')
+  if (permError) return permError
+
+  const { data: property } = await supabase
+    .from('properties')
+    .select('id, status')
+    .eq('id', id)
+    .maybeSingle()
+  if (!property) return { error: 'Объект не найден' }
+
+  const { data: rentContracts } = await supabase
+    .from('contracts')
+    .select('contract_type, status, end_date')
+    .eq('property_id', id)
+
+  const hasActiveRentContract = (rentContracts ?? []).some(c => isActiveRentContract(c))
+  const targetMismatch = property.status === 'rented' && !hasActiveRentContract
+  if (!targetMismatch) {
+    return { error: hasActiveRentContract
+      ? 'По объекту есть действующий договор аренды — статус менять не нужно'
+      : 'Статус уже соответствует данным договора' }
+  }
+
+  const nextStatus = 'available'
+  if (property.status === nextStatus) return { success: true }
+
+  const { error } = await supabase
+    .from('properties')
+    .update({ status: nextStatus, updated_at: new Date().toISOString() })
+    .eq('id', id)
+  if (error) return { error: friendlyDbError(error, { entity: 'объект' }) }
+
+  await writeAuditLog({
+    userId: user.id,
+    orgId,
+    action: 'update',
+    entityType: 'property',
+    entityId: id,
+    entityLabel: `Статус приведён в соответствие договору: ${nextStatus}`,
+  })
+
+  revalidatePath(`/properties/${id}`)
+  revalidatePath('/properties')
+  revalidateSiteForProperty(id)
+  return { success: true }
 }
 
 // Сгенерированное объявление — результат кнопки «Сгенерировать объявление»

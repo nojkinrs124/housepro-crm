@@ -7,13 +7,22 @@ import { DuplicateGroupCard } from '@/features/contacts/components/DuplicateGrou
 
 export const dynamic = 'force-dynamic'
 
+function normalizeContactName(value: string | null): string {
+ return (value ?? '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').trim().replace(/\s+/g, ' ').toLocaleLowerCase('ru-RU')
+}
+
 export default async function ContactDuplicatesPage() {
  const supabase = await createClient()
  const { data: { user } } = await supabase.auth.getUser()
  if (!user) redirect('/login')
 
- const { groups, error } = await findDuplicateContactsAction()
- const affected = (groups ?? []).reduce((sum, g) => sum + g.contacts.length, 0)
+ const { groups: rawGroups, error } = await findDuplicateContactsAction()
+ const groups = (rawGroups ?? []).filter(g => {
+   if (g.reason !== 'phone') return true
+   const names = g.contacts.map(c => normalizeContactName(c.full_name))
+   return names.every(name => name && name === names[0])
+ })
+ const affected = groups.reduce((sum, g) => sum + g.contacts.length, 0)
 
  return (
  <div className="max-w-3xl mx-auto space-y-6">

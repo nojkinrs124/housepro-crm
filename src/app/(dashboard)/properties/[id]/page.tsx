@@ -20,6 +20,7 @@ import { CONTRACT_STATUS_LABELS, CONTRACT_STATUS_DETAIL } from '@/features/contr
 import { ReadinessPanel } from '@/components/layout/ReadinessPanel'
 import { checkProperty } from '@/lib/readiness'
 import { FilesSection } from '@/features/files/components/FilesSection'
+import { FixPropertyStatusButton } from '@/features/properties/components/FixPropertyStatusButton'
 
 const statusBadge: Record<string, string> = {
   available: 'hp-badge-good',
@@ -157,7 +158,13 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
         }
       />
 
-      <ReadinessPanel issues={issues} />
+      <ReadinessPanel
+        issues={issues}
+        fixActions={{
+          'property.rented_but_available': <FixPropertyStatusButton propertyId={p.id} />,
+          'property.available_but_rented': <FixPropertyStatusButton propertyId={p.id} title="Сделать доступным" />,
+        }}
+      />
 
       {(p.price || p.deposit || p.management_fee || p.area) && (
         <StatStrip

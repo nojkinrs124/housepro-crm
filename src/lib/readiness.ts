@@ -144,7 +144,7 @@ export function checkProperty(
       level: 'warn',
       missing: 'Объект помечен сданным, но договора аренды нет',
       effect: 'Арендатор не появится в «Управлении», а начисления по аренде не создадутся',
-      href: `/contracts/new?property_id=${p.id}`,
+      href: edit,
     })
   }
 

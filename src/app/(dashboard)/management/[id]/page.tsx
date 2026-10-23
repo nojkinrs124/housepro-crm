@@ -23,6 +23,7 @@ import { PropertyTasksBlock } from '@/features/management/components/PropertyTas
 import { ManagementDetailTabs, type DetailTab } from '@/features/management/components/ManagementDetailTabs'
 import { calcSettlement } from '@/features/management/services/settlement.service'
 import { loadSettlementOperations } from '@/features/management/data/settlement.data'
+import { FixPropertyStatusButton } from '@/features/properties/components/FixPropertyStatusButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -562,7 +563,14 @@ export default async function ManagementDetailPage({ params }: { params: Promise
         }
       />
 
-      <ReadinessPanel issues={issues} title="Что заполнить" />
+      <ReadinessPanel
+        issues={issues}
+        title="Что заполнить"
+        fixActions={{
+          'property.rented_but_available': <FixPropertyStatusButton propertyId={id} />,
+          'property.available_but_rented': <FixPropertyStatusButton propertyId={id} title="Сделать доступным" />,
+        }}
+      />
 
       <ManagementDetailTabs tabs={tabs} />
     </div>
