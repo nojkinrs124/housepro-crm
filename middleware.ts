@@ -36,6 +36,8 @@ const PUBLIC_EXACT = new Set([
   '/',
   '/sitemap.xml',
   '/robots.txt',
+  // Файл подтверждения домена для Яндекс.Вебмастера. Точный путь, не префикс.
+  '/yandex_64d60ae7349e40b7.html',
 ])
 
 export async function middleware(request: NextRequest) {
