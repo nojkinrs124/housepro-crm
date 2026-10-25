@@ -9,6 +9,7 @@ import { getSiteContacts } from '@/features/site/lib/contacts'
 import { TARIFFS, TRUST, USLUGI } from '@/features/site/uslugi/config'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/' },
   title: 'Сдаю и веду вашу квартиру в Красноярске — ХаусПро, Руслан Ножкин',
   description:
     'ХаусПро — Руслан Ножкин, частный риелтор в Красноярске. Доверительное управление квартирами, сдача в аренду и продажа. Нахожу и проверяю жильцов, оформляю договор и акт с описью, раз в месяц присылаю отчёт.',

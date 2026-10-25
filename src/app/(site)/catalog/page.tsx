@@ -11,6 +11,7 @@ import {
 } from '@/features/site/lib/properties'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/catalog' },
   title: 'Каталог объектов — ХаусПро, Красноярск',
   description:
     'Квартиры, дома и коммерческие помещения в аренду и продажу в Красноярске. Фильтр по типу сделки, количеству комнат, району и цене. ХаусПро — Руслан Ножкин, частный риелтор.',

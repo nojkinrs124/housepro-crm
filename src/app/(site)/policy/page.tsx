@@ -3,6 +3,7 @@ import { getSiteContacts } from '@/features/site/lib/contacts'
 import { CONSENT_VERSION } from '@/lib/consent'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/policy' },
   title: 'Политика обработки персональных данных — ХаусПро',
   description:
     'Как Ножкин Руслан Сергеевич (ХаусПро, частный риелтор) обрабатывает персональные данные: цели, состав данных, сроки хранения и порядок отзыва согласия.',

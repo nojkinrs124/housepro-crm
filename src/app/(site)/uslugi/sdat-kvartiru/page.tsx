@@ -22,6 +22,7 @@ import { StickyMobileBar } from '@/features/site/uslugi/components/StickyMobileB
 import { fetchSiteStats } from '@/features/site/lib/stats'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/uslugi/sdat-kvartiru' },
   title: 'Сдать квартиру в аренду в Красноярске — тарифы и доверительное управление | ХаусПро',
   description:
     'Сдам вашу квартиру и буду вести её дальше: оценка ставки, проверка нанимателя, договор и акт с описью. Три тарифа — разовый подбор, управление, премиум с гарантией платежа. Первая сделка бесплатно.',

@@ -33,6 +33,7 @@ const SEO_PRICE_TAIL = [
   .join(' ')
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/uslugi/prodat-kupit' },
   title: 'Продать или купить квартиру в Красноярске — сопровождение сделки | ХаусПро',
   description: [
     'Сопровождение сделки купли-продажи: оценка, реклама, показы, проверка юридической чистоты, безопасные расчёты и регистрация.',

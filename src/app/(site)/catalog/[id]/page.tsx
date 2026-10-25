@@ -41,6 +41,7 @@ export async function generateMetadata({
 
   return {
     title: `${property.title} — ХаусПро, Красноярск`,
+    alternates: { canonical: `/catalog/${id}` },
     description:
       (property.description ? cleanListingDescription(property.description).slice(0, 300) : null) ??
       `${property.address}. ${parts.join(', ')}. Показ и оформление сделки — ХаусПро, Руслан Ножкин, частный риелтор.`,

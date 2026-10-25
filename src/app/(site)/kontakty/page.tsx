@@ -5,6 +5,7 @@ import { getSiteContacts } from '@/features/site/lib/contacts'
 import { WORKING_HOURS } from '@/features/site/config'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/kontakty' },
   title: 'Контакты — ХаусПро, Руслан Ножкин, частный риелтор в Красноярске',
   description:
     'Телефон, почта и адрес: ХаусПро — Руслан Ножкин, частный риелтор в Красноярске. Оставьте заявку на управление или сдачу своей квартиры, подбор жилья или консультацию — перезвоню в рабочее время.',
