@@ -5,7 +5,8 @@ import { toast } from 'sonner'
 import { Building2, Home, User } from 'lucide-react'
 import { KanbanBoard } from '@/components/kanban/KanbanBoard'
 import { updateDealStatusAction } from '../actions/deals.actions'
-import { DIRECTIONS, stagesOf, terminalStageOf } from '@/features/directions/config/directions'
+import { DIRECTIONS, stagesOf, terminalStageOf, isTerminal } from '@/features/directions/config/directions'
+import { usePersistedState } from '@/hooks/usePersistedFilters'
 import { formatAmount, shortAddress } from '@/lib/utils'
 import type { Party, PropertyRef } from '@/features/deals/types/deal-views'
 
@@ -31,16 +32,39 @@ export function DealsKanbanBoard({ deals: initialDeals }: { deals: KanbanDeal[] 
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const presentDirections = DIRECTIONS.filter(direction => deals.some(deal => deal.deal_type === direction.value))
   const directions = presentDirections.length ? presentDirections : DIRECTIONS.slice(0, 1)
+  const activeCount = (code: string) => deals.filter(d => d.deal_type === code && !isTerminal(code, d.status)).length
+  // Одна доска за раз (просьба владельца 25.10.2026): две воронки друг под
+  // другом с разной горизонтальной прокруткой читались как одна сломанная.
+  // По умолчанию — направление, где больше сделок в работе.
+  const [picked, setPicked] = usePersistedState<string>('deals:kanban-direction', '')
+  const fallback = [...directions].sort((a, b) => activeCount(b.value) - activeCount(a.value))[0]
+  const current = directions.find(d => d.value === picked) ?? fallback
   const cardClick = (event: React.MouseEvent, id: string) => {
     if (isDragging) event.preventDefault()
     else window.location.href = `/deals/${id}`
   }
 
-  return <div className="space-y-6">{directions.map(direction => {
+  return <div className="space-y-3">
+    {directions.length > 1 && (
+      <div role="tablist" aria-label="Направление" className="flex flex-wrap gap-2">
+        {directions.map(d => {
+          const total = deals.filter(deal => deal.deal_type === d.value).length
+          const active = activeCount(d.value)
+          const on = d.value === current.value
+          return (
+            <button key={d.value} type="button" role="tab" aria-selected={on} onClick={() => setPicked(d.value)}
+              className={`hp-chip${on ? ' active' : ''}`}>
+              {d.shortLabel}
+              <span className="font-normal text-[var(--hp-sub)]">{active > 0 ? `${active} в работе · ${total}` : total}</span>
+            </button>
+          )
+        })}
+      </div>
+    )}
+    {[current].map(direction => {
     const directionDeals = deals.filter(deal => deal.deal_type === direction.value)
     const stages = stagesOf(direction.value)
-    return <div key={direction.value} className="space-y-2">
-      {directions.length > 1 && <h2 className="text-sm font-semibold text-[var(--hp-ink)]">{direction.label}<span className="ml-2 font-normal text-[var(--hp-sub)]">{directionDeals.length}</span></h2>}
+    return <div key={direction.value}>
       <KanbanBoard<KanbanDeal> items={directionDeals} columns={stages.map(stage => ({ status: stage.value, label: stage.board }))} onDragStateChange={setIsDragging} onStatusChange={(id, status) => updateDealStatusAction(id, status)} onError={message => toast.error(message)} canDrop={deal => deal.deal_type === direction.value} onInvalidDrop={() => toast.error('Эта стадия относится к другому направлению работы')} boardClassName="flex gap-3 min-w-max" renderColumn={(column, rows, isOver) => {
         const total = rows.reduce((sum, deal) => sum + Number(deal.amount ?? 0), 0)
         // Завершённая стадия (в управлении «Обслуживание» — это работа, её не сворачиваем)
