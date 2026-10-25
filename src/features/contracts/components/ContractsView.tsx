@@ -61,7 +61,7 @@ export function ContractsView({ contracts }: { contracts: ContractRow[] }) {
       ),
     },
     {
-      key: 'type', title: 'Тип', cellClass: 'sub whitespace-nowrap',
+      key: 'type', title: 'Тип', cellClass: 'sub whitespace-nowrap', hideBelow: 'lg',
       cell: c => CONTRACT_TYPE_LABELS[c.contractType] ?? c.contractType,
     },
     {
@@ -87,7 +87,7 @@ export function ContractsView({ contracts }: { contracts: ContractRow[] }) {
         ),
     },
     {
-      key: 'property', title: 'Объект', cellClass: 'sub max-w-[220px]', headClass: 'hidden md:table-cell',
+      key: 'property', title: 'Объект', cellClass: 'sub max-w-[220px]', hideBelow: 'xl',
       cell: c => <span className="block truncate">{c.propertyLabel ?? <span className="text-[var(--hp-tertiary)]">—</span>}</span>,
     },
     {

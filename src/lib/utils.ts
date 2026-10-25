@@ -104,6 +104,20 @@ export function initials(name: string | null | undefined): string {
   return name.trim().split(/\s+/).slice(0, 2).map(p => p[0]).join('').toUpperCase()
 }
 
+/**
+ * Короткий адрес для реестров: без страны, региона, района и города —
+ * «ул. Ленина, 12, кв. 5». Полный адрес остаётся в title и в карточке.
+ * Посёлки и сёла не срезаются: «пгт Берёзовка» — существенная часть адреса.
+ */
+export function shortAddress(address: string | null | undefined): string {
+  if (!address) return ''
+  const parts = address.split(',').map(p => p.trim()).filter(Boolean)
+  // \b в JS не работает с кириллицей — границы слов задаём пробелом/краем строки
+  const drop = /^(россия|рф|\d{6}|(.*\s)?(край|обл\.?|область|респ\.?|республика|р-н|район|округ)(\s.*)?|г\.?\s*красноярск|красноярск)$/i
+  const rest = parts.filter(p => !drop.test(p))
+  return (rest.length ? rest : parts).join(', ')
+}
+
 export function formatPhone(phone: string | null | undefined): string {
   if (!phone) return '—'
   const d = phone.replace(/\D/g, '')

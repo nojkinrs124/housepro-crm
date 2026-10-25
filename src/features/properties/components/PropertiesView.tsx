@@ -17,7 +17,7 @@ import { BulkBar } from '@/features/registry/components/BulkBar'
 import { useRegistryFilters } from '@/hooks/useRegistryFilters'
 import { useSelection } from '@/hooks/useSelection'
 import { usePersistedState } from '@/hooks/usePersistedFilters'
-import { formatAmount } from '@/lib/utils'
+import { formatAmount, shortAddress } from '@/lib/utils'
 
 export interface PropertyRow {
   id: string
@@ -99,19 +99,19 @@ export function PropertiesView({ properties }: { properties: PropertyRow[] }) {
       ),
     },
     {
-      key: 'address', title: 'Адрес', cellClass: 'sub max-w-[240px]', headClass: 'hidden md:table-cell',
-      cell: p => <span className="block truncate">{p.address ?? <span className="text-[var(--hp-tertiary)]">—</span>}</span>,
+      key: 'address', title: 'Адрес', cellClass: 'sub max-w-[240px]', hideBelow: 'md',
+      cell: p => <span className="block truncate" title={p.address ?? undefined}>{p.address ? shortAddress(p.address) : <span className="text-[var(--hp-tertiary)]">—</span>}</span>,
     },
     {
       key: 'type', title: 'Тип', cellClass: 'sub whitespace-nowrap',
       cell: p => typeLabels[p.property_type] ?? p.property_type,
     },
     {
-      key: 'deal', title: 'Сделка', cellClass: 'sub whitespace-nowrap', headClass: 'hidden lg:table-cell',
+      key: 'deal', title: 'Сделка', cellClass: 'sub whitespace-nowrap', hideBelow: 'lg',
       cell: p => dealLabels[p.deal_type] ?? p.deal_type,
     },
     {
-      key: 'params', title: 'Параметры', cellClass: 'sub whitespace-nowrap', headClass: 'hidden lg:table-cell',
+      key: 'params', title: 'Параметры', cellClass: 'sub whitespace-nowrap', hideBelow: 'lg',
       cell: p => [
         p.area ? `${p.area} м²` : null,
         p.rooms ? `${p.rooms} комн.` : null,

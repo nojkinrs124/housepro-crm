@@ -58,7 +58,7 @@ export function EmployeesView({ employees }: { employees: EmployeeRow[] }) {
       cell: e => <span className="block truncate">{e.email ?? '—'}</span>,
     },
     {
-      key: 'phone', title: 'Телефон', cellClass: 'sub whitespace-nowrap', headClass: 'hidden lg:table-cell',
+      key: 'phone', title: 'Телефон', cellClass: 'sub whitespace-nowrap', hideBelow: 'lg',
       cell: e => e.phone ?? <span className="text-[var(--hp-tertiary)]">—</span>,
     },
     {
@@ -74,15 +74,15 @@ export function EmployeesView({ employees }: { employees: EmployeeRow[] }) {
       ),
     },
     {
-      key: 'deals', title: 'Сделок', cellClass: 'num', headClass: 'hidden md:table-cell',
+      key: 'deals', title: 'Сделок', cellClass: 'num', hideBelow: 'md',
       cell: e => e.deals,
     },
     {
-      key: 'contracts', title: 'Договоров', cellClass: 'num', headClass: 'hidden md:table-cell',
+      key: 'contracts', title: 'Договоров', cellClass: 'num', hideBelow: 'md',
       cell: e => e.contracts,
     },
     {
-      key: 'since', title: 'В команде с', cellClass: 'sub whitespace-nowrap', headClass: 'hidden lg:table-cell',
+      key: 'since', title: 'В команде с', cellClass: 'sub whitespace-nowrap', hideBelow: 'xl',
       cell: e => formatDate(e.createdAt, { month: 'short', year: 'numeric' }),
     },
   ]

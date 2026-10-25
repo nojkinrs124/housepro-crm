@@ -27,7 +27,7 @@ export function DealsListView({ deals, selection }: { deals: DealListItem[]; sel
       ),
     },
     {
-      key: 'type', title: 'Тип', cellClass: 'sub whitespace-nowrap',
+      key: 'type', title: 'Тип', cellClass: 'sub whitespace-nowrap', hideBelow: 'lg',
       cell: d => DEAL_TYPE_LABELS[d.deal_type] ?? d.deal_type,
     },
     {
@@ -40,14 +40,14 @@ export function DealsListView({ deals, selection }: { deals: DealListItem[]; sel
       },
     },
     {
-      key: 'owner', title: 'Собственник', cellClass: 'sub max-w-[180px]', headClass: 'hidden lg:table-cell',
+      key: 'owner', title: 'Собственник', cellClass: 'sub max-w-[180px]', hideBelow: 'xl',
       cell: d => {
         const name = d.owner_contact?.company_name || d.owner_contact?.full_name
         return <span className="block truncate">{name ?? <span className="text-[var(--hp-tertiary)]">—</span>}</span>
       },
     },
     {
-      key: 'property', title: 'Объект', cellClass: 'sub max-w-[220px]', headClass: 'hidden md:table-cell',
+      key: 'property', title: 'Объект', cellClass: 'sub max-w-[220px]', hideBelow: 'md',
       cell: d => (
         <span className="block truncate">
           {d.property?.address ?? d.property?.title ?? <span className="text-[var(--hp-tertiary)]">не подобран</span>}
@@ -69,7 +69,7 @@ export function DealsListView({ deals, selection }: { deals: DealListItem[]; sel
         : <span className="text-[var(--hp-tertiary)] font-normal">—</span>,
     },
     {
-      key: 'close', title: 'Закрытие', cellClass: 'sub whitespace-nowrap', headClass: 'hidden lg:table-cell',
+      key: 'close', title: 'Закрытие', cellClass: 'sub whitespace-nowrap', hideBelow: 'lg',
       cell: d => d.expected_close_date
         ? formatDateCompact(d.expected_close_date)
         : <span className="text-[var(--hp-tertiary)]">—</span>,
