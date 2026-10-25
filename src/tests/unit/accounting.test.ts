@@ -6,6 +6,15 @@ vi.mock('@/lib/supabase/server', () => ({
   createClient: () => mockCreateClient(),
 }))
 
+/**
+ * dispatchWebhook мокается намеренно: на успешном пути action вызывает его, а он
+ * создаёт service-role клиент Supabase и реально ходит в сеть. В CI URL — это
+ * placeholder-домен, запрос висит до таймаута vitest (5 с) и тест падает как
+ * «флап», хотя дело не в раннере. Доставка вебхуков проверяется отдельно.
+ */
+const dispatchWebhook = vi.fn()
+vi.mock('@/lib/webhooks', () => ({ dispatchWebhook }))
+
 describe('createContractPaymentAction', () => {
   beforeEach(() => {
     vi.clearAllMocks()
