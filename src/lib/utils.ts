@@ -62,6 +62,15 @@ export function formatDateTimeCompact(date: string | Date | null | undefined): s
   return `${formatDateCompact(d)} · ${time}`
 }
 
+const MONTHS_SHORT = ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек']
+
+/** Подпись месяца на осях графиков: «ноя 25» (вместо «нояб. 25 г.»). Принимает «2025-11» / «2025-11-01». */
+export function formatMonthShort(isoMonth: string): string {
+  const [y, m] = isoMonth.split('-').map(Number)
+  if (!y || !m) return isoMonth
+  return `${MONTHS_SHORT[m - 1]} ${String(y).slice(2)}`
+}
+
 /**
  * Крупная сумма для полос показателей: `1,8 млн ₽`, `450 тыс. ₽`, `45 000 ₽`.
  * В таблицах и документах — всегда полная сумма (formatAmount).

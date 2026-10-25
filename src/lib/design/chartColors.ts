@@ -41,7 +41,8 @@ export const CHART_SERIES = [
 ] as const
 
 /** Общие пропсы осей/сетки/тултипа — чтобы не повторять их в каждом графике. */
-export const CHART_AXIS_TICK = { fontSize: 11, fill: CHART.tertiary } as const
+// 12 px и --hp-sub: 11 px светло-шалфейным на графиках читались с трудом (аудит 25.10.2026)
+export const CHART_AXIS_TICK = { fontSize: 12, fill: CHART.sub } as const
 export const CHART_GRID_STROKE = CHART.borderSoft
 export const CHART_TOOLTIP_STYLE = {
   borderRadius: 0,
@@ -54,3 +55,8 @@ export const CHART_TOOLTIP_LABEL_STYLE = {
   color: CHART.ink,
   marginBottom: 4,
 } as const
+
+/** Пустой график: true, если во всех точках все числовые серии равны нулю. */
+export function isChartEmpty<T extends object>(data: readonly T[], keys: readonly (keyof T)[]): boolean {
+  return data.every(row => keys.every(k => !Number(row[k] ?? 0)))
+}

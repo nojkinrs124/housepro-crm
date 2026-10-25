@@ -109,3 +109,11 @@ describe('форматы CRM (брендбук v2)', () => {
     expect(formatMoneyShort(-120_000)).toBe('−120 тыс. ₽')
   })
 })
+
+describe('formatMonthShort', () => {
+  it('ноя 25 вместо «нояб. 25 г.»', async () => {
+    const { formatMonthShort } = await import('@/lib/utils')
+    expect(formatMonthShort('2025-11')).toBe('ноя 25')
+    expect(formatMonthShort('2026-05-01')).toBe('май 26')
+  })
+})

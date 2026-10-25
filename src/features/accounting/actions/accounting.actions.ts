@@ -17,6 +17,7 @@ import { friendlyDbError } from '@/lib/errors'
 import { currentMonthBounds, monthBounds, monthStartIso, todayIso } from '@/lib/timezone'
 import { isAgencyRevenue, isAgencyExpense } from '@/features/accounting/utils/money-classification'
 import { transactionDirection, type AccountingFilters } from '@/features/accounting/utils/direction'
+import { formatMonthShort } from '@/lib/utils'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -202,9 +203,7 @@ export async function getMonthlyPnL(months = 12, filters?: AccountingFilters) {
   for (const r of rows) {
     const key = r.date.slice(0, 7) // YYYY-MM
     if (!map.has(key)) {
-      const [y, m] = key.split('-')
-      const label = new Date(Number(y), Number(m) - 1, 1)
-        .toLocaleDateString('ru-RU', { month: 'short', year: '2-digit' })
+      const label = formatMonthShort(key)
       map.set(key, { month: label, income: 0, expense: 0, profit: 0 })
     }
     const entry = map.get(key)!

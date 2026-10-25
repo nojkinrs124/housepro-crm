@@ -278,7 +278,7 @@ export default async function AnalyticsPage({
  {/* Charts row 1 */}
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  <div className="bg-[var(--hp-surface)] border border-[var(--hp-border)] p-5">
- <h2 className="text-sm font-semibold text-[var(--hp-ink)] mb-4">Сумма и комиссия по сделкам</h2>
+ <h2 className="text-[15px] font-semibold text-[var(--hp-ink)] mb-4">Сумма и комиссия по сделкам</h2>
  <DealsAreaChart data={monthlyDeals} />
  <div className="flex items-center gap-4 mt-3">
  <span className="flex items-center gap-1.5 text-xs text-[var(--hp-sub)]">
@@ -290,7 +290,8 @@ export default async function AnalyticsPage({
  </div>
  </div>
  <div className="bg-[var(--hp-surface)] border border-[var(--hp-border)] p-5">
- <h2 className="text-sm font-semibold text-[var(--hp-ink)] mb-4">Воронка: {DEAL_TYPE_LABELS[mainDirection] ?? mainDirection}</h2>
+ <h2 className="text-[15px] font-semibold text-[var(--hp-ink)]">Воронка: {DEAL_TYPE_LABELS[mainDirection] ?? mainDirection}</h2>
+ <p className="text-[12px] text-[var(--hp-sub)] mt-0.5 mb-4">Сколько сделок сейчас на каждом этапе, отменённые не показаны</p>
  <DealFunnelChart data={funnelStages} />
  </div>
  </div>
@@ -298,11 +299,11 @@ export default async function AnalyticsPage({
  {/* Charts row 2 */}
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  <div className="bg-[var(--hp-surface)] border border-[var(--hp-border)] p-5">
- <h2 className="text-sm font-semibold text-[var(--hp-ink)] mb-4">Платежи по месяцам</h2>
+ <h2 className="text-[15px] font-semibold text-[var(--hp-ink)] mb-4">Платежи по месяцам</h2>
  <PaymentsMonthlyChart data={paymentsMonthly} />
  </div>
  <div className="bg-[var(--hp-surface)] border border-[var(--hp-border)] p-5">
- <h2 className="text-sm font-semibold text-[var(--hp-ink)] mb-4">Направления работы</h2>
+ <h2 className="text-[15px] font-semibold text-[var(--hp-ink)] mb-4">Направления работы</h2>
  {dealTypePie.length > 0 ? (
  <DealTypePieChart data={dealTypePie} />
  ) : (
@@ -312,7 +313,7 @@ export default async function AnalyticsPage({
  )}
  </div>
  <div className="bg-[var(--hp-surface)] border border-[var(--hp-border)] p-5">
- <h2 className="text-sm font-semibold text-[var(--hp-ink)] mb-4">Источники сделок</h2>
+ <h2 className="text-[15px] font-semibold text-[var(--hp-ink)] mb-4">Источники сделок</h2>
  {sourcePie.length > 0 ? (
  <DealTypePieChart data={sourcePie} />
  ) : (
@@ -325,7 +326,7 @@ export default async function AnalyticsPage({
 
  {/* Chart row 3 */}
  <div className="bg-[var(--hp-surface)] border border-[var(--hp-border)] p-5">
- <h2 className="text-sm font-semibold text-[var(--hp-ink)] mb-4">Лиды и конверсия по месяцам</h2>
+ <h2 className="text-[15px] font-semibold text-[var(--hp-ink)] mb-4">Лиды и конверсия по месяцам</h2>
  <LeadsConversionChart data={leadsConversionData} />
  </div>
 

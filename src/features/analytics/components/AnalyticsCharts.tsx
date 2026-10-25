@@ -5,7 +5,7 @@ import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts'
-import { CHART, CHART_AXIS_TICK, CHART_GRID_STROKE, CHART_TOOLTIP_STYLE } from '@/lib/design/chartColors'
+import { CHART, CHART_AXIS_TICK, CHART_GRID_STROKE, CHART_TOOLTIP_STYLE, isChartEmpty } from '@/lib/design/chartColors'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -57,19 +57,10 @@ function moneyTooltip(v: number | string | undefined) {
 // ─── Monthly Deals Area Chart ─────────────────────────────────────────────────
 
 export function DealsAreaChart({ data }: { data: MonthlyDealsData[] }) {
+  if (isChartEmpty(data, ['amount', 'commission'])) return <ChartEmpty />
   return (
     <ResponsiveContainer width="100%" height={220}>
       <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-        <defs>
-          <linearGradient id="dealsGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="var(--hp-accent)" stopOpacity={0.25} />
-            <stop offset="95%" stopColor="var(--hp-accent)" stopOpacity={0} />
-          </linearGradient>
-          <linearGradient id="commissionGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor={CHART.info} stopOpacity={0.2} />
-            <stop offset="95%" stopColor={CHART.info} stopOpacity={0} />
-          </linearGradient>
-        </defs>
         <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_STROKE} />
         <XAxis dataKey="month" tick={CHART_AXIS_TICK} axisLine={false} tickLine={false} />
         <YAxis tickFormatter={formatMoneyCompact} tick={CHART_AXIS_TICK} axisLine={false} tickLine={false} width={60} />
@@ -77,16 +68,26 @@ export function DealsAreaChart({ data }: { data: MonthlyDealsData[] }) {
           contentStyle={CHART_TOOLTIP_STYLE}
           formatter={(v, name) => [moneyTooltip(v as number), name === 'amount' ? 'Сумма сделок' : 'Комиссия']}
         />
-        <Area type="monotone" dataKey="amount" stroke="var(--hp-accent)" strokeWidth={2} fill="url(#dealsGrad)" name="amount" />
-        <Area type="monotone" dataKey="commission" stroke={CHART.info} strokeWidth={2} fill="url(#commissionGrad)" name="commission" />
+        <Area type="monotone" dataKey="amount" stroke="var(--hp-accent)" strokeWidth={2} fill="var(--hp-accent)" fillOpacity={0.12} name="amount" />
+        <Area type="monotone" dataKey="commission" stroke={CHART.info} strokeWidth={2} fill={CHART.info} fillOpacity={0.08} name="commission" />
       </AreaChart>
     </ResponsiveContainer>
+  )
+}
+
+/** Заглушка пустого графика той же высоты — сетка из нулей ничего не говорит. */
+export function ChartEmpty({ text = 'За период данных нет' }: { text?: string }) {
+  return (
+    <div className="h-[220px] flex items-center justify-center border border-dashed border-[var(--hp-border)] text-[13px] text-[var(--hp-tertiary)]">
+      {text}
+    </div>
   )
 }
 
 // ─── Deal Funnel Bar Chart ────────────────────────────────────────────────────
 
 export function DealFunnelChart({ data }: { data: FunnelData[] }) {
+  if (isChartEmpty(data, ['count'])) return <ChartEmpty text="Сейчас нет сделок в работе" />
   return (
     <ResponsiveContainer width="100%" height={220}>
       <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
@@ -97,7 +98,7 @@ export function DealFunnelChart({ data }: { data: FunnelData[] }) {
           contentStyle={CHART_TOOLTIP_STYLE}
           formatter={(v) => [v, 'Сделок']}
         />
-        <Bar dataKey="count" radius={[6, 6, 0, 0]}>
+        <Bar dataKey="count">
           {data.map((entry, i) => (
             <Cell key={i} fill={entry.color} />
           ))}
@@ -110,6 +111,7 @@ export function DealFunnelChart({ data }: { data: FunnelData[] }) {
 // ─── Leads Conversion Chart ───────────────────────────────────────────────────
 
 export function LeadsConversionChart({ data }: { data: LeadsConversionData[] }) {
+  if (isChartEmpty(data, ['leads', 'converted'])) return <ChartEmpty />
   return (
     <ResponsiveContainer width="100%" height={220}>
       <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
@@ -117,9 +119,9 @@ export function LeadsConversionChart({ data }: { data: LeadsConversionData[] }) 
         <XAxis dataKey="month" tick={CHART_AXIS_TICK} axisLine={false} tickLine={false} />
         <YAxis allowDecimals={false} tick={CHART_AXIS_TICK} axisLine={false} tickLine={false} />
         <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
-        <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
-        <Bar dataKey="leads" name="Лиды" fill={CHART.tertiary} radius={[4, 4, 0, 0]} />
-        <Bar dataKey="converted" name="Конвертировано" fill="var(--hp-accent)" radius={[4, 4, 0, 0]} />
+        <Legend wrapperStyle={{ fontSize: 12.5, paddingTop: 8 }} />
+        <Bar dataKey="leads" name="Лиды" fill={CHART.tertiary} />
+        <Bar dataKey="converted" name="Конвертировано" fill="var(--hp-accent)" />
       </BarChart>
     </ResponsiveContainer>
   )
@@ -130,6 +132,7 @@ export function LeadsConversionChart({ data }: { data: LeadsConversionData[] }) 
 const PAYMENT_LABELS: Record<string, string> = { paid: 'Оплачено', pending: 'Ожидает', overdue: 'Просрочено' }
 
 export function PaymentsMonthlyChart({ data }: { data: PaymentMonthlyData[] }) {
+  if (isChartEmpty(data, ['paid', 'pending', 'overdue'])) return <ChartEmpty />
   return (
     <ResponsiveContainer width="100%" height={220}>
       <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
@@ -140,11 +143,11 @@ export function PaymentsMonthlyChart({ data }: { data: PaymentMonthlyData[] }) {
           contentStyle={CHART_TOOLTIP_STYLE}
           formatter={(v, name) => [moneyTooltip(v as number), PAYMENT_LABELS[name as string] ?? name]}
         />
-        <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
+        <Legend wrapperStyle={{ fontSize: 12.5, paddingTop: 8 }}
           formatter={(v) => PAYMENT_LABELS[v] ?? v} />
-        <Bar dataKey="paid" fill="var(--hp-accent)" radius={[4, 4, 0, 0]} stackId="a" />
-        <Bar dataKey="pending" fill={CHART.tertiary} radius={[0, 0, 0, 0]} stackId="a" />
-        <Bar dataKey="overdue" fill={CHART.danger} radius={[4, 4, 0, 0]} stackId="a" />
+        <Bar dataKey="paid" fill="var(--hp-accent)" stackId="a" />
+        <Bar dataKey="pending" fill={CHART.tertiary} stackId="a" />
+        <Bar dataKey="overdue" fill={CHART.danger} stackId="a" />
       </BarChart>
     </ResponsiveContainer>
   )
@@ -196,7 +199,7 @@ export function DealTypePieChart({ data }: { data: DealTypeData[] }) {
           contentStyle={CHART_TOOLTIP_STYLE}
           formatter={(v, _name, props) => [v, (props.payload as DealTypeData).name]}
         />
-        <Legend wrapperStyle={{ fontSize: 12 }} />
+        <Legend wrapperStyle={{ fontSize: 12.5 }} />
       </PieChart>
     </ResponsiveContainer>
   )
