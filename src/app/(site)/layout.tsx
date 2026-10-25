@@ -16,7 +16,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
 
   return (
     <div
-      className="min-h-screen flex flex-col"
+      className="hp-site min-h-screen flex flex-col"
       style={{ background: 'var(--hp-bg)', color: 'var(--hp-ink)' }}
     >
       <SiteHeader phone={contacts.phone} phoneHref={contacts.phoneHref} />

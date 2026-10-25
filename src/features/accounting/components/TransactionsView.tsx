@@ -1,13 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowDownCircle, ArrowUpCircle, Pencil } from 'lucide-react'
+import { ArrowDownCircle, ArrowUpCircle } from 'lucide-react'
 import { TRANSACTION_STATUSES } from '@/features/registry/config/registries'
 import { RegistryToolbar } from '@/components/layout/RegistryToolbar'
 import { EmptyState } from '@/components/layout/EmptyState'
 import { RegistryTable, type RegistryColumn } from '@/features/registry/components/RegistryTable'
 import { BulkBar } from '@/features/registry/components/BulkBar'
-import { DeleteTransactionButton } from '@/features/accounting/components/DeleteTransactionButton'
+import { TransactionRowMenu } from '@/features/accounting/components/DeleteTransactionButton'
 import { useRegistryFilters } from '@/hooks/useRegistryFilters'
 import { useSelection } from '@/hooks/useSelection'
 import { formatAmount, formatDateCompact } from '@/lib/utils'
@@ -82,7 +82,7 @@ export function TransactionsView({ transactions }: { transactions: TransactionRo
       ),
     },
     {
-      key: 'category', title: 'Категория', cellClass: 'sub whitespace-nowrap', headClass: 'hidden md:table-cell',
+      key: 'category', title: 'Категория', cellClass: 'sub whitespace-nowrap', hideBelow: 'lg',
       cell: t => t.categoryName
         ? (
           <span className="inline-flex items-center gap-1.5">
@@ -93,7 +93,7 @@ export function TransactionsView({ transactions }: { transactions: TransactionRo
         : <span className="text-[var(--hp-tertiary)]">—</span>,
     },
     {
-      key: 'link', title: 'Договор / Сотрудник', cellClass: 'sub max-w-[200px]', headClass: 'hidden lg:table-cell',
+      key: 'link', title: 'Договор / Сотрудник', cellClass: 'sub max-w-[200px]', hideBelow: 'xl',
       cell: t => {
         if (t.contractNumber) {
           return (
@@ -116,16 +116,7 @@ export function TransactionsView({ transactions }: { transactions: TransactionRo
     },
     {
       key: 'actions', title: '', cellClass: 'whitespace-nowrap',
-      cell: t => (
-        <div className="flex items-center gap-1 justify-end">
-          <Link href={`/accounting/transactions/${t.id}/edit`}
-            className="p-1.5 text-[var(--hp-tertiary)] hover:text-[var(--hp-ink)] transition-colors"
-            title="Редактировать">
-            <Pencil style={{ width: 14, height: 14 }} />
-          </Link>
-          <DeleteTransactionButton id={t.id} />
-        </div>
-      ),
+      cell: t => <div className="flex justify-end"><TransactionRowMenu id={t.id} /></div>,
     },
   ]
 

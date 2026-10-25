@@ -9,6 +9,7 @@ import {
  type BankStatementRow,
  type ParseStatementResult,
 } from '../actions/bank-import.actions'
+import { formatDateCompact } from '@/lib/utils'
 
 function fmtMoney(value: number): string {
  return `${value.toLocaleString('ru-RU')} ₽`
@@ -16,7 +17,7 @@ function fmtMoney(value: number): string {
 
 function fmtDate(iso: string | null): string {
  if (!iso) return '—'
- return new Date(`${iso}T00:00:00Z`).toLocaleDateString('ru-RU', { timeZone: 'UTC' })
+ return formatDateCompact(iso)
 }
 
 /**

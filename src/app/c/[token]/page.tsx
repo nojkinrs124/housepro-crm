@@ -163,7 +163,7 @@ export default async function PublicCollectionPage({ params }: { params: Promise
  )}
 
  <p className="text-center text-xs text-muted-foreground pb-4">
- Подборка подготовлена агентством недвижимости · HousePro CRM
+ Подборку подготовил Руслан Ножкин · ХаусПро
  </p>
  </main>
  </div>

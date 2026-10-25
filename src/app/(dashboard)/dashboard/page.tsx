@@ -139,12 +139,12 @@ export default async function DashboardPage() {
  const todayStr = today.toLocaleDateString('ru-RU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
 
  const kpiData = [
- { title: 'Новые лиды', value: newLeadsCount ?? 0, icon: 'Zap', color: 'var(--hp-info)', iconBg: 'color-mix(in srgb, #3B82F6 16%, var(--hp-surface))', href: '/leads' },
- { title: 'Активных сделок', value: activeDealsCount ?? 0, icon: 'TrendingUp', color: 'var(--hp-accent)', iconBg: 'color-mix(in srgb, #16A34A 16%, var(--hp-surface))', href: '/deals' },
- { title: 'Контактов', value: contactsCount ?? 0, icon: 'Users', color: 'var(--hp-sub)', iconBg: 'color-mix(in srgb, #8B5CF6 16%, var(--hp-surface))', href: '/contacts' },
- { title: 'Своб. объектов', value: propertiesCount ?? 0, icon: 'Home', color: 'var(--hp-accent)', iconBg: 'color-mix(in srgb, #10B981 16%, var(--hp-surface))', href: '/properties' },
- { title: 'Активных догов.', value: contractsCount ?? 0, icon: 'FileText', color: 'var(--hp-warn)', iconBg: 'color-mix(in srgb, #F59E0B 16%, var(--hp-surface))', href: '/contracts' },
- { title: 'Задач в работе', value: activeTasksCount ?? 0, icon: 'CheckSquare', color: 'var(--hp-danger)', iconBg: 'color-mix(in srgb, #EF4444 16%, var(--hp-surface))', href: '/tasks' },
+ { title: 'Новые лиды', value: newLeadsCount ?? 0, icon: 'Zap', color: 'var(--hp-sub)', iconBg: 'transparent', href: '/leads' },
+ { title: 'Активных сделок', value: activeDealsCount ?? 0, icon: 'TrendingUp', color: 'var(--hp-sub)', iconBg: 'transparent', href: '/deals' },
+ { title: 'Контактов', value: contactsCount ?? 0, icon: 'Users', color: 'var(--hp-sub)', iconBg: 'transparent', href: '/contacts' },
+ { title: 'Своб. объектов', value: propertiesCount ?? 0, icon: 'Home', color: 'var(--hp-sub)', iconBg: 'transparent', href: '/properties' },
+ { title: 'Активных догов.', value: contractsCount ?? 0, icon: 'FileText', color: 'var(--hp-sub)', iconBg: 'transparent', href: '/contracts' },
+ { title: 'Задач в работе', value: activeTasksCount ?? 0, icon: 'CheckSquare', color: 'var(--hp-sub)', iconBg: 'transparent', href: '/tasks' },
  ]
 
  return (

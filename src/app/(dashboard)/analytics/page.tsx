@@ -23,7 +23,7 @@ import {
  type AnalyticsRawData,
  type AnalyticsFilters as Filters,
 } from '@/features/analytics/data'
-import { formatMoney, plural } from '@/lib/utils'
+import { formatMoney, plural, formatMoneyShort } from '@/lib/utils'
 import { AnalyticsFilters } from '@/features/analytics/components/AnalyticsFilters'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { StatStrip } from '@/components/layout/StatStrip'
@@ -245,16 +245,16 @@ export default async function AnalyticsPage({
  <StatStrip
  items={[
  {
- label: 'Доход агентства', value: formatMoney(totalRevenue),
+ label: 'Доход', value: formatMoneyShort(totalRevenue),
  hint: [plural(completedDeals, ['сделка закрыта', 'сделки закрыто', 'сделок закрыто']), delta(totalRevenue, previousKpis.totalRevenue)].filter(Boolean).join(' · '),
  },
  {
- label: 'Объём сделок', value: formatMoney(totalDealsAmount),
+ label: 'Объём сделок', value: formatMoneyShort(totalDealsAmount),
  hint: [`${activeDeals} в работе`, delta(totalDealsAmount, previousKpis.totalDealsAmount)].filter(Boolean).join(' · '),
  },
  {
- label: 'Платежи получены', value: formatMoney(paidTotal),
- hint: [overdueTotal > 0 ? `просрочено ${formatMoney(overdueTotal)}` : 'просроченных нет', delta(paidTotal, previousKpis.paidTotal)].filter(Boolean).join(' · '),
+ label: 'Платежи получены', value: formatMoneyShort(paidTotal),
+ hint: [overdueTotal > 0 ? `просрочено ${formatMoneyShort(overdueTotal)}` : 'просроченных нет', delta(paidTotal, previousKpis.paidTotal)].filter(Boolean).join(' · '),
  alert: overdueTotal > 0,
  },
  {
@@ -264,19 +264,21 @@ export default async function AnalyticsPage({
  ]}
  />
 
- <StatStrip
- items={[
- { label: 'Объектов свободно', value: availableProps },
- { label: 'Сдано в аренду', value: rentedProps },
- { label: 'Продано объектов', value: soldProps },
- { label: 'Действующих договоров', value: activeContracts },
- ]}
- />
+ {/* Вверху одна полоса из 4 цифр; база объектов — справочно, блоком */}
+      <div className="hp-block">
+        <div className="hp-block-header">База объектов и договоров</div>
+        <div className="hp-block-grid">
+          <div className="hp-block-row"><span className="label">Объектов свободно</span><span className="value">{availableProps}</span></div>
+          <div className="hp-block-row"><span className="label">Сдано в аренду</span><span className="value">{rentedProps}</span></div>
+          <div className="hp-block-row"><span className="label">Продано объектов</span><span className="value">{soldProps}</span></div>
+          <div className="hp-block-row"><span className="label">Действующих договоров</span><span className="value">{activeContracts}</span></div>
+        </div>
+      </div>
 
  {/* Charts row 1 */}
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  <div className="bg-[var(--hp-surface)] border border-[var(--hp-border)] p-5">
- <h2 className="text-sm font-semibold text-[var(--hp-ink)] mb-4">Сумма и комиссия по сделкам</h2>
+ <h2 className="text-[15px] font-semibold text-[var(--hp-ink)] mb-4">Сумма и комиссия по сделкам</h2>
  <DealsAreaChart data={monthlyDeals} />
  <div className="flex items-center gap-4 mt-3">
  <span className="flex items-center gap-1.5 text-xs text-[var(--hp-sub)]">
@@ -288,7 +290,8 @@ export default async function AnalyticsPage({
  </div>
  </div>
  <div className="bg-[var(--hp-surface)] border border-[var(--hp-border)] p-5">
- <h2 className="text-sm font-semibold text-[var(--hp-ink)] mb-4">Воронка: {DEAL_TYPE_LABELS[mainDirection] ?? mainDirection}</h2>
+ <h2 className="text-[15px] font-semibold text-[var(--hp-ink)]">Воронка: {DEAL_TYPE_LABELS[mainDirection] ?? mainDirection}</h2>
+ <p className="text-[12px] text-[var(--hp-sub)] mt-0.5 mb-4">Сколько сделок сейчас на каждом этапе, отменённые не показаны</p>
  <DealFunnelChart data={funnelStages} />
  </div>
  </div>
@@ -296,11 +299,11 @@ export default async function AnalyticsPage({
  {/* Charts row 2 */}
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  <div className="bg-[var(--hp-surface)] border border-[var(--hp-border)] p-5">
- <h2 className="text-sm font-semibold text-[var(--hp-ink)] mb-4">Платежи по месяцам</h2>
+ <h2 className="text-[15px] font-semibold text-[var(--hp-ink)] mb-4">Платежи по месяцам</h2>
  <PaymentsMonthlyChart data={paymentsMonthly} />
  </div>
  <div className="bg-[var(--hp-surface)] border border-[var(--hp-border)] p-5">
- <h2 className="text-sm font-semibold text-[var(--hp-ink)] mb-4">Направления работы</h2>
+ <h2 className="text-[15px] font-semibold text-[var(--hp-ink)] mb-4">Направления работы</h2>
  {dealTypePie.length > 0 ? (
  <DealTypePieChart data={dealTypePie} />
  ) : (
@@ -310,7 +313,7 @@ export default async function AnalyticsPage({
  )}
  </div>
  <div className="bg-[var(--hp-surface)] border border-[var(--hp-border)] p-5">
- <h2 className="text-sm font-semibold text-[var(--hp-ink)] mb-4">Источники сделок</h2>
+ <h2 className="text-[15px] font-semibold text-[var(--hp-ink)] mb-4">Источники сделок</h2>
  {sourcePie.length > 0 ? (
  <DealTypePieChart data={sourcePie} />
  ) : (
@@ -323,7 +326,7 @@ export default async function AnalyticsPage({
 
  {/* Chart row 3 */}
  <div className="bg-[var(--hp-surface)] border border-[var(--hp-border)] p-5">
- <h2 className="text-sm font-semibold text-[var(--hp-ink)] mb-4">Лиды и конверсия по месяцам</h2>
+ <h2 className="text-[15px] font-semibold text-[var(--hp-ink)] mb-4">Лиды и конверсия по месяцам</h2>
  <LeadsConversionChart data={leadsConversionData} />
  </div>
 

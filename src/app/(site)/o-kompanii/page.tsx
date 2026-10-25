@@ -24,8 +24,8 @@ import { WhatIf, type WhatIfItem } from '@/features/site/uslugi/components/WhatI
 import { UslugiLeadForm } from '@/features/site/uslugi/components/UslugiLeadForm'
 
 export const metadata: Metadata = {
-  title: 'О компании — ХаусПро, аренда и управление квартирами в Красноярске',
-  description: `Небольшое агентство недвижимости в Красноярске и Берёзовке: с ${TRUST.sinceYear} года, больше ${TRUST.closedDeals} сделок, квартиры в доверительном управлении. Кто отвечает за вашу квартиру, как мы работаем и что написано в договоре.`,
+  title: 'Обо мне — Руслан Ножкин, частный риелтор, ХаусПро — управление квартирами в Красноярске',
+  description: `ХаусПро — Руслан Ножкин, частный риелтор в Красноярске и Берёзовке: с ${TRUST.sinceYear} года, больше ${TRUST.closedDeals} сделок, квартиры в доверительном управлении. Кто отвечает за вашу квартиру, как я работаю и что написано в договоре.`,
 }
 
 const SERIF = "'Source Serif 4', Georgia, serif"
@@ -39,20 +39,20 @@ function founderPhotoExists(): boolean {
 
 const PRINCIPLES = [
   {
-    title: 'Работаем по договору с самого начала',
-    text: 'Устная договорённость «покажем — потом решим» не даёт вам никаких прав. Мы подписываем договор с агентством до начала работы: в нём написано, что мы делаем, в какой срок и сколько это стоит.',
+    title: 'Работаю по договору с самого начала',
+    text: 'Устная договорённость «покажу — потом решим» не даёт вам никаких прав. Договор со мной подписывается до начала работы: в нём написано, что я делаю, в какой срок и сколько это стоит.',
   },
   {
-    title: 'Не берём объект, документы которого не сходятся',
-    text: 'Если собственник не может показать основание права, есть непогашенное обременение или не получено согласие второго супруга — мы не выводим объект на показы. Это стоит нам сделок, но избавляет клиентов от расторжений.',
+    title: 'Не беру объект, документы которого не сходятся',
+    text: 'Если собственник не может показать основание права, есть непогашенное обременение или не получено согласие второго супруга — я не вывожу объект на показы. Это стоит мне сделок, но избавляет клиентов от расторжений.',
   },
   {
     title: 'Один человек ведёт сделку до конца',
-    text: 'Вас не передают между сотрудниками. Тот, кто провёл первый показ, доводит дело до подписания акта и остаётся на связи после — по вопросам продления, ремонта и возврата депозита.',
+    text: 'Вас не передают между сотрудниками. Первый показ провожу я, до подписания акта довожу я и на связи после остаюсь тоже я — по вопросам продления, ремонта и возврата депозита.',
   },
   {
-    title: 'Говорим о рисках прямо',
-    text: 'Если квартира дешевле рынка — объясняем, почему. Если условия договора невыгодны вам — говорим об этом, даже когда сделка уже почти состоялась.',
+    title: 'Говорю о рисках прямо',
+    text: 'Если квартира дешевле рынка — объясняю, почему. Если условия договора невыгодны вам — говорю об этом, даже когда сделка уже почти состоялась.',
   },
 ]
 
@@ -76,8 +76,8 @@ const DIFFERENCES = [
 
 const CONTRACT_POINTS = [
   'Комиссия — по выбранному тарифу, цифрой. Доплат «за оформление» нет.',
-  'Что мы обязаны делать — списком, без пункта «и другие вопросы по объекту».',
-  `Деньги переводим с ${USLUGI.payoutWindow.fromDay}-го по ${USLUGI.payoutWindow.toDay}-е число, отчёт — в личном кабинете.`,
+  'Что я обязан делать — списком, без пункта «и другие вопросы по объекту».',
+  `Деньги перевожу с ${USLUGI.payoutWindow.fromDay}-го по ${USLUGI.payoutWindow.toDay}-е число, отчёт — в личном кабинете.`,
   `Расторжение — по вашему письменному уведомлению за ${USLUGI.agencyTermination.noticeDays} дней, без штрафов и удержаний.`,
 ]
 
@@ -95,7 +95,7 @@ function buildFaq(legalForm: keyof typeof LEGAL_FORM_COPY): WhatIfItem[] {
   const items: WhatIfItem[] = [
     {
       q: 'Сколько стоит ваша работа?',
-      a: `Для собственника — три тарифа: разовый подбор ${TARIFFS.podbor.percent}% один раз при заселении, управление ${TARIFFS.upravlenie.percent}% в месяц, премиум с гарантией платежа ${TARIFFS.premium.percent}% в месяц. Первая сделка бесплатно. Для нанимателя — ${tenantCommissionLabel()} от месячной ставки при заселении.${salePart}${legalPart} Все цифры — на страницах услуг, доплат «за оформление» в день подписания у нас нет.`,
+      a: `Для собственника — три тарифа: разовый подбор ${TARIFFS.podbor.percent}% один раз при заселении, управление от ${TARIFFS.upravlenie.percent}% в месяц, премиум с гарантией платежа ${TARIFFS.premium.percent}% в месяц. Первая сделка бесплатно. Для нанимателя — ${tenantCommissionLabel()} от месячной ставки при заселении.${salePart}${legalPart} Все цифры — на страницах услуг, доплат «за оформление» в день подписания у меня нет.`,
     },
   ]
 
@@ -110,11 +110,11 @@ function buildFaq(legalForm: keyof typeof LEGAL_FORM_COPY): WhatIfItem[] {
   items.push(
     {
       q: 'Что будет с моей квартирой, если вы закроетесь?',
-      a: `Договор найма заключён между вами и нанимателем — он не зависит от агентства и продолжает действовать. Депозит нанимателя хранится у нас, и при расторжении договора с агентством мы передаём его вам вместе с документами, ключами и контактами нанимателя — по акту, в течение ${USLUGI.agencyTermination.noticeDays} дней уведомления. Квартира не останется без хозяина ни на день.`,
+      a: `Договор найма заключён между вами и нанимателем — он не зависит от меня и продолжает действовать. Депозит нанимателя хранится у меня, и при расторжении договора управления я передаю его вам вместе с документами, ключами и контактами нанимателя — по акту, в течение ${USLUGI.agencyTermination.noticeDays} дней уведомления. Квартира не останется без хозяина ни на день.`,
     },
     {
       q: 'Почему в каталоге мало объектов?',
-      a: 'В открытую публикацию попадают только те объекты, которые собственник разрешил показывать публично. Значительная часть базы закрыта по просьбе владельцев. Оставьте заявку с параметрами — агент подберёт варианты из закрытой части.',
+      a: 'В открытую публикацию попадают только те объекты, которые собственник разрешил показывать публично. Значительная часть базы закрыта по просьбе владельцев. Оставьте заявку с параметрами — подберу варианты из закрытой части.',
     },
     {
       q: 'Что вы проверяете перед сделкой?',
@@ -122,15 +122,15 @@ function buildFaq(legalForm: keyof typeof LEGAL_FORM_COPY): WhatIfItem[] {
     },
     {
       q: 'Я живу в другом городе.',
-      a: 'Работаем удалённо: подписание по электронной подписи, отчёты и фото — в личном кабинете, деньги на карту. Приезжать не нужно ни разу.',
+      a: 'Работаю удалённо: подписание по электронной подписи, отчёты и фото — в личном кабинете, деньги на карту. Приезжать не нужно ни разу.',
     },
     {
       q: 'Занимаетесь коммерческой недвижимостью?',
-      a: 'По запросу. Если у вас офис, торговое помещение или склад под сдачу — напишите, посмотрим объект и честно скажем, возьмём ли.',
+      a: 'По запросу. Если у вас офис, торговое помещение или склад под сдачу — напишите, посмотрю объект и честно скажу, возьму ли.',
     },
     {
       q: 'Что делать, если после заезда что-то сломалось?',
-      a: `В договоре и акте разделено, что относится к естественному износу и обязанностям собственника, а что — к ответственности нанимателя. На «Управлении» и «Премиуме» мелкий ремонт до ${formatRub(USLUGI.minorRepairs.perIncidentRub)} за поломку делаем за свой счёт. Если спор всё же возник, разбирает его тот, кто вёл сделку.`,
+      a: `В договоре и акте разделено, что относится к естественному износу и обязанностям собственника, а что — к ответственности нанимателя. На «Управлении» и «Премиуме» мелкий ремонт до ${formatRub(USLUGI.minorRepairs.perIncidentRub)} за поломку делаю за свой счёт. Если спор всё же возник, разбираю его я — тот, кто вёл сделку.`,
     }
   )
   return items
@@ -157,7 +157,7 @@ export default async function AboutPage() {
     { label: 'В недвижимости', value: `с ${TRUST.sinceYear} года` },
     { label: 'Закрытых сделок', value: `больше ${stats.closedDeals}` },
     { label: 'Квартир в управлении', value: String(stats.objectsInManagement) },
-    { label: 'Работаем', value: TRUST.workingHours, small: true },
+    { label: 'Работаю', value: TRUST.workingHours, small: true },
   ]
 
   return (
@@ -165,18 +165,18 @@ export default async function AboutPage() {
       {/* ── Экран 1 ──────────────────────────────────────────────────── */}
       <section className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-10 sm:pt-14">
         <div className="max-w-[760px]">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--hp-sub)' }}>
-            О компании · Красноярск и Берёзовка
+          <p className="text-[12px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--hp-sub)' }}>
+            Обо мне
           </p>
           <h1
             className="mt-4 text-[30px] sm:text-[40px] font-bold tracking-tight leading-[1.08] break-words"
             style={{ color: 'var(--hp-ink)' }}
           >
-            Небольшое агентство, которому собственники отдают ключи
+            Частный риелтор, которому собственники отдают ключи
           </h1>
           <p className="mt-5 text-[16px] sm:text-[17px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
-            {SITE_BRAND} — это Руслан Ножкин и команда. С {TRUST.sinceYear} года сдаём, ведём и продаём
-            квартиры в Красноярске и Берёзовке. Основное — аренда и доверительное управление:
+            {SITE_BRAND} — это я, Руслан Ножкин, частный риелтор. С {TRUST.sinceYear} года сдаю, веду и
+            продаю квартиры в Красноярске и Берёзовке. Основное — аренда и доверительное управление:
             собственники получают деньги на карту и отчёт в личном кабинете, а не звонки про потёкший
             кран.
           </p>
@@ -203,19 +203,17 @@ export default async function AboutPage() {
           Кто отвечает за вашу квартиру
         </h2>
         <div
-          className={`mt-8 border p-5 sm:p-8 grid grid-cols-1 gap-8 items-start ${
+          className={`hp-forest mt-8 p-6 sm:p-10 grid grid-cols-1 gap-8 lg:gap-12 items-start ${
             hasPhoto ? 'lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]' : ''
           }`}
-          style={cardStyle}
         >
           {hasPhoto && (
             <div
-              className="relative w-full aspect-square overflow-hidden border"
-              style={{ borderColor: 'var(--hp-border)', borderRadius: 'var(--hp-radius)' }}
+              className="relative w-full aspect-square overflow-hidden"
             >
               <Image
                 src={FOUNDER_PHOTO}
-                alt="Руслан Ножкин, основатель ХаусПро"
+                alt="Руслан Ножкин, частный риелтор, ХаусПро"
                 fill
                 sizes="(min-width: 1024px) 360px, 100vw"
                 className="object-cover"
@@ -226,13 +224,13 @@ export default async function AboutPage() {
               />
             </div>
           )}
-          <div className="min-w-0 max-w-[680px] space-y-4 text-[15px] sm:text-[16px] leading-relaxed" style={{ color: 'var(--hp-ink)' }}>
+          <div className="min-w-0 max-w-[680px] space-y-4 text-[16px] leading-relaxed hp-forest-sub">
             <p>
               В недвижимость я пришёл в {TRUST.sinceYear} году — агентом по аренде: показы, договоры,
               заселения. Довольно быстро стало понятно, что собственнику нужен не риелтор на один день,
               а человек, который останется с квартирой после заселения: примет звонок про кран,
-              напомнит нанимателю об оплате, приедет на проверку. Так появилось управление — и сейчас
-              это главное, что мы делаем.
+              напомнит нанимателю об оплате, приедет на проверку. Так появилось управление&nbsp;— и сейчас
+              это главное, чем я занимаюсь.
             </p>
             <p>
               Управление — это про доверие. Человек отдаёт ключи от квартиры и ждёт, что деньги придут
@@ -240,16 +238,19 @@ export default async function AboutPage() {
               реквизиты открыты, а условия тарифов написаны на сайте, а не «обсуждаются при встрече».
             </p>
             <p>
-              Сделки ведём вместе с командой, но за каждую квартиру в управлении отвечаю я лично — мой
-              номер стоит в шапке сайта.
+              За каждую квартиру в управлении отвечаю я лично — мой номер стоит в шапке сайта.
+              Звонить в колл-центр не придётся.
             </p>
-            <p className="pt-2 text-[14px]" style={{ color: 'var(--hp-sub)' }}>
-              <span className="font-semibold" style={{ color: 'var(--hp-ink)', fontFamily: SERIF, fontSize: 17 }}>
-                Руслан Ножкин
-              </span>
-              , основатель {SITE_BRAND}
-              {contacts.inn && <> · ИНН {contacts.inn}</>}
-            </p>
+            <div className="pt-3">
+              <span className="hp-sign-line" aria-hidden="true" />
+              <p className="mt-3 text-[14px]">
+                <span className="font-semibold" style={{ color: 'var(--hp-on-forest)', fontFamily: SERIF, fontSize: 19 }}>
+                  Руслан Ножкин
+                </span>
+                , частный риелтор, {SITE_BRAND}
+                {contacts.inn && <> · ИНН {contacts.inn}</>}
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -257,7 +258,7 @@ export default async function AboutPage() {
       {/* ── Экран 3: принципы ────────────────────────────────────────── */}
       <section className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-16 sm:pt-20">
         <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
-          Как мы работаем
+          Как я работаю
         </h2>
         <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
           {PRINCIPLES.map(({ title, text }) => (
@@ -265,7 +266,7 @@ export default async function AboutPage() {
               <h3 className="text-[16px] font-bold leading-snug" style={{ color: 'var(--hp-ink)' }}>
                 {title}
               </h3>
-              <p className="mt-2.5 text-[14px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+              <p className="mt-2.5 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
                 {text}
               </p>
             </div>
@@ -291,18 +292,18 @@ export default async function AboutPage() {
                 {d.label}
               </p>
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--hp-tertiary)' }}>
+                <p className="text-[12px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--hp-tertiary)' }}>
                   Обычно
                 </p>
-                <p className="mt-1 text-[14px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+                <p className="mt-1 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
                   {d.usually}
                 </p>
               </div>
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--hp-accent)' }}>
-                  У нас
+                <p className="text-[12px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--hp-accent)' }}>
+                  У меня
                 </p>
-                <p className="mt-1 text-[14px] leading-relaxed font-medium" style={{ color: 'var(--hp-ink)' }}>
+                <p className="mt-1 text-[16px] leading-relaxed font-medium" style={{ color: 'var(--hp-ink)' }}>
                   {d.ours}
                 </p>
               </div>
@@ -322,10 +323,10 @@ export default async function AboutPage() {
               <FileText style={{ width: 18, height: 18, color: 'var(--hp-ink)' }} />
             </div>
             <h2 className="mt-4 text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
-              Что написано в договоре с агентством
+              Что написано в договоре со мной
             </h2>
-            <p className="mt-3 text-[15px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
-              Четыре вещи, которые собственник обычно узнаёт постфактум. У нас они в договоре текстом.
+            <p className="mt-3 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+              Четыре вещи, которые собственник обычно узнаёт постфактум. У меня они в договоре текстом.
             </p>
             <Link
               href={`${USLUGI_ROUTES.sdatKvartiru}#dokumenty`}
@@ -417,8 +418,8 @@ export default async function AboutPage() {
             <h3 className="mt-4 text-[18px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
               Сдать квартиру
             </h3>
-            <p className="mt-2 text-[14px] leading-relaxed flex-1" style={{ color: 'var(--hp-sub)' }}>
-              Посчитайте доход по трём тарифам и оставьте заявку — перезвоним в течение{' '}
+            <p className="mt-2 text-[16px] leading-relaxed flex-1" style={{ color: 'var(--hp-sub)' }}>
+              Посчитайте доход по трём тарифам и оставьте заявку — перезвоню в течение{' '}
               {USLUGI.callback.withinMinutes} минут.
             </p>
             <Link
@@ -440,7 +441,7 @@ export default async function AboutPage() {
             <h3 className="mt-4 text-[18px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
               Снять, продать или купить
             </h3>
-            <p className="mt-2 text-[14px] leading-relaxed flex-1" style={{ color: 'var(--hp-sub)' }}>
+            <p className="mt-2 text-[16px] leading-relaxed flex-1" style={{ color: 'var(--hp-sub)' }}>
               Свободные объекты в каталоге, закрытая база — по заявке.
             </p>
             <div className="mt-5 flex flex-col sm:flex-row gap-3">
@@ -466,10 +467,10 @@ export default async function AboutPage() {
         <div className="border p-5 sm:p-8 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] gap-8" style={cardStyle}>
           <div className="min-w-0">
             <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
-              Напишите нам
+              Напишите мне
             </h2>
-            <p className="mt-3 text-[15px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
-              Опишите ситуацию одной строкой — агент подскажет, с чего начать. Консультация бесплатная.
+            <p className="mt-3 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+              Опишите ситуацию одной строкой — подскажу, с чего начать. Консультация бесплатная.
             </p>
           </div>
           <div className="min-w-0">
@@ -478,7 +479,7 @@ export default async function AboutPage() {
               page={USLUGI_ROUTES.about}
               submitLabel="Отправить заявку"
               messagePlaceholder="Например: сдаю квартиру сама третий год, хочу понять, что даст управление"
-              footnote={`Перезвоним в течение ${USLUGI.callback.withinMinutes} минут. ${USLUGI.callback.workingHours}.`}
+              footnote={`Перезвоню в течение ${USLUGI.callback.withinMinutes} минут. ${USLUGI.callback.workingHours}.`}
             />
           </div>
         </div>

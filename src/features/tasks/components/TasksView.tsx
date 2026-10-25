@@ -73,7 +73,7 @@ export function TasksView({ tasks }: { tasks: TaskRow[] }) {
       ),
     },
     {
-      key: 'assignee', title: 'Исполнитель', cellClass: 'sub whitespace-nowrap', headClass: 'hidden md:table-cell',
+      key: 'assignee', title: 'Исполнитель', cellClass: 'sub whitespace-nowrap', hideBelow: 'md',
       cell: t => t.assigneeName ?? <span className="text-[var(--hp-tertiary)]">—</span>,
     },
     {

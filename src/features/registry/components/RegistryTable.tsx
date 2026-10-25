@@ -11,9 +11,28 @@ export interface RegistryColumn<T> {
   title: string
   /** Классы <td>: 'sub' — приглушённый текст, 'num' — число вправо */
   cellClass?: string
-  /** Классы <th>, обычно скрытие на узких экранах */
+  /** Доп. классы <th> (не для скрытия — для него hideBelow) */
   headClass?: string
+  /**
+   * Скрыть колонку, пока ширина ТАБЛИЦЫ меньше порога: md 768, lg 1024, xl 1152 px.
+   * Считается по контейнеру, а не по окну: при меню 300 px окно 1280 даёт
+   * таблице ~950 px, и брейкпоинты окна прятали колонки слишком поздно.
+   * Прячутся и заголовок, и ячейки — иначе столбцы съезжают.
+   */
+  hideBelow?: 'md' | 'lg' | 'xl'
   cell: (row: T) => ReactNode
+}
+
+// Полные литералы — чтобы Tailwind их увидел при сборке
+const HIDE_CLASS = {
+  md: 'hidden @3xl:table-cell',
+  lg: 'hidden @5xl:table-cell',
+  xl: 'hidden @6xl:table-cell',
+} as const
+
+function colClass(base: string | undefined, hide: RegistryColumn<unknown>['hideBelow']): string | undefined {
+  const cls = [base, hide ? HIDE_CLASS[hide] : null].filter(Boolean).join(' ')
+  return cls || undefined
 }
 
 const PAGE_SIZE = 20
@@ -66,7 +85,7 @@ export function RegistryTable<T extends { id: string }>({
 
   return (
     <div className="hp-card overflow-hidden">
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto @container">
         <table className="hp-registry">
           <thead>
             <tr>
@@ -80,7 +99,7 @@ export function RegistryTable<T extends { id: string }>({
                   />
                 </th>
               )}
-              {columns.map(c => <th key={c.key} className={c.headClass}>{c.title}</th>)}
+              {columns.map(c => <th key={c.key} className={colClass(c.headClass, c.hideBelow)}>{c.title}</th>)}
             </tr>
           </thead>
           <tbody>
@@ -103,7 +122,7 @@ export function RegistryTable<T extends { id: string }>({
                   </td>
                 )}
                 {columns.map(c => (
-                  <td key={c.key} className={c.cellClass}>{c.cell(row)}</td>
+                  <td key={c.key} className={colClass(c.cellClass, c.hideBelow)}>{c.cell(row)}</td>
                 ))}
               </tr>
             ))}

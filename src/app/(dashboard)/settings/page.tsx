@@ -75,7 +75,7 @@ export default async function SettingsPage() {
   const avatarUrl = (profile as { avatar_url?: string } | null)?.avatar_url ?? null
 
   return (
-    <div className="space-y-5 max-w-3xl mx-auto">
+    <div className="space-y-5">
       <PageHeader title="Настройки" subtitle="Управление системой ХаусПро CRM" />
 
       {/* Профиль — отдельно от рубрик, это не раздел системы, а сам пользователь */}
@@ -110,6 +110,8 @@ export default async function SettingsPage() {
         </Link>
       )}
 
+      {/* Ширина как у остальных экранов; группы — в две колонки на широком */}
+      <div className="grid gap-5 xl:grid-cols-2 items-start">
       {SETTINGS_GROUPS.map((group) => (
         <div key={group.title} className="hp-block">
           <div className="hp-block-header">{group.title}</div>
@@ -130,6 +132,7 @@ export default async function SettingsPage() {
           })}
         </div>
       ))}
+      </div>
 
       {isAdmin && (
         <details className="hp-block group">

@@ -13,6 +13,8 @@ import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { logout } from '@/features/auth/actions/auth.actions'
 import type { UserBadge } from '@/types/database'
+import { BrandLogo } from '@/components/brand/BrandLogo'
+import { BrandMark } from '@/components/brand/BrandMark'
 
 /**
  * Разделы сгруппированы по тому, ЧТО в них делают, а не по тому, какая это
@@ -125,18 +127,20 @@ function SidebarContent({
                   }}
                   onMouseLeave={() => setHoveredItem(null)}
                   className={cn(
-                    'relative flex items-center gap-3 rounded-[var(--hp-radius)] text-sm font-medium transition-colors duration-150 group focus:outline-none focus-visible:bg-[var(--hp-neutral-tint)]',
+                    'relative isolate flex items-center gap-3 rounded-[var(--hp-radius)] text-sm font-medium transition-colors duration-150 group focus:outline-none focus-visible:bg-[var(--hp-neutral-tint)]',
                     collapsed ? 'px-2.5 py-1 justify-center' : 'px-3 py-1',
                     isActive
-                      ? 'text-[var(--hp-ink)]'
+                      ? 'text-[var(--hp-ink)] font-semibold'
                       : 'text-[var(--hp-sub)] hover:text-[var(--hp-ink)] hover:bg-[var(--hp-neutral-tint)]'
                   )}
                 >
-                  {/* Активный пункт — заливка hp-accent-tint, плавно едет между пунктами (layoutId) */}
+                  {/* Активный пункт — заливка hp-accent-tint и мховая черта слева.
+                      isolate у ссылки обязателен: без него -z-10 уводил подложку
+                      под фон меню, и текущий раздел не выделялся вовсе. */}
                   {isActive && (
                     <motion.div
                       layoutId="sidebar-active-pill"
-                      className="absolute inset-0 rounded-[var(--hp-radius)] -z-10 border border-[var(--hp-border)]"
+                      className="absolute inset-0 rounded-[var(--hp-radius)] -z-10 border-l-[3px] border-[var(--hp-accent)]"
                       style={{ background: 'var(--hp-accent-tint)' }}
                       transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                     />
@@ -144,7 +148,7 @@ function SidebarContent({
                   <Icon
                     className={cn(
                       'shrink-0 relative transition-transform duration-150',
-                      isActive ? 'text-[var(--hp-ink)]' : 'text-[var(--hp-sub)] group-hover:text-[var(--hp-ink)]'
+                      isActive ? 'text-[var(--hp-accent)]' : 'text-[var(--hp-sub)] group-hover:text-[var(--hp-ink)]'
                     )}
                     style={{ width: 17, height: 17 }}
                   />
@@ -304,14 +308,8 @@ function MobileDrawer({
         }}
       >
         <div className="h-[68px] flex items-center justify-between px-5 border-b border-[var(--hp-border)] shrink-0">
-          <a href="/" title="На сайт ХаусПро" className="group">
-            <span
-              className="font-bold text-[var(--hp-ink)] text-[18px] leading-tight block tracking-tight transition-colors group-hover:text-[var(--hp-accent)]"
-              style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}
-            >
-              ХаусПро
-            </span>
-            <span className="text-[10px] text-[var(--hp-tertiary)] font-semibold tracking-widest uppercase leading-tight">CRM</span>
+          <a href="/" title="На сайт ХаусПро" className="min-w-0">
+            <BrandLogo markSize={32} caption="CRM" />
           </a>
           <button
             onClick={onClose}
@@ -362,7 +360,7 @@ export function MobileBottomNav({ user }: { user: UserBadge | null }) {
                 }}
                 className={cn(
                   'flex flex-col items-center gap-1 px-3 py-1.5 rounded-[var(--hp-radius)] transition-colors duration-150 min-w-[52px]',
-                  isActive ? 'text-[var(--hp-ink)] bg-[var(--hp-neutral-tint)]' : 'text-[var(--hp-tertiary)]'
+                  isActive ? 'text-[var(--hp-accent)] bg-[var(--hp-accent-tint)] font-semibold' : 'text-[var(--hp-tertiary)]'
                 )}
               >
                 <Icon style={{ width: 20, height: 20 }} />
@@ -398,26 +396,14 @@ export function Sidebar({ user }: { user: UserBadge | null }) {
             Обычный <a>, а не <Link>: сайт и кабинет — разные разделы,
             клиентская навигация Next.js тут ничего не ускоряет. */}
         {collapsed ? (
-          // Свёрнутая ширина (72px) слишком узкая для текста — здесь остаётся
-          // компактный монограмма-квадрат вместо иконки здания: буква имени,
-          // а не сторонний глиф, тот же принцип «только название».
-          <a
-            href="/"
-            title="На сайт ХаусПро"
-            className="w-8 h-8 rounded-[var(--hp-radius)] flex items-center justify-center shrink-0 text-white text-sm font-bold transition-opacity hover:opacity-90"
-            style={{ background: 'var(--hp-accent)', fontFamily: "'Source Serif 4', Georgia, serif" }}
-          >
-            Х
+          // Свёрнутая ширина (72px) слишком узкая для текста — остаётся только
+          // знак бренда «ХП» (малая версия, src/components/brand/BrandMark.tsx).
+          <a href="/" title="На сайт ХаусПро" className="shrink-0 transition-opacity hover:opacity-90">
+            <BrandMark size={32} />
           </a>
         ) : (
-          <a href="/" title="На сайт ХаусПро" className="min-w-0 group">
-            <span
-              className="font-bold text-[var(--hp-ink)] text-[18px] leading-tight block tracking-tight transition-colors group-hover:text-[var(--hp-accent)]"
-              style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}
-            >
-              ХаусПро
-            </span>
-            <span className="text-[10px] text-[var(--hp-tertiary)] font-semibold tracking-widest uppercase leading-tight">CRM</span>
+          <a href="/" title="На сайт ХаусПро" className="min-w-0">
+            <BrandLogo markSize={32} caption="CRM" />
           </a>
         )}
       </div>

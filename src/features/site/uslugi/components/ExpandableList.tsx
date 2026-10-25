@@ -32,7 +32,7 @@ export function ExpandableList({ items, visibleCount = 5, className }: Props) {
         {shown.map(item => (
           <li
             key={item}
-            className="flex items-start gap-2.5 text-[14px] leading-relaxed"
+            className="flex items-start gap-2.5 text-[16px] leading-relaxed"
             style={{ color: 'var(--hp-ink)' }}
           >
             <Check
@@ -47,7 +47,7 @@ export function ExpandableList({ items, visibleCount = 5, className }: Props) {
         <button
           type="button"
           onClick={() => setExpanded(v => !v)}
-          className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold"
+          className="mt-3 inline-flex items-center gap-1.5 text-[14px] font-semibold"
           style={{ color: 'var(--hp-accent)' }}
         >
           {expanded ? 'Свернуть' : `Показать все ${items.length} пунктов`}

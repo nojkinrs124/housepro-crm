@@ -8,7 +8,7 @@ import { RegistryTable, type RegistryColumn } from '@/features/registry/componen
 import { BulkBar } from '@/features/registry/components/BulkBar'
 import { useRegistryFilters } from '@/hooks/useRegistryFilters'
 import { useSelection } from '@/hooks/useSelection'
-import { formatDateTime } from '@/lib/timezone'
+import { formatDateTimeCompact } from '@/lib/utils'
 
 export interface ShowingRow {
   id: string
@@ -22,10 +22,10 @@ export interface ShowingRow {
 }
 
 const STATUS_BADGE: Record<string, string> = {
-  planned:   'hp-badge-info',
+  planned:   'hp-badge-neutral',
   completed: 'hp-badge-good',
   cancelled: 'hp-badge-neutral',
-  no_show:   'hp-badge-danger',
+  no_show:   'hp-badge-warn',
 }
 
 const STATUS_LABELS: Record<string, string> =
@@ -37,7 +37,7 @@ const STATUS_OPTIONS = [
 ]
 
 function fmtWhen(iso: string): string {
-  return formatDateTime(iso, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+  return formatDateTimeCompact(iso)
 }
 
 export function ShowingsView({ showings }: { showings: ShowingRow[] }) {
@@ -65,7 +65,7 @@ export function ShowingsView({ showings }: { showings: ShowingRow[] }) {
       cell: s => <span className="block truncate">{s.leadName ?? <span className="text-[var(--hp-tertiary)]">—</span>}</span>,
     },
     {
-      key: 'agent', title: 'Риелтор', cellClass: 'sub whitespace-nowrap', headClass: 'hidden md:table-cell',
+      key: 'agent', title: 'Риелтор', cellClass: 'sub whitespace-nowrap', hideBelow: 'md',
       cell: s => s.agentName ?? <span className="text-[var(--hp-tertiary)]">—</span>,
     },
     {

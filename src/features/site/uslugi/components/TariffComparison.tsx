@@ -147,14 +147,14 @@ export function TariffComparison({ id }: Props) {
                 borderRadius: 'var(--hp-radius)',
               }}
             >
-              <p className="text-[13px] font-bold" style={{ color: 'var(--hp-accent)' }}>
+              <p className="text-[14px] font-bold" style={{ color: 'var(--hp-accent)' }}>
                 {step.fromLabel} → {step.toLabel}
               </p>
               <ul className="mt-3 space-y-2">
                 {step.added.map(label => (
                   <li
                     key={label}
-                    className="flex items-start gap-2 text-[13.5px] leading-relaxed"
+                    className="flex items-start gap-2 text-[16px] leading-relaxed"
                     style={{ color: 'var(--hp-ink)' }}
                   >
                     <Check
@@ -173,7 +173,7 @@ export function TariffComparison({ id }: Props) {
           type="button"
           onClick={() => setFullTableOpen(v => !v)}
           aria-expanded={fullTableOpen}
-          className="mt-6 inline-flex items-center gap-1.5 text-[13.5px] font-semibold"
+          className="mt-6 inline-flex items-center gap-1.5 text-[14px] font-semibold"
           style={{ color: 'var(--hp-accent)' }}
         >
           {fullTableOpen ? 'Скрыть полное сравнение' : 'Показать полное сравнение построчно'}
@@ -186,7 +186,7 @@ export function TariffComparison({ id }: Props) {
 
         {/* На телефоне видна одна колонка тарифа — без подсказки не очевидно, что таблица едет вбок */}
         {fullTableOpen && (
-          <p className="mt-4 text-[13px] sm:hidden" style={{ color: 'var(--hp-tertiary)' }}>
+          <p className="mt-4 text-[14px] sm:hidden" style={{ color: 'var(--hp-tertiary)' }}>
             Таблица прокручивается вбок →
           </p>
         )}
@@ -200,7 +200,7 @@ export function TariffComparison({ id }: Props) {
             borderRadius: 'var(--hp-radius)',
           }}
         >
-          <table className="w-full min-w-[560px] text-[13.5px] border-collapse">
+          <table className="w-full min-w-[560px] text-[14px] border-collapse">
             <caption className="sr-only">Сравнение тарифов</caption>
             <thead>
               <tr>

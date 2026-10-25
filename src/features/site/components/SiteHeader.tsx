@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Menu, X, Phone, LogIn } from 'lucide-react'
 import { SITE_BRAND, SITE_NAV } from '@/features/site/config'
+import { BrandLogo } from '@/components/brand/BrandLogo'
 
 interface Props {
   phone: string
@@ -23,21 +24,14 @@ export function SiteHeader({ phone, phoneHref }: Props) {
       className="sticky top-0 z-40 border-b"
       style={{ background: 'var(--hp-surface)', borderColor: 'var(--hp-border)' }}
     >
-      <div className="max-w-[1180px] mx-auto px-4 sm:px-6 h-16 flex items-center gap-6">
+      <div className="max-w-[1180px] mx-auto px-4 sm:px-6 h-[68px] flex items-center gap-6">
         <Link
           href="/"
-          className="flex items-baseline gap-2 shrink-0"
+          className="shrink-0"
+          aria-label={`${SITE_BRAND} — на главную`}
           onClick={() => setOpen(false)}
         >
-          <span
-            className="text-[20px] font-bold tracking-tight"
-            style={{ fontFamily: "'Source Serif 4', Georgia, serif", color: 'var(--hp-ink)' }}
-          >
-            {SITE_BRAND}
-          </span>
-          <span className="hidden sm:inline text-[11px] font-semibold" style={{ color: 'var(--hp-tertiary)' }}>
-            Красноярск
-          </span>
+          <BrandLogo markSize={36} />
         </Link>
 
         <nav className="hidden md:flex items-center gap-1 ml-2">
@@ -45,7 +39,7 @@ export function SiteHeader({ phone, phoneHref }: Props) {
             <Link
               key={item.href}
               href={item.href}
-              className="px-3 py-2 text-[13.5px] font-semibold transition-colors"
+              className="px-3 py-2 text-[15px] font-semibold transition-colors"
               style={{
                 color: isActive(item.href) ? 'var(--hp-ink)' : 'var(--hp-sub)',
                 background: isActive(item.href) ? 'var(--hp-accent-tint)' : 'transparent',
@@ -60,7 +54,7 @@ export function SiteHeader({ phone, phoneHref }: Props) {
         <div className="ml-auto flex items-center gap-3">
           <a
             href={phoneHref}
-            className="hidden sm:flex items-center gap-2 text-[13.5px] font-semibold transition-colors hover:opacity-80"
+            className="hidden sm:flex items-center gap-2 text-[15px] font-semibold transition-colors hover:opacity-80"
             style={{ color: 'var(--hp-ink)' }}
           >
             <Phone style={{ width: 15, height: 15, color: 'var(--hp-accent)' }} />
@@ -72,7 +66,7 @@ export function SiteHeader({ phone, phoneHref }: Props) {
               по прямой ссылке /login, теперь есть заметная точка входа. */}
           <Link
             href="/login"
-            className="hidden sm:flex items-center gap-1.5 text-[13px] font-semibold transition-colors hover:text-[var(--hp-ink)]"
+            className="hidden sm:flex items-center gap-1.5 text-[14px] font-semibold transition-colors hover:text-[var(--hp-ink)]"
             style={{ color: 'var(--hp-sub)' }}
           >
             <LogIn style={{ width: 14, height: 14 }} />

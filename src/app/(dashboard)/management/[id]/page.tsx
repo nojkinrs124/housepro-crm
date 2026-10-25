@@ -224,8 +224,7 @@ export default async function ManagementDetailPage({ params }: { params: Promise
         <>
           <StatStrip
             items={[
-              { label: 'Доход за месяц', value: `${formatAmount(incomeMonth)} ₽` },
-              { label: 'Расход за месяц', value: `${formatAmount(expenseMonth)} ₽` },
+              { label: 'Доход за месяц', value: `${formatAmount(incomeMonth)} ₽`, hint: `расход ${formatAmount(expenseMonth)} ₽` },
               { label: 'Прибыль за месяц', value: `${formatAmount(incomeMonth - expenseMonth)} ₽`, alert: incomeMonth - expenseMonth < 0 },
               {
                 label: 'Просрочено',

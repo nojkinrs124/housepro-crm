@@ -81,7 +81,7 @@ export default async function OwnerCabinetPage({ params }: { params: Promise<{ p
               ))}
               <div className="hp-block-row">
                 <span className="label">
-                  {report.dueToOwner < 0 ? 'Задолженность перед агентством' : 'К перечислению'}
+                  {report.dueToOwner < 0 ? 'Задолженность по договору управления' : 'К перечислению'}
                 </span>
                 <span className="value accent">{formatAmount(Math.abs(report.dueToOwner))} ₽</span>
               </div>

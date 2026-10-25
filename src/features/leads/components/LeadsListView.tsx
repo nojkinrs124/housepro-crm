@@ -64,7 +64,7 @@ export function LeadsListView({ leads, selection }: { leads: LeadRow[]; selectio
         : <span className="text-[var(--hp-tertiary)]">—</span>,
     },
     {
-      key: 'source', title: 'Источник', cellClass: 'sub whitespace-nowrap', headClass: 'hidden md:table-cell',
+      key: 'source', title: 'Источник', cellClass: 'sub whitespace-nowrap', hideBelow: 'md',
       cell: l => LEAD_SOURCE_LABELS[l.source ?? ''] ?? l.source ?? '—',
     },
     {

@@ -28,7 +28,7 @@ const DOORS: {
 }[] = [
   {
     audience: 'staff',
-    title: 'Я сотрудник агентства',
+    title: 'Я сотрудник',
     description: 'Лиды и сделки, объекты, договоры и платежи, задачи и заявки жильцов.',
     action: 'Вход по email и паролю',
     Icon: Briefcase,

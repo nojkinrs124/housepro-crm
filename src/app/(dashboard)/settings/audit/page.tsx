@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Shield, User, Clock, Tag } from 'lucide-react'
 import Link from 'next/link'
+import { formatDateTimeCompact } from '@/lib/utils'
 
 const ACTION_LABEL: Record<string, { label: string; color: string }> = {
  create: { label: 'Создание', color: 'text-[var(--hp-good)] bg-[var(--hp-good-tint)]' },
@@ -113,10 +114,7 @@ export default async function AuditLogPage() {
  <td className="px-4 py-3 whitespace-nowrap">
  <div className="flex items-center gap-1.5 text-muted-foreground">
  <Clock className="w-3.5 h-3.5" />
- {new Date(log.created_at).toLocaleString('ru-RU', {
- day: '2-digit', month: '2-digit', year: '2-digit',
- hour: '2-digit', minute: '2-digit',
- })}
+ {formatDateTimeCompact(log.created_at)}
  </div>
  </td>
  <td className="px-4 py-3">

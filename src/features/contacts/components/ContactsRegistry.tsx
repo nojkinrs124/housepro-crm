@@ -64,7 +64,7 @@ export function ContactsRegistry({
         : <span className="text-[var(--hp-tertiary)]">—</span>,
     },
     {
-      key: 'object', title: 'Объект', cellClass: 'sub max-w-[220px]', headClass: 'hidden md:table-cell',
+      key: 'object', title: 'Объект', cellClass: 'sub max-w-[220px]', hideBelow: 'md',
       cell: c => {
         const m = meta[c.id] ?? {}
         if (!m.objectLabel) return <span className="text-[var(--hp-tertiary)]">не подобран</span>
@@ -74,11 +74,11 @@ export function ContactsRegistry({
       },
     },
     {
-      key: 'manager', title: 'Риелтор', cellClass: 'sub whitespace-nowrap', headClass: 'hidden lg:table-cell',
+      key: 'manager', title: 'Риелтор', cellClass: 'sub whitespace-nowrap', hideBelow: 'lg',
       cell: c => meta[c.id]?.managerName ?? <span className="text-[var(--hp-tertiary)]">—</span>,
     },
     {
-      key: 'updated', title: 'Обновл.', cellClass: 'sub whitespace-nowrap',
+      key: 'updated', title: 'Обновл.', cellClass: 'sub whitespace-nowrap', hideBelow: 'lg',
       cell: c => formatDateCompact(c.updated_at ?? c.created_at),
     },
   ]

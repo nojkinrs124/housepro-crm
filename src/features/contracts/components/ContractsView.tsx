@@ -61,7 +61,7 @@ export function ContractsView({ contracts }: { contracts: ContractRow[] }) {
       ),
     },
     {
-      key: 'type', title: 'Тип', cellClass: 'sub whitespace-nowrap',
+      key: 'type', title: 'Тип', cellClass: 'sub whitespace-nowrap', hideBelow: 'lg',
       cell: c => CONTRACT_TYPE_LABELS[c.contractType] ?? c.contractType,
     },
     {
@@ -80,14 +80,14 @@ export function ContractsView({ contracts }: { contracts: ContractRow[] }) {
         : (
           // Прочерк читался как «здесь ничего и не должно быть», а это дыра в
           // данных: без стороны договор не сгенерировать и не подписать.
-          <span className="hp-badge hp-badge-warn whitespace-nowrap"
+          <span className="whitespace-nowrap text-[12.5px] text-[var(--hp-warn)]"
             title="Сторона договора не заполнена — откройте договор и укажите её">
             {c.counterpartyRole === 'owner' ? 'Нет собственника' : 'Нет клиента'}
           </span>
         ),
     },
     {
-      key: 'property', title: 'Объект', cellClass: 'sub max-w-[220px]', headClass: 'hidden md:table-cell',
+      key: 'property', title: 'Объект', cellClass: 'sub max-w-[220px]', hideBelow: 'xl',
       cell: c => <span className="block truncate">{c.propertyLabel ?? <span className="text-[var(--hp-tertiary)]">—</span>}</span>,
     },
     {

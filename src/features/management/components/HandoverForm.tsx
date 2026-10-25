@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { CheckCircle2 } from 'lucide-react'
 import { saveHandoverAction, completeHandoverAction } from '@/features/management/actions/handover.actions'
+import { formatDateCompact } from '@/lib/utils'
 
 export interface HandoverDefaults {
   engagementId: string
@@ -52,7 +53,7 @@ export function HandoverForm({ defaults, backHref }: { defaults: HandoverDefault
     <div className="space-y-4">
       {closed && (
         <p className="hp-card p-3 text-sm text-[var(--hp-good)]">
-          Акт закрыт {new Date(defaults.completedAt!).toLocaleDateString('ru-RU')}. Правки в него больше не вносятся.
+          Акт закрыт {formatDateCompact(defaults.completedAt!)}. Правки в него больше не вносятся.
         </p>
       )}
 

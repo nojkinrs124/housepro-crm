@@ -114,12 +114,12 @@ export function CatalogFilters({
         )}
       </div>
 
-      <div className="mt-4 flex items-center gap-3 flex-wrap">
-        <button type="submit" className="hp-btn-primary h-11">
+      <div className="mt-4 flex items-center gap-3">
+        <button type="submit" className="hp-btn-primary h-11 flex-1 sm:flex-none justify-center">
           <Search style={{ width: 15, height: 15 }} />
           {compact ? 'Подобрать объект' : 'Показать объекты'}
         </button>
-        <a href="/catalog" className="hp-btn-secondary h-11">
+        <a href="/catalog" className="hp-btn-secondary h-11 justify-center">
           Сбросить
         </a>
       </div>

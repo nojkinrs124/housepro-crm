@@ -25,7 +25,7 @@ import { ExpandableList } from '@/features/site/uslugi/components/ExpandableList
 
 export const metadata: Metadata = {
   title: 'Снять квартиру в Красноярске — подбор с проверкой документов | ХаусПро',
-  description: `Подберём квартиру под бюджет и район, включая закрытую базу. Проверяем собственника до залога, составляем договор и акт с описью. Комиссия ${tenantCommissionLabel()}, платится после заселения.`,
+  description: `Подберу квартиру под бюджет и район, включая закрытую базу. Проверяю собственника до залога, составляю договор и акт с описью. Комиссия ${tenantCommissionLabel()}, платится после заселения.`,
 }
 
 const PAIN_POINTS = [
@@ -35,14 +35,14 @@ const PAIN_POINTS = [
 ]
 
 const WHAT_WE_DO = [
-  'Разбираемся, что вам нужно: бюджет, район, срок, животные, дети, мебель — чтобы не возить вас по неподходящим вариантам',
-  'Подбираем из открытых площадок и из закрытой базы: часть собственников не публикует квартиры, эти варианты вы сами не найдёте',
-  'Проверяем собственника до показа: выписка из ЕГРН, основание права собственности, согласие супруга, обременения, прописанные третьи лица',
-  'Организуем просмотры и ездим с вами',
-  'Торгуемся о ставке и условиях: срок, индексация, кто платит коммуналку, можно ли с животными',
-  'Составляем договор найма, где прописаны условия возврата залога и порядок расторжения — это то, из-за чего чаще всего теряют деньги',
-  'Фиксируем состояние квартиры актом с описью, фото и показаниями счётчиков',
-  `Заселяем в день показа: если квартира понравилась, документы готовим на месте, ${USLUGI.timing.moveInMinutes} минут — и вы с ключами`,
+  'Разбираюсь, что вам нужно: бюджет, район, срок, животные, дети, мебель — чтобы не возить вас по неподходящим вариантам',
+  'Подбираю из открытых площадок и из закрытой базы: часть собственников не публикует квартиры, эти варианты вы сами не найдёте',
+  'Проверяю собственника до показа: выписка из ЕГРН, основание права собственности, согласие супруга, обременения, прописанные третьи лица',
+  'Организую просмотры и езжу с вами',
+  'Торгуюсь о ставке и условиях: срок, индексация, кто платит коммуналку, можно ли с животными',
+  'Составляю договор найма, где прописаны условия возврата залога и порядок расторжения — это то, из-за чего чаще всего теряют деньги',
+  'Фиксирую состояние квартиры актом с описью, фото и показаниями счётчиков',
+  `Заселяю в день показа: если квартира понравилась, документы готовлю на месте, ${USLUGI.timing.moveInMinutes} минут — и вы с ключами`,
 ]
 
 interface Step {
@@ -52,10 +52,10 @@ interface Step {
 
 const STEPS: Step[] = [
   { title: 'Заявка или звонок.', text: 'Рассказываете, что ищете и на какой бюджет.' },
-  { title: 'Подборка.', text: 'Присылаем варианты, которые реально свободны сейчас, а не «уже сдали вчера».' },
+  { title: 'Подборка.', text: 'Присылаю варианты, которые реально свободны сейчас, а не «уже сдали вчера».' },
   {
     title: 'Просмотры.',
-    text: 'Ездим вместе, проверяем документы собственника по каждому понравившемуся варианту.',
+    text: 'Езжу с вами, проверяю документы собственника по каждому понравившемуся варианту.',
   },
   { title: 'Договор и заселение.', text: 'Договор, акт с описью, ключи. В тот же день.' },
 ]
@@ -63,15 +63,15 @@ const STEPS: Step[] = [
 const SNYAT_WHAT_IF: WhatIfItem[] = [
   {
     q: 'Собственник не вернёт залог при выезде.',
-    a: 'Поэтому мы делаем акт с описью и фото при заселении. Без него спор сводится к «было — не было», с ним — к документу.',
+    a: 'Поэтому при заселении я составляю акт с описью и фото. Без него спор сводится к «было — не было», с ним — к документу.',
   },
   {
     q: 'Квартиру продадут, пока я в ней живу.',
-    a: 'Смена собственника не прекращает договор найма: новый владелец обязан соблюдать его до конца срока. Мы прописываем это отдельно.',
+    a: 'Смена собственника не прекращает договор найма: новый владелец обязан соблюдать его до конца срока. Я прописываю это в договоре отдельно.',
   },
   {
     q: 'Хозяин будет приходить без предупреждения.',
-    a: 'В договоре фиксируем порядок посещений — как правило, с предупреждением за сутки.',
+    a: 'В договоре фиксирую порядок посещений — как правило, с предупреждением за сутки.',
   },
   {
     q: 'Через месяц поднимут цену.',
@@ -80,12 +80,12 @@ const SNYAT_WHAT_IF: WhatIfItem[] = [
   {
     q: 'Я нашёл квартиру сам, но боюсь подписывать.',
     a: LEGAL_SUPPORT_PRICING
-      ? `Проверим документы и оформим сделку без подбора — юридическое сопровождение от ${formatRub(LEGAL_SUPPORT_PRICING.fromRub)}.`
-      : 'Проверим документы и оформим сделку без подбора.',
+      ? `Проверю документы и оформлю сделку без подбора — юридическое сопровождение от ${formatRub(LEGAL_SUPPORT_PRICING.fromRub)}.`
+      : 'Проверю документы и оформлю сделку без подбора.',
   },
 ]
 
-const LEAD_FOOTNOTE = `Перезвоним в течение ${USLUGI.callback.withinMinutes} минут. ${USLUGI.callback.workingHours}.`
+const LEAD_FOOTNOTE = `Перезвоню в течение ${USLUGI.callback.withinMinutes} минут. ${USLUGI.callback.workingHours}.`
 
 export default function SnyatKvartiruPage() {
   return (
@@ -93,8 +93,8 @@ export default function SnyatKvartiruPage() {
       {/* ── Первый экран ───────────────────────────────────────────────── */}
       <section className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-10 sm:pt-14">
         <div className="max-w-[760px]">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--hp-sub)' }}>
-            Нанимателям · Красноярск и Берёзовка
+          <p className="text-[12px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--hp-sub)' }}>
+            Нанимателям
           </p>
           <h1
             className="mt-4 text-[30px] sm:text-[40px] font-bold tracking-tight leading-tight break-words"
@@ -103,20 +103,12 @@ export default function SnyatKvartiruPage() {
             Снять квартиру в Красноярске — без сюрпризов с документами
           </h1>
           <p className="mt-4 text-[16px] leading-relaxed max-w-[640px]" style={{ color: 'var(--hp-sub)' }}>
-            Подберём жильё под ваш бюджет и район, проверим собственника до того, как вы внесёте залог, и
-            составим договор, который защищает и вас тоже.
+            Подберу жильё под ваш бюджет и район, проверю собственника до того, как вы внесёте залог, и
+            составлю договор, который защищает и вас тоже.
           </p>
 
-          <div
-            className="mt-6 border px-4 py-3 text-[14px] font-semibold leading-relaxed"
-            style={{
-              background: 'var(--hp-good-tint)',
-              borderColor: 'var(--hp-good)',
-              borderRadius: 'var(--hp-radius)',
-              color: 'var(--hp-ink)',
-            }}
-          >
-            Платите только после заселения. За подбор и просмотры денег не берём.
+          <div className="hp-note mt-6 font-semibold">
+            Платите только после заселения. За подбор и просмотры денег не беру.
           </div>
 
           <div className="mt-7 flex flex-col sm:flex-row gap-3">
@@ -151,12 +143,12 @@ export default function SnyatKvartiruPage() {
             {PAIN_POINTS.map(point => (
               <li
                 key={point}
-                className="flex items-start gap-2.5 text-[14px] leading-relaxed"
+                className="flex items-start gap-2.5 text-[16px] leading-relaxed"
                 style={{ color: 'var(--hp-ink)' }}
               >
                 <X
                   aria-hidden="true"
-                  style={{ width: 15, height: 15, marginTop: 3, color: 'var(--hp-warn)', flexShrink: 0 }}
+                  style={{ width: 15, height: 15, marginTop: 3, color: 'var(--hp-sub)', flexShrink: 0 }}
                 />
                 <span className="break-words">{point}</span>
               </li>
@@ -168,7 +160,7 @@ export default function SnyatKvartiruPage() {
       {/* ── Что делаем ─────────────────────────────────────────────────── */}
       <section className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-16 sm:pt-20">
         <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
-          Что делаем
+          Что делаю
         </h2>
         <ExpandableList items={WHAT_WE_DO} className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3" />
       </section>
@@ -197,8 +189,8 @@ export default function SnyatKvartiruPage() {
               от месячной ставки аренды, один раз при заселении.
             </strong>
           </div>
-          <p className="mt-3 text-[14px] sm:text-[15px] leading-relaxed max-w-[640px]" style={{ color: 'var(--hp-sub)' }}>
-            Комиссия платится в день подписания договора. Если ничего не подобрали — вы не платите ничего.
+          <p className="mt-3 text-[16px] leading-relaxed max-w-[640px]" style={{ color: 'var(--hp-sub)' }}>
+            Комиссия платится в день подписания договора. Если я ничего не подобрал — вы не платите ничего.
           </p>
         </div>
       </section>
@@ -228,7 +220,7 @@ export default function SnyatKvartiruPage() {
               <p className="mt-4 text-[15px] font-bold leading-snug" style={{ color: 'var(--hp-ink)' }}>
                 {step.title}
               </p>
-              <p className="mt-1.5 text-[14px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+              <p className="mt-1.5 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
                 {step.text}
               </p>
             </li>
@@ -253,8 +245,8 @@ export default function SnyatKvartiruPage() {
             <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
               Расскажите, что ищете
             </h2>
-            <p className="mt-3 text-[15px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
-              Район, бюджет, сколько комнат и когда нужно заехать. Агент перезвонит и уточнит остальное.
+            <p className="mt-3 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+              Район, бюджет, сколько комнат и когда нужно заехать. Перезвоню и уточню остальное.
             </p>
           </div>
 

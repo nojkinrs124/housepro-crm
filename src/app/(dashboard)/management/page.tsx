@@ -8,7 +8,7 @@ import { StatStrip } from '@/components/layout/StatStrip'
 import { buttonVariants } from '@/components/ui/button'
 import { ManagementView, type ManagementRow } from '@/features/management/components/ManagementView'
 import { collectManagement } from '@/features/management/services/management.service'
-import { formatAmount, plural } from '@/lib/utils'
+import { formatAmount, plural, formatMoneyShort } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -47,10 +47,9 @@ export default async function ManagementPage() {
         <StatStrip
           items={[
             { label: 'Объектов', value: rows.length, hint: withoutContract > 0 ? `${withoutContract} без договора` : 'все с договором' },
-            { label: 'Доход за месяц', value: `${formatAmount(incomeMonth)} ₽` },
-            { label: 'Расход за месяц', value: `${formatAmount(expenseMonth)} ₽` },
-            { label: 'Прибыль за месяц', value: `${formatAmount(incomeMonth - expenseMonth)} ₽`, alert: incomeMonth - expenseMonth < 0 },
-            { label: 'Просрочено', value: `${formatAmount(overdue)} ₽`, alert: overdue > 0 },
+            { label: 'Доход за месяц', value: formatMoneyShort(incomeMonth), hint: `расход ${formatMoneyShort(expenseMonth)}` },
+            { label: 'Прибыль за месяц', value: formatMoneyShort(incomeMonth - expenseMonth), alert: incomeMonth - expenseMonth < 0 },
+            { label: 'Просрочено', value: formatMoneyShort(overdue), hint: overdue > 0 ? 'есть долги арендаторов' : 'долгов нет', alert: overdue > 0 },
           ]}
         />
       )}

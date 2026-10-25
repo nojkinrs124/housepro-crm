@@ -13,14 +13,14 @@ import { buttonVariants } from '@/components/ui/button'
 import { StatStrip } from '@/components/layout/StatStrip'
 import { EmptyState } from '@/components/layout/EmptyState'
 import { RecordActions } from '@/components/layout/RecordActions'
-import { plural } from '@/lib/utils'
+import { plural, formatDateCompact, formatMoneyShort } from '@/lib/utils'
 import { transactionDirection, type AccountingFilters as Filters } from '@/features/accounting/utils/direction'
 import type { DirectionCode } from '@/features/directions/config/directions'
 
 
 function fmt(n: number) { return n.toLocaleString('ru-RU') + ' ₽' }
 function fmtDate(d: string) {
- return new Date(d).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
+ return formatDateCompact(d)
 }
 
 export default async function AccountingPage({
@@ -131,25 +131,17 @@ export default async function AccountingPage({
  properties={propertiesRes.data ?? []}
  />
 
+ {/* Вверху — 4 главные цифры (решение владельца 25.10.2026): деньги
+     агентства, суммы кратко. Все потоки с транзитом — блоком ниже. */}
  {transactions.length > 0 && (
- <>
- <StatStrip
- items={[
- { label: 'Приход за месяц', value: fmt(stats.incomeThisMonth), hint: `всего ${fmt(stats.totalIncome)}` },
- { label: 'Расход за месяц', value: fmt(stats.expenseThisMonth), hint: `всего ${fmt(stats.totalExpense)}` },
- { label: 'Сальдо за месяц', value: fmt(stats.profitThisMonth), hint: `всего ${fmt(stats.profit)}`, alert: stats.profitThisMonth < 0 },
- { label: 'Запланировано', value: fmt(stats.plannedIncome - stats.plannedExpense), hint: `+${fmt(stats.plannedIncome)} / −${fmt(stats.plannedExpense)}` },
- ]}
- />
- <StatStrip
- items={[
- { label: 'Доход агентства за месяц', value: fmt(stats.agencyIncomeThisMonth), hint: `всего ${fmt(stats.agencyIncomeTotal)}` },
- { label: 'Расход агентства за месяц', value: fmt(stats.agencyExpenseThisMonth), hint: `всего ${fmt(stats.agencyExpenseTotal)}` },
- { label: 'Прибыль агентства за месяц', value: fmt(stats.agencyProfitThisMonth), hint: `всего ${fmt(stats.agencyProfitTotal)}`, alert: stats.agencyProfitThisMonth < 0 },
- { label: 'Транзит за месяц', value: fmt(stats.incomeThisMonth - stats.agencyIncomeThisMonth), hint: 'аренда клиентов и депозиты — не доход агентства' },
- ]}
- />
- </>
+   <StatStrip
+     items={[
+       { label: 'Доход за месяц', value: formatMoneyShort(stats.agencyIncomeThisMonth), hint: `всего ${formatMoneyShort(stats.agencyIncomeTotal)}` },
+       { label: 'Расход за месяц', value: formatMoneyShort(stats.agencyExpenseThisMonth), hint: `всего ${formatMoneyShort(stats.agencyExpenseTotal)}` },
+       { label: 'Прибыль за месяц', value: formatMoneyShort(stats.agencyProfitThisMonth), hint: `всего ${formatMoneyShort(stats.agencyProfitTotal)}`, alert: stats.agencyProfitThisMonth < 0 },
+       { label: 'Запланировано', value: formatMoneyShort(stats.plannedIncome - stats.plannedExpense), hint: `+${formatMoneyShort(stats.plannedIncome)} / −${formatMoneyShort(stats.plannedExpense)}` },
+     ]}
+   />
  )}
 
  {/* Charts row */}
@@ -174,6 +166,18 @@ export default async function AccountingPage({
  </div>
  </div>
  </div>
+
+      {transactions.length > 0 && (
+        <div className="hp-block">
+          <div className="hp-block-header">Все деньги за месяц — вместе с транзитом клиентов</div>
+          <div className="hp-block-grid">
+            <div className="hp-block-row"><span className="label">Приход</span><span className="value">{fmt(stats.incomeThisMonth)}</span></div>
+            <div className="hp-block-row"><span className="label">Расход</span><span className="value">{fmt(stats.expenseThisMonth)}</span></div>
+            <div className="hp-block-row"><span className="label">Сальдо</span><span className={`value${stats.profitThisMonth < 0 ? ' danger' : ''}`}>{fmt(stats.profitThisMonth)}</span></div>
+            <div className="hp-block-row"><span className="label">Транзит: аренда клиентов, депозиты</span><span className="value">{fmt(stats.incomeThisMonth - stats.agencyIncomeThisMonth)}</span></div>
+          </div>
+        </div>
+      )}
 
  {/* Операции: поиск, фильтры и групповые действия — как в остальных реестрах */}
  {transactions.length === 0 ? (

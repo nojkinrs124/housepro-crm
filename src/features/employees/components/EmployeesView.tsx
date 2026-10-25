@@ -6,7 +6,8 @@ import { RegistryTable, type RegistryColumn } from '@/features/registry/componen
 import { BulkBar } from '@/features/registry/components/BulkBar'
 import { useRegistryFilters } from '@/hooks/useRegistryFilters'
 import { useSelection } from '@/hooks/useSelection'
-import { formatDate } from '@/lib/utils'
+import { formatDateCompact } from '@/lib/utils'
+import { ROLE_LABELS } from '../lib/roles'
 
 export interface EmployeeRow {
   id: string
@@ -20,10 +21,6 @@ export interface EmployeeRow {
   createdAt: string | null
 }
 
-export const ROLE_LABELS: Record<string, string> = {
-  admin: 'Администратор', manager: 'Менеджер',
-  agent: 'Риелтор', accountant: 'Бухгалтер',
-}
 
 const ROLE_OPTIONS = [
   { value: 'all', label: 'Роль: все' },
@@ -61,7 +58,7 @@ export function EmployeesView({ employees }: { employees: EmployeeRow[] }) {
       cell: e => <span className="block truncate">{e.email ?? '—'}</span>,
     },
     {
-      key: 'phone', title: 'Телефон', cellClass: 'sub whitespace-nowrap', headClass: 'hidden lg:table-cell',
+      key: 'phone', title: 'Телефон', cellClass: 'sub whitespace-nowrap', hideBelow: 'lg',
       cell: e => e.phone ?? <span className="text-[var(--hp-tertiary)]">—</span>,
     },
     {
@@ -77,16 +74,16 @@ export function EmployeesView({ employees }: { employees: EmployeeRow[] }) {
       ),
     },
     {
-      key: 'deals', title: 'Сделок', cellClass: 'num', headClass: 'hidden md:table-cell',
+      key: 'deals', title: 'Сделок', cellClass: 'num', hideBelow: 'md',
       cell: e => e.deals,
     },
     {
-      key: 'contracts', title: 'Договоров', cellClass: 'num', headClass: 'hidden md:table-cell',
+      key: 'contracts', title: 'Договоров', cellClass: 'num', hideBelow: 'md',
       cell: e => e.contracts,
     },
     {
-      key: 'since', title: 'В команде с', cellClass: 'sub whitespace-nowrap', headClass: 'hidden lg:table-cell',
-      cell: e => formatDate(e.createdAt, { month: 'short', year: 'numeric' }),
+      key: 'since', title: 'В команде с', cellClass: 'sub whitespace-nowrap', hideBelow: 'xl',
+      cell: e => formatDateCompact(e.createdAt),
     },
   ]
 

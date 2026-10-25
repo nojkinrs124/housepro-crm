@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Key, Trash2, Power } from 'lucide-react'
 import { revokeApiKeyAction, deleteApiKeyAction } from '../actions/api-keys.actions'
+import { formatDateCompact } from '@/lib/utils'
 
 interface Props {
  id: string
@@ -51,7 +52,7 @@ export function ApiKeyRow({ id, name, keyPrefix, scopes, isActive, lastUsedAt, c
  <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
  <span>{scopes.includes('write') ? 'Чтение и запись' : 'Только чтение'}</span>
  <span>·</span>
- <span>{lastUsedAt ? `Использован: ${new Date(lastUsedAt).toLocaleDateString('ru-RU')}` : 'Не использовался'}</span>
+ <span>{lastUsedAt ? `Использован: ${formatDateCompact(lastUsedAt)}` : 'Не использовался'}</span>
  </div>
  </div>
  </div>

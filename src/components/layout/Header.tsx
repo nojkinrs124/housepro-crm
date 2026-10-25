@@ -105,8 +105,7 @@ export function Header({ unreadCount = 0 }: { user?: UserBadge | null; unreadCou
         <div className="relative">
           <button
             onClick={(e) => { e.stopPropagation(); setCreateOpen(!createOpen) }}
-            className="flex items-center gap-2 h-[40px] px-4 text-sm font-semibold text-white rounded-[var(--hp-radius)] transition-colors duration-150"
-            style={{ background: createOpen ? 'var(--hp-accent-hover)' : 'var(--hp-accent)' }}
+            className={`flex items-center gap-2 h-[40px] px-4 text-sm font-semibold rounded-[var(--hp-radius)] border transition-colors duration-150 ${createOpen ? 'border-[var(--hp-accent)] text-[var(--hp-accent)] bg-[var(--hp-surface)]' : 'border-[var(--hp-border)] text-[var(--hp-ink)] bg-[var(--hp-surface)] hover:border-[var(--hp-sub)]'}`}
           >
             <Plus style={{ width: 16, height: 16 }} />
             <span className="hidden sm:block">Создать</span>

@@ -13,7 +13,7 @@ import {
 export const metadata: Metadata = {
   title: 'Каталог объектов — ХаусПро, Красноярск',
   description:
-    'Квартиры, дома и коммерческие помещения в аренду и продажу в Красноярске. Фильтр по типу сделки, количеству комнат, району и цене. Агентство недвижимости ХаусПро.',
+    'Квартиры, дома и коммерческие помещения в аренду и продажу в Красноярске. Фильтр по типу сделки, количеству комнат, району и цене. ХаусПро — Руслан Ножкин, частный риелтор.',
 }
 
 function pluralObjects(n: number): string {
@@ -72,7 +72,7 @@ export default async function CatalogPage({
             ? `${total} ${pluralObjects(total)} в открытой публикации${
                 total > CATALOG_PAGE_SIZE ? ` · показаны ${from}–${to}` : ''
               }`
-            : 'Часть объектов мы не публикуем открыто — спросите агента о закрытой базе'}
+            : 'Часть объектов я не публикую открыто — спросите меня о закрытой базе'}
         </p>
       </div>
 
@@ -102,8 +102,8 @@ export default async function CatalogPage({
           </p>
           <p className="mt-2 text-[14px] max-w-[520px] mx-auto leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
             {hasActiveFilters
-              ? 'Попробуйте расширить диапазон цены или убрать фильтр по району — либо оставьте заявку, и агент проверит закрытую базу.'
-              : 'Часть квартир собственники просят не выкладывать в открытый доступ. Опишите, что ищете, — подберём варианты вручную.'}
+              ? 'Попробуйте расширить диапазон цены или убрать фильтр по району — либо оставьте заявку, и я проверю закрытую базу.'
+              : 'Часть квартир собственники просят не выкладывать в открытый доступ. Опишите, что ищете, — подберу варианты вручную.'}
           </p>
           <div className="mt-5 flex items-center justify-center gap-3 flex-wrap">
             {hasActiveFilters && (
@@ -136,7 +136,7 @@ export default async function CatalogPage({
                   key={n}
                   href={pageHref(filters, n)}
                   aria-current={n === page ? 'page' : undefined}
-                  className="w-10 h-10 flex items-center justify-center text-[13.5px] font-semibold border transition-colors"
+                  className="w-10 h-10 flex items-center justify-center text-[14px] font-semibold border transition-colors"
                   style={{
                     borderRadius: 'var(--hp-radius)',
                     background: n === page ? 'var(--hp-accent-tint)' : 'var(--hp-surface)',

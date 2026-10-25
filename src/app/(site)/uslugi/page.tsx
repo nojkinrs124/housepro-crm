@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowRight, Check, Handshake, KeyRound, Search } from 'lucide-react'
+import { ArrowRight, Check, FileSignature, KeyRound, Search } from 'lucide-react'
 import { ANALYTICS_EVENTS, analyticsAttrs } from '@/features/site/uslugi/analytics'
 import { formatRub } from '@/features/site/uslugi/calc'
 import {
@@ -25,12 +25,15 @@ import { UslugiLeadForm } from '@/features/site/uslugi/components/UslugiLeadForm
  */
 
 export const metadata: Metadata = {
-  title: 'Услуги агентства недвижимости ХаусПро в Красноярске — аренда, продажа, управление',
+  title: 'Услуги ХаусПро в Красноярске — управление, аренда, продажа | Руслан Ножкин, частный риелтор',
   description:
-    'Сдать, снять, продать или купить квартиру в Красноярске. Тарифы и стоимость каждой услуги названы заранее. Работаем по договору, проверяем документы, фиксируем состояние актом.',
+    'Доверительное управление, сдача, съём, продажа и покупка квартиры в Красноярске. Тарифы и стоимость каждой услуги названы заранее. Работаю по договору, проверяю документы, фиксирую состояние актом.',
 }
 
 interface ServiceCard {
+  /** Крупная цифра цены (засечки) и пояснение под ней */
+  priceValue?: string
+  priceNote?: string
   Icon: typeof KeyRound
   href: string
   title: string
@@ -46,8 +49,10 @@ const SERVICES: ServiceCard[] = [
     href: USLUGI_ROUTES.sdatKvartiru,
     title: 'Сдать квартиру',
     text:
-      'Не хотите сами разбираться с нанимателем? Находим и проверяем его, оформляем договор и акт, дальше — по тарифу: от разового подбора до полного управления с гарантией платежа.',
+      'Не хотите сами разбираться с нанимателем? Нахожу и проверяю его, оформляю договор и акт, дальше веду квартиру по тарифу: от разового подбора до полного управления с гарантией платежа.',
     price: `От ${TARIFFS.upravlenie.percent}% в месяц. Первая сделка — бесплатно.`,
+    priceValue: `от ${TARIFFS.upravlenie.percent}%`,
+    priceNote: 'в месяц за управление · первая сделка бесплатно',
     linkLabel: 'Подробнее и калькулятор дохода',
   },
   {
@@ -55,31 +60,35 @@ const SERVICES: ServiceCard[] = [
     href: USLUGI_ROUTES.snyatKvartiru,
     title: 'Снять квартиру',
     text:
-      'Боитесь нарваться на недобросовестного собственника? Подбираем жильё под бюджет и район, включая квартиры, которых нет в открытом доступе, и проверяем документы до внесения залога.',
+      'Боитесь нарваться на недобросовестного собственника? Подбираю жильё под бюджет и район, включая квартиры, которых нет в открытом доступе, и проверяю документы до внесения залога.',
     price: `${tenantCommissionLabel()} от месячной ставки, один раз при заселении.`,
+    priceValue: tenantCommissionLabel(),
+    priceNote: 'от месячной ставки, один раз при заселении',
     linkLabel: 'Подробнее',
   },
   {
-    Icon: Handshake,
+    Icon: FileSignature,
     href: USLUGI_ROUTES.prodatKupit,
     title: 'Продать или купить',
     text:
-      'Не хотите разбираться в юридической чистоте сделки сами? Ведём её целиком: оценка, реклама, показы, проверка второй стороны, расчёты и регистрация перехода права.',
+      'Не хотите разбираться в юридической чистоте сделки сами? Веду её целиком: оценка, реклама, показы, проверка второй стороны, расчёты и регистрация перехода права.',
     price: SALE_PRICING
       ? `${SALE_PRICING.percent}% от стоимости объекта плюс ${formatRub(SALE_PRICING.fixedRub)}.`
       : null,
+    priceValue: SALE_PRICING ? `${SALE_PRICING.percent}% + ${formatRub(SALE_PRICING.fixedRub)}` : undefined,
+    priceNote: 'от стоимости объекта, фиксируется в договоре',
     linkLabel: 'Подробнее',
   },
 ]
 
 const COMMON_POINTS = [
-  'Работаем по договору с агентством — обязанности и комиссия зафиксированы текстом',
-  'Проверяем документы до того, как вы отдадите деньги',
-  'Состояние объекта фиксируем актом с описью и фото',
-  'Комиссию называем до начала работы, доплат «за оформление» не бывает',
+  'Работаю по договору — обязанности и комиссия зафиксированы текстом',
+  'Проверяю документы до того, как вы отдадите деньги',
+  'Состояние объекта фиксирую актом с описью и фото',
+  'Комиссию называю до начала работы, доплат «за оформление» не бывает',
 ]
 
-const LEAD_FOOTNOTE = `Перезвоним в течение ${USLUGI.callback.withinMinutes} минут. ${USLUGI.callback.workingHours}.`
+const LEAD_FOOTNOTE = `Перезвоню в течение ${USLUGI.callback.withinMinutes} минут. ${USLUGI.callback.workingHours}.`
 
 export default function UslugiHubPage() {
   return (
@@ -94,48 +103,45 @@ export default function UslugiHubPage() {
             Услуги ХаусПро
           </h1>
           <p className="mt-4 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
-            Выберите, что вам нужно. На каждой странице написано, что именно мы делаем и сколько это
-            стоит — цену называем до начала работы, а не в день подписания.
+            Выберите, что вам нужно. На каждой странице написано, что именно я делаю и сколько это
+            стоит — цену называю до начала работы, а не в день подписания.
           </p>
         </header>
 
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
-          {SERVICES.map(({ Icon, href, title, text, price, linkLabel }) => (
+          {SERVICES.map(({ Icon, href, title, text, price, priceValue, priceNote, linkLabel }) => (
             <Link
               key={href}
               href={href}
               className="hp-card hp-card-hover flex flex-col h-full p-5 sm:p-6"
               {...analyticsAttrs(ANALYTICS_EVENTS.hubCardClick, { target: href })}
             >
-              <div
-                className="w-10 h-10 flex items-center justify-center shrink-0 border"
-                style={{
-                  background: 'var(--hp-neutral-tint)',
-                  borderColor: 'var(--hp-border)',
-                  borderRadius: 'var(--hp-radius)',
-                }}
-              >
-                <Icon aria-hidden="true" style={{ width: 18, height: 18, color: 'var(--hp-ink)' }} />
-              </div>
+              <Icon aria-hidden="true" strokeWidth={1.75} style={{ width: 26, height: 26, color: 'var(--hp-accent)' }} />
 
               <h2 className="mt-4 text-[21px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
                 {title}
               </h2>
-              <p className="mt-2 text-[14px] leading-relaxed flex-1" style={{ color: 'var(--hp-sub)' }}>
+              <p className="mt-2 text-[16px] leading-relaxed flex-1" style={{ color: 'var(--hp-sub)' }}>
                 {text}
               </p>
 
               {price && (
-                <p
-                  className="mt-4 pt-4 text-[14px] font-bold leading-relaxed border-t"
-                  style={{ borderColor: 'var(--hp-border-soft)', color: 'var(--hp-ink)' }}
-                >
-                  {price}
-                </p>
+                <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--hp-border-soft)' }}>
+                  {priceValue ? (
+                    <>
+                      <p className="hp-price text-[26px] leading-none" style={{ color: 'var(--hp-ink)' }}>{priceValue}</p>
+                      {priceNote && (
+                        <p className="mt-1.5 text-[14px]" style={{ color: 'var(--hp-sub)' }}>{priceNote}</p>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-[14px] font-bold leading-relaxed" style={{ color: 'var(--hp-ink)' }}>{price}</p>
+                  )}
+                </div>
               )}
 
               <span
-                className="mt-4 text-[13.5px] font-semibold inline-flex items-center gap-1.5"
+                className="mt-4 text-[14px] font-semibold inline-flex items-center gap-1.5"
                 style={{ color: 'var(--hp-accent)' }}
               >
                 {linkLabel}
@@ -163,7 +169,7 @@ export default function UslugiHubPage() {
             {COMMON_POINTS.map(point => (
               <li
                 key={point}
-                className="flex items-start gap-2.5 text-[14px] leading-relaxed"
+                className="flex items-start gap-2.5 text-[16px] leading-relaxed"
                 style={{ color: 'var(--hp-ink)' }}
               >
                 <Check
@@ -191,8 +197,8 @@ export default function UslugiHubPage() {
             <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
               Оставить заявку
             </h2>
-            <p className="mt-3 text-[15px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
-              Не поняли, что вам нужно? Опишите ситуацию одной строкой — агент подскажет. Консультация
+            <p className="mt-3 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+              Не поняли, что вам нужно? Опишите ситуацию одной строкой — я подскажу. Консультация
               бесплатная.
             </p>
             <div className="mt-5 flex flex-col sm:flex-row gap-3">

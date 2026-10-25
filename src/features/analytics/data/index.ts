@@ -1,3 +1,4 @@
+import { formatMonthShort } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/server'
 import { todayIso } from '@/lib/timezone'
 import { toPaymentStatus } from '@/features/accounting/utils/money-classification'
@@ -31,8 +32,7 @@ export function getLast12Months(): string[] {
 }
 
 export function monthLabel(isoMonth: string) {
-  const d = new Date(isoMonth)
-  return d.toLocaleDateString('ru-RU', { month: 'short', year: '2-digit' })
+  return formatMonthShort(isoMonth)
 }
 
 /**

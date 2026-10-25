@@ -123,7 +123,7 @@ export default async function SignPage({ params }: { params: Promise<{ token: st
  <div className="hp-card p-5">
  <p className="text-sm text-[var(--hp-danger)] font-semibold">Срок действия ссылки истёк</p>
  <p className="text-sm text-[var(--hp-sub)] mt-1">
- Попросите агентство прислать новую ссылку на подписание.
+ Попросите риелтора прислать новую ссылку на подписание.
  </p>
  </div>
  ) : (

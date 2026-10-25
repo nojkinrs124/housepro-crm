@@ -6,6 +6,7 @@ import { CreditCard, FileText } from 'lucide-react'
 import Link from 'next/link'
 import { PaymentScheduleForm } from '@/features/accounting/components/PaymentScheduleForm'
 import { PaymentLinkButton } from '@/features/accounting/components/PaymentLinkButton'
+import { formatDateCompact } from '@/lib/utils'
 
 const statusConfig: Record<string, { label: string; className: string }> = {
  planned: { label: 'Ожидает', className: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]' },
@@ -20,7 +21,7 @@ function fmt(n: number) {
 
 function fmtDate(d?: string | null) {
  if (!d) return '—'
- return new Date(d).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
+ return formatDateCompact(d)
 }
 
 export async function PaymentsSection({ contractId }: { contractId: string }) {

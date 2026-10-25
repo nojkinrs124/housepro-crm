@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { RegistryToolbar } from '@/components/layout/RegistryToolbar'
 import { RegistryTable, type RegistryColumn } from '@/features/registry/components/RegistryTable'
 import { useRegistryFilters } from '@/hooks/useRegistryFilters'
-import { formatAmount, formatDateCompact } from '@/lib/utils'
+import { formatAmount, formatDateCompact, shortAddress } from '@/lib/utils'
 
 /** Строка реестра управления: объект + всё, что вокруг него собрано. */
 export interface ManagementRow {
@@ -73,7 +73,7 @@ export function ManagementView({ rows }: { rows: ManagementRow[] }) {
       cell: r => (
         <Link href={`/management/${r.id}`} className="block truncate hover:text-[var(--hp-accent)] transition-colors">
           {r.title}
-          {r.address && <span className="block text-[11.5px] font-normal text-[var(--hp-sub)] truncate">{r.address}</span>}
+          {r.address && <span className="block text-[12px] font-normal text-[var(--hp-sub)] truncate" title={r.address}>{shortAddress(r.address)}</span>}
         </Link>
       ),
     },
@@ -84,7 +84,7 @@ export function ManagementView({ rows }: { rows: ManagementRow[] }) {
         : <span className="text-[var(--hp-tertiary)]">—</span>,
     },
     {
-      key: 'contract', title: 'Договор', cellClass: 'sub whitespace-nowrap', headClass: 'hidden lg:table-cell',
+      key: 'contract', title: 'Договор', cellClass: 'sub whitespace-nowrap', hideBelow: 'xl',
       cell: r => r.contractId
         ? (
           <Link href={`/contracts/${r.contractId}`} className="hover:text-[var(--hp-accent)] transition-colors">
@@ -128,7 +128,7 @@ export function ManagementView({ rows }: { rows: ManagementRow[] }) {
       ),
     },
     {
-      key: 'fee', title: 'Вознагр.', cellClass: 'num whitespace-nowrap', headClass: 'hidden md:table-cell',
+      key: 'fee', title: 'Вознагр.', cellClass: 'num whitespace-nowrap', hideBelow: 'lg',
       cell: r => r.fee
         ? <>{formatAmount(r.fee)} <span className="text-[var(--hp-tertiary)] font-normal">₽</span></>
         : <span className="text-[var(--hp-tertiary)]">—</span>,
@@ -144,7 +144,7 @@ export function ManagementView({ rows }: { rows: ManagementRow[] }) {
       },
     },
     {
-      key: 'month', title: 'За месяц', cellClass: 'num whitespace-nowrap', headClass: 'hidden lg:table-cell',
+      key: 'month', title: 'За месяц', cellClass: 'num whitespace-nowrap', hideBelow: 'xl',
       cell: r => (
         <span className={r.incomeMonth - r.expenseMonth < 0 ? 'text-[var(--hp-danger)]' : ''}>
           {formatAmount(r.incomeMonth - r.expenseMonth)} <span className="text-[var(--hp-tertiary)] font-normal">₽</span>
@@ -152,11 +152,11 @@ export function ManagementView({ rows }: { rows: ManagementRow[] }) {
       ),
     },
     {
-      key: 'tasks', title: 'Задачи', cellClass: 'num', headClass: 'hidden md:table-cell',
+      key: 'tasks', title: 'Задачи', cellClass: 'num', hideBelow: 'lg',
       cell: r => r.openTasks > 0 ? r.openTasks : <span className="text-[var(--hp-tertiary)]">—</span>,
     },
     {
-      key: 'meters', title: 'Счётчики', cellClass: 'sub whitespace-nowrap', headClass: 'hidden lg:table-cell',
+      key: 'meters', title: 'Счётчики', cellClass: 'sub whitespace-nowrap', hideBelow: 'xl',
       cell: r => r.metersCount === 0
         ? <span className="text-[var(--hp-tertiary)]">нет</span>
         : <>{r.metersCount} · {r.lastReadingDate ? formatDateCompact(r.lastReadingDate) : <span className="text-[var(--hp-warn)]">без показаний</span>}</>,

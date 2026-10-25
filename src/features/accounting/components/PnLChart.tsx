@@ -63,8 +63,8 @@ export function PnLChart({ data }: Props) {
           iconSize={8}
           wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
         />
-        <Bar dataKey="income"  fill="var(--hp-accent)" radius={[4,4,0,0]} barSize={18} />
-        <Bar dataKey="expense" fill={CHART.danger} radius={[4,4,0,0]} barSize={18} />
+        <Bar dataKey="income"  fill="var(--hp-accent)" barSize={18} />
+        <Bar dataKey="expense" fill={CHART.danger} barSize={18} />
         <Line
           type="monotone"
           dataKey="profit"

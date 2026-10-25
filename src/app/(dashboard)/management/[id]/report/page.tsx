@@ -3,8 +3,9 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react'
 import { PrintButton } from '@/features/accounting/components/PrintButton'
-import { formatAmount } from '@/lib/utils'
+import { formatAmount, formatPhone } from '@/lib/utils'
 import { buildMonthlyReport } from '@/features/management/services/report.service'
+import { BrandLogo } from '@/components/brand/BrandLogo'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,6 +25,13 @@ function parseMonth(raw: string | undefined): Date {
 
 function monthKey(d: Date): string {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`
+}
+
+/** Показания и расход — по-русски: запятая, до двух знаков */
+function fmtNum(value: number | string | null): string {
+  if (value == null || value === '') return '—'
+  const n = Number(value)
+  return Number.isFinite(n) ? n.toLocaleString('ru-RU', { maximumFractionDigits: 2 }) : String(value)
 }
 
 function fmtDate(value: string | null): string {
@@ -78,7 +86,7 @@ export default async function OwnerReportPage({
           .eq('id', engagement?.owner_contact_id ?? property.owner_id!).maybeSingle()
       : Promise.resolve({ data: null }),
     supabase.from('company_settings')
-      .select('name, signatory_name, signatory_position, phone, email')
+      .select('name, signatory_name, signatory_position, phone, email, inn, legal_form')
       .order('is_default', { ascending: false }).limit(1).maybeSingle(),
     supabase.from('utility_meters')
       .select('id, kind, title, unit, readings:meter_readings(reading_date, value, consumption, amount)')
@@ -152,6 +160,9 @@ export default async function OwnerReportPage({
   const ownerName = owner?.company_name || owner?.full_name || 'не указан'
 
   const cell = 'border border-[var(--hp-border)] px-3 py-2'
+  // «Сентябрь 2026» — без «г.», с заглавной только первой буквы
+  const monthRaw = month.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric', timeZone: 'UTC' }).replace(/\s*г\.?$/, '')
+  const monthTitle = monthRaw.charAt(0).toUpperCase() + monthRaw.slice(1)
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -175,14 +186,26 @@ export default async function OwnerReportPage({
       </div>
 
       <div className="bg-[var(--hp-surface)] border border-[var(--hp-border)] p-8 space-y-6 print:border-0 print:p-0">
-        <div className="space-y-1">
-          <h1 className="text-xl font-bold text-[var(--hp-ink)]">
-            Отчёт об управлении объектом
-          </h1>
-          <p className="text-sm text-[var(--hp-sub)] capitalize">
-            за {month.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric', timeZone: 'UTC' })}
-          </p>
+        {/* Шапка в фирменном стиле (brand/templates/owner-report.html):
+            логотип слева, тип документа и период справа, линия под шапкой. */}
+        <div className="flex items-start justify-between gap-4 pb-5 border-b border-[var(--hp-border)]">
+          <BrandLogo markSize={36} />
+          <div className="text-right">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--hp-sub)]">
+              Отчёт собственнику
+            </p>
+            <p
+              className="mt-1 text-[16px] font-bold text-[var(--hp-ink)]"
+              style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}
+            >
+              {monthTitle}
+            </p>
+          </div>
         </div>
+
+        <h1 className="text-[24px] font-bold text-[var(--hp-ink)] leading-tight">
+          Отчёт об управлении объектом
+        </h1>
 
         <table className="w-full text-[13px] border border-[var(--hp-border)]">
           <tbody>
@@ -197,7 +220,7 @@ export default async function OwnerReportPage({
               <td className={`${cell} text-[var(--hp-sub)]`}>Собственник</td>
               <td className={`${cell} text-[var(--hp-ink)]`}>
                 {ownerName}
-                {owner?.phone && <span className="text-[var(--hp-sub)]"> · {owner.phone}</span>}
+                {owner?.phone && <span className="text-[var(--hp-sub)]"> · {formatPhone(owner.phone)}</span>}
               </td>
             </tr>
             <tr>
@@ -221,7 +244,7 @@ export default async function OwnerReportPage({
                 <tr className="bg-[var(--hp-neutral-tint)]">
                   <th className={`${cell} text-left font-semibold`}>Дата</th>
                   <th className={`${cell} text-left font-semibold`}>Назначение</th>
-                  <th className={`${cell} text-right font-semibold`}>Сумма, ₽</th>
+                  <th className={`${cell} text-right font-semibold`}>По тарифу, ₽</th>
                 </tr>
               </thead>
               <tbody>
@@ -247,14 +270,14 @@ export default async function OwnerReportPage({
         <div className="space-y-2">
           <h2 className="font-semibold text-[var(--hp-ink)] text-[15px]">Расходы</h2>
           {expense.length === 0 ? (
-            <p className="text-sm text-[var(--hp-sub)]">За период расходов не было.</p>
+            <p className="text-sm text-[var(--hp-sub)]">За период расходов за счёт собственника не было.</p>
           ) : (
             <table className="w-full text-[13px] border border-[var(--hp-border)]">
               <thead>
                 <tr className="bg-[var(--hp-neutral-tint)]">
                   <th className={`${cell} text-left font-semibold`}>Дата</th>
                   <th className={`${cell} text-left font-semibold`}>Назначение</th>
-                  <th className={`${cell} text-right font-semibold`}>Сумма, ₽</th>
+                  <th className={`${cell} text-right font-semibold`}>По тарифу, ₽</th>
                 </tr>
               </thead>
               <tbody>
@@ -287,7 +310,7 @@ export default async function OwnerReportPage({
                   <th className={`${cell} text-left font-semibold`}>Дата</th>
                   <th className={`${cell} text-right font-semibold`}>Показание</th>
                   <th className={`${cell} text-right font-semibold`}>Расход</th>
-                  <th className={`${cell} text-right font-semibold`}>Сумма, ₽</th>
+                  <th className={`${cell} text-right font-semibold`}>По тарифу, ₽</th>
                 </tr>
               </thead>
               <tbody>
@@ -295,13 +318,21 @@ export default async function OwnerReportPage({
                   <tr key={`${m.id}-${r.reading_date}-${i}`}>
                     <td className={cell}>{m.label}</td>
                     <td className={cell}>{fmtDate(r.reading_date)}</td>
-                    <td className={`${cell} text-right`}>{r.value} {m.unit}</td>
-                    <td className={`${cell} text-right`}>{r.consumption ?? '—'}</td>
+                    <td className={`${cell} text-right tabular-nums`}>{fmtNum(r.value)} {m.unit}</td>
+                    <td className={`${cell} text-right tabular-nums`}>{r.consumption != null ? `${fmtNum(r.consumption)} ${m.unit}` : '—'}</td>
                     <td className={`${cell} text-right`}>{r.amount != null ? formatAmount(Number(r.amount)) : '—'}</td>
                   </tr>
                 )))}
               </tbody>
             </table>
+            {/* Счета ЖКХ ведёт не управляющий: он только передаёт показания. Кто
+                платит — собственник по квитанциям, наниматель доплатой или всё
+                включено в аренду — зависит от объекта, поэтому сумма справочная
+                и в расчёт к перечислению не входит. */}
+            <p className="text-[12px] text-[var(--hp-sub)]">
+              Показания переданы для оплаты. Сумма по тарифу справочная и в расчёт ниже не входит:
+              счета ЖКХ оплачиваются по условиям договора найма.
+            </p>
           </div>
         )}
 
@@ -338,15 +369,17 @@ export default async function OwnerReportPage({
                     {line.hint && <span className="text-[var(--hp-tertiary)]"> · {line.hint}</span>}
                   </td>
                   <td className={`${cell} text-right`}>
-                    {line.negative ? '− ' : ''}{formatAmount(line.amount)} ₽
+                    {line.negative && line.amount !== 0 ? '− ' : ''}{formatAmount(line.amount)} ₽
                   </td>
                 </tr>
               ))}
-              <tr>
-                <td className={`${cell} font-semibold`}>
-                  {report.dueToOwner < 0 ? 'Задолженность собственника перед агентством' : 'К перечислению собственнику'}
+              <tr style={{ background: 'var(--hp-forest-2)' }}>
+                <td className="px-3 py-3 font-semibold" style={{ color: 'var(--hp-on-forest)' }}>
+                  {report.dueToOwner < 0 ? 'Задолженность собственника по договору управления' : 'К перечислению собственнику'}
                 </td>
-                <td className={`${cell} text-right font-bold`}>{formatAmount(Math.abs(payout))} ₽</td>
+                <td className="px-3 py-3 text-right hp-price text-[18px]" style={{ color: 'var(--hp-brass)' }}>
+                  {formatAmount(Math.abs(payout))} ₽
+                </td>
               </tr>
               <tr>
                 <td className={`${cell} text-[var(--hp-sub)]`}>Сальдо на конец периода</td>
@@ -369,7 +402,7 @@ export default async function OwnerReportPage({
             не находилось случайно. */}
         {terms.scheme === 'percent' && terms.rate != null && (
           <p className="text-xs text-[var(--hp-sub)]">
-            Комиссия агентства — {terms.rate}% от поступлений, посчитано в строке выше.
+            Вознаграждение управляющего — {terms.rate}% от поступлений, посчитано в строке выше.
           </p>
         )}
         {terms.scheme === 'fixed' && terms.ownerFixedAmount != null && (
@@ -390,8 +423,9 @@ export default async function OwnerReportPage({
         <div className="grid grid-cols-2 gap-8 pt-6 text-[13px]">
           <div>
             <p className="text-[var(--hp-sub)]">Управляющий</p>
-            <div className="mt-8 border-t border-[var(--hp-border)] pt-1">
-              {company?.signatory_name ?? '—'}
+            {/* Латунная черта подписи — фирменный элемент бренда (как в знаке «ХП») */}
+            <div className="mt-8 border-t border-[var(--hp-ink)] pt-1">
+              {company?.signatory_name ?? company?.name ?? '—'}
               {company?.signatory_position && (
                 <span className="block text-[var(--hp-sub)] text-xs">{company.signatory_position}</span>
               )}
@@ -399,8 +433,17 @@ export default async function OwnerReportPage({
           </div>
           <div>
             <p className="text-[var(--hp-sub)]">Собственник</p>
-            <div className="mt-8 border-t border-[var(--hp-border)] pt-1">{ownerName}</div>
+            <div className="mt-8 border-t border-[var(--hp-ink)] pt-1">{ownerName}</div>
           </div>
+        </div>
+
+        <div className="flex flex-wrap justify-between gap-2 pt-4 mt-2 border-t border-[var(--hp-border)] text-[12.5px] text-[var(--hp-sub)]">
+          <span>
+            {company?.name ?? 'ХаусПро'}
+            {company?.legal_form === 'individual' && ' · самозанятый'}
+            {company?.inn && ` · ИНН ${company.inn}`}
+          </span>
+          <span>{[company?.phone ? formatPhone(company.phone) : null, 'housepro24.ru'].filter(Boolean).join(' · ')}</span>
         </div>
       </div>
     </div>

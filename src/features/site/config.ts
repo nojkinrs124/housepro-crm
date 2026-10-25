@@ -6,7 +6,10 @@
  */
 
 export const SITE_BRAND = 'ХаусПро'
-export const SITE_TAGLINE = 'Агентство недвижимости в Красноярске'
+export const SITE_TAGLINE = 'Частный риелтор в Красноярске'
+
+/** Основной слоган бренда (brand/BRANDBOOK.md v2, утверждён 25.10.2026) */
+export const SITE_SLOGAN = 'Сдаю и веду вашу квартиру'
 
 /** Запасные контакты, если company_settings ещё не заполнены. */
 export const FALLBACK_CONTACTS = {
@@ -21,7 +24,7 @@ export const FALLBACK_CONTACTS = {
 export const SITE_NAV: { href: string; label: string }[] = [
   { href: '/catalog', label: 'Объекты' },
   { href: '/uslugi', label: 'Услуги' },
-  { href: '/o-kompanii', label: 'О компании' },
+  { href: '/o-kompanii', label: 'Обо мне' },
   { href: '/kontakty', label: 'Контакты' },
 ]
 

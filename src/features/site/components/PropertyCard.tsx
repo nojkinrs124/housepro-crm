@@ -51,7 +51,7 @@ export function PropertyCard({ property }: { property: PublicProperty }) {
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center gap-2">
             <Building2 style={{ width: 26, height: 26, color: 'var(--hp-tertiary)' }} />
-            <span className="text-[11px] font-medium" style={{ color: 'var(--hp-tertiary)' }}>
+            <span className="text-[12px] font-medium" style={{ color: 'var(--hp-tertiary)' }}>
               Фото по запросу
             </span>
           </div>
@@ -77,13 +77,13 @@ export function PropertyCard({ property }: { property: PublicProperty }) {
 
         <div className="mt-1.5 flex items-start gap-1.5 min-w-0">
           <MapPin style={{ width: 13, height: 13, marginTop: 3, flexShrink: 0, color: 'var(--hp-tertiary)' }} />
-          <p className="text-[13px] leading-snug break-words" style={{ color: 'var(--hp-sub)' }}>
+          <p className="text-[14px] leading-snug break-words" style={{ color: 'var(--hp-sub)' }}>
             {property.address}
           </p>
         </div>
 
         {facts.length > 0 && (
-          <p className="mt-2.5 text-[13px]" style={{ color: 'var(--hp-sub)' }}>
+          <p className="mt-2.5 text-[14px]" style={{ color: 'var(--hp-sub)' }}>
             {facts.join(' · ')}
           </p>
         )}
@@ -93,9 +93,9 @@ export function PropertyCard({ property }: { property: PublicProperty }) {
           style={{ borderColor: 'var(--hp-border-soft)' }}
         >
           {price ? (
-            <p className="text-[19px] font-bold" style={{ color: 'var(--hp-ink)' }}>
-              {price}
-              <span className="text-[13px] font-medium" style={{ color: 'var(--hp-sub)' }}>
+            <p className="text-[21px]" style={{ color: 'var(--hp-ink)' }}>
+              <span className="hp-price">{price}</span>
+              <span className="text-[14px] font-medium" style={{ color: 'var(--hp-sub)' }}>
                 {priceSuffix(property.deal_type)}
               </span>
             </p>
@@ -104,7 +104,7 @@ export function PropertyCard({ property }: { property: PublicProperty }) {
               Цена по запросу
             </p>
           )}
-          <span className="text-[12.5px] font-medium shrink-0" style={{ color: 'var(--hp-tertiary)' }}>
+          <span className="text-[14px] font-medium shrink-0" style={{ color: 'var(--hp-sub)' }}>
             {label(PROPERTY_TYPE_LABELS, property.property_type)}
           </span>
         </div>

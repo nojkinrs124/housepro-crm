@@ -52,15 +52,15 @@ const { paymentGuarantee } = USLUGI
 
 const HOW_IT_WORKS: readonly string[] = [
   `Просрочка больше ${days(paymentGuarantee.overdueDays)} — вы получаете компенсацию до ${monthlyRatesPhrase(paymentGuarantee.maxMonthlyRates)}`,
-  'Выселением занимаемся мы: переговоры, уведомления, расторжение, при необходимости суд',
+  'Выселением занимаюсь я: переговоры, уведомления, расторжение, при необходимости суд',
   `Компенсация выплачивается ${timesPhrase(paymentGuarantee.payoutsPerContract)} за срок договора`,
 ]
 
 const WHEN_APPLIES: readonly string[] = [
-  'Нанимателя подобрали мы',
+  'Нанимателя подобрал я',
   `Договор найма заключён на срок от ${months(paymentGuarantee.minContractMonths)}`,
   `Депозит с нанимателя — не меньше ${monthlyRatesPhrase(paymentGuarantee.minDepositMonthlyRates)}`,
-  'Вы не договаривались с нанимателем об отсрочке самостоятельно и не заселяли жильца мимо нас',
+  'Вы не договаривались с нанимателем об отсрочке самостоятельно и не заселяли жильца мимо меня',
 ]
 
 // ─── Компонент ─────────────────────────────────────────────────────────────
@@ -68,19 +68,19 @@ const WHEN_APPLIES: readonly string[] = [
 function CheckList({ title, items }: { title: string; items: readonly string[] }) {
   return (
     <div>
-      <h3 className="text-[15px] font-bold" style={{ color: 'var(--hp-ink)' }}>
+      <h3 className="text-[15px] font-bold" style={{ color: 'var(--hp-on-forest)' }}>
         {title}
       </h3>
       <ul className="mt-3 space-y-2.5">
         {items.map(item => (
           <li
             key={item}
-            className="flex items-start gap-2.5 text-[13.5px] leading-relaxed"
-            style={{ color: 'var(--hp-ink)' }}
+            className="flex items-start gap-2.5 text-[16px] leading-relaxed"
+            style={{ color: 'var(--hp-on-forest-sub)' }}
           >
             <Check
               aria-hidden="true"
-              style={{ width: 16, height: 16, marginTop: 2, color: 'var(--hp-accent)', flexShrink: 0 }}
+              style={{ width: 16, height: 16, marginTop: 3, color: 'var(--hp-brass)', flexShrink: 0 }}
             />
             <span className="break-words">{item}</span>
           </li>
@@ -94,34 +94,28 @@ export function PaymentGuarantee({ id }: Props) {
   return (
     <section id={id} className="scroll-mt-20 pt-16 sm:pt-20">
       <div className="max-w-[1180px] mx-auto px-4 sm:px-6">
-        <div
-          className="p-5 sm:p-8 border"
-          style={{
-            background: 'var(--hp-accent-tint)',
-            borderColor: 'var(--hp-accent)',
-            borderRadius: 'var(--hp-radius)',
-          }}
-        >
+        {/* Лесной блок бренда: самое сильное обещание страницы */}
+        <div className="hp-forest p-6 sm:p-10">
           <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] gap-8">
             <div>
               <div
-                className="inline-flex items-center justify-center w-12 h-12"
-                style={{ background: 'var(--hp-surface)', borderRadius: 'var(--hp-radius)' }}
+                className="inline-flex items-center justify-center w-12 h-12 border"
+                style={{ borderColor: 'var(--hp-brass)' }}
               >
-                <ShieldCheck aria-hidden="true" style={{ width: 24, height: 24, color: 'var(--hp-accent)' }} />
+                <ShieldCheck aria-hidden="true" style={{ width: 24, height: 24, color: 'var(--hp-brass)' }} />
               </div>
               <h2
-                className="mt-5 text-[22px] sm:text-[26px] font-bold tracking-tight"
-                style={{ color: 'var(--hp-ink)' }}
+                className="mt-5 text-[24px] sm:text-[30px] font-bold tracking-tight leading-tight"
+                style={{ color: 'var(--hp-on-forest)' }}
               >
-                Наниматель не заплатил — платим мы
+                Наниматель не заплатил — плачу я
               </h2>
               <p
-                className="mt-3 text-[14px] sm:text-[15px] leading-relaxed max-w-[640px]"
-                style={{ color: 'var(--hp-ink)' }}
+                className="mt-3 text-[16px] leading-relaxed max-w-[640px]"
+                style={{ color: 'var(--hp-on-forest-sub)' }}
               >
                 Собственник боится не сломанного смесителя. Он боится, что человек перестанет платить и будет
-                сидеть в квартире, пока идёт суд. На тарифе «Премиум» этот риск переходит на нас.
+                сидеть в квартире, пока идёт суд. На тарифе «Премиум» этот риск переходит на меня.
               </p>
             </div>
 
@@ -132,10 +126,10 @@ export function PaymentGuarantee({ id }: Props) {
           </div>
 
           <p
-            className="mt-8 pt-5 text-[13px] leading-relaxed border-t"
-            style={{ borderColor: 'var(--hp-border)', color: 'var(--hp-sub)' }}
+            className="mt-8 pt-5 text-[16px] leading-relaxed border-t"
+            style={{ borderColor: 'var(--hp-on-forest-line)', color: 'var(--hp-on-forest-sub)' }}
           >
-            Условия гарантии прописаны в договоре с агентством — не «по договорённости», а текстом, который
+            Условия гарантии прописаны в договоре со мной — не «по договорённости», а текстом, который
             можно прочитать до подписания.
           </p>
         </div>

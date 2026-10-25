@@ -14,7 +14,7 @@ import { contactDisplayName } from '@/features/contacts/config/display-name'
 import { ReadinessPanel } from '@/components/layout/ReadinessPanel'
 import { checkContact } from '@/lib/readiness'
 import { DEAL_TYPE_LABELS as dealTypeLabels, DEAL_STATUS_LABELS as dealStatusLabels } from '@/features/deals/config/deal-stages'
-import { formatDate, formatAmount, formatDeadline } from '@/lib/utils'
+import { formatDate, formatAmount, formatDeadline, formatDateCompact } from '@/lib/utils'
 import { FilesSection } from '@/features/files/components/FilesSection'
 import { CONTACT_STATUS_LABELS, CONTACT_STATUS_BADGES } from '@/features/contacts/config/contact-status-labels'
 
@@ -164,7 +164,7 @@ export default async function ContactPage({ params }: { params: Promise<{ id: st
               {c.passport_issued_date && (
                 <div className="hp-block-row">
                   <span className="label">Дата выдачи</span>
-                  <span className="value">{new Date(c.passport_issued_date).toLocaleDateString('ru-RU')}</span>
+                  <span className="value">{formatDateCompact(c.passport_issued_date)}</span>
                 </div>
               )}
               {c.passport_department_code && (
