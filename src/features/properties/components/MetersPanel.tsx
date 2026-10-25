@@ -7,6 +7,7 @@ import { addMeterReadingAction, createMeterAction, deactivateMeterAction } from 
 import { METER_KIND_LABELS, METER_KIND_UNITS } from '@/features/meters/config/meter-kinds'
 import { confirmDialog } from '@/components/forms/ConfirmDialog'
 import { todayIso } from '@/lib/timezone'
+import { formatDateCompact } from '@/lib/utils'
 
 export interface MeterReadingRow {
  id: string
@@ -34,7 +35,7 @@ const KIND_LABELS = METER_KIND_LABELS
 const DEFAULT_UNITS = METER_KIND_UNITS
 
 function fmtDate(iso: string): string {
- return new Date(`${iso}T00:00:00Z`).toLocaleDateString('ru-RU', { timeZone: 'UTC' })
+ return formatDateCompact(iso)
 }
 
 /**

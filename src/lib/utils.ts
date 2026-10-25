@@ -40,13 +40,40 @@ export function formatAmount(amount: number | string | null | undefined): string
   return Number(amount).toLocaleString('ru-RU', { maximumFractionDigits: 0 })
 }
 
-/** Компактная дата без года, если год текущий: `18.09` / `18.09.2025`. */
+/**
+ * Дата в реестрах и списках CRM — всегда `25.10.26` (решение владельца,
+ * 25.10.2026): короткая и одинаковая на всех экранах. Документы (отчёт,
+ * счёт, договор) форматируют дату сами — там нужен полный год.
+ */
 export function formatDateCompact(date: string | Date | null | undefined): string {
   if (!date) return '—'
+  // «2026-10-25» без времени — календарная дата, сдвигать поясом нельзя
+  const d = typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date) ? new Date(`${date}T12:00:00Z`) : new Date(date)
+  if (Number.isNaN(d.getTime())) return String(date)
+  return d.toLocaleDateString('ru-RU', { timeZone: APP_TZ, day: '2-digit', month: '2-digit', year: '2-digit' })
+}
+
+/** Дата и время в CRM: `25.10.26 · 08:12` (пояс агентства). */
+export function formatDateTimeCompact(date: string | Date | null | undefined): string {
+  if (!date) return '—'
   const d = new Date(date)
-  const sameYear = todayIso(d).slice(0, 4) === todayIso().slice(0, 4)
-  return d.toLocaleDateString('ru-RU',
-    sameYear ? { timeZone: APP_TZ, day: '2-digit', month: '2-digit' } : { timeZone: APP_TZ, day: '2-digit', month: '2-digit', year: 'numeric' })
+  if (Number.isNaN(d.getTime())) return String(date)
+  const time = d.toLocaleTimeString('ru-RU', { timeZone: APP_TZ, hour: '2-digit', minute: '2-digit' })
+  return `${formatDateCompact(d)} · ${time}`
+}
+
+/**
+ * Крупная сумма для полос показателей: `1,8 млн ₽`, `450 тыс. ₽`, `45 000 ₽`.
+ * В таблицах и документах — всегда полная сумма (formatAmount).
+ */
+export function formatMoneyShort(amount: number | string | null | undefined): string {
+  const n = Number(amount ?? 0)
+  if (!Number.isFinite(n)) return '—'
+  const sign = n < 0 ? '−' : ''
+  const a = Math.abs(n)
+  if (a >= 1_000_000) return `${sign}${(a / 1_000_000).toLocaleString('ru-RU', { maximumFractionDigits: a >= 10_000_000 ? 0 : 1 })} млн ₽`
+  if (a >= 100_000) return `${sign}${Math.round(a / 1000).toLocaleString('ru-RU')} тыс. ₽`
+  return `${sign}${a.toLocaleString('ru-RU', { maximumFractionDigits: 0 })} ₽`
 }
 
 /** «2 ч. назад», «3 дн. назад», «12.08.2026» — для мета-строк и лент. */
@@ -60,7 +87,7 @@ export function formatRelative(date: string | Date | null | undefined): string {
   if (diffH < 24) return `${diffH} ч. назад`
   const diffD = Math.floor(diffH / 24)
   if (diffD < 7) return `${diffD} дн. назад`
-  return d.toLocaleDateString('ru-RU', { timeZone: APP_TZ, day: '2-digit', month: '2-digit', year: 'numeric' })
+  return formatDateCompact(d)
 }
 
 /**

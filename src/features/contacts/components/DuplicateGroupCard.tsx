@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import Link from 'next/link'
 import { Merge, Phone, Mail, Link2 } from 'lucide-react'
 import { mergeContactsAction, type DuplicateGroup } from '../actions/duplicates.actions'
+import { formatDateCompact } from '@/lib/utils'
 
 const ROLE_LABEL: Record<string, string> = {
  client: 'Клиент',
@@ -90,7 +91,7 @@ export function DuplicateGroupCard({ group }: { group: DuplicateGroup }) {
  <span className="flex items-center gap-1 text-xs text-[var(--hp-sub)] mt-0.5">
  <Link2 className="w-3 h-3" />
  связей: {contact.links} · создан{' '}
- {new Date(contact.created_at).toLocaleDateString('ru-RU')}
+ {formatDateCompact(contact.created_at)}
  </span>
  </span>
  <Link

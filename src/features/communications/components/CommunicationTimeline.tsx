@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { Phone, PhoneMissed, MessageCircle, Mail, StickyNote, Users, Send, PlayCircle } from 'lucide-react'
 import { CommunicationComposer } from './CommunicationComposer'
+import { formatDateTimeCompact } from '@/lib/utils'
 
 // Единая лента общения с клиентом: звонки из АТС, сообщения WhatsApp, письма,
 // заметки и встречи. Серверный компонент — данные и разметка, интерактив
@@ -48,9 +49,7 @@ function formatDuration(seconds: number | null): string | null {
 }
 
 function formatWhen(iso: string): string {
- return new Date(iso).toLocaleString('ru-RU', {
- day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit',
- })
+ return formatDateTimeCompact(iso)
 }
 
 export async function CommunicationTimeline({

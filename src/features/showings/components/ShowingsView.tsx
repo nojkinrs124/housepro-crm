@@ -8,7 +8,7 @@ import { RegistryTable, type RegistryColumn } from '@/features/registry/componen
 import { BulkBar } from '@/features/registry/components/BulkBar'
 import { useRegistryFilters } from '@/hooks/useRegistryFilters'
 import { useSelection } from '@/hooks/useSelection'
-import { formatDateTime } from '@/lib/timezone'
+import { formatDateTimeCompact } from '@/lib/utils'
 
 export interface ShowingRow {
   id: string
@@ -37,7 +37,7 @@ const STATUS_OPTIONS = [
 ]
 
 function fmtWhen(iso: string): string {
-  return formatDateTime(iso, { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+  return formatDateTimeCompact(iso)
 }
 
 export function ShowingsView({ showings }: { showings: ShowingRow[] }) {

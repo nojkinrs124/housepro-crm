@@ -23,15 +23,13 @@ export function AccountingFilters({ direction, employee, property, employees, pr
     router.push(`/accounting?${sp.toString()}`)
   }, [router, params])
 
+  // Фильтры направления/сотрудника/объекта — уровень страницы (URL), поэтому
+  // отдельно от поиска реестра, но тем же видом «чипов», что и RegistryToolbar
   return (
     <div className="flex flex-wrap items-center gap-2">
       <button
         onClick={() => set('direction', '')}
-        className={`px-3 py-1.5 text-xs font-medium border transition-colors ${
-          !direction
-            ? 'border-[var(--hp-ink)] bg-[var(--hp-ink)] text-[var(--hp-surface)]'
-            : 'border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-sub)] hover:border-primary/40'
-        }`}
+        className={`hp-chip${!direction ? ' active' : ''}`}
       >
         Все направления
       </button>
@@ -39,11 +37,7 @@ export function AccountingFilters({ direction, employee, property, employees, pr
         <button
           key={d.value}
           onClick={() => set('direction', d.value)}
-          className={`px-3 py-1.5 text-xs font-medium border transition-colors ${
-            direction === d.value
-              ? 'border-[var(--hp-ink)] bg-[var(--hp-ink)] text-[var(--hp-surface)]'
-              : 'border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-sub)] hover:border-primary/40'
-          }`}
+          className={`hp-chip${direction === d.value ? ' active' : ''}`}
         >
           {d.shortLabel}
         </button>
@@ -52,7 +46,7 @@ export function AccountingFilters({ direction, employee, property, employees, pr
       <select
         value={employee ?? ''}
         onChange={e => set('employee', e.target.value)}
-        className="text-xs px-2 py-1.5 border border-[var(--hp-border)] bg-[var(--hp-surface)] outline-none focus:border-[var(--hp-ink)] max-w-[180px]"
+        className={`hp-chip outline-none focus:border-[var(--hp-ink)] max-w-[200px]${employee ? ' active' : ''}`}
       >
         <option value="">Сотрудник: все</option>
         {employees.map(e => (
@@ -63,7 +57,7 @@ export function AccountingFilters({ direction, employee, property, employees, pr
       <select
         value={property ?? ''}
         onChange={e => set('property', e.target.value)}
-        className="text-xs px-2 py-1.5 border border-[var(--hp-border)] bg-[var(--hp-surface)] outline-none focus:border-[var(--hp-ink)] max-w-[220px]"
+        className={`hp-chip outline-none focus:border-[var(--hp-ink)] max-w-[240px]${property ? ' active' : ''}`}
       >
         <option value="">Объект: все</option>
         {properties.map(p => (

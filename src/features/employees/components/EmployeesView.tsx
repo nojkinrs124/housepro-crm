@@ -6,7 +6,7 @@ import { RegistryTable, type RegistryColumn } from '@/features/registry/componen
 import { BulkBar } from '@/features/registry/components/BulkBar'
 import { useRegistryFilters } from '@/hooks/useRegistryFilters'
 import { useSelection } from '@/hooks/useSelection'
-import { formatDate } from '@/lib/utils'
+import { formatDateCompact } from '@/lib/utils'
 import { ROLE_LABELS } from '../lib/roles'
 
 export interface EmployeeRow {
@@ -83,7 +83,7 @@ export function EmployeesView({ employees }: { employees: EmployeeRow[] }) {
     },
     {
       key: 'since', title: 'В команде с', cellClass: 'sub whitespace-nowrap', hideBelow: 'xl',
-      cell: e => formatDate(e.createdAt, { month: 'short', year: 'numeric' }),
+      cell: e => formatDateCompact(e.createdAt),
     },
   ]
 

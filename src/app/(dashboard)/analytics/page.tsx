@@ -23,7 +23,7 @@ import {
  type AnalyticsRawData,
  type AnalyticsFilters as Filters,
 } from '@/features/analytics/data'
-import { formatMoney, plural } from '@/lib/utils'
+import { formatMoney, plural, formatMoneyShort } from '@/lib/utils'
 import { AnalyticsFilters } from '@/features/analytics/components/AnalyticsFilters'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { StatStrip } from '@/components/layout/StatStrip'
@@ -245,16 +245,16 @@ export default async function AnalyticsPage({
  <StatStrip
  items={[
  {
- label: 'Доход агентства', value: formatMoney(totalRevenue),
+ label: 'Доход', value: formatMoneyShort(totalRevenue),
  hint: [plural(completedDeals, ['сделка закрыта', 'сделки закрыто', 'сделок закрыто']), delta(totalRevenue, previousKpis.totalRevenue)].filter(Boolean).join(' · '),
  },
  {
- label: 'Объём сделок', value: formatMoney(totalDealsAmount),
+ label: 'Объём сделок', value: formatMoneyShort(totalDealsAmount),
  hint: [`${activeDeals} в работе`, delta(totalDealsAmount, previousKpis.totalDealsAmount)].filter(Boolean).join(' · '),
  },
  {
- label: 'Платежи получены', value: formatMoney(paidTotal),
- hint: [overdueTotal > 0 ? `просрочено ${formatMoney(overdueTotal)}` : 'просроченных нет', delta(paidTotal, previousKpis.paidTotal)].filter(Boolean).join(' · '),
+ label: 'Платежи получены', value: formatMoneyShort(paidTotal),
+ hint: [overdueTotal > 0 ? `просрочено ${formatMoneyShort(overdueTotal)}` : 'просроченных нет', delta(paidTotal, previousKpis.paidTotal)].filter(Boolean).join(' · '),
  alert: overdueTotal > 0,
  },
  {
@@ -264,14 +264,16 @@ export default async function AnalyticsPage({
  ]}
  />
 
- <StatStrip
- items={[
- { label: 'Объектов свободно', value: availableProps },
- { label: 'Сдано в аренду', value: rentedProps },
- { label: 'Продано объектов', value: soldProps },
- { label: 'Действующих договоров', value: activeContracts },
- ]}
- />
+ {/* Вверху одна полоса из 4 цифр; база объектов — справочно, блоком */}
+      <div className="hp-block">
+        <div className="hp-block-header">База объектов и договоров</div>
+        <div className="hp-block-grid">
+          <div className="hp-block-row"><span className="label">Объектов свободно</span><span className="value">{availableProps}</span></div>
+          <div className="hp-block-row"><span className="label">Сдано в аренду</span><span className="value">{rentedProps}</span></div>
+          <div className="hp-block-row"><span className="label">Продано объектов</span><span className="value">{soldProps}</span></div>
+          <div className="hp-block-row"><span className="label">Действующих договоров</span><span className="value">{activeContracts}</span></div>
+        </div>
+      </div>
 
  {/* Charts row 1 */}
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

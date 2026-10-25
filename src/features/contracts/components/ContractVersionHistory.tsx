@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { History, ChevronDown, ChevronUp, RotateCcw, FileText, Clock } from 'lucide-react'
 import { restoreContractVersionAction } from '../actions/contracts.actions'
 import { confirmDialog } from '@/components/forms/ConfirmDialog'
+import { formatDateTimeCompact } from '@/lib/utils'
 
 interface ContractVersion {
  id: string
@@ -70,10 +71,7 @@ export function ContractVersionHistory({ contractId, versions }: Props) {
  <div className="font-medium text-foreground">Версия {v.version}</div>
  <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
  <Clock className="w-3 h-3" />
- {v.created_at && new Date(v.created_at).toLocaleString('ru-RU', {
- day: '2-digit', month: '2-digit', year: 'numeric',
- hour: '2-digit', minute: '2-digit',
- })}
+ {v.created_at && formatDateTimeCompact(v.created_at)}
  {v.author?.full_name && <span>· {v.author.full_name}</span>}
  </div>
  {v.note && (

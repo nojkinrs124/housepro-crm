@@ -88,3 +88,24 @@ describe('formatPhone', () => {
     expect(result).toContain('123')
   })
 })
+
+describe('форматы CRM (брендбук v2)', () => {
+  it('formatDateCompact — всегда дд.мм.гг', async () => {
+    const { formatDateCompact } = await import('@/lib/utils')
+    expect(formatDateCompact('2026-10-25')).toBe('25.10.26')
+    expect(formatDateCompact('2025-01-03')).toBe('03.01.25')
+    expect(formatDateCompact(null)).toBe('—')
+  })
+  it('formatDateTimeCompact — дата · время', async () => {
+    const { formatDateTimeCompact } = await import('@/lib/utils')
+    expect(formatDateTimeCompact('2026-10-25T01:12:00Z')).toMatch(/^25\.10\.26 · \d{2}:12$/)
+  })
+  it('formatMoneyShort — млн / тыс. / полностью', async () => {
+    const { formatMoneyShort } = await import('@/lib/utils')
+    expect(formatMoneyShort(1_800_000)).toBe('1,8 млн ₽')
+    expect(formatMoneyShort(38_500_000)).toBe('39 млн ₽')
+    expect(formatMoneyShort(450_400)).toBe('450 тыс. ₽')
+    expect(formatMoneyShort(45_000).replace(/\s/g, ' ')).toBe('45 000 ₽')
+    expect(formatMoneyShort(-120_000)).toBe('−120 тыс. ₽')
+  })
+})

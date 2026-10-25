@@ -11,6 +11,7 @@ import { STAGE_COLORS } from '@/lib/design/stageColors'
 import { LEAD_STATUSES, LEAD_STATUSES_TERMINAL } from '@/features/leads/config/lead-statuses'
 import { LEAD_SOURCE_LABELS } from '@/features/leads/config/lead-sources'
 import type { LeadRow } from './LeadsListView'
+import { formatDateCompact } from '@/lib/utils'
 
 const columns = LEAD_STATUSES.map(status => ({ status: status.value, label: status.board, ...STAGE_COLORS[status.stage] }))
 
@@ -45,7 +46,7 @@ export function LeadsKanban({ leads: initialLeads }: { leads: LeadRow[] }) {
               {lead.rooms && <span className="text-xs px-1.5 py-0.5 bg-muted text-muted-foreground">{lead.rooms}к</span>}
               {lead.budget_max && <span className="text-xs px-1.5 py-0.5 bg-[var(--hp-neutral-tint)] text-[var(--hp-ink)] font-semibold">до {Number(lead.budget_max).toLocaleString('ru-RU')} ₽</span>}
             </div>}
-            {lead.created_at && <p className="text-xs text-muted-foreground/60">{new Date(lead.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}</p>}
+            {lead.created_at && <p className="text-xs text-muted-foreground/60">{formatDateCompact(lead.created_at)}</p>}
             {!LEAD_STATUSES_TERMINAL.includes(lead.status as (typeof LEAD_STATUSES_TERMINAL)[number]) && <ServerActionForm action={convertLeadToClient.bind(null, lead.id)} onClick={event => event.stopPropagation()}><button type="submit" className="w-full flex items-center justify-center gap-1.5 text-xs px-2 py-1.5 border border-[var(--hp-border)] text-[var(--hp-accent)] hover:border-[var(--hp-accent)] transition-colors font-semibold"><UserCheck className="w-3 h-3" />→ Контакт</button></ServerActionForm>}
           </div>
         )}

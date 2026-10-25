@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Mail, CheckCircle2, XCircle, MinusCircle } from 'lucide-react'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { resolveProvider } from '@/lib/email/provider'
+import { formatDateTimeCompact } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -113,9 +114,7 @@ export default async function EmailLogPage() {
  <div className="shrink-0 text-right">
  <span className={meta.className}>{meta.label}</span>
  <p className="text-xs text-[var(--hp-sub)] mt-1 whitespace-nowrap">
- {new Date(log.created_at).toLocaleString('ru-RU', {
- day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
- })}
+ {formatDateTimeCompact(log.created_at)}
  </p>
  </div>
  </div>
