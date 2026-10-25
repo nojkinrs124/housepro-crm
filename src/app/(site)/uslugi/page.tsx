@@ -25,6 +25,7 @@ import { UslugiLeadForm } from '@/features/site/uslugi/components/UslugiLeadForm
  */
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/uslugi' },
   title: 'Услуги ХаусПро в Красноярске — управление, аренда, продажа | Руслан Ножкин, частный риелтор',
   description:
     'Доверительное управление, сдача, съём, продажа и покупка квартиры в Красноярске. Тарифы и стоимость каждой услуги названы заранее. Работаю по договору, проверяю документы, фиксирую состояние актом.',

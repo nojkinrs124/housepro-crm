@@ -23,7 +23,7 @@ drag-and-drop (`onDragStart`/`onDrop`), без @dnd-kit.
 ```
 Supabase:  https://zwclvcswvhjeqwxrkbte.supabase.co  (ref zwclvcswvhjeqwxrkbte)
 GitHub:    https://github.com/nojkinrs124/housepro-crm
-Прод:      https://housepro24.vercel.app
+Прод:      https://housepro24.ru  (vercel.app → 308 редирект)
 Admin ID:  508499ac-0268-49c7-9c31-8198deafeeda
 ```
 

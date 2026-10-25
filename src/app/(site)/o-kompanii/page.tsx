@@ -24,6 +24,7 @@ import { WhatIf, type WhatIfItem } from '@/features/site/uslugi/components/WhatI
 import { UslugiLeadForm } from '@/features/site/uslugi/components/UslugiLeadForm'
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/o-kompanii' },
   title: 'Обо мне — Руслан Ножкин, частный риелтор, ХаусПро — управление квартирами в Красноярске',
   description: `ХаусПро — Руслан Ножкин, частный риелтор в Красноярске и Берёзовке: с ${TRUST.sinceYear} года, больше ${TRUST.closedDeals} сделок, квартиры в доверительном управлении. Кто отвечает за вашу квартиру, как я работаю и что написано в договоре.`,
 }

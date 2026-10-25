@@ -1,5 +1,6 @@
 import { SiteHeader } from '@/features/site/components/SiteHeader'
 import { SiteFooter } from '@/features/site/components/SiteFooter'
+import { SiteJsonLd } from '@/features/site/components/SiteJsonLd'
 import { getSiteContacts } from '@/features/site/lib/contacts'
 
 /**
@@ -19,6 +20,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       className="hp-site min-h-screen flex flex-col"
       style={{ background: 'var(--hp-bg)', color: 'var(--hp-ink)' }}
     >
+      <SiteJsonLd contacts={contacts} />
       <SiteHeader phone={contacts.phone} phoneHref={contacts.phoneHref} />
       <main className="flex-1">{children}</main>
       <SiteFooter

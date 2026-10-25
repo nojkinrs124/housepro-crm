@@ -24,6 +24,7 @@ import { ExpandableList } from '@/features/site/uslugi/components/ExpandableList
  */
 
 export const metadata: Metadata = {
+  alternates: { canonical: '/uslugi/snyat-kvartiru' },
   title: 'Снять квартиру в Красноярске — подбор с проверкой документов | ХаусПро',
   description: `Подберу квартиру под бюджет и район, включая закрытую базу. Проверяю собственника до залога, составляю договор и акт с описью. Комиссия ${tenantCommissionLabel()}, платится после заселения.`,
 }
