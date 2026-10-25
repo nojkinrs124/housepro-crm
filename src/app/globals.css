@@ -685,3 +685,13 @@ button.hp-stage:hover:not(.current) { background: var(--hp-accent-tint); color: 
   .hp-form-card { padding: 16px; }
   .hp-h1 { font-size: 23px; }
 }
+
+/* ── Печать документов CRM (отчёт собственнику, счёт): A4, фирменные заливки
+   сохраняются (иначе итог на лесном фоне печатается белым по белому),
+   блоки не рвутся между страницами. ── */
+@media print {
+  @page { size: A4; margin: 14mm; }
+  html, body { background: #fff !important; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  table, .hp-block, .print\:avoid-break { break-inside: avoid; }
+}

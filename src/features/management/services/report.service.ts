@@ -113,7 +113,7 @@ export function buildMonthlyReport(
   if (terms.scheme === 'percent') {
     lines.push({ label: 'Поступило от арендатора', amount: period.tenantPayments })
     lines.push({
-      label: `Удержание агентства${terms.rate != null ? ` (${terms.rate}%)` : ''}`,
+      label: `Вознаграждение управляющего${terms.rate != null ? ` (${terms.rate}%)` : ''}`,
       amount: period.agencyFee,
       negative: true,
     })
@@ -138,7 +138,7 @@ export function buildMonthlyReport(
     lines.push({ label: 'Выплачено собственнику', amount: period.paidToOwner, negative: true })
   } else {
     lines.push({
-      label: 'Обязательство агентства за период',
+      label: 'Обязательство управляющего за период',
       amount: period.ownerObligation,
       hint: period.obligationMonths > 1
         ? `${period.obligationMonths} выплаты по договору`

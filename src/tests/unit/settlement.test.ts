@@ -303,7 +303,7 @@ describe('buildMonthlyReport — состав зависит от схемы', (
   it('при проценте удержание агентства раскрывается', () => {
     const report = buildMonthlyReport(percentTerms, 2026, 9, ops, ops)
     const labels = report.lines.map(l => l.label)
-    expect(labels.some(l => l.includes('Удержание агентства'))).toBe(true)
+    expect(labels.some(l => l.includes('Вознаграждение управляющего'))).toBe(true)
     expect(labels.some(l => l.includes('10%'))).toBe(true)
     expect(report.dueToOwner).toBe(0)
   })
@@ -311,8 +311,8 @@ describe('buildMonthlyReport — состав зависит от схемы', (
   it('при фиксе доход агентства собственнику не раскрывается', () => {
     const report = buildMonthlyReport(fixedTerms, 2026, 9, ops, ops)
     const labels = report.lines.map(l => l.label)
-    expect(labels.some(l => l.includes('Удержание агентства'))).toBe(false)
-    expect(labels.some(l => l.includes('Обязательство агентства'))).toBe(true)
+    expect(labels.some(l => l.includes('Вознаграждение управляющего'))).toBe(false)
+    expect(labels.some(l => l.includes('Обязательство управляющего'))).toBe(true)
     expect(disclosesAgencyResult('fixed')).toBe(false)
     expect(disclosesAgencyResult('percent')).toBe(true)
   })

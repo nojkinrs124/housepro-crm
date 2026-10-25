@@ -44,24 +44,30 @@ export default async function DashboardLayout({
   ])
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--hp-surface)' }}>
-      {/* Desktop sidebar */}
-      <Sidebar user={profile} />
+    <div className="flex h-screen overflow-hidden print:block print:h-auto print:overflow-visible" style={{ background: 'var(--hp-surface)' }}>
+      {/* Desktop sidebar — не печатается (отчёт собственнику, счёт печатаются браузером) */}
+      <div className="contents print:hidden">
+        <Sidebar user={profile} />
+      </div>
 
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden w-0">
-        <Header user={profile} unreadCount={unreadCount ?? 0} />
-        <main className="flex-1 overflow-y-auto overflow-x-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden w-0 print:block print:w-auto print:overflow-visible">
+        <div className="contents print:hidden">
+          <Header user={profile} unreadCount={unreadCount ?? 0} />
+        </div>
+        <main className="flex-1 overflow-y-auto overflow-x-hidden print:overflow-visible">
           {/* Без mx-auto: контент прижат к сайдбару слева и растёт вправо, а не
               центрируется в остатке ширины — на широких мониторах mx-auto
               оставлял между сайдбаром и контентом заметный пустой отступ. */}
-          <div className="p-4 md:p-6 lg:p-8 max-w-[1600px] pb-24 md:pb-8 w-full min-w-0">
+          <div className="p-4 md:p-6 lg:p-8 max-w-[1600px] pb-24 md:pb-8 w-full min-w-0 print:p-0 print:max-w-none">
             {children}
           </div>
         </main>
       </div>
 
       {/* Mobile bottom nav + drawer */}
-      <MobileBottomNav user={profile} />
+      <div className="contents print:hidden">
+        <MobileBottomNav user={profile} />
+      </div>
 
       <GlobalSearch />
     </div>
