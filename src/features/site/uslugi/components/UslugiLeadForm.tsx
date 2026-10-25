@@ -49,7 +49,7 @@ export function UslugiLeadForm({
   submitLabel,
   withObjectFields = false,
   messagePlaceholder = 'Например: двушка в Советском районе, сейчас сдаю сама, устала от звонков',
-  footnote = `Перезвоним в течение ${USLUGI.callback.withinMinutes} минут. ${USLUGI.callback.workingHours}. Контакты используем только для ответа.`,
+  footnote = `Перезвоню в течение ${USLUGI.callback.withinMinutes} минут. ${USLUGI.callback.workingHours}. Контакты использую только для ответа.`,
 }: Props) {
   const context = useLeadContext()
   const [status, setStatus] = useState<'idle' | 'sending' | 'done'>('idle')
@@ -105,7 +105,7 @@ export function UslugiLeadForm({
       const body = (await res.json().catch(() => ({}))) as { error?: string }
 
       if (!res.ok) {
-        setError(body.error ?? 'Не удалось отправить заявку. Попробуйте позвонить нам.')
+        setError(body.error ?? 'Не удалось отправить заявку. Попробуйте позвонить мне.')
         setStatus('idle')
         return
       }
@@ -116,7 +116,7 @@ export function UslugiLeadForm({
       setRooms('')
       setStatus('done')
     } catch {
-      setError('Нет связи с сервером. Проверьте интернет или позвоните нам.')
+      setError('Нет связи с сервером. Проверьте интернет или позвоните мне.')
       setStatus('idle')
     }
   }
@@ -135,10 +135,10 @@ export function UslugiLeadForm({
         <Check style={{ width: 18, height: 18, marginTop: 2, flexShrink: 0, color: 'var(--hp-good)' }} />
         <div className="min-w-0">
           <p className="font-bold text-[15px]" style={{ color: 'var(--hp-good)' }}>
-            Заявка у агента.
+            Заявка у меня.
           </p>
           <p className="mt-1 text-[13.5px] leading-relaxed" style={{ color: 'var(--hp-ink)' }}>
-            Перезвоним в течение {USLUGI.callback.withinMinutes} минут — с номера{' '}
+            Перезвоню в течение {USLUGI.callback.withinMinutes} минут — с номера{' '}
             <a href={USLUGI_CONTACTS.phoneHref} className="font-semibold whitespace-nowrap">
               {USLUGI_CONTACTS.phone}
             </a>
@@ -311,7 +311,7 @@ export function UslugiLeadForm({
           className="hp-btn-primary justify-center disabled:opacity-60 h-11 shrink-0"
         >
           {status === 'sending' && <Loader2 className="w-4 h-4 animate-spin" />}
-          {status === 'sending' ? 'Отправляем…' : submitLabel}
+          {status === 'sending' ? 'Отправка…' : submitLabel}
         </button>
         <p className="text-[12px] leading-snug" style={{ color: 'var(--hp-tertiary)' }}>
           {footnote}

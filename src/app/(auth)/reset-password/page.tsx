@@ -1,17 +1,12 @@
 import { ResetPasswordForm } from '@/features/auth/components/ResetPasswordForm'
-import { Building2 } from 'lucide-react'
+import { BrandMark } from '@/components/brand/BrandMark'
 
 export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-6 sm:p-10" style={{ background: 'var(--hp-bg)' }}>
       <div className="w-full max-w-md">
         <div className="flex items-center gap-3 mb-10">
-          <div
-            className="w-11 h-11 flex items-center justify-center shrink-0"
-            style={{ background: 'var(--hp-accent)', borderRadius: 'var(--hp-radius)' }}
-          >
-            <Building2 className="w-6 h-6 text-white" />
-          </div>
+          <BrandMark size={44} />
           <div>
             <span className="font-bold text-[18px] leading-tight block tracking-tight" style={{ color: 'var(--hp-ink)' }}>
               ХаусПро

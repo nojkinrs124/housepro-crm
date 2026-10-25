@@ -19,7 +19,7 @@ export const CHART = {
 
   accent:  '#4B6B46',
   good:    '#3D6238',
-  warn:    '#7A6B3F',
+  warn:    '#6B5D34',
   danger:  '#A24B30',
   info:    '#41546B',
 } as const

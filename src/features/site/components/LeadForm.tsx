@@ -51,7 +51,7 @@ export function LeadForm({
       const body = (await res.json().catch(() => ({}))) as { error?: string }
 
       if (!res.ok) {
-        setError(body.error ?? 'Не удалось отправить заявку. Попробуйте позвонить нам.')
+        setError(body.error ?? 'Не удалось отправить заявку. Попробуйте позвонить мне.')
         setStatus('idle')
         return
       }
@@ -59,7 +59,7 @@ export function LeadForm({
       form.reset()
       setStatus('done')
     } catch {
-      setError('Нет связи с сервером. Проверьте интернет или позвоните нам.')
+      setError('Нет связи с сервером. Проверьте интернет или позвоните мне.')
       setStatus('idle')
     }
   }
@@ -80,7 +80,7 @@ export function LeadForm({
             Заявка принята
           </p>
           <p className="mt-1 text-[13.5px] leading-relaxed" style={{ color: 'var(--hp-ink)' }}>
-            Агент перезвонит в рабочее время — обычно в течение часа. Если вопрос срочный,
+            Перезвоню в рабочее время — обычно в течение часа. Если вопрос срочный,
             позвоните сами, номер в шапке страницы.
           </p>
           <button
@@ -197,10 +197,10 @@ export function LeadForm({
           className="hp-btn-primary justify-center disabled:opacity-60 h-11 shrink-0"
         >
           {status === 'sending' && <Loader2 className="w-4 h-4 animate-spin" />}
-          {status === 'sending' ? 'Отправляем…' : submitLabel}
+          {status === 'sending' ? 'Отправка…' : submitLabel}
         </button>
         <p className="text-[12px] leading-snug" style={{ color: 'var(--hp-tertiary)' }}>
-          Мы используем контакты только для ответа на обращение.
+          Использую ваши контакты только для ответа на обращение.
         </p>
       </div>
     </form>

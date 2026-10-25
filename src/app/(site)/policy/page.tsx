@@ -5,7 +5,7 @@ import { CONSENT_VERSION } from '@/lib/consent'
 export const metadata: Metadata = {
   title: 'Политика обработки персональных данных — ХаусПро',
   description:
-    'Как агентство недвижимости ХаусПро обрабатывает персональные данные: цели, состав данных, сроки хранения и порядок отзыва согласия.',
+    'Как Ножкин Руслан Сергеевич (ХаусПро, частный риелтор) обрабатывает персональные данные: цели, состав данных, сроки хранения и порядок отзыва согласия.',
 }
 
 // Публичная страница политики (152-ФЗ). Реквизиты оператора подставляются из
@@ -23,7 +23,7 @@ interface Section {
 
 export default async function PolicyPage() {
   const contacts = await getSiteContacts()
-  const operator = contacts.legalName ?? 'Агентство недвижимости «ХаусПро»'
+  const operator = contacts.legalName ?? 'Ножкин Руслан Сергеевич'
 
   const sections: Section[] = [
     {

@@ -24,7 +24,7 @@ export function PropertyGallery({ photos, title }: { photos: string[]; title: st
       >
         <Building2 style={{ width: 32, height: 32, color: 'var(--hp-tertiary)' }} />
         <p className="text-[13.5px] font-medium px-6 text-center" style={{ color: 'var(--hp-sub)' }}>
-          Фотографии этого объекта пришлём по запросу — оставьте заявку или позвоните
+          Фотографии этого объекта пришлю по запросу — оставьте заявку или позвоните
         </p>
       </div>
     )

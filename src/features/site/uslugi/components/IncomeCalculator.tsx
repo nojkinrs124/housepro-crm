@@ -36,8 +36,8 @@ const selectClass = `${inputClass} appearance-none`
 /** Строка «Кто ведёт квартиру» из таблицы результата — текст, а не число */
 const WHO_MANAGES: Record<TariffId, string> = {
   podbor: 'Вы сами',
-  upravlenie: 'Мы',
-  premium: 'Мы + гарантия платежа',
+  upravlenie: 'Я',
+  premium: 'Я + гарантия платежа',
 }
 
 const SERIF = "'Source Serif 4', Georgia, serif"
@@ -113,7 +113,7 @@ export function IncomeCalculator({ id }: Props) {
       </h2>
       <p className="mt-2 text-[14px] sm:text-[15px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
         Три тарифа — от разового подбора до полного управления. Проценты в голове не сравниваются,
-        поэтому считаем сразу в рублях.
+        поэтому считаю сразу в рублях.
       </p>
 
       {/* Поля */}
@@ -182,7 +182,7 @@ export function IncomeCalculator({ id }: Props) {
           </div>
         </div>
         <p className="text-[13px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
-          Это ориентир по похожим объявлениям. Точную ставку агент называет после осмотра — часто она
+          Это ориентир по похожим объявлениям. Точную ставку называю после осмотра — часто она
           выше той, которую собственник ставит сам.
         </p>
       </div>
@@ -289,7 +289,7 @@ export function IncomeCalculator({ id }: Props) {
         </a>
       </div>
       <p className="mt-2 text-[12.5px]" style={{ color: 'var(--hp-sub)' }}>
-        Перезвоним в течение {USLUGI.callback.withinMinutes} минут. {USLUGI.callback.workingHours}.
+        Перезвоню в течение {USLUGI.callback.withinMinutes} минут. {USLUGI.callback.workingHours}.
       </p>
     </div>
   )

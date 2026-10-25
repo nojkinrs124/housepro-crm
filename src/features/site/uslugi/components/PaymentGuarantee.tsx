@@ -52,15 +52,15 @@ const { paymentGuarantee } = USLUGI
 
 const HOW_IT_WORKS: readonly string[] = [
   `Просрочка больше ${days(paymentGuarantee.overdueDays)} — вы получаете компенсацию до ${monthlyRatesPhrase(paymentGuarantee.maxMonthlyRates)}`,
-  'Выселением занимаемся мы: переговоры, уведомления, расторжение, при необходимости суд',
+  'Выселением занимаюсь я: переговоры, уведомления, расторжение, при необходимости суд',
   `Компенсация выплачивается ${timesPhrase(paymentGuarantee.payoutsPerContract)} за срок договора`,
 ]
 
 const WHEN_APPLIES: readonly string[] = [
-  'Нанимателя подобрали мы',
+  'Нанимателя подобрал я',
   `Договор найма заключён на срок от ${months(paymentGuarantee.minContractMonths)}`,
   `Депозит с нанимателя — не меньше ${monthlyRatesPhrase(paymentGuarantee.minDepositMonthlyRates)}`,
-  'Вы не договаривались с нанимателем об отсрочке самостоятельно и не заселяли жильца мимо нас',
+  'Вы не договаривались с нанимателем об отсрочке самостоятельно и не заселяли жильца мимо меня',
 ]
 
 // ─── Компонент ─────────────────────────────────────────────────────────────
@@ -114,14 +114,14 @@ export function PaymentGuarantee({ id }: Props) {
                 className="mt-5 text-[22px] sm:text-[26px] font-bold tracking-tight"
                 style={{ color: 'var(--hp-ink)' }}
               >
-                Наниматель не заплатил — платим мы
+                Наниматель не заплатил — плачу я
               </h2>
               <p
                 className="mt-3 text-[14px] sm:text-[15px] leading-relaxed max-w-[640px]"
                 style={{ color: 'var(--hp-ink)' }}
               >
                 Собственник боится не сломанного смесителя. Он боится, что человек перестанет платить и будет
-                сидеть в квартире, пока идёт суд. На тарифе «Премиум» этот риск переходит на нас.
+                сидеть в квартире, пока идёт суд. На тарифе «Премиум» этот риск переходит на меня.
               </p>
             </div>
 
@@ -135,7 +135,7 @@ export function PaymentGuarantee({ id }: Props) {
             className="mt-8 pt-5 text-[13px] leading-relaxed border-t"
             style={{ borderColor: 'var(--hp-border)', color: 'var(--hp-sub)' }}
           >
-            Условия гарантии прописаны в договоре с агентством — не «по договорённости», а текстом, который
+            Условия гарантии прописаны в договоре со мной — не «по договорённости», а текстом, который
             можно прочитать до подписания.
           </p>
         </div>

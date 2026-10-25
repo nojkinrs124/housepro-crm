@@ -6,23 +6,22 @@ import { LeadForm } from '@/features/site/components/LeadForm'
 import { PropertyCard } from '@/features/site/components/PropertyCard'
 import { fetchFeaturedProperties, fetchPublishedDistricts } from '@/features/site/lib/properties'
 import { getSiteContacts } from '@/features/site/lib/contacts'
-import { SITE_BRAND } from '@/features/site/config'
 
 export const metadata: Metadata = {
-  title: 'ХаусПро — аренда и продажа квартир в Красноярске',
+  title: 'Сдаю и веду вашу квартиру в Красноярске — ХаусПро, Руслан Ножкин',
   description:
-    'Агентство недвижимости ХаусПро: аренда, продажа и доверительное управление жильём в Красноярске. Проверяем документы собственника, готовим договор под объект, фиксируем состояние в акте.',
+    'ХаусПро — Руслан Ножкин, частный риелтор в Красноярске. Доверительное управление квартирами, сдача в аренду и продажа. Нахожу и проверяю жильцов, оформляю договор и акт с описью, раз в месяц присылаю отчёт.',
 }
 
 const WORK_STEPS = [
   {
     Icon: ShieldCheck,
-    title: 'Проверяем документы до показа',
+    title: 'Проверяю документы до показа',
     text: 'Выписка из ЕГРН, основание права собственности, согласие супруга, отсутствие обременений и прописанных третьих лиц. Если с документами что-то не так — вы узнаёте об этом до внесения залога, а не после.',
   },
   {
     Icon: FileText,
-    title: 'Договор пишем под конкретный объект',
+    title: 'Договор пишу под конкретный объект',
     text: 'Не скачанный шаблон: срок, порядок и дата оплаты, кто платит за коммуналку, что считается мелким ремонтом, условия досрочного расторжения и возврата залога — всё под ваш случай.',
   },
   {
@@ -33,7 +32,7 @@ const WORK_STEPS = [
   {
     Icon: Wallet,
     title: 'Комиссия названа до начала работы',
-    text: 'Размер комиссии и момент оплаты фиксируются в договоре с агентством. Никаких «доплат за оформление» в день подписания.',
+    text: 'Размер комиссии и момент оплаты фиксируются в договоре со мной. Никаких «доплат за оформление» в день подписания.',
   },
 ]
 
@@ -53,32 +52,32 @@ export default async function HomePage() {
             className="text-[11px] font-semibold uppercase tracking-[0.12em]"
             style={{ color: 'var(--hp-sub)' }}
           >
-            {SITE_BRAND} · Красноярск и Берёзовка
+            Руслан Ножкин · частный риелтор · Красноярск и Берёзовка
           </p>
           <h1
             className="mt-4 text-[34px] sm:text-[46px] lg:text-[54px] font-bold leading-[1.06] tracking-tight break-words"
             style={{ color: 'var(--hp-ink)' }}
           >
-            Снять, сдать или продать квартиру — с договором, который защищает
+            Сдаю и веду вашу квартиру в{"\u00a0"}Красноярске
           </h1>
           <p
             className="mt-5 text-[16px] sm:text-[18px] leading-relaxed max-w-[640px]"
             style={{ color: 'var(--hp-sub)' }}
           >
-            Мы ведём сделку целиком: проверяем документы собственника, показываем объект,
-            составляем договор под конкретную квартиру и передаём ключи по акту с описью.
-            Комиссию называем до начала работы.
+            Нахожу и проверяю жильцов, оформляю договор найма и акт с описью, раз в месяц
+            присылаю отчёт. Подписание дистанционное — приезжать никуда не нужно.
+            Комиссию называю до начала работы.
           </p>
 
-          <div className="mt-7 flex flex-col sm:flex-row gap-3">
-            <Link href="/catalog" className="hp-btn-primary h-11 justify-center">
-              Смотреть объекты
+          <div className="mt-7 flex flex-col sm:flex-row sm:flex-wrap gap-3 lg:w-[920px] lg:max-w-[calc(100vw-48px)]">
+            <Link href="/uslugi/sdat-kvartiru" className="hp-btn-primary h-11 justify-center whitespace-nowrap">
+              Передать квартиру в управление
               <ArrowRight style={{ width: 15, height: 15 }} />
             </Link>
-            <Link href="/uslugi" className="hp-btn-secondary h-11 justify-center">
-              Услуги и комиссия
+            <Link href="/catalog" className="hp-btn-secondary h-11 justify-center whitespace-nowrap">
+              Смотреть объекты
             </Link>
-            <a href={contacts.phoneHref} className="hp-btn-secondary h-11 justify-center">
+            <a href={contacts.phoneHref} className="hp-btn-secondary h-11 justify-center whitespace-nowrap">
               Позвонить {contacts.phone}
             </a>
           </div>
@@ -91,7 +90,7 @@ export default async function HomePage() {
           Подобрать объект
         </h2>
         <p className="mt-1.5 mb-4 text-[14px]" style={{ color: 'var(--hp-sub)' }}>
-          Задайте параметры — покажем то, что действительно свободно сейчас
+          Задайте параметры — покажу то, что действительно свободно сейчас
         </p>
         <CatalogFilters filters={{}} districts={districts} compact />
       </section>
@@ -104,7 +103,7 @@ export default async function HomePage() {
               Свободные объекты
             </h2>
             <p className="mt-1.5 text-[14px]" style={{ color: 'var(--hp-sub)' }}>
-              Актуальность проверяется агентом перед каждым показом
+              Актуальность проверяю перед каждым показом
             </p>
           </div>
           <Link
@@ -130,8 +129,8 @@ export default async function HomePage() {
               Сейчас в открытой публикации нет объектов
             </p>
             <p className="mt-2 text-[14px] max-w-[520px] mx-auto leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
-              Часть квартир мы не выкладываем в открытый доступ по просьбе собственников.
-              Опишите, что ищете — агент подберёт варианты из закрытой базы.
+              Часть квартир я не выкладываю в открытый доступ по просьбе собственников.
+              Опишите, что ищете — подберу варианты из закрытой базы.
             </p>
             <a href="#zayavka" className="hp-btn-primary h-11 mt-5">
               Оставить заявку на подбор
@@ -149,7 +148,7 @@ export default async function HomePage() {
       {/* ── Что входит в работу ──────────────────────────────────────── */}
       <section className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-20">
         <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
-          Что входит в работу агентства
+          Что входит в мою работу
         </h2>
         <p className="mt-1.5 mb-5 text-[14px] max-w-[620px]" style={{ color: 'var(--hp-sub)' }}>
           Четыре вещи, из-за отсутствия которых чаще всего возникают споры между
@@ -205,10 +204,10 @@ export default async function HomePage() {
             <p className="mt-3 text-[15px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
               Подбор, сдача своей квартиры, проверка документов перед покупкой или
               вопрос по уже подписанному договору — напишите одной строкой,
-              агент перезвонит и уточнит детали.
+              перезвоню и уточню детали.
             </p>
             <div className="hp-block mt-5">
-              <div className="hp-block-header">Как с нами связаться</div>
+              <div className="hp-block-header">Как со мной связаться</div>
               <div className="hp-block-row">
                 <span className="label">Телефон</span>
                 <a href={contacts.phoneHref} className="value transition-opacity hover:opacity-70">

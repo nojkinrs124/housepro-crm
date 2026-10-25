@@ -42,7 +42,7 @@ export async function generateMetadata({
     title: `${property.title} — ХаусПро, Красноярск`,
     description:
       property.description?.slice(0, 300) ??
-      `${property.address}. ${parts.join(', ')}. Показ и оформление сделки с агентством недвижимости ХаусПро.`,
+      `${property.address}. ${parts.join(', ')}. Показ и оформление сделки — ХаусПро, Руслан Ножкин, частный риелтор.`,
   }
 }
 
@@ -210,7 +210,7 @@ export default async function PublicPropertyPage({
                 }}
               >
                 Объект уже {STATUS_LABELS[property.status]?.toLowerCase() ?? 'занят'}. Оставьте
-                заявку — подберём похожие варианты в том же районе и бюджете.
+                заявку — подберу похожие варианты в том же районе и бюджете.
               </p>
             )}
 
@@ -222,7 +222,7 @@ export default async function PublicPropertyPage({
               {contacts.phone}
             </a>
             <p className="mt-3 text-[12.5px] leading-relaxed" style={{ color: 'var(--hp-tertiary)' }}>
-              Перед показом агент подтверждает, что объект свободен, и проверяет документы
+              Перед показом я подтверждаю, что объект свободен, и проверяю документы
               собственника.
             </p>
           </div>
@@ -239,7 +239,7 @@ export default async function PublicPropertyPage({
               Записаться на показ
             </h2>
             <p className="mt-1.5 mb-4 text-[13.5px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
-              Заявка попадёт агенту вместе с этим объектом — повторять адрес не нужно.
+              Заявка придёт мне вместе с этим объектом — повторять адрес не нужно.
             </p>
             <LeadForm
               propertyId={property.id}

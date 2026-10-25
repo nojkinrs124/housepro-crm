@@ -20,6 +20,9 @@
    («UI mockups for four directions», направления 1c + 1b).
    См. docs/DESIGN_SYSTEM_AUDIT.md — история предыдущего перехода.
 
+   Бренд v2 (25.10.2026): знак «ХП» — src/components/brand/BrandMark.tsx,
+   маркетинговые токены --hp-forest / --hp-brass, брендбук — ~/projects/work-space/brand/.
+
    ВАЖНО: в референсном мокапе 1c интерфейсный шрифт — Public Sans, но у
    Public Sans нет кириллицы (только latin/latin-ext/vietnamese — проверено
    через fonts.google.com/metadata). Заменён на Source Sans 3 — кириллица
@@ -68,9 +71,19 @@
 
     /* семантика статусов — отдельно от --hp-accent */
     --hp-good:            #3D6238; --hp-good-tint:  #E2ECDD; /* активен / завершено */
-    --hp-warn:            #7A6B3F; --hp-warn-tint:  #F0ECDD; /* VIP / требует внимания */
+    --hp-warn:            #6B5D34; --hp-warn-tint:  #F0ECDD; /* VIP / требует внимания (затемнён до WCAG AA 5.5:1, брендбук v2) */
     --hp-danger:          #A24B30; --hp-danger-tint:#F3E5E0; /* просрочено / удаление — только тревожное */
     --hp-info:            #41546B; --hp-info-tint:  #E6EAF0; /* новое / информационное */
+
+    /* ── Бренд ХаусПро v2 (brand/BRANDBOOK.md) — маркетинговые цвета ──
+       Лес — тёмный фон бренда (подвал сайта, обложки). Латунь — только
+       черта в знаке и акценты НА лесном фоне: на светлом не проходит контраст. */
+    --hp-forest:          #1F2B1D;
+    --hp-brass:           #C8A45C;
+    --hp-on-accent:       #FBFBF8; /* буквы знака и текст на мховом */
+    --hp-on-forest:       #EEF0E9; /* основной текст на лесном фоне — 12.9:1 */
+    --hp-on-forest-sub:   #B9C9A8; /* вторичный текст на лесном фоне — 8.4:1 */
+    --hp-on-forest-line:  #333D2A; /* разделители на лесном фоне */
 
     --hp-radius:          0px; /* карточки, кнопки, инпуты, иконки-боксы — прямые углы */
     --hp-radius-sm:       0px; /* вложенные элементы: строки списка, чипы, плитки внутри карточки */
@@ -127,6 +140,10 @@
     --hp-warn:            #D8C171; --hp-warn-tint:  #332C16;
     --hp-danger:          #E08862; --hp-danger-tint:#3A2019;
     --hp-info:            #8FA7C9; --hp-info-tint:  #1C2530;
+
+    --hp-forest:          #10160D;
+    --hp-brass:           #C8A45C;
+    --hp-on-accent:       #0E140B;
   }
 }
 

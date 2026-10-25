@@ -1,26 +1,35 @@
 {
-  "name": "HousePro CRM",
-  "short_name": "HousePro",
-  "description": "CRM для агентств недвижимости",
+  "name": "ХаусПро CRM",
+  "short_name": "ХаусПро",
+  "description": "CRM ХаусПро — Руслан Ножкин, частный риелтор",
   "start_url": "/dashboard",
   "display": "standalone",
-  "background_color": "#F8FAFC",
-  "theme_color": "#16A34A",
+  "background_color": "#EEF0E9",
+  "theme_color": "#4B6B46",
   "orientation": "portrait-primary",
   "icons": [
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
-  "categories": ["business", "productivity"],
+  "categories": [
+    "business",
+    "productivity"
+  ],
   "lang": "ru"
 }

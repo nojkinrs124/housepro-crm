@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { LoginGate } from '@/features/auth/components/LoginGate'
-import { Building2, ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
+import { BrandMark } from '@/components/brand/BrandMark'
 
 /**
  * Вход — одна дверь для двух очень разных людей.
@@ -27,20 +28,15 @@ export default function LoginPage() {
 
       <div className="w-full max-w-xl">
         <div className="flex flex-col items-center text-center gap-3 mb-8">
-          <div
-            className="w-12 h-12 flex items-center justify-center shrink-0"
-            style={{ background: 'var(--hp-accent)', borderRadius: 'var(--hp-radius)' }}
-          >
-            <Building2 className="w-6 h-6 text-white" />
-          </div>
+          <BrandMark size={48} />
           <div>
-            <span className="font-bold text-[19px] leading-tight block tracking-tight" style={{ color: 'var(--hp-ink)' }}>
+            <span className="font-bold text-[19px] leading-tight block tracking-tight" style={{ color: 'var(--hp-ink)', fontFamily: "'Source Serif 4', Georgia, serif" }}>
               ХаусПро
             </span>
             {/* Не «CRM»: собственнику это слово ничего не говорит, а он тут
                 такой же свой, как и сотрудник. */}
             <span className="text-[11.5px] font-medium" style={{ color: 'var(--hp-sub)' }}>
-              агентство недвижимости
+              Руслан Ножкин · частный риелтор
             </span>
           </div>
 

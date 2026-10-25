@@ -5,9 +5,9 @@ import { getSiteContacts } from '@/features/site/lib/contacts'
 import { WORKING_HOURS } from '@/features/site/config'
 
 export const metadata: Metadata = {
-  title: 'Контакты — ХаусПро, агентство недвижимости в Красноярске',
+  title: 'Контакты — ХаусПро, Руслан Ножкин, частный риелтор в Красноярске',
   description:
-    'Телефон, почта и адрес агентства недвижимости ХаусПро. Оставьте заявку на подбор квартиры, сдачу своего объекта или консультацию — агент перезвонит в рабочее время.',
+    'Телефон, почта и адрес: ХаусПро — Руслан Ножкин, частный риелтор в Красноярске. Оставьте заявку на управление или сдачу своей квартиры, подбор жилья или консультацию — перезвоню в рабочее время.',
 }
 
 export default async function ContactsPage() {
@@ -26,7 +26,7 @@ export default async function ContactsPage() {
       label: 'Почта',
       value: contacts.email,
       href: `mailto:${contacts.email}`,
-      note: 'Отвечаем в течение рабочего дня',
+      note: 'Отвечаю в течение рабочего дня',
     },
     {
       Icon: MapPin,
@@ -54,8 +54,8 @@ export default async function ContactsPage() {
           Контакты
         </h1>
         <p className="mt-4 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
-          Позвоните или напишите — агент уточнит детали и предложит время показа.
-          Заявка с формы попадает напрямую в работу, минуя колл-центр.
+          Позвоните или напишите — уточню детали и предложу время показа.
+          Заявка с формы приходит мне напрямую, без колл-центра.
         </p>
       </header>
 

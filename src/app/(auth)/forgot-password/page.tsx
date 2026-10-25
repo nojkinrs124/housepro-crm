@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ForgotPasswordForm } from '@/features/auth/components/ForgotPasswordForm'
-import { Building2, ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
+import { BrandMark } from '@/components/brand/BrandMark'
 
 export default function ForgotPasswordPage() {
   return (
@@ -13,12 +14,7 @@ export default function ForgotPasswordPage() {
       <div className="flex-1 flex items-center justify-center">
         <div className="w-full max-w-md">
           <div className="flex items-center gap-3 mb-10">
-            <div
-              className="w-11 h-11 flex items-center justify-center shrink-0"
-              style={{ background: 'var(--hp-accent)', borderRadius: 'var(--hp-radius)' }}
-            >
-              <Building2 className="w-6 h-6 text-white" />
-            </div>
+            <BrandMark size={44} />
             <div>
               <span className="font-bold text-[18px] leading-tight block tracking-tight" style={{ color: 'var(--hp-ink)' }}>
                 ХаусПро

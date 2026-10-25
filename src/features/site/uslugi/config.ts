@@ -238,7 +238,7 @@ export const DOCUMENT_SAMPLES: readonly DocumentSample[] = [
   {
     id: 'management-contract',
     title: 'Договор доверительного управления',
-    description: 'что мы обязаны делать, что вы, как расторгается',
+    description: 'что я обязан делать, что вы, как расторгается',
     sampleUrl: null,
   },
   {

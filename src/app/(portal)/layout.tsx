@@ -34,7 +34,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       <main className="mx-auto max-w-4xl px-4 py-6 space-y-6">{children}</main>
 
       <footer className="mx-auto max-w-4xl px-4 py-8 text-[12px] text-[var(--hp-tertiary)]">
-        Вопросы по объекту — вашему менеджеру в агентстве.
+        Вопросы по объекту — Руслану Ножкину.
       </footer>
     </div>
   )

@@ -80,7 +80,7 @@ export function DocumentSamples({ id }: Props) {
                         Запросить образец
                       </button>
                       <p className="mt-2 text-[12px] leading-relaxed" style={{ color: 'var(--hp-tertiary)' }}>
-                        Пришлём обезличенный образец в ответ на заявку
+                        Пришлю обезличенный образец в ответ на заявку
                       </p>
                     </>
                   )}
