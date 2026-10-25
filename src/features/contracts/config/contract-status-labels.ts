@@ -6,10 +6,10 @@ export const CONTRACT_STATUS_LABELS: Record<string, string> = {
 
 export const CONTRACT_STATUS_BADGES: Record<string, string> = {
   draft: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]',
-  generated: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]',
+  generated: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-ink)]',
   signed: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]',
   completed: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]',
-  cancelled: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]',
+  cancelled: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-tertiary)]',
 }
 
 export const CONTRACT_STATUS_DETAIL: Record<string, { label: string; cls: string }> = {

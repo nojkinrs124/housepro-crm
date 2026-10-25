@@ -26,6 +26,8 @@ interface KanbanBoardProps<T extends KanbanItem> {
   renderColumnHeader?: (column: { status: string; label: string; [key: string]: unknown }, items: T[]) => React.ReactNode
   renderEmpty?: (isOver: boolean) => React.ReactNode
   renderColumnFooter?: (column: { status: string; label: string; [key: string]: unknown }, items: T[]) => React.ReactNode
+  /** Сколько карточек показывать в колонке до «Показать ещё». Без лимита — все. */
+  previewLimit?: number
 }
 
 /** Shared native HTML5 Kanban shell: drop zones, optimistic status updates and rollback. */
@@ -49,7 +51,9 @@ export function KanbanBoard<T extends KanbanItem>({
   renderColumnHeader,
   renderEmpty,
   renderColumnFooter,
+  previewLimit,
 }: KanbanBoardProps<T>) {
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [items, setItems] = useState(initialItems)
   const [dragged, setDragged] = useState<T | null>(null)
   const [dragOver, setDragOver] = useState<string | null>(null)
@@ -91,12 +95,21 @@ export function KanbanBoard<T extends KanbanItem>({
           const isOver = dragOver === column.status
           const defaultContent = <div className="p-3 space-y-2 min-h-40 flex-1">
                 {columnItems.length === 0
-                  ? renderEmpty?.(isOver) ?? <div className="text-center py-6 text-xs">Пусто</div>
-                  : columnItems.map(item => (
+                  ? renderEmpty?.(isOver) ?? <div className="text-center py-6 text-[12.5px] text-[var(--hp-tertiary)]">{isOver ? 'Перетащите сюда' : 'Нет карточек'}</div>
+                  : (previewLimit && !expanded[column.status] ? columnItems.slice(0, previewLimit) : columnItems).map(item => (
                     <div key={item.id} draggable onDragStart={event => { draggingRef.current = true; setDragged(item); onDragStateChange?.(true); event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', item.id) }} onDragEnd={clearDrag} className={dragged?.id === item.id ? 'opacity-40' : undefined} onClickCapture={event => onCardClickCapture?.(event, item)}>
                       {children?.(item, dragged?.id === item.id)}
                     </div>
                   ))}
+                {previewLimit != null && columnItems.length > previewLimit && (
+                  <button
+                    type="button"
+                    onClick={() => setExpanded(state => ({ ...state, [column.status]: !state[column.status] }))}
+                    className="w-full py-2 text-[12.5px] font-semibold text-[var(--hp-sub)] border border-dashed border-[var(--hp-border)] hover:text-[var(--hp-ink)] hover:border-[var(--hp-sub)] transition-colors"
+                  >
+                    {expanded[column.status] ? 'Свернуть' : `Показать ещё ${columnItems.length - previewLimit}`}
+                  </button>
+                )}
               </div>
           const columnNode = <div key={column.status} data-stage={column.status} className={columnClassName?.(column.status, isOver)} style={{ scrollSnapAlign: 'start', ...columnStyle }} onDragOver={event => { const item = dragged ?? items.find(candidate => candidate.id === event.dataTransfer.getData('text/plain')); if (!item || (canDrop && !canDrop(item, column.status))) return; event.preventDefault(); event.dataTransfer.dropEffect = 'move'; setDragOver(column.status) }} onDragLeave={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragOver(null) }} onDrop={event => { const item = dragged ?? items.find(candidate => candidate.id === event.dataTransfer.getData('text/plain')); if (!item) return; void drop(event, column.status) }}>
             {renderColumnHeader?.(column, columnItems)}

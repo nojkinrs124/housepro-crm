@@ -22,10 +22,10 @@ export interface ShowingRow {
 }
 
 const STATUS_BADGE: Record<string, string> = {
-  planned:   'hp-badge-info',
+  planned:   'hp-badge-neutral',
   completed: 'hp-badge-good',
   cancelled: 'hp-badge-neutral',
-  no_show:   'hp-badge-danger',
+  no_show:   'hp-badge-warn',
 }
 
 const STATUS_LABELS: Record<string, string> =

@@ -244,7 +244,7 @@ export default async function OwnerReportPage({
                 <tr className="bg-[var(--hp-neutral-tint)]">
                   <th className={`${cell} text-left font-semibold`}>Дата</th>
                   <th className={`${cell} text-left font-semibold`}>Назначение</th>
-                  <th className={`${cell} text-right font-semibold`}>Сумма, ₽</th>
+                  <th className={`${cell} text-right font-semibold`}>По тарифу, ₽</th>
                 </tr>
               </thead>
               <tbody>
@@ -277,7 +277,7 @@ export default async function OwnerReportPage({
                 <tr className="bg-[var(--hp-neutral-tint)]">
                   <th className={`${cell} text-left font-semibold`}>Дата</th>
                   <th className={`${cell} text-left font-semibold`}>Назначение</th>
-                  <th className={`${cell} text-right font-semibold`}>Сумма, ₽</th>
+                  <th className={`${cell} text-right font-semibold`}>По тарифу, ₽</th>
                 </tr>
               </thead>
               <tbody>
@@ -310,7 +310,7 @@ export default async function OwnerReportPage({
                   <th className={`${cell} text-left font-semibold`}>Дата</th>
                   <th className={`${cell} text-right font-semibold`}>Показание</th>
                   <th className={`${cell} text-right font-semibold`}>Расход</th>
-                  <th className={`${cell} text-right font-semibold`}>Сумма, ₽</th>
+                  <th className={`${cell} text-right font-semibold`}>По тарифу, ₽</th>
                 </tr>
               </thead>
               <tbody>
@@ -325,6 +325,14 @@ export default async function OwnerReportPage({
                 )))}
               </tbody>
             </table>
+            {/* Счета ЖКХ ведёт не управляющий: он только передаёт показания. Кто
+                платит — собственник по квитанциям, наниматель доплатой или всё
+                включено в аренду — зависит от объекта, поэтому сумма справочная
+                и в расчёт к перечислению не входит. */}
+            <p className="text-[12px] text-[var(--hp-sub)]">
+              Показания переданы для оплаты. Сумма по тарифу справочная и в расчёт ниже не входит:
+              счета ЖКХ оплачиваются по условиям договора найма.
+            </p>
           </div>
         )}
 

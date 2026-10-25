@@ -5,7 +5,8 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { buttonVariants } from '@/components/ui/button'
 import { StatStrip } from '@/components/layout/StatStrip'
 import { EmptyState } from '@/components/layout/EmptyState'
-import { EmployeesView, ROLE_LABELS, type EmployeeRow } from '@/features/employees/components/EmployeesView'
+import { EmployeesView, type EmployeeRow } from '@/features/employees/components/EmployeesView'
+import { ROLE_LABELS } from '@/features/employees/lib/roles'
 import { plural } from '@/lib/utils'
 
 

@@ -80,7 +80,7 @@ export function ContractsView({ contracts }: { contracts: ContractRow[] }) {
         : (
           // Прочерк читался как «здесь ничего и не должно быть», а это дыра в
           // данных: без стороны договор не сгенерировать и не подписать.
-          <span className="hp-badge hp-badge-warn whitespace-nowrap"
+          <span className="whitespace-nowrap text-[12.5px] text-[var(--hp-warn)]"
             title="Сторона договора не заполнена — откройте договор и укажите её">
             {c.counterpartyRole === 'owner' ? 'Нет собственника' : 'Нет клиента'}
           </span>

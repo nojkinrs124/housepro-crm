@@ -19,11 +19,11 @@
 type StageKey = 'blue' | 'yellow' | 'orange' | 'purple' | 'cyan' | 'gray' | 'green' | 'red'
 
 export const LEAD_STATUSES = [
-  { value: 'new',        label: 'Новый',         board: 'Новые',          stage: 'blue'   as StageKey, badge: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]' },
+  { value: 'new',        label: 'Новый',         board: 'Новые',          stage: 'blue'   as StageKey, badge: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-ink)]' },
   { value: 'contacted',  label: 'Связались',     board: 'Связались',      stage: 'yellow' as StageKey, badge: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]' },
   { value: 'showing',    label: 'Показ',         board: 'Показ',          stage: 'orange' as StageKey, badge: 'bg-[var(--hp-warn-tint)] text-[var(--hp-warn)]' },
   { value: 'searching',  label: 'Подбор',        board: 'Подбор',         stage: 'purple' as StageKey, badge: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]' },
-  { value: 'interested', label: 'Заинтересован', board: 'Заинтересованы', stage: 'cyan'   as StageKey, badge: 'bg-[var(--hp-info-tint)] text-[var(--hp-info)]' },
+  { value: 'interested', label: 'Заинтересован', board: 'Заинтересованы', stage: 'cyan'   as StageKey, badge: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-ink)]' },
   { value: 'converted',  label: 'Конвертирован', board: 'Клиенты',        stage: 'green'  as StageKey, badge: 'bg-[var(--hp-good-tint)] text-[var(--hp-good)]' },
   { value: 'closed',     label: 'Закрыт',        board: 'Закрыты',        stage: 'gray'   as StageKey, badge: 'bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)]' },
   { value: 'rejected',   label: 'Отказ',         board: 'Отказ',          stage: 'red'    as StageKey, badge: 'bg-[var(--hp-danger-tint)] text-[var(--hp-danger)]' },

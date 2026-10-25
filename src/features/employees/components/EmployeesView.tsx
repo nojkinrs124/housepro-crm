@@ -7,6 +7,7 @@ import { BulkBar } from '@/features/registry/components/BulkBar'
 import { useRegistryFilters } from '@/hooks/useRegistryFilters'
 import { useSelection } from '@/hooks/useSelection'
 import { formatDate } from '@/lib/utils'
+import { ROLE_LABELS } from '../lib/roles'
 
 export interface EmployeeRow {
   id: string
@@ -20,10 +21,6 @@ export interface EmployeeRow {
   createdAt: string | null
 }
 
-export const ROLE_LABELS: Record<string, string> = {
-  admin: 'Администратор', manager: 'Менеджер',
-  agent: 'Риелтор', accountant: 'Бухгалтер',
-}
 
 const ROLE_OPTIONS = [
   { value: 'all', label: 'Роль: все' },
