@@ -67,6 +67,13 @@ const AVITO_OPTIONS = [
   { value: 'true',  label: 'Опубликован' },
   { value: 'false', label: 'Не опубликован' },
 ]
+// Публикация на своём сайте — отдельный переключатель от Авито: объект может
+// висеть на housepro24.ru и не уходить в фид, и наоборот.
+const SITE_OPTIONS = [
+  { value: 'all',   label: 'Сайт: все' },
+  { value: 'true',  label: 'Опубликован' },
+  { value: 'false', label: 'Не опубликован' },
+]
 
 const VIEWS = [
   { value: 'cards', label: 'Карточки', icon: LayoutGrid },
@@ -84,6 +91,7 @@ export function PropertiesView({ properties }: { properties: PropertyRow[] }) {
       { key: 'deal_type', options: DEAL_OPTIONS,   field: p => p.deal_type },
       { key: 'type',      options: TYPE_OPTIONS,   field: p => p.property_type },
       { key: 'avito',     options: AVITO_OPTIONS,  field: p => String(!!p.avito_publish) },
+      { key: 'site',      options: SITE_OPTIONS,   field: p => String(!!p.site_publish) },
     ],
   })
 
@@ -123,6 +131,15 @@ export function PropertiesView({ properties }: { properties: PropertyRow[] }) {
       cell: p => {
         const s = PROPERTY_STATUS_LABELS[p.status] ?? PROPERTY_STATUS_LABELS.inactive
         return <span className={`hp-badge ${s.badgeCls}`}>{s.label}</span>
+      },
+    },
+    {
+      key: 'publish', title: 'Публикация', cellClass: 'sub whitespace-nowrap', hideBelow: 'lg',
+      cell: p => {
+        const where = [p.site_publish ? 'Сайт' : null, p.avito_publish ? 'Авито' : null].filter(Boolean)
+        return where.length
+          ? <span className="text-[var(--hp-ink)]">{where.join(' · ')}</span>
+          : <span className="text-[var(--hp-tertiary)]">не опубликован</span>
       },
     },
     {
