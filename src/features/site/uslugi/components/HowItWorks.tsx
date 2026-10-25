@@ -93,7 +93,7 @@ export function HowItWorks({ id }: Props) {
               <h3 className="mt-4 text-[15px] font-bold" style={{ color: 'var(--hp-ink)' }}>
                 {step.title}
               </h3>
-              <p className="mt-2 text-[13.5px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+              <p className="mt-2 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
                 {step.text}
               </p>
             </li>
@@ -101,7 +101,7 @@ export function HowItWorks({ id }: Props) {
         </ol>
 
         <p
-          className="mt-6 text-[14px] sm:text-[15px] leading-relaxed max-w-[720px]"
+          className="mt-6 text-[16px] leading-relaxed max-w-[720px]"
           style={{ color: 'var(--hp-sub)' }}
         >
           Нанимателя обычно нахожу за {days(timing.tenantSearchDays)}. Самого заселения ждать не нужно: если

@@ -111,7 +111,7 @@ export function IncomeCalculator({ id }: Props) {
       <h2 className="text-[20px] sm:text-[22px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
         Посчитайте, сколько останется у вас на руки
       </h2>
-      <p className="mt-2 text-[14px] sm:text-[15px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+      <p className="mt-2 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
         Три тарифа — от разового подбора до полного управления. Проценты в голове не сравниваются,
         поэтому считаю сразу в рублях.
       </p>
@@ -181,7 +181,7 @@ export function IncomeCalculator({ id }: Props) {
             <span className="text-[14px] shrink-0" style={{ color: 'var(--hp-sub)' }}>₽</span>
           </div>
         </div>
-        <p className="text-[13px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+        <p className="text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
           Это ориентир по похожим объявлениям. Точную ставку называю после осмотра — часто она
           выше той, которую собственник ставит сам.
         </p>
@@ -202,10 +202,10 @@ export function IncomeCalculator({ id }: Props) {
                 <p className="text-[15px] font-semibold leading-snug" style={{ color: 'var(--hp-ink)' }}>
                   {tariff.calcName}
                 </p>
-                <p className="mt-1 text-[12.5px]" style={{ color: 'var(--hp-sub)' }}>
+                <p className="mt-1 text-[14px]" style={{ color: 'var(--hp-sub)' }}>
                   Ваша комиссия — {tariffCommissionLabel(tariff)}
                 </p>
-                <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--hp-sub)' }}>
+                <p className="mt-3 text-[12px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--hp-sub)' }}>
                   На руки в месяц
                 </p>
                 <p
@@ -218,7 +218,7 @@ export function IncomeCalculator({ id }: Props) {
 
               {/* Ряды «лейбл над значением»: три карточки в ряд узкие, в строку не помещаются */}
               <div className="px-4 py-2.5 border-t" style={{ borderColor: 'var(--hp-border-soft)' }}>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--hp-sub)' }}>
+                <p className="text-[12px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--hp-sub)' }}>
                   За первый год
                 </p>
                 <p className="mt-0.5 text-[14px] font-semibold break-words" style={{ color: 'var(--hp-ink)' }}>
@@ -226,7 +226,7 @@ export function IncomeCalculator({ id }: Props) {
                 </p>
               </div>
               <div className="px-4 py-2.5 border-t" style={{ borderColor: 'var(--hp-border-soft)' }}>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--hp-sub)' }}>
+                <p className="text-[12px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--hp-sub)' }}>
                   Дальше
                 </p>
                 <p className="mt-0.5 text-[14px] font-semibold break-words" style={{ color: 'var(--hp-ink)' }}>
@@ -239,10 +239,10 @@ export function IncomeCalculator({ id }: Props) {
                 )}
               </div>
               <div className="px-4 py-2.5 border-t mt-auto" style={{ borderColor: 'var(--hp-border-soft)' }}>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--hp-sub)' }}>
+                <p className="text-[12px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--hp-sub)' }}>
                   Кто ведёт квартиру
                 </p>
-                <p className="mt-0.5 text-[13.5px] font-medium" style={{ color: 'var(--hp-ink)' }}>
+                <p className="mt-0.5 text-[14px] font-medium" style={{ color: 'var(--hp-ink)' }}>
                   {WHO_MANAGES[tariffId]}
                 </p>
               </div>
@@ -251,19 +251,12 @@ export function IncomeCalculator({ id }: Props) {
         })}
       </div>
 
-      <p className="mt-3 text-[13px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+      <p className="mt-3 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
         Первый год посчитан с учётом бесплатной первой сделки. Со второго года комиссия считается по
         тарифу.
       </p>
 
-      <div
-        className="mt-3 px-4 py-3 text-[13.5px] leading-relaxed"
-        style={{
-          background: 'var(--hp-warn-tint)',
-          color: 'var(--hp-ink)',
-          borderRadius: 'var(--hp-radius)',
-        }}
-      >
+      <div className="hp-note mt-3">
         Гарантия платежа обходится в <strong className="font-semibold">{formatRub(guaranteeCost)}</strong> в
         месяц — разница между «Управлением» и «Премиумом».
       </div>
@@ -288,7 +281,7 @@ export function IncomeCalculator({ id }: Props) {
           Написать в Telegram
         </a>
       </div>
-      <p className="mt-2 text-[12.5px]" style={{ color: 'var(--hp-sub)' }}>
+      <p className="mt-2 text-[14px]" style={{ color: 'var(--hp-sub)' }}>
         Перезвоню в течение {USLUGI.callback.withinMinutes} минут. {USLUGI.callback.workingHours}.
       </p>
     </div>

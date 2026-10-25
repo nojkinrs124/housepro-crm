@@ -62,7 +62,7 @@ export function TrustBlock({ id, stats }: Props) {
 
         <ul className="mt-6 space-y-3">
           {POINTS.map(({ Icon, text }) => (
-            <li key={text} className="flex items-start gap-3 text-[14px] sm:text-[15px] leading-relaxed" style={{ color: 'var(--hp-ink)' }}>
+            <li key={text} className="flex items-start gap-3 text-[16px] leading-relaxed" style={{ color: 'var(--hp-ink)' }}>
               <span
                 aria-hidden="true"
                 className="flex items-center justify-center shrink-0"

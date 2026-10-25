@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowRight, Check, Handshake, KeyRound, Search } from 'lucide-react'
+import { ArrowRight, Check, FileSignature, KeyRound, Search } from 'lucide-react'
 import { ANALYTICS_EVENTS, analyticsAttrs } from '@/features/site/uslugi/analytics'
 import { formatRub } from '@/features/site/uslugi/calc'
 import {
@@ -31,6 +31,9 @@ export const metadata: Metadata = {
 }
 
 interface ServiceCard {
+  /** Крупная цифра цены (засечки) и пояснение под ней */
+  priceValue?: string
+  priceNote?: string
   Icon: typeof KeyRound
   href: string
   title: string
@@ -48,6 +51,8 @@ const SERVICES: ServiceCard[] = [
     text:
       'Не хотите сами разбираться с нанимателем? Нахожу и проверяю его, оформляю договор и акт, дальше веду квартиру по тарифу: от разового подбора до полного управления с гарантией платежа.',
     price: `От ${TARIFFS.upravlenie.percent}% в месяц. Первая сделка — бесплатно.`,
+    priceValue: `от ${TARIFFS.upravlenie.percent}%`,
+    priceNote: 'в месяц за управление · первая сделка бесплатно',
     linkLabel: 'Подробнее и калькулятор дохода',
   },
   {
@@ -57,10 +62,12 @@ const SERVICES: ServiceCard[] = [
     text:
       'Боитесь нарваться на недобросовестного собственника? Подбираю жильё под бюджет и район, включая квартиры, которых нет в открытом доступе, и проверяю документы до внесения залога.',
     price: `${tenantCommissionLabel()} от месячной ставки, один раз при заселении.`,
+    priceValue: tenantCommissionLabel(),
+    priceNote: 'от месячной ставки, один раз при заселении',
     linkLabel: 'Подробнее',
   },
   {
-    Icon: Handshake,
+    Icon: FileSignature,
     href: USLUGI_ROUTES.prodatKupit,
     title: 'Продать или купить',
     text:
@@ -68,6 +75,8 @@ const SERVICES: ServiceCard[] = [
     price: SALE_PRICING
       ? `${SALE_PRICING.percent}% от стоимости объекта плюс ${formatRub(SALE_PRICING.fixedRub)}.`
       : null,
+    priceValue: SALE_PRICING ? `${SALE_PRICING.percent}% + ${formatRub(SALE_PRICING.fixedRub)}` : undefined,
+    priceNote: 'от стоимости объекта, фиксируется в договоре',
     linkLabel: 'Подробнее',
   },
 ]
@@ -100,42 +109,39 @@ export default function UslugiHubPage() {
         </header>
 
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
-          {SERVICES.map(({ Icon, href, title, text, price, linkLabel }) => (
+          {SERVICES.map(({ Icon, href, title, text, price, priceValue, priceNote, linkLabel }) => (
             <Link
               key={href}
               href={href}
               className="hp-card hp-card-hover flex flex-col h-full p-5 sm:p-6"
               {...analyticsAttrs(ANALYTICS_EVENTS.hubCardClick, { target: href })}
             >
-              <div
-                className="w-10 h-10 flex items-center justify-center shrink-0 border"
-                style={{
-                  background: 'var(--hp-neutral-tint)',
-                  borderColor: 'var(--hp-border)',
-                  borderRadius: 'var(--hp-radius)',
-                }}
-              >
-                <Icon aria-hidden="true" style={{ width: 18, height: 18, color: 'var(--hp-ink)' }} />
-              </div>
+              <Icon aria-hidden="true" strokeWidth={1.75} style={{ width: 26, height: 26, color: 'var(--hp-accent)' }} />
 
               <h2 className="mt-4 text-[21px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
                 {title}
               </h2>
-              <p className="mt-2 text-[14px] leading-relaxed flex-1" style={{ color: 'var(--hp-sub)' }}>
+              <p className="mt-2 text-[16px] leading-relaxed flex-1" style={{ color: 'var(--hp-sub)' }}>
                 {text}
               </p>
 
               {price && (
-                <p
-                  className="mt-4 pt-4 text-[14px] font-bold leading-relaxed border-t"
-                  style={{ borderColor: 'var(--hp-border-soft)', color: 'var(--hp-ink)' }}
-                >
-                  {price}
-                </p>
+                <div className="mt-4 pt-4 border-t" style={{ borderColor: 'var(--hp-border-soft)' }}>
+                  {priceValue ? (
+                    <>
+                      <p className="hp-price text-[26px] leading-none" style={{ color: 'var(--hp-ink)' }}>{priceValue}</p>
+                      {priceNote && (
+                        <p className="mt-1.5 text-[14px]" style={{ color: 'var(--hp-sub)' }}>{priceNote}</p>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-[14px] font-bold leading-relaxed" style={{ color: 'var(--hp-ink)' }}>{price}</p>
+                  )}
+                </div>
               )}
 
               <span
-                className="mt-4 text-[13.5px] font-semibold inline-flex items-center gap-1.5"
+                className="mt-4 text-[14px] font-semibold inline-flex items-center gap-1.5"
                 style={{ color: 'var(--hp-accent)' }}
               >
                 {linkLabel}
@@ -163,7 +169,7 @@ export default function UslugiHubPage() {
             {COMMON_POINTS.map(point => (
               <li
                 key={point}
-                className="flex items-start gap-2.5 text-[14px] leading-relaxed"
+                className="flex items-start gap-2.5 text-[16px] leading-relaxed"
                 style={{ color: 'var(--hp-ink)' }}
               >
                 <Check
@@ -191,7 +197,7 @@ export default function UslugiHubPage() {
             <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
               Оставить заявку
             </h2>
-            <p className="mt-3 text-[15px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+            <p className="mt-3 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
               Не поняли, что вам нужно? Опишите ситуацию одной строкой — я подскажу. Консультация
               бесплатная.
             </p>

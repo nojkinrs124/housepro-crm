@@ -165,8 +165,8 @@ export default async function AboutPage() {
       {/* ── Экран 1 ──────────────────────────────────────────────────── */}
       <section className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-10 sm:pt-14">
         <div className="max-w-[760px]">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--hp-sub)' }}>
-            Обо мне · Красноярск и Берёзовка
+          <p className="text-[12px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--hp-sub)' }}>
+            Обо мне
           </p>
           <h1
             className="mt-4 text-[30px] sm:text-[40px] font-bold tracking-tight leading-[1.08] break-words"
@@ -203,19 +203,17 @@ export default async function AboutPage() {
           Кто отвечает за вашу квартиру
         </h2>
         <div
-          className={`mt-8 border p-5 sm:p-8 grid grid-cols-1 gap-8 items-start ${
+          className={`hp-forest mt-8 p-6 sm:p-10 grid grid-cols-1 gap-8 lg:gap-12 items-start ${
             hasPhoto ? 'lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]' : ''
           }`}
-          style={cardStyle}
         >
           {hasPhoto && (
             <div
-              className="relative w-full aspect-square overflow-hidden border"
-              style={{ borderColor: 'var(--hp-border)', borderRadius: 'var(--hp-radius)' }}
+              className="relative w-full aspect-square overflow-hidden"
             >
               <Image
                 src={FOUNDER_PHOTO}
-                alt="Руслан Ножкин, основатель ХаусПро"
+                alt="Руслан Ножкин, частный риелтор, ХаусПро"
                 fill
                 sizes="(min-width: 1024px) 360px, 100vw"
                 className="object-cover"
@@ -226,12 +224,12 @@ export default async function AboutPage() {
               />
             </div>
           )}
-          <div className="min-w-0 max-w-[680px] space-y-4 text-[15px] sm:text-[16px] leading-relaxed" style={{ color: 'var(--hp-ink)' }}>
+          <div className="min-w-0 max-w-[680px] space-y-4 text-[16px] leading-relaxed hp-forest-sub">
             <p>
               В недвижимость я пришёл в {TRUST.sinceYear} году — агентом по аренде: показы, договоры,
               заселения. Довольно быстро стало понятно, что собственнику нужен не риелтор на один день,
               а человек, который останется с квартирой после заселения: примет звонок про кран,
-              напомнит нанимателю об оплате, приедет на проверку. Так появилось управление — и сейчас
+              напомнит нанимателю об оплате, приедет на проверку. Так появилось управление&nbsp;— и сейчас
               это главное, чем я занимаюсь.
             </p>
             <p>
@@ -243,13 +241,16 @@ export default async function AboutPage() {
               За каждую квартиру в управлении отвечаю я лично — мой номер стоит в шапке сайта.
               Звонить в колл-центр не придётся.
             </p>
-            <p className="pt-2 text-[14px]" style={{ color: 'var(--hp-sub)' }}>
-              <span className="font-semibold" style={{ color: 'var(--hp-ink)', fontFamily: SERIF, fontSize: 17 }}>
-                Руслан Ножкин
-              </span>
-              , частный риелтор, {SITE_BRAND}
-              {contacts.inn && <> · ИНН {contacts.inn}</>}
-            </p>
+            <div className="pt-3">
+              <span className="hp-sign-line" aria-hidden="true" />
+              <p className="mt-3 text-[14px]">
+                <span className="font-semibold" style={{ color: 'var(--hp-on-forest)', fontFamily: SERIF, fontSize: 19 }}>
+                  Руслан Ножкин
+                </span>
+                , частный риелтор, {SITE_BRAND}
+                {contacts.inn && <> · ИНН {contacts.inn}</>}
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -265,7 +266,7 @@ export default async function AboutPage() {
               <h3 className="text-[16px] font-bold leading-snug" style={{ color: 'var(--hp-ink)' }}>
                 {title}
               </h3>
-              <p className="mt-2.5 text-[14px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+              <p className="mt-2.5 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
                 {text}
               </p>
             </div>
@@ -291,18 +292,18 @@ export default async function AboutPage() {
                 {d.label}
               </p>
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--hp-tertiary)' }}>
+                <p className="text-[12px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--hp-tertiary)' }}>
                   Обычно
                 </p>
-                <p className="mt-1 text-[14px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+                <p className="mt-1 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
                   {d.usually}
                 </p>
               </div>
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--hp-accent)' }}>
+                <p className="text-[12px] font-semibold uppercase tracking-[0.06em]" style={{ color: 'var(--hp-accent)' }}>
                   У меня
                 </p>
-                <p className="mt-1 text-[14px] leading-relaxed font-medium" style={{ color: 'var(--hp-ink)' }}>
+                <p className="mt-1 text-[16px] leading-relaxed font-medium" style={{ color: 'var(--hp-ink)' }}>
                   {d.ours}
                 </p>
               </div>
@@ -324,7 +325,7 @@ export default async function AboutPage() {
             <h2 className="mt-4 text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
               Что написано в договоре со мной
             </h2>
-            <p className="mt-3 text-[15px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+            <p className="mt-3 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
               Четыре вещи, которые собственник обычно узнаёт постфактум. У меня они в договоре текстом.
             </p>
             <Link
@@ -417,7 +418,7 @@ export default async function AboutPage() {
             <h3 className="mt-4 text-[18px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
               Сдать квартиру
             </h3>
-            <p className="mt-2 text-[14px] leading-relaxed flex-1" style={{ color: 'var(--hp-sub)' }}>
+            <p className="mt-2 text-[16px] leading-relaxed flex-1" style={{ color: 'var(--hp-sub)' }}>
               Посчитайте доход по трём тарифам и оставьте заявку — перезвоню в течение{' '}
               {USLUGI.callback.withinMinutes} минут.
             </p>
@@ -440,7 +441,7 @@ export default async function AboutPage() {
             <h3 className="mt-4 text-[18px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
               Снять, продать или купить
             </h3>
-            <p className="mt-2 text-[14px] leading-relaxed flex-1" style={{ color: 'var(--hp-sub)' }}>
+            <p className="mt-2 text-[16px] leading-relaxed flex-1" style={{ color: 'var(--hp-sub)' }}>
               Свободные объекты в каталоге, закрытая база — по заявке.
             </p>
             <div className="mt-5 flex flex-col sm:flex-row gap-3">
@@ -468,7 +469,7 @@ export default async function AboutPage() {
             <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
               Напишите мне
             </h2>
-            <p className="mt-3 text-[15px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+            <p className="mt-3 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
               Опишите ситуацию одной строкой — подскажу, с чего начать. Консультация бесплатная.
             </p>
           </div>

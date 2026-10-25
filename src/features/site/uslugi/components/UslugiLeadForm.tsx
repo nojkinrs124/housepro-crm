@@ -137,7 +137,7 @@ export function UslugiLeadForm({
           <p className="font-bold text-[15px]" style={{ color: 'var(--hp-good)' }}>
             Заявка у меня.
           </p>
-          <p className="mt-1 text-[13.5px] leading-relaxed" style={{ color: 'var(--hp-ink)' }}>
+          <p className="mt-1 text-[16px] leading-relaxed" style={{ color: 'var(--hp-ink)' }}>
             Перезвоню в течение {USLUGI.callback.withinMinutes} минут — с номера{' '}
             <a href={USLUGI_CONTACTS.phoneHref} className="font-semibold whitespace-nowrap">
               {USLUGI_CONTACTS.phone}
@@ -147,7 +147,7 @@ export function UslugiLeadForm({
           <button
             type="button"
             onClick={() => setStatus('idle')}
-            className="mt-3 text-[13px] font-semibold underline underline-offset-2"
+            className="mt-3 text-[14px] font-semibold underline underline-offset-2"
             style={{ color: 'var(--hp-sub)' }}
           >
             Отправить ещё одну заявку
@@ -171,7 +171,7 @@ export function UslugiLeadForm({
 
       {summary && (
         <div
-          className="flex items-start justify-between gap-3 px-4 py-2.5 border text-[13px]"
+          className="flex items-start justify-between gap-3 px-4 py-2.5 border text-[14px]"
           style={{
             background: 'var(--hp-accent-tint)',
             borderColor: 'var(--hp-border)',
@@ -201,7 +201,7 @@ export function UslugiLeadForm({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <label className="hp-label" htmlFor="uslugi-lead-name">Как к вам обращаться *</label>
+          <label className="hp-label" htmlFor="uslugi-lead-name">Имя *</label>
           <input
             id="uslugi-lead-name"
             name="name"
@@ -210,7 +210,7 @@ export function UslugiLeadForm({
             minLength={2}
             maxLength={120}
             autoComplete="name"
-            placeholder="Имя"
+            placeholder="Как к вам обращаться"
             className={inputClass}
           />
         </div>
@@ -279,7 +279,7 @@ export function UslugiLeadForm({
       {error && (
         <p
           role="alert"
-          className="px-4 py-2.5 text-[13px] border"
+          className="px-4 py-2.5 text-[14px] border"
           style={{
             background: 'var(--hp-danger-tint)',
             borderColor: 'var(--hp-danger)',

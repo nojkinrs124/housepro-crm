@@ -158,7 +158,7 @@ function FeatureList({ features }: { features: Feature[] }) {
         {shown.map(f => (
           <li
             key={f.text}
-            className="flex items-start gap-2.5 text-[13.5px] leading-relaxed"
+            className="flex items-start gap-2.5 text-[16px] leading-relaxed"
             style={{ color: 'var(--hp-ink)' }}
           >
             <Check
@@ -176,7 +176,7 @@ function FeatureList({ features }: { features: Feature[] }) {
         <button
           type="button"
           onClick={() => setExpanded(v => !v)}
-          className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold"
+          className="mt-3 inline-flex items-center gap-1.5 text-[14px] font-semibold"
           style={{ color: 'var(--hp-accent)' }}
         >
           {expanded ? 'Свернуть' : `Показать все ${features.length} пунктов`}
@@ -200,7 +200,7 @@ export function TariffCards({ id }: Props) {
         <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
           Три тарифа — выберите, сколько работы оставляете себе
         </h2>
-        <p className="mt-2 text-[14px] sm:text-[15px] leading-relaxed max-w-[640px]" style={{ color: 'var(--hp-sub)' }}>
+        <p className="mt-2 text-[16px] leading-relaxed max-w-[640px]" style={{ color: 'var(--hp-sub)' }}>
           Что входит в каждый тариф, написано ниже дословно и попадает в договор. Ни одного пункта «и другие
           вопросы по объекту».
         </p>
@@ -221,12 +221,12 @@ export function TariffCards({ id }: Props) {
               >
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                   <span
-                    className="text-[11px] font-bold tracking-widest uppercase"
+                    className="text-[12px] font-bold tracking-widest uppercase"
                     style={{ color: 'var(--hp-tertiary)' }}
                   >
                     Тариф {index + 1}
                   </span>
-                  {t.popular && <span className="hp-badge hp-badge-good">{POPULAR_BADGE}</span>}
+                  {t.popular && <span className="hp-badge hp-badge-brand">{POPULAR_BADGE}</span>}
                 </div>
 
                 <h3 className="mt-3 text-[21px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
@@ -241,13 +241,13 @@ export function TariffCards({ id }: Props) {
                     >
                       {t.percent}%
                     </span>
-                    <span className="text-[13px] font-medium" style={{ color: 'var(--hp-sub)' }}>
+                    <span className="text-[14px] font-medium" style={{ color: 'var(--hp-sub)' }}>
                       {copy.priceNote}
                     </span>
                   </div>
                 </div>
 
-                <p className="mt-4 text-[14px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+                <p className="mt-4 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
                   <span className="font-semibold" style={{ color: 'var(--hp-ink)' }}>
                     Для кого:
                   </span>{' '}
@@ -256,14 +256,14 @@ export function TariffCards({ id }: Props) {
 
                 <div className="mt-5 flex-1">
                   {copy.linkLine && (
-                    <p className="text-[12.5px] font-semibold mb-2.5" style={{ color: 'var(--hp-accent)' }}>
+                    <p className="text-[14px] font-semibold mb-2.5" style={{ color: 'var(--hp-accent)' }}>
                       {copy.linkLine}
                     </p>
                   )}
                   <FeatureList features={copy.features} />
                   {copy.footnote && (
                     <p
-                      className="mt-4 pt-3 text-[12.5px] leading-relaxed border-t"
+                      className="mt-4 pt-3 text-[16px] leading-relaxed border-t"
                       style={{ borderColor: 'var(--hp-border-soft)', color: 'var(--hp-tertiary)' }}
                     >
                       {copy.footnote}

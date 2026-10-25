@@ -53,8 +53,8 @@ export default async function SdatKvartiruPage() {
       {/* ── Экран 1: заголовок ────────────────────────────────────────── */}
       <section id={HERO_ID} className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-10 sm:pt-14">
         <div className="max-w-[760px]">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--hp-sub)' }}>
-            Собственникам · Красноярск и Берёзовка
+          <p className="text-[12px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--hp-sub)' }}>
+            Собственникам
           </p>
           <h1
             className="mt-4 text-[30px] sm:text-[40px] font-bold tracking-tight leading-[1.08] break-words"
@@ -67,18 +67,11 @@ export default async function SdatKvartiruPage() {
             квартиру и веду её дальше, сколько нужно. Вы получаете деньги на карту, а не звонки про потёкший кран.
           </p>
 
-          <div
-            className="mt-6 p-4 sm:p-5 border"
-            style={{
-              background: 'var(--hp-good-tint)',
-              borderColor: 'var(--hp-good)',
-              borderRadius: 'var(--hp-radius)',
-            }}
-          >
-            <p className="text-[15px] font-bold" style={{ color: 'var(--hp-good)' }}>
+          <div className="hp-note mt-6">
+            <p className="hp-note-title">
               Первая сделка — бесплатно.
             </p>
-            <p className="mt-1 text-[14px] leading-relaxed" style={{ color: 'var(--hp-ink)' }}>
+            <p className="mt-1">
               Комиссию за подбор нанимателя не беру: {objectsPhrase(USLUGI.freeFirstDeal.objectsPerOwner)} на
               собственника, для тех, кто обращается ко мне впервые.
             </p>
@@ -116,12 +109,12 @@ export default async function SdatKvartiruPage() {
             {PAIN_POINTS.map(point => (
               <li
                 key={point}
-                className="flex items-start gap-2.5 text-[14px] leading-relaxed"
+                className="flex items-start gap-2.5 text-[16px] leading-relaxed"
                 style={{ color: 'var(--hp-ink)' }}
               >
                 <X
                   aria-hidden="true"
-                  style={{ width: 15, height: 15, marginTop: 3, color: 'var(--hp-warn)', flexShrink: 0 }}
+                  style={{ width: 15, height: 15, marginTop: 3, color: 'var(--hp-sub)', flexShrink: 0 }}
                 />
                 <span className="break-words">{point}</span>
               </li>
@@ -173,7 +166,7 @@ export default async function SdatKvartiruPage() {
             <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
               Расскажите про квартиру
             </h2>
-            <p className="mt-3 text-[15px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+            <p className="mt-3 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
               Район, комнатность и что вас беспокоит — этого хватит, чтобы назвать ставку и тариф.
               Консультация до договора бесплатная.
             </p>

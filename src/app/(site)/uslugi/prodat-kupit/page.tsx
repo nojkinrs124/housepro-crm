@@ -97,8 +97,8 @@ export default function ProdatKupitPage() {
       {/* ── Первый экран ───────────────────────────────────────────────── */}
       <section className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-10 sm:pt-14">
         <div className="max-w-[760px]">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--hp-sub)' }}>
-            Продавцам и покупателям · Красноярск и Берёзовка
+          <p className="text-[12px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--hp-sub)' }}>
+            Продажа и покупка
           </p>
           <h1
             className="mt-4 text-[30px] sm:text-[40px] font-bold tracking-tight leading-tight break-words"
@@ -112,17 +112,13 @@ export default function ProdatKupitPage() {
           </p>
 
           {SALE_PRICING && (
-            <div
-              className="mt-6 border px-4 py-3 text-[14px] font-semibold leading-relaxed"
-              style={{
-                background: 'var(--hp-good-tint)',
-                borderColor: 'var(--hp-good)',
-                borderRadius: 'var(--hp-radius)',
-                color: 'var(--hp-ink)',
-              }}
-            >
-              {SALE_PRICING.percent}% от стоимости объекта плюс {formatRub(SALE_PRICING.fixedRub)}. Цена известна
-              до начала работы и фиксируется в договоре.
+            <div className="hp-note mt-6">
+              <span className="hp-price text-[22px] block">
+                {SALE_PRICING.percent}% + {formatRub(SALE_PRICING.fixedRub)}
+              </span>
+              <span className="block mt-1">
+                от стоимости объекта. Цена известна до начала работы и фиксируется в договоре.
+              </span>
             </div>
           )}
 
@@ -158,12 +154,12 @@ export default function ProdatKupitPage() {
             {PAIN_POINTS.map(point => (
               <li
                 key={point}
-                className="flex items-start gap-2.5 text-[14px] leading-relaxed"
+                className="flex items-start gap-2.5 text-[16px] leading-relaxed"
                 style={{ color: 'var(--hp-ink)' }}
               >
                 <X
                   aria-hidden="true"
-                  style={{ width: 15, height: 15, marginTop: 3, color: 'var(--hp-warn)', flexShrink: 0 }}
+                  style={{ width: 15, height: 15, marginTop: 3, color: 'var(--hp-sub)', flexShrink: 0 }}
                 />
                 <span className="break-words">{point}</span>
               </li>
@@ -218,7 +214,7 @@ export default function ProdatKupitPage() {
           <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
             Юридическое сопровождение отдельно
           </h2>
-          <p className="mt-2 text-[14px] sm:text-[15px] leading-relaxed max-w-[640px]" style={{ color: 'var(--hp-sub)' }}>
+          <p className="mt-2 text-[16px] leading-relaxed max-w-[640px]" style={{ color: 'var(--hp-sub)' }}>
             Объект нашли сами, риелтор не нужен, но подписывать вслепую не хотите — беру на себя только
             правовую часть: проверка объекта и продавца, договор, безопасные расчёты, регистрация.
           </p>
@@ -252,7 +248,7 @@ export default function ProdatKupitPage() {
             <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
               Расскажите про объект
             </h2>
-            <p className="mt-3 text-[15px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+            <p className="mt-3 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
               Что продаёте или что ищете, в каком районе и в какие сроки. Оценка и консультация до договора —
               бесплатно.
             </p>

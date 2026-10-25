@@ -79,14 +79,14 @@ export function LeadForm({
           <p className="font-bold text-[15px]" style={{ color: 'var(--hp-good)' }}>
             Заявка принята
           </p>
-          <p className="mt-1 text-[13.5px] leading-relaxed" style={{ color: 'var(--hp-ink)' }}>
+          <p className="mt-1 text-[16px] leading-relaxed" style={{ color: 'var(--hp-ink)' }}>
             Перезвоню в рабочее время — обычно в течение часа. Если вопрос срочный,
             позвоните сами, номер в шапке страницы.
           </p>
           <button
             type="button"
             onClick={() => setStatus('idle')}
-            className="mt-3 text-[13px] font-semibold underline underline-offset-2"
+            className="mt-3 text-[14px] font-semibold underline underline-offset-2"
             style={{ color: 'var(--hp-sub)' }}
           >
             Отправить ещё одну заявку
@@ -106,7 +106,7 @@ export function LeadForm({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-1.5">
-          <label className="hp-label" htmlFor="lead-name">Как к вам обращаться *</label>
+          <label className="hp-label" htmlFor="lead-name">Имя *</label>
           <input
             id="lead-name"
             name="name"
@@ -115,7 +115,7 @@ export function LeadForm({
             minLength={2}
             maxLength={120}
             autoComplete="name"
-            placeholder="Имя"
+            placeholder="Как к вам обращаться"
             className={inputClass}
           />
         </div>
@@ -164,7 +164,7 @@ export function LeadForm({
 
       {error && (
         <p
-          className="px-4 py-2.5 text-[13px] border"
+          className="px-4 py-2.5 text-[14px] border"
           style={{
             background: 'var(--hp-danger-tint)',
             borderColor: 'var(--hp-danger)',

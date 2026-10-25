@@ -81,7 +81,7 @@ export default async function ContactsPage() {
               <Icon style={{ width: 17, height: 17, color: 'var(--hp-ink)' }} />
             </div>
             <p
-              className="mt-4 text-[10px] font-semibold uppercase tracking-[0.09em]"
+              className="mt-4 text-[12px] font-semibold uppercase tracking-[0.09em]"
               style={{ color: 'var(--hp-sub)' }}
             >
               {label}
@@ -99,7 +99,7 @@ export default async function ContactsPage() {
                 {value}
               </p>
             )}
-            <p className="mt-auto pt-3 text-[12.5px] leading-snug" style={{ color: 'var(--hp-tertiary)' }}>
+            <p className="mt-auto pt-3 text-[14px] leading-snug" style={{ color: 'var(--hp-tertiary)' }}>
               {note}
             </p>
           </div>
@@ -118,7 +118,7 @@ export default async function ContactsPage() {
           <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
             Оставить заявку
           </h2>
-          <p className="mt-3 text-[15px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+          <p className="mt-3 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
             Напишите, что нужно: снять, сдать, купить, продать или просто проверить
             документы по объекту, который вы уже нашли. Чем конкретнее запрос —
             бюджет, район, сроки — тем точнее будет первый же звонок.

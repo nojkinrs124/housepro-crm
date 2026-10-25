@@ -37,10 +37,10 @@ export function Testimonials({ items }: Props) {
               borderRadius: 'var(--hp-radius)',
             }}
           >
-            <blockquote className="m-0 flex-1 text-[14px] leading-relaxed" style={{ color: 'var(--hp-ink)' }}>
+            <blockquote className="m-0 flex-1 text-[16px] leading-relaxed" style={{ color: 'var(--hp-ink)' }}>
               {item.text}
             </blockquote>
-            <figcaption className="mt-4 text-[13px] leading-snug">
+            <figcaption className="mt-4 text-[14px] leading-snug">
               <span className="font-bold" style={{ color: 'var(--hp-ink)' }}>
                 {item.author}
               </span>

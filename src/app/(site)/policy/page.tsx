@@ -103,23 +103,23 @@ export default async function PolicyPage() {
         <h1 className="text-[27px] font-bold text-[var(--hp-ink)] tracking-tight leading-tight">
           Политика обработки персональных данных
         </h1>
-        <p className="text-[var(--hp-sub)] text-sm font-medium">
+        <p className="text-[var(--hp-sub)] text-[15px] font-medium">
           Редакция от {new Date(CONSENT_VERSION).toLocaleDateString('ru-RU')} · оператор — {operator}
         </p>
       </header>
 
       {sections.map((section) => (
         <section key={section.title} className="space-y-3">
-          <h2 className="font-bold text-[var(--hp-ink)] text-[17px]">{section.title}</h2>
+          <h2 className="font-bold text-[var(--hp-ink)] text-[21px]">{section.title}</h2>
           {section.paragraphs.map((text) => (
-            <p key={text} className="text-sm leading-relaxed text-[var(--hp-sub)]">
+            <p key={text} className="text-[16px] leading-relaxed text-[var(--hp-ink)]">
               {text}
             </p>
           ))}
           {section.items && (
             <ul className="list-disc pl-5 space-y-1.5">
               {section.items.map((item) => (
-                <li key={item} className="text-sm leading-relaxed text-[var(--hp-sub)]">
+                <li key={item} className="text-[16px] leading-relaxed text-[var(--hp-ink)]">
                   {item}
                 </li>
               ))}

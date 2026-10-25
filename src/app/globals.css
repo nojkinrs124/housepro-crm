@@ -79,6 +79,7 @@
        Лес — тёмный фон бренда (подвал сайта, обложки). Латунь — только
        черта в знаке и акценты НА лесном фоне: на светлом не проходит контраст. */
     --hp-forest:          #1F2B1D;
+    --hp-forest-2:        #263A22; /* блоки внутри страницы — зеленее подвала (латунь 5.2:1) */
     --hp-brass:           #C8A45C;
     --hp-on-accent:       #FBFBF8; /* буквы знака и текст на мховом */
     --hp-on-forest:       #EEF0E9; /* основной текст на лесном фоне — 12.9:1 */
@@ -166,6 +167,77 @@
     font-weight: 700;
     letter-spacing: -0.015em;
   }
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   БРЕНД v2 — маркетинговые приёмы публичного сайта (brand/BRANDBOOK.md)
+   Статусные цвета (good/warn/danger/info) на сайте НЕ используются —
+   только в CRM. Для выделений на сайте — эти классы.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Выделенная заметка: «первая сделка бесплатно», цена услуги, «объект уже сдан». */
+.hp-note {
+  background: var(--hp-accent-tint);
+  border-left: 3px solid var(--hp-accent);
+  color: var(--hp-ink);
+  padding: 14px 18px;
+  font-size: 15px;
+  line-height: 1.55;
+}
+.hp-note-title { font-weight: 700; color: var(--hp-accent-hover); }
+
+/* Тёмный «лесной» блок — один-два на длинную страницу, для ритма.
+   Латунь (--hp-brass) допустима ТОЛЬКО внутри него. */
+.hp-forest {
+  background: var(--hp-forest-2);
+  color: var(--hp-on-forest);
+}
+.hp-forest .hp-forest-sub { color: var(--hp-on-forest-sub); }
+.hp-forest .hp-forest-accent { color: var(--hp-brass); }
+.hp-forest .hp-forest-line { border-color: #3B5034; }
+
+/* Цена/крупная цифра — засечки + моноширинные цифры */
+.hp-price {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Штамп «ПРОВЕРЕНО · дата» — бумажный элемент бренда */
+.hp-stamp {
+  display: inline-block;
+  border: 1.5px solid var(--hp-accent);
+  color: var(--hp-accent);
+  padding: 5px 11px;
+  font: 700 11px 'Source Sans 3', sans-serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transform: rotate(-2deg);
+  white-space: nowrap;
+}
+
+/* Латунная черта подписи — под итоговой суммой или подписью, только на тёмном */
+.hp-sign-line { display: block; width: 120px; height: 3px; background: var(--hp-brass); }
+
+/* Публичный сайт крупнее CRM: основной текст 16, подписи форм 14
+   (brand/BRANDBOOK.md, раздел 5). Обёртка .hp-site — в (site)/layout.tsx. */
+.hp-site .hp-label { font-size: 14px; margin-bottom: 7px; }
+.hp-site .hp-input { height: 46px; font-size: 16px; }
+.hp-site textarea.hp-input { height: auto; padding-top: 11px; padding-bottom: 11px; }
+.hp-site .hp-btn-primary,
+.hp-site .hp-btn-secondary { font-size: 15px; }
+.hp-site .hp-badge { font-size: 12px; }
+.hp-site .hp-block-header { font-size: 12px; }
+.hp-site .hp-block-row { font-size: 15px; padding: 12px 18px; }
+
+/* Капс-подпись секции сайта (12px — минимум для сайта по брендбуку) */
+.hp-eyebrow {
+  font: 600 12px 'Source Sans 3', sans-serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--hp-sub);
 }
 
 /* ── Date/time inputs: prevent WebKit native control from overflowing container ── */
@@ -369,6 +441,8 @@ input[type="date"]::-webkit-calendar-picker-indicator { margin-left: 4px; }
 .hp-badge-warn    { background: var(--hp-warn-tint);    color: var(--hp-warn); }
 .hp-badge-danger  { background: var(--hp-danger-tint);  color: var(--hp-danger); }
 .hp-badge-info    { background: var(--hp-info-tint);    color: var(--hp-info); }
+/* Бренд — для сайта: «Свободен», «Выбирают чаще» (вместо статусного good) */
+.hp-badge-brand   { background: var(--hp-accent);       color: var(--hp-on-accent); }
 
 /* ── «Блок» — секция-реестр: капс-заголовок + линованные строки лейбл/значение.
    Структура из направления «Инженерный реестр», шрифт/цвет — «Кабинет».

@@ -136,7 +136,7 @@ export default async function CatalogPage({
                   key={n}
                   href={pageHref(filters, n)}
                   aria-current={n === page ? 'page' : undefined}
-                  className="w-10 h-10 flex items-center justify-center text-[13.5px] font-semibold border transition-colors"
+                  className="w-10 h-10 flex items-center justify-center text-[14px] font-semibold border transition-colors"
                   style={{
                     borderRadius: 'var(--hp-radius)',
                     background: n === page ? 'var(--hp-accent-tint)' : 'var(--hp-surface)',

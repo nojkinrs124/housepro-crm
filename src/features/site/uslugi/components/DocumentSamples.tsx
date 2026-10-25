@@ -26,7 +26,7 @@ export function DocumentSamples({ id }: Props) {
         <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
           Посмотрите документы до того, как что-то подписывать
         </h2>
-        <p className="mt-2 text-[14px] sm:text-[15px] leading-relaxed max-w-[640px]" style={{ color: 'var(--hp-sub)' }}>
+        <p className="mt-2 text-[16px] leading-relaxed max-w-[640px]" style={{ color: 'var(--hp-sub)' }}>
           Три документа, которые вы получите. Открываются прямо здесь, обезличенные — без данных реальных
           клиентов.
         </p>
@@ -54,7 +54,7 @@ export function DocumentSamples({ id }: Props) {
                 <h3 className="mt-4 text-[17px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
                   {doc.title}
                 </h3>
-                <p className="mt-2 text-[14px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+                <p className="mt-2 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
                   {doc.description}
                 </p>
 

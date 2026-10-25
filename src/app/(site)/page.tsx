@@ -6,6 +6,7 @@ import { LeadForm } from '@/features/site/components/LeadForm'
 import { PropertyCard } from '@/features/site/components/PropertyCard'
 import { fetchFeaturedProperties, fetchPublishedDistricts } from '@/features/site/lib/properties'
 import { getSiteContacts } from '@/features/site/lib/contacts'
+import { TARIFFS, TRUST, USLUGI } from '@/features/site/uslugi/config'
 
 export const metadata: Metadata = {
   title: 'Сдаю и веду вашу квартиру в Красноярске — ХаусПро, Руслан Ножкин',
@@ -49,10 +50,10 @@ export default async function HomePage() {
       <section className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-14 pb-12 sm:pt-20 sm:pb-16">
         <div className="max-w-[760px]">
           <p
-            className="text-[11px] font-semibold uppercase tracking-[0.12em]"
+            className="text-[12px] font-semibold uppercase tracking-[0.12em]"
             style={{ color: 'var(--hp-sub)' }}
           >
-            Руслан Ножкин · частный риелтор · Красноярск и Берёзовка
+            Частный риелтор · Красноярск
           </p>
           <h1
             className="mt-4 text-[34px] sm:text-[46px] lg:text-[54px] font-bold leading-[1.06] tracking-tight break-words"
@@ -108,7 +109,7 @@ export default async function HomePage() {
           </div>
           <Link
             href="/catalog"
-            className="text-[13.5px] font-semibold inline-flex items-center gap-1.5 shrink-0 transition-opacity hover:opacity-70"
+            className="text-[14px] font-semibold inline-flex items-center gap-1.5 shrink-0 transition-opacity hover:opacity-70"
             style={{ color: 'var(--hp-accent)' }}
           >
             Весь каталог
@@ -179,11 +180,52 @@ export default async function HomePage() {
               <h3 className="mt-4 text-[16px] font-bold leading-snug" style={{ color: 'var(--hp-ink)' }}>
                 {title}
               </h3>
-              <p className="mt-2 text-[14px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+              <p className="mt-2 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
                 {text}
               </p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ── Обещание бренда — лесной блок (brand/BRANDBOOK.md, раздел 6) ── */}
+      <section className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-20">
+        <div className="hp-forest p-6 sm:p-10 grid grid-cols-1 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-8 lg:gap-12">
+          <div className="min-w-0">
+            <p className="hp-eyebrow hp-forest-sub">Доверительное управление</p>
+            <h2 className="mt-3 text-[28px] sm:text-[34px] font-bold leading-tight tracking-tight">
+              Квартира сдана, деньги приходят, а&nbsp;вас не&nbsp;дёргают
+            </h2>
+            <p className="mt-4 text-[16px] leading-relaxed hp-forest-sub max-w-[560px]">
+              Беру на себя жильцов, договор, акт, платежи и бытовые вопросы. Раз в месяц присылаю
+              отчёт: сколько пришло, что было с квартирой, показания счётчиков.
+            </p>
+            <span className="hp-sign-line mt-6" aria-hidden="true" />
+            <p className="mt-3 text-[15px] font-semibold">Руслан Ножкин</p>
+            <Link
+              href="/uslugi/sdat-kvartiru"
+              className="mt-6 inline-flex items-center gap-2 text-[15px] font-semibold hp-forest-accent transition-opacity hover:opacity-80"
+            >
+              Условия управления
+              <ArrowRight style={{ width: 15, height: 15 }} />
+            </Link>
+          </div>
+          <dl className="min-w-0 grid grid-cols-2 border-t hp-forest-line">
+            {[
+              { v: `от ${TARIFFS.upravlenie.percent}%`, l: 'в месяц за управление' },
+              { v: `с ${TRUST.sinceYear}`, l: 'года в недвижимости' },
+              { v: `${TRUST.closedDeals}+`, l: 'закрытых сделок' },
+              { v: `${USLUGI.payoutWindow.fromDay}–${USLUGI.payoutWindow.toDay}`, l: 'числа — деньги у вас на карте' },
+            ].map((s, i) => (
+              <div
+                key={s.l}
+                className={`py-6 border-b hp-forest-line flex flex-col justify-center ${i % 2 === 0 ? 'pr-4 border-r' : 'pl-5'}`}
+              >
+                <dt className="hp-price text-[30px] sm:text-[34px] leading-none hp-forest-accent">{s.v}</dt>
+                <dd className="mt-2 text-[14px] hp-forest-sub">{s.l}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </section>
 
@@ -201,13 +243,13 @@ export default async function HomePage() {
             <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
               Расскажите, что нужно
             </h2>
-            <p className="mt-3 text-[15px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+            <p className="mt-3 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
               Подбор, сдача своей квартиры, проверка документов перед покупкой или
               вопрос по уже подписанному договору — напишите одной строкой,
               перезвоню и уточню детали.
             </p>
             <div className="hp-block mt-5">
-              <div className="hp-block-header">Как со мной связаться</div>
+              <div className="hp-block-header">Контакты</div>
               <div className="hp-block-row">
                 <span className="label">Телефон</span>
                 <a href={contacts.phoneHref} className="value transition-opacity hover:opacity-70">

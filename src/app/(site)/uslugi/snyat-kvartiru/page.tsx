@@ -93,8 +93,8 @@ export default function SnyatKvartiruPage() {
       {/* ── Первый экран ───────────────────────────────────────────────── */}
       <section className="max-w-[1180px] mx-auto px-4 sm:px-6 pt-10 sm:pt-14">
         <div className="max-w-[760px]">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--hp-sub)' }}>
-            Нанимателям · Красноярск и Берёзовка
+          <p className="text-[12px] font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--hp-sub)' }}>
+            Нанимателям
           </p>
           <h1
             className="mt-4 text-[30px] sm:text-[40px] font-bold tracking-tight leading-tight break-words"
@@ -107,15 +107,7 @@ export default function SnyatKvartiruPage() {
             составлю договор, который защищает и вас тоже.
           </p>
 
-          <div
-            className="mt-6 border px-4 py-3 text-[14px] font-semibold leading-relaxed"
-            style={{
-              background: 'var(--hp-good-tint)',
-              borderColor: 'var(--hp-good)',
-              borderRadius: 'var(--hp-radius)',
-              color: 'var(--hp-ink)',
-            }}
-          >
+          <div className="hp-note mt-6 font-semibold">
             Платите только после заселения. За подбор и просмотры денег не беру.
           </div>
 
@@ -151,12 +143,12 @@ export default function SnyatKvartiruPage() {
             {PAIN_POINTS.map(point => (
               <li
                 key={point}
-                className="flex items-start gap-2.5 text-[14px] leading-relaxed"
+                className="flex items-start gap-2.5 text-[16px] leading-relaxed"
                 style={{ color: 'var(--hp-ink)' }}
               >
                 <X
                   aria-hidden="true"
-                  style={{ width: 15, height: 15, marginTop: 3, color: 'var(--hp-warn)', flexShrink: 0 }}
+                  style={{ width: 15, height: 15, marginTop: 3, color: 'var(--hp-sub)', flexShrink: 0 }}
                 />
                 <span className="break-words">{point}</span>
               </li>
@@ -197,7 +189,7 @@ export default function SnyatKvartiruPage() {
               от месячной ставки аренды, один раз при заселении.
             </strong>
           </div>
-          <p className="mt-3 text-[14px] sm:text-[15px] leading-relaxed max-w-[640px]" style={{ color: 'var(--hp-sub)' }}>
+          <p className="mt-3 text-[16px] leading-relaxed max-w-[640px]" style={{ color: 'var(--hp-sub)' }}>
             Комиссия платится в день подписания договора. Если я ничего не подобрал — вы не платите ничего.
           </p>
         </div>
@@ -228,7 +220,7 @@ export default function SnyatKvartiruPage() {
               <p className="mt-4 text-[15px] font-bold leading-snug" style={{ color: 'var(--hp-ink)' }}>
                 {step.title}
               </p>
-              <p className="mt-1.5 text-[14px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+              <p className="mt-1.5 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
                 {step.text}
               </p>
             </li>
@@ -253,7 +245,7 @@ export default function SnyatKvartiruPage() {
             <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
               Расскажите, что ищете
             </h2>
-            <p className="mt-3 text-[15px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+            <p className="mt-3 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
               Район, бюджет, сколько комнат и когда нужно заехать. Перезвоню и уточню остальное.
             </p>
           </div>

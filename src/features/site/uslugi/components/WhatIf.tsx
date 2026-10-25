@@ -88,7 +88,7 @@ export function WhatIf({ items, title = 'Что если', id }: Props) {
                   id={panelId}
                   aria-labelledby={buttonId}
                   hidden={!open}
-                  className="pb-4 text-[14px] leading-relaxed"
+                  className="pb-4 text-[16px] leading-relaxed"
                   style={{ color: 'var(--hp-sub)' }}
                 >
                   {item.a}

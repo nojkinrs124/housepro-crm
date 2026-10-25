@@ -40,8 +40,8 @@ export const STATUS_LABELS: Record<string, string> = {
 
 /** Классы .hp-badge-* — семантика статуса, не цвет модуля. */
 export const STATUS_BADGE: Record<string, string> = {
-  available: 'hp-badge-good',
-  reserved: 'hp-badge-warn',
+  available: 'hp-badge-brand',
+  reserved: 'hp-badge-neutral',
   rented: 'hp-badge-neutral',
   sold: 'hp-badge-neutral',
   inactive: 'hp-badge-neutral',
@@ -118,4 +118,23 @@ export function floorLine(
 ): string | null {
   if (!floor) return null
   return total ? `${floor} из ${total} эт.` : `${floor} эт.`
+}
+
+/**
+ * Описание объекта для сайта. В CRM описание часто пишется «под Avito» —
+ * с эмодзи-маркерами и хэштегами. На сайте это противоречит голосу бренда
+ * (brand/BRANDBOOK.md, раздел 2) и у части посетителей рисуется квадратами,
+ * поэтому на выводе убираем эмодзи и строки/хвосты из хэштегов. Исходный
+ * текст в базе не меняется — для Avito он остаётся как есть.
+ */
+export function cleanListingDescription(text: string | null | undefined): string {
+  if (!text) return ''
+  return text
+    .replace(/[\p{Extended_Pictographic}\u{FE0F}\u{200D}\u{20E3}]/gu, '')
+    .replace(/(^|\s)#[\p{L}\p{N}_]+/gu, '')
+    .split('\n')
+    .map(line => line.replace(/^[\s•·▪►✔✓–-]+(?=\S)/u, m => (/[–-]/.test(m.trim()) ? '— ' : '')).trimEnd())
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
 }

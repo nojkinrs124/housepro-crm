@@ -35,7 +35,7 @@ export function SiteFooter({ phone, phoneHref, email, address, legalName, inn }:
             >
               {SITE_SLOGAN}
             </p>
-            <p className="mt-2 text-[14px] leading-relaxed" style={{ color: 'var(--hp-on-forest-sub)' }}>
+            <p className="mt-2 text-[16px] leading-relaxed" style={{ color: 'var(--hp-on-forest-sub)' }}>
               Частный риелтор в Красноярске и Берёзовке: управление, аренда и продажа квартир.
             </p>
           </div>
@@ -91,7 +91,7 @@ export function SiteFooter({ phone, phoneHref, email, address, legalName, inn }:
 
           <div className="min-w-0">
             <p className={label} style={{ color: 'var(--hp-on-forest-sub)' }}>Реквизиты</p>
-            <div className="mt-3 space-y-1.5 text-[13.5px]" style={{ color: 'var(--hp-on-forest-sub)' }}>
+            <div className="mt-3 space-y-1.5 text-[14px]" style={{ color: 'var(--hp-on-forest-sub)' }}>
               {legalName && <p className="break-words" style={{ color: 'var(--hp-on-forest)' }}>{legalName}</p>}
               <p>Самозанятый (НПД)</p>
               {inn && <p>ИНН {inn}</p>}
@@ -100,7 +100,7 @@ export function SiteFooter({ phone, phoneHref, email, address, legalName, inn }:
         </div>
 
         <div
-          className="mt-12 pt-6 border-t flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-[13px]"
+          className="mt-12 pt-6 border-t flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-[14px]"
           style={{ borderColor: 'var(--hp-on-forest-line)', color: 'var(--hp-on-forest-sub)' }}
         >
           <p>© {year} {SITE_BRAND} · Руслан Ножкин</p>

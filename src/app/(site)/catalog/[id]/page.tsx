@@ -18,6 +18,7 @@ import {
   floorLine,
   formatArea,
   formatPrice,
+  cleanListingDescription,
   formatRooms,
   label,
   priceSuffix,
@@ -41,7 +42,7 @@ export async function generateMetadata({
   return {
     title: `${property.title} — ХаусПро, Красноярск`,
     description:
-      property.description?.slice(0, 300) ??
+      (property.description ? cleanListingDescription(property.description).slice(0, 300) : null) ??
       `${property.address}. ${parts.join(', ')}. Показ и оформление сделки — ХаусПро, Руслан Ножкин, частный риелтор.`,
   }
 }
@@ -149,10 +150,10 @@ export default async function PublicPropertyPage({
                 Об объекте
               </h2>
               <p
-                className="mt-3 text-[14.5px] leading-relaxed whitespace-pre-line break-words"
+                className="mt-3 text-[16px] leading-relaxed whitespace-pre-line break-words"
                 style={{ color: 'var(--hp-sub)' }}
               >
-                {property.description}
+                {cleanListingDescription(property.description)}
               </p>
             </section>
           )}
@@ -181,8 +182,8 @@ export default async function PublicPropertyPage({
             }}
           >
             {price ? (
-              <p className="text-[28px] font-bold leading-none" style={{ color: 'var(--hp-ink)' }}>
-                {price}
+              <p className="text-[30px] leading-none" style={{ color: 'var(--hp-ink)' }}>
+                <span className="hp-price">{price}</span>
                 <span className="text-[15px] font-medium" style={{ color: 'var(--hp-sub)' }}>
                   {priceSuffix(property.deal_type)}
                 </span>
@@ -194,21 +195,13 @@ export default async function PublicPropertyPage({
             )}
 
             {deposit && (
-              <p className="mt-2 text-[13.5px]" style={{ color: 'var(--hp-sub)' }}>
+              <p className="mt-2 text-[14px]" style={{ color: 'var(--hp-sub)' }}>
                 Залог {deposit}
               </p>
             )}
 
             {!isAvailable && (
-              <p
-                className="mt-4 px-3.5 py-2.5 text-[13px] leading-relaxed border"
-                style={{
-                  background: 'var(--hp-warn-tint)',
-                  borderColor: 'var(--hp-warn)',
-                  color: 'var(--hp-warn)',
-                  borderRadius: 'var(--hp-radius)',
-                }}
-              >
+              <p className="hp-note mt-4">
                 Объект уже {STATUS_LABELS[property.status]?.toLowerCase() ?? 'занят'}. Оставьте
                 заявку — подберу похожие варианты в том же районе и бюджете.
               </p>
@@ -221,7 +214,7 @@ export default async function PublicPropertyPage({
               <Phone style={{ width: 15, height: 15 }} />
               {contacts.phone}
             </a>
-            <p className="mt-3 text-[12.5px] leading-relaxed" style={{ color: 'var(--hp-tertiary)' }}>
+            <p className="mt-3 text-[14px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
               Перед показом я подтверждаю, что объект свободен, и проверяю документы
               собственника.
             </p>
@@ -236,16 +229,22 @@ export default async function PublicPropertyPage({
             }}
           >
             <h2 className="text-[17px] font-bold" style={{ color: 'var(--hp-ink)' }}>
-              Записаться на показ
+              {isAvailable ? 'Записаться на показ' : 'Подобрать похожий'}
             </h2>
-            <p className="mt-1.5 mb-4 text-[13.5px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
-              Заявка придёт мне вместе с этим объектом — повторять адрес не нужно.
+            <p className="mt-1.5 mb-4 text-[16px] leading-relaxed" style={{ color: 'var(--hp-sub)' }}>
+              {isAvailable
+                ? 'Заявка придёт мне вместе с этим объектом — повторять адрес не нужно.'
+                : 'Этот объект уже сдан. Напишите бюджет и сроки — предложу похожие варианты, в том числе из закрытой базы.'}
             </p>
             <LeadForm
               propertyId={property.id}
               compact
-              submitLabel="Записаться на показ"
-              defaultMessage={`Интересует объект: ${property.title}`}
+              submitLabel={isAvailable ? 'Записаться на показ' : 'Подобрать похожий'}
+              defaultMessage={
+                isAvailable
+                  ? `Интересует объект: ${property.title}`
+                  : `Ищу похожий на объект: ${property.title}`
+              }
             />
           </div>
         </aside>
