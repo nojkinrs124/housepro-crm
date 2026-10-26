@@ -150,6 +150,7 @@ function SidebarContent({
                       'shrink-0 relative transition-transform duration-150',
                       isActive ? 'text-[var(--hp-accent)]' : 'text-[var(--hp-sub)] group-hover:text-[var(--hp-ink)]'
                     )}
+                    strokeWidth={1.6}
                     style={{ width: 17, height: 17 }}
                   />
                   {!collapsed && (
@@ -217,7 +218,7 @@ function SidebarContent({
                 data-testid="logout-button"
                 className="w-full flex items-center gap-3 px-3 py-1.5 text-sm rounded-[var(--hp-radius)] transition-colors duration-150 font-medium text-[var(--hp-sub)] hover:text-[var(--hp-danger)] hover:bg-[var(--hp-danger-tint)] focus:outline-none focus-visible:bg-[var(--hp-danger-tint)] focus-visible:text-[var(--hp-danger)]"
               >
-                <LogOut style={{ width: 15, height: 15 }} className="shrink-0" />
+                <LogOut strokeWidth={1.6} style={{ width: 15, height: 15 }} className="shrink-0" />
                 <span>Выйти</span>
               </button>
             </form>
@@ -231,7 +232,7 @@ function SidebarContent({
                 onClick={onToggleCollapse}
                 className="w-full flex items-center gap-3 px-3 py-1.5 text-sm rounded-[var(--hp-radius)] transition-colors duration-150 font-medium text-[var(--hp-sub)] hover:text-[var(--hp-ink)] hover:bg-[var(--hp-neutral-tint)] focus:outline-none focus-visible:bg-[var(--hp-neutral-tint)] focus-visible:text-[var(--hp-ink)]"
               >
-                <PanelLeftClose style={{ width: 15, height: 15 }} className="shrink-0" />
+                <PanelLeftClose strokeWidth={1.6} style={{ width: 15, height: 15 }} className="shrink-0" />
                 <span>Свернуть меню</span>
               </button>
             )}
@@ -251,7 +252,7 @@ function SidebarContent({
                 title="Выйти"
                 className="w-full flex items-center justify-center p-1.5 rounded-[var(--hp-radius)] transition-colors duration-150 text-[var(--hp-sub)] hover:text-[var(--hp-danger)] hover:bg-[var(--hp-danger-tint)] focus:outline-none focus-visible:bg-[var(--hp-danger-tint)] focus-visible:text-[var(--hp-danger)]"
               >
-                <LogOut style={{ width: 16, height: 16 }} />
+                <LogOut strokeWidth={1.6} style={{ width: 16, height: 16 }} />
               </button>
             </form>
             {onToggleCollapse && (
@@ -261,7 +262,7 @@ function SidebarContent({
                 title="Развернуть меню"
                 className="w-full flex items-center justify-center p-1.5 rounded-[var(--hp-radius)] transition-colors duration-150 text-[var(--hp-sub)] hover:text-[var(--hp-ink)] hover:bg-[var(--hp-neutral-tint)] focus:outline-none focus-visible:bg-[var(--hp-neutral-tint)] focus-visible:text-[var(--hp-ink)]"
               >
-                <PanelLeftOpen style={{ width: 16, height: 16 }} />
+                <PanelLeftOpen strokeWidth={1.6} style={{ width: 16, height: 16 }} />
               </button>
             )}
           </div>
@@ -315,7 +316,7 @@ function MobileDrawer({
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center rounded-[var(--hp-radius)] text-[var(--hp-sub)] hover:text-[var(--hp-ink)] hover:bg-[var(--hp-neutral-tint)] transition-colors"
           >
-            <X style={{ width: 17, height: 17 }} />
+            <X strokeWidth={1.6} style={{ width: 17, height: 17 }} />
           </button>
         </div>
 
@@ -363,7 +364,7 @@ export function MobileBottomNav({ user }: { user: UserBadge | null }) {
                   isActive ? 'text-[var(--hp-accent)] bg-[var(--hp-accent-tint)] font-semibold' : 'text-[var(--hp-tertiary)]'
                 )}
               >
-                <Icon style={{ width: 20, height: 20 }} />
+                <Icon strokeWidth={1.6} style={{ width: 20, height: 20 }} />
                 <span className="text-[10px] font-semibold leading-tight">{item.name}</span>
               </button>
             )
