@@ -56,6 +56,23 @@ export async function handleIntakeCallback(arg: string, actor: BotActor) {
     await handleUserTurn(actor, content)
     return
   }
+  if (verb === 'meters') {
+    // Показания счётчиков — не карточка intake, а обычный диалог: там уже есть
+    // get_meters (найти property_id по адресу) и add_meter_readings (мутация с
+    // подтверждением). Подпись к фото/заметки сессии (адрес, «Металлургов 14в» и
+    // т.п.) идут в контент как есть — без них модель не узнает, какой это объект.
+    const session = await getActiveIntake(actor.telegramUserId)
+    if (!session || session.id !== sessionId) return
+    const content = await intakeContentParts(
+      session,
+      'На фото показания счётчиков (электричество НЕВА/и т.п., ХВС, ГВС). Определи адрес объекта из подписи/заметок ' +
+        'пользователя, вызови get_meters, затем предложи add_meter_readings с прочитанными значениями. ' +
+        'ГВС = hot_water, ХВС = cold_water, эл/свет = electricity.',
+    )
+    await cancelIntake(session, { silent: true })
+    await handleUserTurn(actor, content)
+    return
+  }
   if (verb === 'cancel') {
     const session = await getActiveIntake(actor.telegramUserId)
     if (session && session.id === sessionId) {

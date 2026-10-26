@@ -238,8 +238,11 @@ function kindKeyboard(sessionId: string): InlineKeyboardButton[][] {
     ],
     [
       { text: INTAKE_KIND_LABELS.receipt, callback_data: `intake:receipt:${sessionId}` },
-      { text: '❌ Отмена', callback_data: `intake:cancel:${sessionId}` },
+      // Показания счётчиков — не карточка для извлечения, как чек: уходит в обычный
+      // диалог с get_meters/add_meter_readings (см. handleIntakeCallback, verb 'meters').
+      { text: '🔢 Счётчики', callback_data: `intake:meters:${sessionId}` },
     ],
+    [{ text: '❌ Отмена', callback_data: `intake:cancel:${sessionId}` }],
   ]
 }
 
