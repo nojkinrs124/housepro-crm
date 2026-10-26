@@ -87,7 +87,12 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
   // Договор аренды и статус объекта расходятся чаще всего: статус переставить
   // забывают, и сданный объект продолжает висеть в рекламе.
   const hasActiveRentContract = (contracts ?? []).some(c => isActiveRentContract(c))
-  const issues = checkProperty(p, { hasActiveRentContract, hasActiveEngagement: !!engagement })
+  // Черновик договора не делает объект занятым — находку «сдано, а статус
+  // свободен» показываем только по подписанному договору (аудит 26.10.2026).
+  const hasSignedRentContract = (contracts ?? []).some(
+    c => isActiveRentContract(c) && (c.status === 'signed' || c.status === 'completed')
+  )
+  const issues = checkProperty(p, { hasActiveRentContract, hasSignedRentContract, hasActiveEngagement: !!engagement })
 
   const photos = (p.photo_urls ?? []) as string[]
 

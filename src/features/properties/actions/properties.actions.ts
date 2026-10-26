@@ -12,6 +12,7 @@ import { writeAuditLog } from '@/lib/audit'
 import { LISTING_BODY_MAX, LISTING_TITLE_MAX } from '@/lib/ai/listing/facts'
 import { friendlyDbError } from '@/lib/errors'
 import { isActiveRentContract } from '@/features/contracts/config/contract-types'
+import { decidePropertyStatusFix } from '@/features/properties/lib/property-status-fix'
 
 function extractPropertyFields(formData: FormData) {
   return {
@@ -215,14 +216,25 @@ export async function fixPropertyStatusAction(id: string) {
     .eq('property_id', id)
 
   const hasActiveRentContract = (rentContracts ?? []).some(c => isActiveRentContract(c))
-  const targetMismatch = property.status === 'rented' && !hasActiveRentContract
-  if (!targetMismatch) {
-    return { error: hasActiveRentContract
-      ? 'По объекту есть действующий договор аренды — статус менять не нужно'
-      : 'Статус уже соответствует данным договора' }
-  }
+  // «Сдан» можно ставить только по подписанному договору. Черновик аренды
+  // ещё не значит, что в объекте живёт наниматель: один факт наличия
+  // договора не основание объявлять объект занятым (решение владельца,
+  // закрытие K4). Поэтому для направления «свободен → сдан» нужен подпись.
+  const hasSignedRentContract = (rentContracts ?? []).some(
+    c => isActiveRentContract(c) && (c.status === 'signed' || c.status === 'completed')
+  )
 
-  const nextStatus = 'available'
+  // Само правило — в чистой функции (см. features/properties/lib), чтобы его
+  // покрывал юнит-тест: оба направления рассинхрона обязаны работать.
+  const decision = decidePropertyStatusFix({
+    status: property.status,
+    hasActiveRentContract,
+    hasSignedRentContract,
+  })
+
+  if (decision.kind === 'noop') return { error: decision.message }
+
+  const nextStatus = decision.nextStatus
   if (property.status === nextStatus) return { success: true }
 
   const { error } = await supabase

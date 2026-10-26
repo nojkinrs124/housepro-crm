@@ -109,9 +109,12 @@ export function ContractsView({ contracts }: { contracts: ContractRow[] }) {
       cell: c => formatDateCompact(c.createdAt),
     },
     {
-      key: 'docx', title: '', cellClass: 'whitespace-nowrap',
+      // Заголовок обязателен: колонка без подписи читалась как «формат файла»
+      // и не подсказывала, что это переход к документу (аудит 26.10.2026).
+      key: 'docx', title: 'Документ', cellClass: 'whitespace-nowrap', hideBelow: 'lg',
       cell: c => (
         <Link href={`/contracts/${c.id}/generate`}
+          aria-label={`Документ по договору ${c.number}`}
           className="text-[12.5px] font-semibold text-[var(--hp-sub)] hover:text-[var(--hp-ink)] transition-colors">
           DOCX
         </Link>

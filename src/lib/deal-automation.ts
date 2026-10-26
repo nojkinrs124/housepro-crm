@@ -50,7 +50,20 @@ export async function advanceDealStage(
 
   if (!canMoveStage(facts, target).allowed) return
 
-  await supabase.from('deals').update({ status: target }).eq('id', dealId)
+  // Ошибку записи нельзя проглатывать молча (аудит 26.10.2026, P1-1): раньше
+  // при сбое (RLS, ограничение, сетевая ошибка) сделка оставалась на прежней
+  // стадии, а вызывающий код — подписание договора, оплата, завершение — не
+  // узнавал об этом и сообщал пользователю об успехе. Автоматика остаётся
+  // «мягкой» (не бросаем исключение, чтобы не ломать основной сценарий), но
+  // провал больше не исчезает бесследно — он попадает в серверный лог.
+  const { error } = await supabase.from('deals').update({ status: target }).eq('id', dealId)
+
+  if (error) {
+    console.error(
+      '[deal-automation] не удалось продвинуть сделку',
+      dealId, current, '→', target, error.code ?? '-', error.message ?? ''
+    )
+  }
 }
 
 export type { Milestone }
