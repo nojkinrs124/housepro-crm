@@ -39,6 +39,8 @@ const PUBLIC_EXACT = new Set([
   // Файлы подтверждения домена для Яндекс.Вебмастера. Точный путь, не префикс.
   '/yandex_64d60ae7349e40b7.html',
   '/yandex_dc1a6cf957d7e10e.html',
+  // Ключ IndexNow (Яндекс/Bing сверяют его при приёме URL через API).
+  '/uf2hoQ2Trngxz5Lc2AGduMtMaUZaR15D.txt',
 ])
 
 export async function middleware(request: NextRequest) {
