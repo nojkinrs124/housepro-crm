@@ -44,22 +44,39 @@ const CONTRACT_TYPE_DATA_SCHEMAS: Record<string, z.ZodTypeAny> = {
 
 // Собирает и валидирует contract_type_data из формы.
 // Поле contract_type_data_json — hidden input с JSON-строкой (см. *ExtraFields.tsx компоненты).
-function parseContractTypeData(contractType: string, formData: FormData): Record<string, unknown> {
+//
+// Раньше любой провал (битый JSON, невалидное поле где угодно в объекте —
+// одна пустая строка в описи имущества, нечисловое значение после прямого
+// POST в обход клиентской валидации) тихо подменялся на `{}`: договор
+// создавался/обновлялся как ни в чём не бывало, а реальные юридические
+// условия (дети, животные, неустойка, опись, акт) терялись без следа —
+// находка B-03 аудита 26.10.2026. Теперь провал — явная ошибка, которая
+// останавливает сохранение и называет причину пользователю.
+type ContractTypeDataResult =
+  | { success: true; data: Record<string, unknown> }
+  | { success: false; error: string }
+
+function parseContractTypeData(contractType: string, formData: FormData): ContractTypeDataResult {
   const schema = CONTRACT_TYPE_DATA_SCHEMAS[contractType]
-  if (!schema) return {}
+  if (!schema) return { success: true, data: {} }
 
   const raw = formData.get('contract_type_data_json')
-  let parsed: unknown = {}
-  if (typeof raw === 'string' && raw.trim()) {
-    try {
-      parsed = JSON.parse(raw)
-    } catch {
-      parsed = {}
-    }
+  if (typeof raw !== 'string' || !raw.trim()) return { success: true, data: {} }
+
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    return { success: false, error: 'Условия договора повреждены — попробуйте заполнить их заново' }
   }
 
   const result = schema.safeParse(parsed)
-  return result.success ? (result.data as Record<string, unknown>) : {}
+  if (!result.success) {
+    const issue = result.error.issues[0]
+    const path = issue?.path?.join('.') || 'условия договора'
+    return { success: false, error: `Условия договора: «${path}» — ${issue?.message ?? 'некорректное значение'}` }
+  }
+  return { success: true, data: result.data as Record<string, unknown> }
 }
 
 
@@ -152,7 +169,9 @@ export async function createContractAction(_prevState: PrevState, formData: Form
     return { error: first.message, fields: parsed.error.flatten().fieldErrors }
   }
 
-  const contractTypeData = parseContractTypeData(parsed.data.contract_type, formData)
+  const contractTypeDataResult = parseContractTypeData(parsed.data.contract_type, formData)
+  if (!contractTypeDataResult.success) return { error: contractTypeDataResult.error }
+  const contractTypeData = contractTypeDataResult.data
 
   const permError = await requirePermission(user.id, 'contracts', 'create')
   if (permError) return permError
@@ -217,6 +236,10 @@ export async function updateContractAction(id: string, _prevState: PrevState, fo
   const permError = await requirePermission(user.id, 'contracts', 'update')
   if (permError) return permError
 
+  const contractTypeDataResult = parseContractTypeData(parsed.data.contract_type, formData)
+  if (!contractTypeDataResult.success) return { error: contractTypeDataResult.error }
+  const contractTypeData = contractTypeDataResult.data
+
   // Сохраняем текущую версию перед обновлением
   const { data: current } = await supabase
     .from('contracts').select('*').eq('id', id).single()
@@ -242,8 +265,6 @@ export async function updateContractAction(id: string, _prevState: PrevState, fo
     })
     if (versionError) return { error: `Не удалось сохранить версию: ${versionError.message}` }
   }
-
-  const contractTypeData = parseContractTypeData(parsed.data.contract_type, formData)
 
   const entityErrorUpdate = await validateClientEntityType(supabase, parsed.data.contract_type, parsed.data.client_contact_id)
   if (entityErrorUpdate) return { error: entityErrorUpdate }

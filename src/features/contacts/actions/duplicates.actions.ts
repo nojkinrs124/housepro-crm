@@ -115,6 +115,34 @@ function normalizeContactName(value: string | null): string {
 }
 
 /**
+ * Схожи ли два полных имени достаточно, чтобы предложить слияние.
+ *
+ * Точное совпадение после нормализации — как и раньше. Плюс: одно имя —
+ * строгое подмножество слов другого («Иван Иванов» ⊂ «Иван Петрович Иванов»,
+ * отчество/без отчества — обычная причина, почему два контакта на одного
+ * человека выглядят по-разному). Находка аудита 23.10.2026 (B-06): прежняя
+ * проверка требовала побуквенного совпадения и пропускала именно такие пары —
+ * это безопасная сторона ошибки (не предложить дубль лучше, чем слить чужих
+ * людей), но реальных дублей упускала слишком много.
+ *
+ * Не считаем схожими по одному общему слову («Иван» само по себе) — нужно
+ * минимум 2 общих токена, иначе любые два «Ивана» с общим телефоном выглядели
+ * бы кандидатом на слияние.
+ */
+function namesAreSimilar(a: string, b: string): boolean {
+  if (!a || !b) return false
+  if (a === b) return true
+
+  const tokensA = new Set(a.split(' ').filter(Boolean))
+  const tokensB = new Set(b.split(' ').filter(Boolean))
+  if (tokensA.size < 2 || tokensB.size < 2) return false
+
+  const [shorter, longer] = tokensA.size <= tokensB.size ? [tokensA, tokensB] : [tokensB, tokensA]
+  const isSubset = [...shorter].every(t => longer.has(t))
+  return isSubset && shorter.size >= 2
+}
+
+/**
  * Ищет группы контактов-дублей по нормализованному телефону и по email.
  * Уже слитые карточки (merged_into не пуст) в выдачу не попадают.
  */
@@ -160,12 +188,16 @@ export async function findDuplicateContactsAction(): Promise<{ error?: string; g
 
     // Совпадение телефона недостаточно: в агентстве телефон иногда общий
     // (например, супруги/собственник и арендатор). В список слияния попадают
-    // только карточки с одинаковым именем после нормализации; пары с разными
-    // именами намеренно скрываем, потому что «слить» здесь опаснее, чем
-    // оставить дубль на ручную проверку (аудит 23.10.2026, K6).
+    // только карточки с похожими именами после нормализации (точное
+    // совпадение ИЛИ одно имя — подмножество слов другого, см.
+    // `namesAreSimilar`); пары с явно разными именами намеренно скрываем,
+    // потому что «слить» здесь опаснее, чем оставить дубль на ручную
+    // проверку (аудит 23.10.2026, K6; расширено 26.10.2026, B-06).
     const normalizedNames = list.map(c => normalizeContactName(c.full_name))
-    const allSameName = normalizedNames.every(name => name && name === normalizedNames[0])
-    if (allSameName) rawGroups.push({ reason: 'phone', key, contacts: list })
+    const allSimilar = normalizedNames.every((name, i) =>
+      i === 0 || namesAreSimilar(name, normalizedNames[0])
+    )
+    if (allSimilar && normalizedNames[0]) rawGroups.push({ reason: 'phone', key, contacts: list })
   }
   const phoneGrouped = new Set(rawGroups.flatMap((g) => g.contacts.map((c) => c.id)))
   for (const [key, list] of byEmail) {
@@ -240,13 +272,16 @@ export async function mergeContactsAction(
 
   // Защита не только в выдаче: прямой вызов Server Action тоже не должен
   // позволить слить разных людей с общим телефоном (аудит 23.10.2026, K6).
+  // Условие сверено с тем же `namesAreSimilar`, что строит список кандидатов
+  // (26.10.2026, B-06) — иначе панель предлагает слить пару, а сервер её же
+  // отклоняет из-за более строгого правила, и кнопка выглядит сломанной.
   const selected = [primary, ...duplicates]
   for (let i = 0; i < selected.length; i++) {
     for (let j = i + 1; j < selected.length; j++) {
       const leftPhone = normalizePhone(selected[i].phone)
       const rightPhone = normalizePhone(selected[j].phone)
       if (leftPhone && leftPhone === rightPhone
-        && normalizeContactName(selected[i].full_name) !== normalizeContactName(selected[j].full_name)) {
+        && !namesAreSimilar(normalizeContactName(selected[i].full_name), normalizeContactName(selected[j].full_name))) {
         return { error: 'Нельзя объединить карточки с общим телефоном и разными именами — проверьте, не используют ли номер несколько человек' }
       }
     }

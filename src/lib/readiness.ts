@@ -57,6 +57,12 @@ export interface PropertyReadinessInput {
 export interface PropertyReadinessContext {
   /** Есть ли по объекту действующий договор аренды/найма */
   hasActiveRentContract?: boolean
+  /**
+   * Есть ли ПОДПИСАННЫЙ договор аренды/найма. Черновик договора не делает
+   * объект занятым, поэтому «сдано без договора» проверяется по подписи.
+   * Если не передан — считаем равным hasActiveRentContract (старые вызовы).
+   */
+  hasSignedRentContract?: boolean
   /** Заведено ли по объекту действующее обслуживание (management_engagements) */
   hasActiveEngagement?: boolean
 }
@@ -129,11 +135,15 @@ export function checkProperty(
   // Статус объекта и договор аренды расходятся — самая дорогая рассинхронизация:
   // в одну сторону объект числится свободным и продолжает висеть в рекламе,
   // в другую — арендатор не появляется в «Управлении».
-  if (ctx.hasActiveRentContract === true && p.status === 'available') {
+  //
+  // Проверяем по подписанному договору: черновик ещё не значит, что объект
+  // занят, и «Доступно» для него — правильный статус.
+  const signedRentContract = ctx.hasSignedRentContract ?? ctx.hasActiveRentContract
+  if (signedRentContract === true && p.status === 'available') {
     issues.push({
       id: 'property.rented_but_available',
       level: 'blocker',
-      missing: 'По объекту есть договор аренды, но статус — «Доступно»',
+      missing: 'По объекту есть подписанный договор аренды, но статус — «Доступно»',
       effect: 'Сданный объект продолжит выгружаться на площадки как свободный',
       href: edit,
     })

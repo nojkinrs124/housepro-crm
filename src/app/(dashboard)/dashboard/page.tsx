@@ -158,13 +158,13 @@ export default async function DashboardPage() {
  <div className="flex items-center gap-2 flex-wrap">
  {(overdueTasksCount ?? 0) > 0 && (
  <Link href="/tasks" className="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-[var(--hp-danger-tint)] text-[var(--hp-danger)] border border-[var(--hp-border)] hover:bg-[var(--hp-danger-tint)] transition-colors">
- <AlertTriangle style={{ width: 14, height: 14 }} />
+ <AlertTriangle strokeWidth={1.6} style={{ width: 14, height: 14 }} />
  {overdueTasksCount} просроч. задач
  </Link>
  )}
  {(overduePaymentsCount ?? 0) > 0 && (
  <Link href="/accounting?status=planned" className="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-[var(--hp-warn-tint)] text-[var(--hp-warn)] border border-[var(--hp-border)] hover:bg-[var(--hp-warn-tint)] transition-colors">
- <DollarSign style={{ width: 14, height: 14 }} />
+ <DollarSign strokeWidth={1.6} style={{ width: 14, height: 14 }} />
  {overduePaymentsCount} просроч. платежей
  </Link>
  )}
@@ -186,7 +186,7 @@ export default async function DashboardPage() {
  <p className="text-xs text-muted-foreground mt-0.5 font-medium">Текущий месяц</p>
  </div>
  <Link href="/accounting" className="flex items-center gap-1 text-xs text-[var(--hp-accent)] font-semibold hover:underline">
- Подробнее <ArrowUpRight style={{ width: 13, height: 13 }} />
+ Подробнее <ArrowUpRight strokeWidth={1.6} style={{ width: 13, height: 13 }} />
  </Link>
  </div>
 
@@ -196,12 +196,12 @@ export default async function DashboardPage() {
  style={{ background: 'var(--hp-good-tint)', border: '1px solid var(--hp-border)' }}>
  <div className="flex items-center gap-2 mb-3">
  <div className="w-8 h-8 flex items-center justify-center bg-[var(--hp-surface)]/80">
- <Banknote style={{ width: 15, height: 15, color: 'var(--hp-accent)' }} />
+ <Banknote strokeWidth={1.6} style={{ width: 15, height: 15, color: 'var(--hp-accent)' }} />
  </div>
  <p className="text-xs font-semibold text-[var(--hp-good)]">Получено</p>
  </div>
- <p className="text-xl font-bold text-foreground">
- {paidThisMonth.toLocaleString('ru-RU')} ₽
+ <p className={`text-xl font-bold ${paidThisMonth === 0 ? 'text-[var(--hp-tertiary)]' : 'text-foreground'}`}>
+   {paidThisMonth.toLocaleString('ru-RU')} ₽
  </p>
  </div>
  {/* Pending */}
@@ -209,12 +209,12 @@ export default async function DashboardPage() {
  style={{ background: 'var(--hp-warn-tint)', border: '1px solid var(--hp-border)' }}>
  <div className="flex items-center gap-2 mb-3">
  <div className="w-8 h-8 flex items-center justify-center bg-[var(--hp-surface)]/80">
- <Wallet style={{ width: 15, height: 15, color: 'var(--hp-warn)' }} />
+ <Wallet strokeWidth={1.6} style={{ width: 15, height: 15, color: 'var(--hp-warn)' }} />
  </div>
  <p className="text-xs font-semibold text-[var(--hp-warn)]">Ожидается</p>
  </div>
- <p className="text-xl font-bold text-foreground">
- {pendingThisMonth.toLocaleString('ru-RU')} ₽
+ <p className={`text-xl font-bold ${pendingThisMonth === 0 ? 'text-[var(--hp-tertiary)]' : 'text-foreground'}`}>
+   {pendingThisMonth.toLocaleString('ru-RU')} ₽
  </p>
  </div>
  </div>
@@ -222,7 +222,7 @@ export default async function DashboardPage() {
  {(overduePaymentsList?.length ?? 0) > 0 && (
  <div>
  <p className="text-xs font-bold text-[var(--hp-danger)] mb-3 flex items-center gap-1.5">
- <AlertTriangle style={{ width: 12, height: 12 }} />
+ <AlertTriangle strokeWidth={1.6} style={{ width: 12, height: 12 }} />
  Просроченные платежи
  </p>
  <div className="space-y-2">
@@ -252,7 +252,7 @@ export default async function DashboardPage() {
  <p className="text-xs text-muted-foreground mt-0.5 font-medium">По стадиям</p>
  </div>
  <Link href="/deals" className="flex items-center gap-1 text-xs text-[var(--hp-accent)] font-semibold hover:underline">
- Все сделки <ArrowUpRight style={{ width: 13, height: 13 }} />
+ Все сделки <ArrowUpRight strokeWidth={1.6} style={{ width: 13, height: 13 }} />
  </Link>
  </div>
  <div className="space-y-3">
@@ -290,13 +290,13 @@ export default async function DashboardPage() {
  <div className="flex items-center justify-between mb-5">
  <h2 className="font-bold text-foreground text-[15px]">Последние контакты</h2>
  <Link href="/contacts" className="text-xs text-[var(--hp-accent)] font-semibold flex items-center gap-0.5 hover:underline">
- Все <ArrowUpRight style={{ width: 12, height: 12 }} />
+ Все <ArrowUpRight strokeWidth={1.6} style={{ width: 12, height: 12 }} />
  </Link>
  </div>
  {!recentContacts?.length ? (
  <div className="text-center py-8">
  <div className="w-12 h-12 rounded-[var(--hp-radius)] bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)] flex items-center justify-center mx-auto mb-3">
- <Users style={{ width: 20, height: 20 }} className="text-[var(--hp-tertiary)]" />
+ <Users strokeWidth={1.6} style={{ width: 20, height: 20 }} className="text-[var(--hp-tertiary)]" />
  </div>
  <p className="text-sm text-muted-foreground">Нет контактов</p>
  <Link href="/contacts/new" className="text-xs text-[var(--hp-accent)] hover:underline mt-1 block font-semibold">+ Добавить</Link>
@@ -330,13 +330,13 @@ export default async function DashboardPage() {
  <div className="flex items-center justify-between mb-5">
  <h2 className="font-bold text-foreground text-[15px]">Последние сделки</h2>
  <Link href="/deals" className="text-xs text-[var(--hp-accent)] font-semibold flex items-center gap-0.5 hover:underline">
- Все <ArrowUpRight style={{ width: 12, height: 12 }} />
+ Все <ArrowUpRight strokeWidth={1.6} style={{ width: 12, height: 12 }} />
  </Link>
  </div>
  {!recentDeals?.length ? (
  <div className="text-center py-8">
  <div className="w-12 h-12 rounded-[var(--hp-radius)] bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)] flex items-center justify-center mx-auto mb-3">
- <TrendingUp style={{ width: 20, height: 20 }} className="text-[var(--hp-tertiary)]" />
+ <TrendingUp strokeWidth={1.6} style={{ width: 20, height: 20 }} className="text-[var(--hp-tertiary)]" />
  </div>
  <p className="text-sm text-muted-foreground">Нет сделок</p>
  <Link href="/deals/new" className="text-xs text-[var(--hp-accent)] hover:underline mt-1 block font-semibold">+ Создать</Link>
@@ -370,13 +370,13 @@ export default async function DashboardPage() {
  <div className="flex items-center justify-between mb-5">
  <h2 className="font-bold text-foreground text-[15px]">Мои задачи</h2>
  <Link href="/tasks" className="text-xs text-[var(--hp-accent)] font-semibold flex items-center gap-0.5 hover:underline">
- Все <ArrowUpRight style={{ width: 12, height: 12 }} />
+ Все <ArrowUpRight strokeWidth={1.6} style={{ width: 12, height: 12 }} />
  </Link>
  </div>
  {!myTasks?.length ? (
  <div className="text-center py-8">
  <div className="w-12 h-12 rounded-[var(--hp-radius)] bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)] flex items-center justify-center mx-auto mb-3">
- <CheckSquare style={{ width: 20, height: 20 }} className="text-[var(--hp-tertiary)]" />
+ <CheckSquare strokeWidth={1.6} style={{ width: 20, height: 20 }} className="text-[var(--hp-tertiary)]" />
  </div>
  <p className="text-sm text-muted-foreground">Нет активных задач</p>
  <Link href="/tasks/new" className="text-xs text-[var(--hp-accent)] hover:underline mt-1 block font-semibold">+ Создать задачу</Link>
@@ -402,7 +402,7 @@ export default async function DashboardPage() {
  </div>
  {task.deadline && (
  <div className={`flex items-center gap-1 mt-1.5 text-xs font-semibold ${isOverdue ? 'text-[var(--hp-danger)]' : 'text-muted-foreground'}`}>
- <Clock style={{ width: 11, height: 11 }} />
+ <Clock strokeWidth={1.6} style={{ width: 11, height: 11 }} />
  {formatDate(task.deadline)}
  </div>
  )}
@@ -416,7 +416,7 @@ export default async function DashboardPage() {
  {(upcomingDeadlines?.length ?? 0) > 0 && (
  <div className="mt-4 pt-4 border-t border-[var(--hp-border-soft)]">
  <p className="text-xs font-bold text-muted-foreground mb-2.5 flex items-center gap-1.5 uppercase tracking-wide">
- <Calendar style={{ width: 11, height: 11 }} />
+ <Calendar strokeWidth={1.6} style={{ width: 11, height: 11 }} />
  Дедлайны · 7 дней
  </p>
  <div className="space-y-1.5">

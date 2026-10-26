@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Loader2, RotateCcw } from 'lucide-react'
+import { Loader2, RotateCcw, Check } from 'lucide-react'
 import { updateDealStatusAction } from '@/features/deals/actions/deals.actions'
 import { confirmDialog, promptDialog } from '@/components/forms/ConfirmDialog'
 import {
@@ -124,6 +124,10 @@ export function DealStageBar({
                   className={`hp-stage ${state} disabled:opacity-60`}
                   aria-current={i === currentIndex ? 'step' : undefined}
                 >
+                  {/* Цвета «пройдено» и «впереди» у пилюль почти не отличимы
+                      визуально (аудит 26.10.2026, B-08) — явная галочка не
+                      зависит от восприятия оттенка. */}
+                  {state === 'done' && <Check className="w-3 h-3 inline-block mr-1 -mt-0.5" aria-hidden />}
                   {stage.label}
                 </button>
               )

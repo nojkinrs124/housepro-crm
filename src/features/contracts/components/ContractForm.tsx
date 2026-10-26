@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useActionState } from 'react'
+import { useRef } from 'react'
 import { Building2, User, Home, Briefcase, Link2 } from 'lucide-react'
 import Link from 'next/link'
 import { PartyContactSelect, type PartyContact, type PartyRepresentative } from '@/features/contacts/components/PartyContactSelect'
@@ -81,10 +82,31 @@ function fieldsForRole(role: ContractPartyRole) {
 }
 
 export function ContractForm({
- action, owners, clients, representativesByContact, properties, baseContracts, companyProfiles, deals = [],
- plans = [], backHref, submitLabel, mode, defaults = {}
+  action, owners, clients, representativesByContact, properties, baseContracts, companyProfiles, deals = [],
+  plans = [], backHref, submitLabel, mode, defaults = {}
 }: ContractFormProps) {
- const [state, formAction, isPending] = useActionState(action, { error: undefined })
+  const [state, formAction, isPending] = useActionState(action, { error: undefined })
+  const formRef = useRef<HTMLFormElement>(null)
+
+  // Поля «Условия договора» (количество детей, неустойка и т.п.) лежат внутри
+  // свёрнутого <details> (FormExtra). Браузерная проверка type="number"/min/max
+  // блокирует submit молча — а если невалидное поле спрятано в закрытом
+  // <details>, пользователь не видит ни кнопку с реакцией, ни сам инвалидный
+  // инпут: клик по «Создать договор» просто ничего не делает (находка B-02).
+  // Браузер при невалидной форме вообще не генерирует событие submit, поэтому
+  // перехватываем именно click по кнопке — до того, как браузер молча откажет
+  // в отправке — раскрываем секцию с невалидным полем и просим его подсказку.
+  const handleSubmitButtonClick = () => {
+    const form = formRef.current
+    if (!form || form.checkValidity()) return
+    const invalid = form.querySelector<HTMLElement>(':invalid')
+    const details = invalid?.closest('details')
+    if (details && !details.open) details.open = true
+    requestAnimationFrame(() => {
+      invalid?.scrollIntoView({ block: 'center' })
+      form.reportValidity()
+    })
+  }
  const [selectedType, setSelectedType] = useState(defaults.contract_type ?? 'rent_apartment')
  const [scheme, setScheme] = useState(defaults.settlement_scheme ?? 'percent')
 
@@ -111,7 +133,7 @@ export function ContractForm({
  const h2 = 'hp-h2'
 
  return (
- <form action={formAction} className="space-y-4">
+ <form ref={formRef} action={formAction} className="space-y-4">
  {state?.error && (
  <div className="bg-[var(--hp-danger-tint)] border border-[var(--hp-danger)] text-[var(--hp-danger)] px-4 py-3 text-sm">
  {state.error}
@@ -458,7 +480,7 @@ export function ContractForm({
  </FormExtra>
 
  <div className="flex items-center gap-3 pt-1">
- <button type="submit" data-testid="contract-submit" disabled={isPending} className="hp-btn-primary disabled:opacity-60">
+ <button type="submit" data-testid="contract-submit" disabled={isPending} onClick={handleSubmitButtonClick} className="hp-btn-primary disabled:opacity-60">
  {isPending ? 'Сохранение…' : submitLabel}
  </button>
  <Link href={backHref} className="hp-btn-secondary">Отмена</Link>

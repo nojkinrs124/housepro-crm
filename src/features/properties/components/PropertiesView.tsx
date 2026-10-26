@@ -119,7 +119,7 @@ export function PropertiesView({ properties }: { properties: PropertyRow[] }) {
       cell: p => dealLabels[p.deal_type] ?? p.deal_type,
     },
     {
-      key: 'params', title: 'Параметры', cellClass: 'sub whitespace-nowrap', hideBelow: 'lg',
+      key: 'params', title: 'Параметры', cellClass: 'sub whitespace-nowrap', hideBelow: 'xl',
       cell: p => [
         p.area ? `${p.area} м²` : null,
         p.rooms ? `${p.rooms} комн.` : null,
@@ -134,7 +134,7 @@ export function PropertiesView({ properties }: { properties: PropertyRow[] }) {
       },
     },
     {
-      key: 'publish', title: 'Публикация', cellClass: 'sub whitespace-nowrap', hideBelow: 'lg',
+      key: 'publish', title: 'Публикация', cellClass: 'sub whitespace-nowrap', hideBelow: 'xl',
       cell: p => {
         const where = [p.site_publish ? 'Сайт' : null, p.avito_publish ? 'Авито' : null].filter(Boolean)
         return where.length

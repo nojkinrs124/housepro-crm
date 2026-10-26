@@ -254,6 +254,10 @@ async function convertLead(id: string, createDeal: boolean) {
     : { data: null }
 
   let contactId: string
+  // Контакт, созданный именно этим вызовом. Если обновление лида затем
+  // упадёт, его нужно убрать — иначе в базе останется «сирота» без связи с
+  // лидом (аудит 26.10.2026, P0-1).
+  let createdContactId: string | null = null
   if (existing?.[0]) {
     contactId = existing[0].id
     if (existing[0].role !== role && existing[0].role !== 'both') {
@@ -278,12 +282,32 @@ async function convertLead(id: string, createDeal: boolean) {
       .single()
     if (error) return { error: friendlyDbError(error, { entity: 'лид' }) }
     contactId = contact.id
+    createdContactId = contact.id
   }
 
-  await supabase
+  // Ошибку этой записи нельзя проглатывать: раньше при сбое пользователя всё
+  // равно уводило на /deals/new как при успехе, а лид оставался «Новым» с
+  // уже созданным контактом (аудит 26.10.2026, P0-1).
+  const { data: convertedLead, error: leadUpdateError } = await supabase
     .from('leads')
     .update({ status: 'converted', contact_id: contactId, updated_at: new Date().toISOString() })
     .eq('id', id)
+    .select('id')
+    .maybeSingle()
+
+  // Ноль обновлённых строк (RLS/удалённая запись) — тоже провал, а не успех.
+  if (leadUpdateError || !convertedLead) {
+    // Откатываем только что созданный контакт, чтобы не оставлять сироту.
+    // Существующий контакт (найденный по телефону) не трогаем — он чужой.
+    if (createdContactId) {
+      await supabase.from('contacts').delete().eq('id', createdContactId)
+    }
+    return {
+      error: leadUpdateError
+        ? friendlyDbError(leadUpdateError, { entity: 'лид' })
+        : 'Не удалось перевести лид в контакт — обновите страницу и попробуйте снова',
+    }
+  }
 
   revalidatePath('/leads')
   revalidatePath(`/leads/${id}`)

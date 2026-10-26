@@ -53,7 +53,7 @@ export function DashboardKpiCards({ cards }: { cards: KpiCard[] }) {
                 </span>
               )}
             </div>
-            <p className="hp-price text-[32px] text-[var(--hp-ink)] leading-none">
+            <p className={`hp-price text-[32px] leading-none ${card.value === 0 ? 'text-[var(--hp-tertiary)]' : 'text-[var(--hp-ink)]'}`}>
               {card.value.toLocaleString('ru-RU')}
             </p>
             <p className="text-[12.5px] text-[var(--hp-sub)] mt-2 leading-snug font-medium">{card.title}</p>

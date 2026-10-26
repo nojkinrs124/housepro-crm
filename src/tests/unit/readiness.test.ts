@@ -49,6 +49,25 @@ describe('checkProperty', () => {
     expect(issue?.level).toBe('blocker')
   })
 
+  it('черновик договора не делает объект занятым — блокера нет', () => {
+    // Аудит 26.10.2026: проверка «сдано, а статус свободен» должна смотреть на
+    // подпись, иначе панель требует пометить объект сданным по неоформленному
+    // договору, а кнопка «Исправить» этого сознательно не делает.
+    const issues = checkProperty(
+      { id: 'p1', owner_id: 'c1', latitude: 1, longitude: 1, description: 'x', price: 1, status: 'available' },
+      { hasActiveRentContract: true, hasSignedRentContract: false }
+    )
+    expect(ids(issues)).not.toContain('property.rented_but_available')
+  })
+
+  it('подписанный договор при статусе «Доступно» — блокер', () => {
+    const issues = checkProperty(
+      { id: 'p1', owner_id: 'c1', latitude: 1, longitude: 1, description: 'x', price: 1, status: 'available' },
+      { hasActiveRentContract: true, hasSignedRentContract: true }
+    )
+    expect(issues.find(i => i.id === 'property.rented_but_available')?.level).toBe('blocker')
+  })
+
   it('статус «Сдано» без договора аренды — предупреждение', () => {
     const issues = checkProperty(
       { id: 'p1', owner_id: 'c1', latitude: 1, longitude: 1, description: 'x', price: 1, status: 'rented' },

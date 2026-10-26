@@ -12,6 +12,9 @@ import { markChecklistItems } from '@/features/directions/services/checklist-syn
 
 const VALID_STATUSES = ['planned', 'completed', 'cancelled', 'no_show']
 
+/** Напоминание, которое автоматизация создаёт после показа с интересом. */
+const FOLLOW_UP_TASK_TITLE = 'Связаться повторно по показу'
+
 export async function createShowingAction(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -111,19 +114,33 @@ export async function updateShowingStatusAction(id: string, status: string, form
 
       const orgId = await requireOrgId().catch(() => null)
       if (orgId) {
-        const deadline = new Date()
-        deadline.setDate(deadline.getDate() + 2)
-        await supabase.from('tasks').insert({
-          title: 'Связаться повторно по показу',
-          description: 'Клиент заинтересовался объектом на показе — нужно созвониться и обсудить дальнейшие шаги.',
-          priority: 'medium',
-          status: 'todo',
-          deadline: deadline.toISOString(),
-          created_by: user.id,
-          assigned_to: updated.agent_id ?? user.id,
-          lead_id: updated.lead_id,
-          organization_id: orgId,
-        })
+        // Показ можно завершить повторно (повторное открытие страницы, ретрай
+        // формы, возврат статуса назад) — вторая такая же задача не нужна.
+        // Раньше задача вставлялась безусловно, и на карточке лида появлялось
+        // два одинаковых напоминания (аудит 26.10.2026, P2-1).
+        const { data: existingTask } = await supabase
+          .from('tasks')
+          .select('id')
+          .eq('lead_id', updated.lead_id)
+          .eq('title', FOLLOW_UP_TASK_TITLE)
+          .neq('status', 'done')
+          .limit(1)
+
+        if (!existingTask?.length) {
+          const deadline = new Date()
+          deadline.setDate(deadline.getDate() + 2)
+          await supabase.from('tasks').insert({
+            title: FOLLOW_UP_TASK_TITLE,
+            description: 'Клиент заинтересовался объектом на показе — нужно созвониться и обсудить дальнейшие шаги.',
+            priority: 'medium',
+            status: 'todo',
+            deadline: deadline.toISOString(),
+            created_by: user.id,
+            assigned_to: updated.agent_id ?? user.id,
+            lead_id: updated.lead_id,
+            organization_id: orgId,
+          })
+        }
       }
     } else if (result === 'not_interested') {
       // .neq('status','converted') — не закрываем лид, который уже стал клиентом
