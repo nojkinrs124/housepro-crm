@@ -178,8 +178,8 @@ export interface LegalSupportPricing {
   fromRub: number
 }
 
-/** Сопровождение продажи или покупки: 3% от стоимости объекта плюс 30 000 ₽ */
-export const SALE_PRICING: SalePricing | null = { percent: 3, fixedRub: 30_000 }
+/** Сопровождение продажи или покупки: 2% от стоимости объекта плюс 30 000 ₽ */
+export const SALE_PRICING: SalePricing | null = { percent: 2, fixedRub: 30_000 }
 
 /** Юридическое сопровождение чужой сделки: фиксированная цена от 10 000 ₽ */
 export const LEGAL_SUPPORT_PRICING: LegalSupportPricing | null = { fromRub: 10_000 }
