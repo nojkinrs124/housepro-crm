@@ -15,41 +15,47 @@ const roleLabels: Record<string, string> = {
 // тот же принцип, что и в боковом меню (рубрики ПРОДАЖИ/БАЗА/...).
 // Иконка-бокс везде нейтральная (см. CLAUDE.md «Иконки, аватары»): цвет
 // в системе — только семантика статуса, а не подсветка модуля.
+//
+// `frequent` — заходит ли риелтор/админ сюда регулярно (раз в неделю и чаще)
+// или это разовая/редкая настройка (раз при подключении, раз в квартал).
+// Внутри группы с обоими типами показывается подзаголовок-разделитель
+// «Часто» / «Реже» (аудит 26.10.2026, B-07) — иначе 13 равноценных визуально
+// пунктов не подсказывают, с чего начинать искать нужный раздел.
 const SETTINGS_GROUPS = [
   {
     title: 'Компания',
     items: [
-      { icon: Building2, title: 'Компания', desc: 'Название, логотип, реквизиты для договоров', href: '/settings/company' },
-      { icon: HandCoins, title: 'Тарифы агентства', desc: 'Условия работы с собственниками и клиентами', href: '/settings/plans' },
-      { icon: Settings, title: 'Общие настройки', desc: 'Язык, валюта, часовой пояс', href: '/settings/general' },
+      { icon: HandCoins, title: 'Тарифы агентства', desc: 'Условия работы с собственниками и клиентами', href: '/settings/plans', frequent: true },
+      { icon: Building2, title: 'Компания', desc: 'Название, логотип, реквизиты для договоров', href: '/settings/company', frequent: false },
+      { icon: Settings, title: 'Общие настройки', desc: 'Язык, валюта, часовой пояс', href: '/settings/general', frequent: false },
     ],
   },
   {
     title: 'Документы',
     items: [
-      { icon: Database, title: 'Шаблоны договоров', desc: 'DOCX-шаблоны, по которым формируются документы', href: '/settings/templates' },
+      { icon: Database, title: 'Шаблоны договоров', desc: 'DOCX-шаблоны, по которым формируются документы', href: '/settings/templates', frequent: true },
     ],
   },
   {
     title: 'Интеграции',
     items: [
-      { icon: Megaphone, title: 'Авито', desc: 'Публикация объектов через автозагрузку', href: '/settings/avito' },
-      { icon: CreditCard, title: 'Приём платежей', desc: 'Ссылки на оплату для клиентов агентства', href: '/settings/payments' },
+      { icon: CreditCard, title: 'Приём платежей', desc: 'Ссылки на оплату для клиентов агентства', href: '/settings/payments', frequent: true },
+      { icon: Megaphone, title: 'Авито', desc: 'Публикация объектов через автозагрузку', href: '/settings/avito', frequent: false },
     ],
   },
   {
     title: 'Аккаунт',
     items: [
-      { icon: Bell, title: 'Уведомления и письма', desc: 'Напоминания в колокольчике и письма, которые CRM шлёт клиентам', href: '/settings/notifications' },
-      { icon: Shield, title: 'Безопасность', desc: 'Пароль, двухфакторная защита, устройства', href: '/settings/security' },
+      { icon: Bell, title: 'Уведомления и письма', desc: 'Напоминания в колокольчике и письма, которые CRM шлёт клиентам', href: '/settings/notifications', frequent: true },
+      { icon: Shield, title: 'Безопасность', desc: 'Пароль, двухфакторная защита, устройства', href: '/settings/security', frequent: false },
     ],
   },
   {
     title: 'Данные',
     items: [
-      { icon: Upload, title: 'Импорт', desc: 'Перенос базы из Excel или CSV', href: '/settings/import' },
-      { icon: Download, title: 'Экспорт', desc: 'XML-фиды для площадок и CSV для 1С', href: '/settings/export' },
-      { icon: ScrollText, title: 'Журнал изменений', desc: 'Кто и что менял (только администратор)', href: '/settings/audit' },
+      { icon: Upload, title: 'Импорт', desc: 'Перенос базы из Excel или CSV', href: '/settings/import', frequent: true },
+      { icon: Download, title: 'Экспорт', desc: 'XML-фиды для площадок и CSV для 1С', href: '/settings/export', frequent: true },
+      { icon: ScrollText, title: 'Журнал изменений', desc: 'Кто и что менял (только администратор)', href: '/settings/audit', frequent: false },
     ],
   },
 ]
@@ -112,26 +118,43 @@ export default async function SettingsPage() {
 
       {/* Ширина как у остальных экранов; группы — в две колонки на широком */}
       <div className="grid gap-5 xl:grid-cols-2 items-start">
-      {SETTINGS_GROUPS.map((group) => (
+      {SETTINGS_GROUPS.map((group) => {
+        const hasMixedFrequency = group.items.some(i => i.frequent) && group.items.some(i => !i.frequent)
+        return (
         <div key={group.title} className="hp-block">
           <div className="hp-block-header">{group.title}</div>
-          {group.items.map((item) => {
+          {group.items.map((item, idx) => {
             const Icon = item.icon
+            // Подзаголовок-разделитель «Реже» перед первым нечастым пунктом —
+            // только если в группе есть и частые, и редкие (иначе разделитель
+            // бессмысленный). Решает находку аудита 26.10.2026 (B-07): 13
+            // пунктов были равноценны визуально, искать нужный приходилось
+            // читать все подряд.
+            const showRareDivider = hasMixedFrequency && !item.frequent
+              && (idx === 0 || group.items[idx - 1].frequent)
             return (
-              <Link key={item.href} href={item.href} className="hp-block-item">
-                <div className="w-9 h-9 flex items-center justify-center shrink-0 bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)]">
-                  <Icon className="text-[var(--hp-sub)]" style={{ width: 17, height: 17 }} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-[var(--hp-ink)] text-sm">{item.title}</p>
-                  <p className="text-xs text-[var(--hp-sub)] mt-0.5 truncate">{item.desc}</p>
-                </div>
-                <ChevronRight className="text-[var(--hp-tertiary)] shrink-0" style={{ width: 16, height: 16 }} />
-              </Link>
+              <div key={item.href}>
+                {showRareDivider && (
+                  <div className="px-[18px] pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--hp-tertiary)] border-t border-[var(--hp-border-soft)]">
+                    Реже
+                  </div>
+                )}
+                <Link href={item.href} className={`hp-block-item ${showRareDivider ? '!border-t-0' : ''}`}>
+                  <div className="w-9 h-9 flex items-center justify-center shrink-0 bg-[var(--hp-neutral-tint)] border border-[var(--hp-border)]">
+                    <Icon className="text-[var(--hp-sub)]" style={{ width: 17, height: 17 }} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-[var(--hp-ink)] text-sm">{item.title}</p>
+                    <p className="text-xs text-[var(--hp-sub)] mt-0.5 truncate">{item.desc}</p>
+                  </div>
+                  <ChevronRight className="text-[var(--hp-tertiary)] shrink-0" style={{ width: 16, height: 16 }} />
+                </Link>
+              </div>
             )
           })}
         </div>
-      ))}
+        )
+      })}
       </div>
 
       {isAdmin && (
