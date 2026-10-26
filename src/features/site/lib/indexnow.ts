@@ -16,7 +16,12 @@ const SITE_HOST = 'housepro24.ru'
 
 export function notifyIndexNow(paths: string[]): void {
   const urlList = paths.map(p => `https://${SITE_HOST}${p}`)
-  fetch('https://yandex.com/indexnow', {
+  // api.indexnow.org — общая точка входа протокола: раздаёт запрос всем
+  // участникам (Яндекс, Bing и т.п.) одним вызовом. Прямой yandex.com/indexnow
+  // иногда отвечает 403 Invalid key даже с верным ключом — индевят это к
+  // своей инфраструктуре, а не к содержимому ключа (сам файл ключа отдаётся
+  // корректно, проверено прямым curl).
+  fetch('https://api.indexnow.org/indexnow', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json; charset=utf-8' },
     body: JSON.stringify({
