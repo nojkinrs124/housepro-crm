@@ -40,12 +40,35 @@ export async function generateMetadata({
   ].filter(Boolean)
 
   return {
-    title: `${property.title} — ХаусПро, Красноярск`,
+    title: buildSeoTitle(property),
     alternates: { canonical: `/catalog/${id}` },
     description:
       (property.description ? cleanListingDescription(property.description).slice(0, 300) : null) ??
       `${property.address}. ${parts.join(', ')}. Показ и оформление сделки — ХаусПро, Руслан Ножкин, частный риелтор.`,
   }
+}
+
+/**
+ * SEO-заголовок карточки объекта, собранный из структурированных полей
+ * (тип, комнаты, сделка, район/город), а не из свободного `property.title`.
+ *
+ * Находка SEO-аудита (docs/SEO-KEYWORDS-AUDIT-2026-10-26.md, К1): риелтор
+ * заполняет `title` коротко («Квартира, Маерчака 1-4») — без района и типа
+ * сделки, карточка не попадает по запросам вида «однушка советский район
+ * красноярск аренда». Собирая заголовок из полей, которые ВСЕГДА заполнены
+ * при публикации (тип, сделка, комнаты), получаем рабочий SEO-title
+ * независимо от того, как риелтор назвал объект в CRM.
+ */
+function buildSeoTitle(p: PublicProperty): string {
+  const rooms = formatRooms(p.rooms)
+  const type = label(PROPERTY_TYPE_LABELS, p.property_type)
+  const deal = label(DEAL_TYPE_LABELS, p.deal_type)
+
+  const subject = [rooms, type].filter(Boolean).join(' ') || type || 'Объект'
+  const action = deal === 'Аренда' ? 'в аренду' : deal === 'Продажа' ? 'на продажу' : deal ? `— ${deal}` : ''
+  const place = p.district ? `${p.district}, Красноярск` : 'Красноярск'
+
+  return `${subject} ${action} — ${place} | ХаусПро`.replace(/\s+/g, ' ').trim()
 }
 
 interface Row {

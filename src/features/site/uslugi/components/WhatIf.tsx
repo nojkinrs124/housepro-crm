@@ -42,6 +42,28 @@ export function WhatIf({ items, title = 'Что если', id }: Props) {
 
   return (
     <section id={id} className="scroll-mt-20 pt-16 sm:pt-20">
+      {/*
+        FAQPage JSON-LD: тот же набор вопросов-ответов, что в UI, размечен для
+        поисковиков — даёт расширенный сниппет (вопрос-аккордеон в выдаче)
+        и закрывает узкие низкоконкурентные запросы, по которым агрегаторы
+        слабее ранжируются (docs/SEO-KEYWORDS-AUDIT-2026-10-26.md, К2).
+        Данные НЕ выдуманы отдельно — это ровно те же `items`, что видит
+        посетитель, так разметка не может разойтись с текстом страницы.
+      */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: items.map(item => ({
+              '@type': 'Question',
+              name: item.q,
+              acceptedAnswer: { '@type': 'Answer', text: item.a },
+            })),
+          }),
+        }}
+      />
       <div className="max-w-[1180px] mx-auto px-4 sm:px-6">
         <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight" style={{ color: 'var(--hp-ink)' }}>
           {title}

@@ -54,7 +54,7 @@ export default async function HomePage() {
             className="text-[12px] font-semibold uppercase tracking-[0.12em]"
             style={{ color: 'var(--hp-sub)' }}
           >
-            Частный риелтор · Красноярск
+            Руслан Ножкин · Частный риелтор · Красноярск
           </p>
           <h1
             className="mt-4 text-[34px] sm:text-[46px] lg:text-[54px] font-bold leading-[1.06] tracking-tight break-words"
