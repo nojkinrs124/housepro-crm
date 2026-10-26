@@ -572,6 +572,11 @@ a.hp-block-item:hover { background: var(--hp-neutral-tint); }
 .hp-stages { display: flex; gap: 4px; flex-wrap: wrap; }
 .hp-stage {
   flex: 1 1 96px;
+  /* Без потолка ширины `flex-grow:1` после переноса строки растягивал
+     1–2 оставшихся пилюли на половину контейнера (400+ px) — визуальный
+     разрыв сетки на 1280/1440/1920 (аудит 26.10.2026, B-05). Потолок держит
+     пилюли одного масштаба независимо от того, сколько их осталось в ряду. */
+  max-width: 220px;
   padding: 9px 10px;
   text-align: center;
   border-radius: var(--hp-radius-sm);
