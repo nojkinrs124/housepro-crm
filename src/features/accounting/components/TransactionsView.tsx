@@ -24,6 +24,8 @@ export interface TransactionRow {
   contractId: string | null
   contractNumber: string | null
   employeeName: string | null
+  /** true — реальный доход агентства, false — транзит клиента (аренда/депозит), null — расход. */
+  isRealIncome: boolean | null
 }
 
 const STATUS_BADGE: Record<string, string> = {
@@ -43,6 +45,15 @@ const STATUS_OPTIONS = [
   { value: 'all', label: 'Статус: все' },
   ...TRANSACTION_STATUSES.map(s => ({ value: s.value, label: s.label })),
 ]
+// Реальный доход агентства vs транзит клиента — та же находка, что дала
+// повод завести этот фильтр: владелец увидел «Приход 133 000 ₽» за октябрь
+// и не смог понять по таблице, что агентство из них не заработало ничего —
+// все деньги были арендой жильцов и депозитом, просто прошедшими через кассу.
+const EARNED_OPTIONS = [
+  { value: 'all',  label: 'Доход: всё' },
+  { value: 'real', label: 'Только реальный доход' },
+  { value: 'transit', label: 'Только транзит клиентов' },
+]
 
 export function TransactionsView({ transactions }: { transactions: TransactionRow[] }) {
   const { search, setSearch, filtered, toolbarFilters, reset } = useRegistryFilters(transactions, {
@@ -51,10 +62,17 @@ export function TransactionsView({ transactions }: { transactions: TransactionRo
     filters: [
       { key: 'type',   options: TYPE_OPTIONS,   field: t => t.type },
       { key: 'status', options: STATUS_OPTIONS, field: t => t.status },
+      { key: 'earned', options: EARNED_OPTIONS, field: t => t.isRealIncome === null ? 'na' : (t.isRealIncome ? 'real' : 'transit') },
     ],
   })
 
   const selection = useSelection(filtered)
+
+  // Сумма реального дохода и транзита в текущей выборке — тот же вопрос,
+  // который владелец задавал по скрину («сколько из этого реально заработано»),
+  // но без необходимости считать в уме строку за строкой.
+  const realIncomeSum = filtered.filter(t => t.isRealIncome === true).reduce((s, t) => s + t.amount, 0)
+  const transitSum    = filtered.filter(t => t.isRealIncome === false).reduce((s, t) => s + t.amount, 0)
 
   const columns: RegistryColumn<TransactionRow>[] = [
     {
@@ -83,14 +101,23 @@ export function TransactionsView({ transactions }: { transactions: TransactionRo
     },
     {
       key: 'category', title: 'Категория', cellClass: 'sub whitespace-nowrap', hideBelow: 'lg',
-      cell: t => t.categoryName
-        ? (
-          <span className="inline-flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full shrink-0" style={{ background: t.categoryColor ?? 'var(--hp-tertiary)' }} />
-            {t.categoryName}
-          </span>
-        )
-        : <span className="text-[var(--hp-tertiary)]">—</span>,
+      cell: t => (
+        <span className="inline-flex items-center gap-1.5">
+          {t.categoryName
+            ? (
+              <span className="inline-flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ background: t.categoryColor ?? 'var(--hp-tertiary)' }} />
+                {t.categoryName}
+              </span>
+            )
+            : <span className="text-[var(--hp-tertiary)]">—</span>}
+          {/* Доход/транзит — на уровне строки, не только в сводке сверху: находка
+              владельца 27.10.2026, таблица скрывала, что аренда клиента и депозит
+              не являются заработком агентства, хотя лежат в той же колонке «Сумма». */}
+          {t.isRealIncome === true && <span className="hp-badge hp-badge-good text-[10px]">доход</span>}
+          {t.isRealIncome === false && <span className="hp-badge hp-badge-neutral text-[10px]">транзит</span>}
+        </span>
+      ),
     },
     {
       key: 'link', title: 'Договор / Сотрудник', cellClass: 'sub max-w-[200px]', hideBelow: 'xl',
@@ -130,6 +157,20 @@ export function TransactionsView({ transactions }: { transactions: TransactionRo
         onReset={reset}
         foundLabel={<>Найдено: <span className="font-semibold text-[var(--hp-ink)]">{filtered.length}</span> из {transactions.length}</>}
       />
+
+      {/* Итог по текущему фильтру: сколько из попавших в выборку строк — реальный
+          доход агентства, а сколько — транзит клиента. Отвечает на вопрос
+          «сколько агентство реально заработало за этот месяц», не заставляя
+          считать строки вручную (повод: скрин владельца с таблицей за октябрь,
+          где всё «Арендный платёж + Депозит» выглядело как доход). */}
+      {(realIncomeSum > 0 || transitSum > 0) && (
+        <div className="hp-block">
+          <div className="hp-block-grid">
+            <div className="hp-block-row"><span className="label">Реальный доход (в выборке)</span><span className="value">+{formatAmount(realIncomeSum)} ₽</span></div>
+            <div className="hp-block-row"><span className="label">Транзит клиентов (в выборке)</span><span className="value">{formatAmount(transitSum)} ₽</span></div>
+          </div>
+        </div>
+      )}
 
       <BulkBar registry="transactions" selection={selection} />
 

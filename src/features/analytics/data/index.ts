@@ -2,7 +2,7 @@ import { formatMonthShort } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/server'
 import { todayIso } from '@/lib/timezone'
 import { toPaymentStatus } from '@/features/accounting/utils/money-classification'
-import { transactionDirection, type AccountingFilters } from '@/features/accounting/utils/direction'
+import { transactionDirection, guessTransactionDirectionFromText, type AccountingFilters } from '@/features/accounting/utils/direction'
 import { getContractTypeConfig } from '@/features/contracts/config/contract-types'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -10,6 +10,12 @@ import { getContractTypeConfig } from '@/features/contracts/config/contract-type
 export interface AnalyticsRawData {
   deals: Array<{ status: string; deal_type: string; amount: number | null; commission: number | null; created_at: string | null; source: string | null }>
   payments: Array<{ payment_status: string; amount: number | null; payment_date: string | null; due_date: string | null; created_at: string | null; category_code: string | null }>
+  /** Доходы и расходы бухгалтерии с направлением — основа разбивки по направлениям
+   * на /analytics (решение владельца 27.10.2026: «доход/расход по направлениям
+   * аренда/продажа/управление/прочее» — ни один из прежних срезов этого не считал).
+   * directionGuessed=true — направление не из прямой связи (сделка/обслуживание/
+   * договор), а подобрано по категории/тексту назначения (guessTransactionDirectionFromText). */
+  transactions: Array<{ type: 'income' | 'expense'; amount: number | null; categoryCode: string | null; direction: string | null; directionGuessed: boolean; date: string | null }>
   leads: Array<{ status: string; created_at: string | null }>
   leadsConverted: Array<{ status: string; created_at: string | null }>
   properties: Array<{ status: string }>
@@ -82,6 +88,18 @@ async function fetchAnalyticsData(from?: string, to?: string, filters?: Analytic
   if (filters?.employeeId) paymentsQuery = paymentsQuery.eq('employee_id', filters.employeeId)
   if (filters?.propertyId) paymentsQuery = paymentsQuery.eq('property_id', filters.propertyId)
 
+  // Все проведённые операции (доход и расход) с направлением — отдельно от
+  // paymentsQuery выше: тому нужны только income для KPI «Доход»/«Платежи»,
+  // этому — и income, и expense, чтобы считать доход/расход по направлениям.
+  let transactionsQuery = supabase
+    .from('accounting_transactions')
+    .select('type, amount, date, status, description, employee_id, property_id, engagement_id, category:accounting_categories(code), contract:contracts(contract_type), deal:deals(deal_type)')
+    .eq('status', 'completed')
+    .gte('date', fromDate)
+    .lte('date', toDate ?? new Date().toISOString())
+  if (filters?.employeeId) transactionsQuery = transactionsQuery.eq('employee_id', filters.employeeId)
+  if (filters?.propertyId) transactionsQuery = transactionsQuery.eq('property_id', filters.propertyId)
+
   let leadsQuery = supabase
     .from('leads')
     .select('status, created_at')
@@ -111,6 +129,7 @@ async function fetchAnalyticsData(from?: string, to?: string, filters?: Analytic
   const [
     dealsResult,
     paymentsResult,
+    transactionsResult,
     leadsResult,
     leadsConvertedResult,
     propertiesResult,
@@ -119,6 +138,7 @@ async function fetchAnalyticsData(from?: string, to?: string, filters?: Analytic
   ] = await Promise.all([
     dealsQuery,
     paymentsQuery,
+    transactionsQuery,
     leadsQuery,
     leadsConvertedQuery,
     propertiesQuery,
@@ -151,6 +171,32 @@ async function fetchAnalyticsData(from?: string, to?: string, filters?: Analytic
     }) === filters.direction
   })
 
+  type TransactionRow = {
+    type: 'income' | 'expense'; amount: number | null; date: string | null; description: string | null
+    engagement_id: string | null
+    category?: { code: string | null } | { code: string | null }[] | null
+    contract?: { contract_type: string | null } | { contract_type: string | null }[] | null
+    deal?: { deal_type: string | null } | { deal_type: string | null }[] | null
+  }
+  const transactionRows: AnalyticsRawData['transactions'] =
+    ((transactionsResult.data ?? []) as unknown as TransactionRow[]).map(r => {
+      const categoryCode = oneOf(r.category)?.code ?? null
+      const directDirection = transactionDirection({
+        contractType: oneOf(r.contract)?.contract_type ?? null,
+        engagementId: r.engagement_id,
+        dealType: oneOf(r.deal)?.deal_type ?? null,
+      })
+      const direction = directDirection ?? guessTransactionDirectionFromText({ description: r.description, categoryCode })
+      return {
+        type: r.type,
+        amount: r.amount,
+        date: r.date,
+        categoryCode,
+        direction,
+        directionGuessed: directDirection === null && direction !== null,
+      }
+    }).filter(r => !filters?.direction || r.direction === filters.direction)
+
   type ContractRow = { status: string; contract_type: string; property_id: string | null; manager_id: string | null }
   const contractRows = ((contractsResult.data ?? []) as ContractRow[]).filter(r => {
     if (!filters?.direction) return true
@@ -160,6 +206,7 @@ async function fetchAnalyticsData(from?: string, to?: string, filters?: Analytic
   return {
     deals: (dealsResult.data ?? []) as AnalyticsRawData['deals'],
     payments: toPaymentShape(paymentRows),
+    transactions: transactionRows,
     leads: leadsResult.data ?? [],
     leadsConverted: leadsConvertedResult.data ?? [],
     properties: propertiesResult.data ?? [],
