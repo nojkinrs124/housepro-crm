@@ -249,3 +249,40 @@ export async function markAvitoChatRead(userId: string, accessToken: string, cha
     // по external_id не даст задвоить сообщения в ленте.
   })
 }
+
+/**
+ * Отправляет текстовое сообщение в чат мессенджера Авито — ответ бота клиенту.
+ * Возвращает id отправленного сообщения (для записи в ленту общения с тем же
+ * external_id, которым помечены входящие — дедупликация общая).
+ */
+export async function sendAvitoMessage(
+  userId: string,
+  accessToken: string,
+  chatId: string,
+  text: string
+): Promise<{ id: string }> {
+  const res = await fetch(`${AVITO_API_BASE}/messenger/v1/accounts/${userId}/chats/${chatId}/messages`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ message: { text }, type: 'text' }),
+    cache: 'no-store',
+  })
+
+  const body = await res.json().catch(() => null)
+  if (!res.ok) {
+    throw new AvitoApiError(
+      body?.error?.message ?? `Авито вернул ${res.status} при отправке сообщения`,
+      res.status,
+      body
+    )
+  }
+
+  return { id: String(body?.id ?? randomFallbackId()) }
+}
+
+function randomFallbackId(): string {
+  return `sent-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+}

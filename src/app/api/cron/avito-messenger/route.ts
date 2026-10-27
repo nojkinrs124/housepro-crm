@@ -4,23 +4,32 @@ import {
   fetchAvitoAccessToken,
   fetchAvitoChats,
   fetchAvitoMessages,
+  sendAvitoMessage,
   markAvitoChatRead,
   AvitoApiError,
 } from '@/features/avito/services/avito-api.service'
+import { runAvitoDialogTurn } from '@/features/avito/services/avito-dialog.service'
 import { logCommunication } from '@/lib/communications/log'
 import { isCronAuthorized } from '@/lib/cron-auth'
 
 export const dynamic = 'force-dynamic'
+// LLM-диалог (несколько раундов tool-loop) может занять дольше 10с дефолта Hobby —
+// как у telegram/webhook/route.ts и ai/listing. 60 — максимум для Hobby-функций.
+export const maxDuration = 60
 
-// Забирает непрочитанные сообщения из мессенджера Авито и превращает их в лиды.
+// Забирает непрочитанные сообщения из мессенджера Авито, превращает их в лиды,
+// ведёт автоматический диалог с клиентом и сам назначает показы.
 //
-// Авито не шлёт вебхуки в общем случае, поэтому опрашиваем сами. Раз в 15 минут
-// достаточно: клиент, написавший объявлению, ждёт ответ в течение часа, а более
-// частый опрос упирается в лимиты API.
+// Авито не шлёт вебхуки в общем случае, поэтому опрашиваем сами. Расписание —
+// pg_cron (миграция 20260915080224), частота задаётся там же, не здесь.
 //
 // Дедупликация двойная: сообщения — по (provider, external_id) в ленте
 // коммуникаций, лиды — по внешнему идентификатору чата в comment. Без этого
 // каждый прогон плодил бы новый лид на тот же диалог.
+//
+// Диалог ведёт бот сам, без подтверждения человеком (решение владельца:
+// единственный агент, редкие конфликты расписания не критичны) — в отличие
+// от Telegram-бота для сотрудников, где мутации всегда через подтверждение.
 
 const MAX_CHATS_PER_RUN = 30
 
@@ -59,6 +68,22 @@ async function ensureToken(settings: AvitoSettingsRow): Promise<string | null> {
   }
 }
 
+/** Находит объект CRM по id объявления Авито (itemId чата = avito_ad_id объекта). */
+async function findPropertyByItemId(
+  supabase: ReturnType<typeof getSupabaseAdmin>,
+  orgId: string,
+  itemId: string | null
+): Promise<{ id: string; title: string; address: string } | null> {
+  if (!itemId) return null
+  const { data } = await supabase
+    .from('properties')
+    .select('id, title, address')
+    .eq('organization_id', orgId)
+    .eq('avito_ad_id', itemId)
+    .maybeSingle()
+  return data ?? null
+}
+
 export async function GET(request: Request) {
   if (!(await isCronAuthorized(request))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -71,6 +96,8 @@ export async function GET(request: Request) {
   const accounts = (data ?? []) as AvitoSettingsRow[]
   let messagesLogged = 0
   let leadsCreated = 0
+  let repliesSent = 0
+  let showingsCreated = 0
   const errors: string[] = []
 
   for (const settings of accounts) {
@@ -99,11 +126,13 @@ export async function GET(request: Request) {
     }
 
     for (const chat of chats) {
+      const property = await findPropertyByItemId(supabase, settings.organization_id, chat.itemId)
+
       // Лид на диалог: ищем по метке с id чата, чтобы не плодить дубли.
       const chatTag = `avito:${chat.id}`
       const { data: existingLead } = await supabase
         .from('leads')
-        .select('id')
+        .select('id, property_id')
         .eq('organization_id', settings.organization_id)
         .ilike('comment', `%${chatTag}%`)
         .limit(1)
@@ -121,6 +150,7 @@ export async function GET(request: Request) {
             full_name: chat.userName || 'Клиент с Авито',
             source: 'avito',
             status: 'new',
+            property_id: property?.id ?? null,
             comment: [
               chat.itemTitle ? `Объявление: ${chat.itemTitle}` : null,
               chat.itemUrl,
@@ -135,6 +165,10 @@ export async function GET(request: Request) {
 
         leadId = created?.id ?? null
         if (leadId) leadsCreated += 1
+      } else if (property?.id && !existingLead?.property_id) {
+        // Лид уже был, но без привязки к объекту (чат завёлся раньше, чем
+        // объект нашёлся по itemId, либо объект опубликовали позже).
+        await supabase.from('leads').update({ property_id: property.id }).eq('id', leadId)
       }
 
       let messages
@@ -145,7 +179,12 @@ export async function GET(request: Request) {
         continue
       }
 
-      for (const message of messages) {
+      // Сообщения приходят свежие сверху — для диалога нужен порядок "старое → новое",
+      // а в диалог модели отдаём только последнее входящее клиента (остальное уже в истории).
+      const chronological = [...messages].reverse()
+      let lastIncomingText: string | null = null
+
+      for (const message of chronological) {
         if (!message.text) continue
         await logCommunication({
           orgId: settings.organization_id,
@@ -159,6 +198,42 @@ export async function GET(request: Request) {
           leadId,
         })
         messagesLogged += 1
+        if (!message.isOutgoing) lastIncomingText = message.text
+      }
+
+      // Отвечаем только если в этой пачке было хотя бы одно новое входящее
+      // сообщение клиента — иначе бот отвечал бы повторно на уже обработанное.
+      if (lastIncomingText && leadId) {
+        const contextNote = property
+          ? `Объект, по которому обращается клиент: «${property.title}», ${property.address}.`
+          : 'Объект по этому чату не определён — объявление либо снято, либо не из автозагрузки CRM.'
+
+        try {
+          const result = await runAvitoDialogTurn(
+            { orgId: settings.organization_id, avitoChatId: chat.id, leadId, propertyId: property?.id ?? null },
+            lastIncomingText,
+            contextNote
+          )
+
+          if (result.showingCreated) showingsCreated += 1
+
+          if (result.replyText) {
+            await sendAvitoMessage(settings.avito_user_id, token, chat.id, result.replyText)
+            await logCommunication({
+              orgId: settings.organization_id,
+              channel: 'avito',
+              direction: 'outbound',
+              body: result.replyText,
+              subject: chat.itemTitle ? `Авито: ${chat.itemTitle}` : 'Сообщение с Авито',
+              provider: 'avito',
+              externalId: `bot-${chat.id}-${Date.now()}`,
+              leadId,
+            })
+            repliesSent += 1
+          }
+        } catch (e) {
+          errors.push(`диалог ${chat.id}: ${e instanceof Error ? e.message : String(e)}`)
+        }
       }
 
       await markAvitoChatRead(settings.avito_user_id, token, chat.id)
@@ -175,6 +250,8 @@ export async function GET(request: Request) {
     accounts: accounts.length,
     leadsCreated,
     messagesLogged,
+    repliesSent,
+    showingsCreated,
     errors: errors.slice(0, 5),
   })
 }
