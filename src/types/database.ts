@@ -385,6 +385,7 @@ export interface AccountingCategory {
   id: string
   name: string
   type: AccountingTransactionType
+  code?: string | null
   color: string
   icon: string
   is_system: boolean
@@ -462,4 +463,7 @@ export interface AccountingStats {
   agencyIncomeThisMonth: number
   agencyExpenseThisMonth: number
   agencyProfitThisMonth: number
+  /** Только категория management_fee — часть agencyIncomeTotal, не сверх него. */
+  managementIncomeTotal: number
+  managementIncomeThisMonth: number
 }

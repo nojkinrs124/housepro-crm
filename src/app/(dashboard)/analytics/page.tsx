@@ -1,27 +1,30 @@
-import { stagesOf, DIRECTION_SHORT_LABELS } from '@/features/directions/config/directions'
+import { stagesOf, DIRECTION_SHORT_LABELS, DIRECTION_VALUES, type DirectionCode } from '@/features/directions/config/directions'
 import { isDealSucceeded, isDealClosed, DEAL_TYPE_LABELS } from '@/features/deals/config/deal-stages'
 import { DEAL_SOURCE_LABELS } from '@/features/deals/config/deal-sources'
-import { CheckCircle2, Clock } from 'lucide-react'
+import { CheckCircle2, Clock, Info } from 'lucide-react'
 import {
- DealsAreaChart,
- DealFunnelChart,
- LeadsConversionChart,
- PaymentsMonthlyChart,
- DealTypePieChart,
- type MonthlyDealsData,
- type FunnelData,
- type LeadsConversionData,
- type PaymentMonthlyData,
- type DealTypeData,
+  DealsAreaChart,
+  DealFunnelChart,
+  LeadsConversionChart,
+  PaymentsMonthlyChart,
+  DealTypePieChart,
+  type MonthlyDealsData,
+  type FunnelData,
+  type LeadsConversionData,
+  type PaymentMonthlyData,
+  type DealTypeData,
 } from '@/features/analytics/components/AnalyticsCharts'
+import { PnLChart } from '@/features/accounting/components/PnLChart'
+import { CategoryPieChart } from '@/features/accounting/components/CategoryPieChart'
+import { getMonthlyPnL, getCategoryBreakdown } from '@/features/accounting/actions/accounting.actions'
 import { CHART, CHART_SERIES } from '@/lib/design/chartColors'
-import { isAgencyRevenue } from '@/features/accounting/utils/money-classification'
+import { isAgencyRevenue, isAgencyExpense, PASS_THROUGH_INCOME_CODES, OWNER_PAYOUT_CODE } from '@/features/accounting/utils/money-classification'
 import {
- getAnalyticsData,
- getLast12Months,
- monthLabel,
- type AnalyticsRawData,
- type AnalyticsFilters as Filters,
+  getAnalyticsData,
+  getLast12Months,
+  monthLabel,
+  type AnalyticsRawData,
+  type AnalyticsFilters as Filters,
 } from '@/features/analytics/data'
 import { formatMoney, plural, formatMoneyShort } from '@/lib/utils'
 import { AnalyticsFilters } from '@/features/analytics/components/AnalyticsFilters'
@@ -29,7 +32,6 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { StatStrip } from '@/components/layout/StatStrip'
 import { createClient } from '@/lib/supabase/server'
 import { todayIso } from '@/lib/timezone'
-import type { DirectionCode } from '@/features/directions/config/directions'
 
 /** Те же 4 формулы для текущего и предыдущего периода — иначе дельта считалась бы иначе, чем сама цифра. */
 function computeKpis(data: Pick<AnalyticsRawData, 'payments' | 'deals' | 'leads' | 'leadsConverted'>) {
@@ -91,6 +93,7 @@ export default async function AnalyticsPage({
  {
  deals,
  payments,
+ transactions,
  leads,
  leadsConverted,
  properties,
@@ -100,11 +103,19 @@ export default async function AnalyticsPage({
  previousData,
  employeesRes,
  propertiesRes,
+ pnlChartData,
+ incomePie,
+ expensePie,
  ] = await Promise.all([
  getAnalyticsData(from, to, filters),
  getAnalyticsData(prevFrom, prevTo, filters),
  supabase.from('users').select('id, full_name').order('full_name'),
  supabase.from('properties').select('id, title, address').order('title').limit(300),
+ // P&L и структура по категориям — перенесены сюда со старой /accounting
+ // (решение владельца 27.10.2026: бухгалтерия — журнал, аналитика — графики).
+ getMonthlyPnL(12, filters),
+ getCategoryBreakdown('income', 'month', filters),
+ getCategoryBreakdown('expense', 'month', filters),
  ])
 
  // ── KPI ──────────────────────────────────────────────────────────────────────
@@ -128,6 +139,56 @@ export default async function AnalyticsPage({
  const rentedProps = properties.filter(p => p.status === 'rented').length
  const soldProps = properties.filter(p => p.status === 'sold').length
  const activeContracts = contracts.filter(c => c.status === 'signed').length
+
+ // ── Доход/расход по направлениям (решение владельца 27.10.2026) ────────────────
+ //
+ // «Аренда/Продажа/Управление/Поиск жилья/Прочее» — те же 4 направления, что
+ // ведёт CRM в сделках и договорах (features/directions/config/directions.ts),
+ // плюс «Прочее» для операций без направления (партнёрские комиссии и т.п.,
+ // не привязанные ни к сделке, ни к договору, ни к управлению). Доход/расход
+ // внутри направления — тем же предикатом isAgencyRevenue/isAgencyExpense,
+ // что и Бухгалтерия: транзит клиентов (аренда жильцов, депозиты) и выплаты
+ // собственникам НЕ считаются ни доходом, ни расходом агентства.
+ //
+ // directionGuessed: когда у операции нет прямой связи со сделкой/обслуживанием/
+ // договором, direction подбирается по категории/тексту назначения
+ // (guessTransactionDirectionFromText в analytics/data) — находка 27.10.2026:
+ // без этого 85% реального дохода оседало в «Прочее», хотя из текста операции
+ // направление легко угадывалось («Управление, ул. Молокова»). guessedIncome
+ // ниже — сколько из дохода направления определено ТАК, а не точной связью,
+ // чтобы честно показать владельцу долю предположений, а не выдавать их за факт.
+ type DirectionBreakdownRow = { code: DirectionCode | 'other'; label: string; income: number; expense: number; profit: number; guessedIncome: number }
+ const directionTotals = new Map<string, { income: number; expense: number; guessedIncome: number }>()
+ for (const t of transactions) {
+ const key = t.direction ?? 'other'
+ const entry = directionTotals.get(key) ?? { income: 0, expense: 0, guessedIncome: 0 }
+ if (t.type === 'income' && isAgencyRevenue(t.categoryCode, 'income')) {
+ entry.income += Number(t.amount ?? 0)
+ if (t.directionGuessed) entry.guessedIncome += Number(t.amount ?? 0)
+ }
+ if (t.type === 'expense' && isAgencyExpense(t.categoryCode, 'expense', null)) entry.expense += Number(t.amount ?? 0)
+ directionTotals.set(key, entry)
+ }
+ const directionBreakdown: DirectionBreakdownRow[] = [...DIRECTION_VALUES, 'other' as const]
+ .map(code => {
+ const t = directionTotals.get(code) ?? { income: 0, expense: 0, guessedIncome: 0 }
+ return {
+ code,
+ label: code === 'other' ? 'Прочее' : DIRECTION_SHORT_LABELS[code],
+ income: t.income,
+ expense: t.expense,
+ profit: t.income - t.expense,
+ guessedIncome: t.guessedIncome,
+ }
+ })
+ .filter(row => row.income > 0 || row.expense > 0)
+ const directionTotalIncome = directionBreakdown.reduce((s, r) => s + r.income, 0)
+ const transitTotal = transactions
+ .filter(t => t.type === 'income' && PASS_THROUGH_INCOME_CODES.has(t.categoryCode ?? ''))
+ .reduce((s, t) => s + Number(t.amount ?? 0), 0)
+ const ownerPayoutTotal = transactions
+ .filter(t => t.type === 'expense' && t.categoryCode === OWNER_PAYOUT_CODE)
+ .reduce((s, t) => s + Number(t.amount ?? 0), 0)
 
  // ── Chart data ────────────────────────────────────────────────────────────────
 
@@ -263,6 +324,82 @@ export default async function AnalyticsPage({
  },
  ]}
  />
+
+ {/* Доход/расход по направлениям — главная находка владельца 27.10.2026:
+     одна цифра «Доход» не показывает, откуда он взялся. Таблица ниже
+     раскладывает ровно то же определение дохода/расхода агентства на
+     направления и явно отделяет транзит клиентов/выплаты собственникам,
+     которые вообще не доход и не расход — просто проходящие через кассу
+     деньги (аренда жильцов, депозиты, выплаты за управление). */}
+ <div className="hp-card p-5">
+ <h2 className="hp-h2 mb-1">Доход и расход по направлениям</h2>
+ <p className="text-[12px] text-[var(--hp-sub)] mb-4">Только реальный доход/расход агентства — без транзита клиентов и выплат собственникам</p>
+ {directionBreakdown.length === 0 ? (
+ <div className="h-[80px] flex items-center justify-center text-sm text-[var(--hp-tertiary)]">
+ Нет проведённых операций за период
+ </div>
+ ) : (
+ <div className="overflow-x-auto">
+ <table className="w-full text-sm">
+ <thead>
+ <tr className="text-left text-[12px] text-[var(--hp-sub)] border-b border-[var(--hp-border-soft)]">
+ <th className="py-2 pr-4 font-medium">Направление</th>
+ <th className="py-2 pr-4 font-medium text-right">Доход</th>
+ <th className="py-2 pr-4 font-medium text-right">Расход</th>
+ <th className="py-2 pr-4 font-medium text-right">Прибыль</th>
+ <th className="py-2 font-medium text-right">Доля дохода</th>
+ </tr>
+ </thead>
+ <tbody>
+ {directionBreakdown.map(row => (
+ <tr key={row.code} className="border-b border-[var(--hp-border-soft)] last:border-0">
+ <td className="py-2 pr-4 font-medium text-[var(--hp-ink)]">{row.label}</td>
+ <td className="py-2 pr-4 text-right text-[var(--hp-good)]">
+ <span className="inline-flex items-center gap-1 justify-end">
+ {row.income > 0 ? `+${formatMoney(row.income)}` : '—'}
+ {row.guessedIncome > 0 && (
+ <span title={`≈${formatMoney(row.guessedIncome)} из этой суммы определено по тексту операции, не по точной связи со сделкой/договором`}>
+ <Info className="w-3.5 h-3.5 text-[var(--hp-tertiary)] shrink-0" strokeWidth={1.6} />
+ </span>
+ )}
+ </span>
+ </td>
+ <td className="py-2 pr-4 text-right text-[var(--hp-danger)]">{row.expense > 0 ? `−${formatMoney(row.expense)}` : '—'}</td>
+ <td className={`py-2 pr-4 text-right font-semibold ${row.profit < 0 ? 'text-[var(--hp-danger)]' : 'text-[var(--hp-ink)]'}`}>{formatMoney(row.profit)}</td>
+ <td className="py-2 text-right text-[var(--hp-sub)]">{directionTotalIncome > 0 ? `${Math.round((row.income / directionTotalIncome) * 100)}%` : '—'}</td>
+ </tr>
+ ))}
+ </tbody>
+ </table>
+ </div>
+ )}
+ {(transitTotal > 0 || ownerPayoutTotal > 0) && (
+ <p className="text-[12px] text-[var(--hp-tertiary)] mt-3 pt-3 border-t border-[var(--hp-border-soft)]">
+ Не входит в таблицу выше (не доход/расход агентства): транзит клиентов (аренда жильцов, депозиты) {formatMoneyShort(transitTotal)}
+ {ownerPayoutTotal > 0 && <> · выплаты собственникам {formatMoneyShort(ownerPayoutTotal)}</>}
+ </p>
+ )}
+ </div>
+
+ {/* P&L и структура месяца — перенесены со старой /accounting (там теперь
+     только журнал операций), раскладка по категориям дополняет таблицу
+     направлений выше: там — куда, здесь — на чём конкретно (аренда,
+     депозит, управление, комиссия...). */}
+ <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+ <div className="lg:col-span-2 hp-card p-5">
+ <h2 className="hp-h2 mb-4">P&L — последние 12 месяцев</h2>
+ <PnLChart data={pnlChartData} />
+ </div>
+ <div className="hp-card p-5">
+ <h2 className="hp-h2 mb-4">Структура месяца</h2>
+ <div className="space-y-5">
+ <CategoryPieChart data={incomePie} title="Доходы" />
+ <div className="border-t border-[var(--hp-border-soft)] pt-5">
+ <CategoryPieChart data={expensePie} title="Расходы" />
+ </div>
+ </div>
+ </div>
+ </div>
 
  {/* Вверху одна полоса из 4 цифр; база объектов — справочно, блоком */}
       <div className="hp-block">

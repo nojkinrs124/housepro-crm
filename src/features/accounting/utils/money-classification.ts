@@ -7,6 +7,8 @@
 
 export const PASS_THROUGH_INCOME_CODES = new Set(['tenant_payment', 'deposit'])
 export const OWNER_PAYOUT_CODE = 'owner_payout'
+/** Доход с управления объектами — подмножество agency-дохода, не отдельная сумма сверх него. */
+export const MANAGEMENT_FEE_CODE = 'management_fee'
 
 export function isAgencyRevenue(categoryCode: string | null, type: 'income' | 'expense'): boolean {
   return type === 'income' && !PASS_THROUGH_INCOME_CODES.has(categoryCode ?? '')

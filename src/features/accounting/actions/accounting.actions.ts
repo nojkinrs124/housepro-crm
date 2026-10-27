@@ -15,7 +15,7 @@ import type {
 } from '@/types/database'
 import { friendlyDbError } from '@/lib/errors'
 import { currentMonthBounds, monthBounds, monthStartIso, todayIso } from '@/lib/timezone'
-import { isAgencyRevenue, isAgencyExpense } from '@/features/accounting/utils/money-classification'
+import { isAgencyRevenue, isAgencyExpense, MANAGEMENT_FEE_CODE } from '@/features/accounting/utils/money-classification'
 import { transactionDirection, type AccountingFilters } from '@/features/accounting/utils/direction'
 import { formatMonthShort } from '@/lib/utils'
 
@@ -118,6 +118,7 @@ export async function getAccountingStats(filters?: AccountingFilters): Promise<A
     plannedIncome: 0, plannedExpense: 0,
     agencyIncomeTotal: 0, agencyExpenseTotal: 0, agencyProfitTotal: 0,
     agencyIncomeThisMonth: 0, agencyExpenseThisMonth: 0, agencyProfitThisMonth: 0,
+    managementIncomeTotal: 0, managementIncomeThisMonth: 0,
   }
 
   // Границы месяца — по поясу агентства. Раньше: локальная полночь + toISOString(),
@@ -151,11 +152,14 @@ export async function getAccountingStats(filters?: AccountingFilters): Promise<A
 
   const agencyIncome  = (arr: Row[]) => sum(arr.filter(r => isAgencyRevenue(codeOf(r), r.type as 'income' | 'expense')))
   const agencyExpense = (arr: Row[]) => sum(arr.filter(r => isAgencyExpense(codeOf(r), r.type as 'income' | 'expense', borneByOf(r))))
+  const managementIncome = (arr: Row[]) => sum(arr.filter(r => r.type === 'income' && codeOf(r) === MANAGEMENT_FEE_CODE))
 
   const agencyIncomeTotal  = agencyIncome(completed)
   const agencyExpenseTotal = agencyExpense(completed)
   const agencyIncomeThisMonth  = agencyIncome(thisMonth)
   const agencyExpenseThisMonth = agencyExpense(thisMonth)
+  const managementIncomeTotal     = managementIncome(completed)
+  const managementIncomeThisMonth = managementIncome(thisMonth)
 
   return {
     totalIncome,
@@ -172,6 +176,8 @@ export async function getAccountingStats(filters?: AccountingFilters): Promise<A
     agencyIncomeThisMonth,
     agencyExpenseThisMonth,
     agencyProfitThisMonth: agencyIncomeThisMonth - agencyExpenseThisMonth,
+    managementIncomeTotal,
+    managementIncomeThisMonth,
   }
 }
 
@@ -309,6 +315,10 @@ export async function createTransactionAction(_prevState: unknown, formData: For
     // попадёт во взаиморасчёт с собственником.
     ...(await resolvePropertyLinks(supabase, propertyId, contractId)),
     borne_by: parseBorneBy(formData.get('borne_by')),
+    // Ручная форма создаёт операцию сразу «проведённой» без отдельного шага
+    // подтверждения — paid_at обязан быть заполнен тут же, иначе аудит не может
+    // отличить реально полученный платёж от незаполненного поля (находка 27.10.2026).
+    ...(status === 'completed' && { paid_at: new Date().toISOString() }),
   }
 
   const { data, error } = await supabase
