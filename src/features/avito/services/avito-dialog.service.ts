@@ -15,6 +15,7 @@ import { chatCompletion, type LlmMessage } from '@/lib/telegram/llm'
 import { localDateTimeToIso, formatDateTime } from '@/lib/timezone'
 import { normalizePhone } from '@/lib/utils'
 import { markChecklistItems } from '@/features/directions/services/checklist-sync'
+import { notifyAvitoEscalation } from '@/lib/telegram/notify-lead'
 
 const MAX_HISTORY_MESSAGES = 20
 const MAX_ROUNDS = 4
@@ -188,10 +189,27 @@ async function createShowingFromBot(
 
 async function escalate(ctx: AvitoDialogContext, args: { reason?: string }): Promise<{ ok: true }> {
   const supabase = getSupabaseAdmin()
+  const reason = args.reason ?? 'не указано'
   await supabase
     .from('leads')
-    .update({ comment: `Бот передал диалог человеку: ${args.reason ?? 'не указано'}`, updated_at: new Date().toISOString() })
+    .update({ comment: `Бот передал диалог человеку: ${reason}`, updated_at: new Date().toISOString() })
     .eq('id', ctx.leadId)
+
+  // Уведомление владельцу в Telegram — без него о передаче диалога узнать можно
+  // было только зайдя в карточку лида (см. notify-lead.ts).
+  const [{ data: lead }, { data: property }] = await Promise.all([
+    supabase.from('leads').select('full_name').eq('id', ctx.leadId).maybeSingle(),
+    ctx.propertyId
+      ? supabase.from('properties').select('title').eq('id', ctx.propertyId).maybeSingle()
+      : Promise.resolve({ data: null }),
+  ])
+  await notifyAvitoEscalation(ctx.orgId, {
+    leadId: ctx.leadId,
+    reason,
+    clientName: lead?.full_name ?? null,
+    propertyTitle: property?.title ?? null,
+  })
+
   return { ok: true }
 }
 
