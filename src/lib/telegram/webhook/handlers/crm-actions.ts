@@ -97,6 +97,16 @@ const CRM_ACTION_SCREEN: Record<string, MenuScreen> = {
   tasksnooze: 'crm_tasks',
 }
 
+/** Что сказать после успешного нажатия — по действию, а не общее «ок». */
+const CRM_ACTION_DONE: Record<string, string> = {
+  leadnext: '✅ Лид переведён на следующую стадию.',
+  dealnext: '✅ Сделка переведена на следующую стадию.',
+  paypaid: '✅ Платёж отмечен оплаченным.',
+  ownerpay: '✅ Выплата собственнику записана.',
+  taskdone: '✅ Задача закрыта.',
+  tasksnooze: '✅ Задача перенесена на завтра.',
+}
+
 export async function handleCrmQuickAction(action: string, entityId: string, actor: BotActor, messageId: number | undefined) {
   const { chatId, orgId } = actor
   // Быстрые действия меняют данные CRM — их достаточно уровня сотрудника,
@@ -113,8 +123,13 @@ export async function handleCrmQuickAction(action: string, entityId: string, act
   else if (action === 'taskdone') result = await markTaskDone(orgId, entityId)
   else if (action === 'tasksnooze') result = await snoozeTaskToTomorrow(orgId, entityId)
 
+  // Каждое нажатие отвечает вслух. Раньше успех молчал (кроме ownerpay) и
+  // перерисовывал тот же список: запись уходила из фильтра, экран выглядел
+  // прежним, и это неотличимо от «кнопка не сработала» — та же причина, по
+  // которой в context.ts добавлен denyAdmin. Статус сделки/лида теперь
+  // сообщается словами, а не только исчезновением строки из списка.
   if (result.error) await sendMessage(chatId, `⚠️ Не получилось: ${result.error}`)
-  else if (action === 'ownerpay') await sendMessage(chatId, '✅ Выплата собственнику записана.')
+  else await sendMessage(chatId, CRM_ACTION_DONE[action] ?? '✅ Готово.')
   await showMenuScreen(chatId, orgId, CRM_ACTION_SCREEN[action], actor.role, messageId)
 }
 
@@ -157,7 +172,7 @@ export async function handleCrmSearchAction(action: string, arg: string, actor: 
   }
   if (action === 'money' && arg === 'chart') {
     const { dispatchReadOnlyTool } = await import('@/lib/telegram/tools')
-    await dispatchReadOnlyTool('get_finance_chart', { months: 6 }, { chatId })
+    await dispatchReadOnlyTool('get_finance_chart', { months: 6 }, { actor })
   }
 }
 

@@ -58,7 +58,13 @@ export async function handleCallbackQuery(update: NonNullable<TelegramUpdate['ca
   }
   if (action === 'intake') return handleIntakeCallback(arg, actor)
 
-  if (action !== 'confirm' && action !== 'cancel') return
+  if (action === 'confirm' || action === 'cancel') {
+    return handleConfirmOrCancel(action, arg, actor, messageId)
+  }
 
-  return handleConfirmOrCancel(action, arg, actor, messageId)
+  // Неизвестное действие — не молчим. Сюда попадают кнопки из старых сообщений
+  // после переименования/удаления действия: раньше такой клик не давал ни
+  // ответа, ни ошибки, то есть выглядел как неработающий бот.
+  console.warn('[telegram] unknown callback action:', action)
+  await sendMessage(chatId, '🔁 Эта кнопка устарела — открой /menu и нажми заново.')
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { authenticateApiKey, hasScope } from '@/lib/api-auth'
+import { authenticateApiKey, hasScope, botRequesterLabel } from '@/lib/api-auth'
 import { DealStatusUpdateSchema } from '@/lib/schemas/accounting-api'
 import { writeAuditLogServiceRole } from '@/lib/audit'
 import { isStageOf, stagesOf } from '@/features/directions/config/directions'
@@ -35,6 +35,10 @@ export async function GET(request: Request) {
   const limit  = Math.min(Number(searchParams.get('limit') ?? 50), 200)
   const offset = Number(searchParams.get('offset') ?? 0)
   const status = searchParams.get('status')
+  // Направление работы: фильтр объявлен в инструменте get_deals у бота, и
+  // раньше терялся в двух местах сразу — ответ «сделки по аренде» приходил
+  // со всеми сделками, а модель пересказывала это как отфильтрованное.
+  const dealType = searchParams.get('deal_type')
 
   let query = supabaseAdmin
     .from('deals')
@@ -44,6 +48,7 @@ export async function GET(request: Request) {
     .range(offset, offset + limit - 1)
 
   if (status) query = query.eq('status', status)
+  if (dealType) query = query.eq('deal_type', dealType)
 
   const { data, error, count } = await query
 
@@ -103,6 +108,7 @@ export async function PATCH(request: Request) {
     )
   }
 
+  const requester = botRequesterLabel(request)
   const { data, error } = await supabaseAdmin
     .from('deals')
     .update({ status: parsed.data.status })
@@ -118,8 +124,13 @@ export async function PATCH(request: Request) {
     action:      'update',
     entityType:  'deal',
     entityId:    dealId,
-    entityLabel: `Сделка: статус изменён через Telegram-бота`,
-    changes:     { status: { old: existing.status, new: parsed.data.status } },
+    // Кто именно — из X-Bot-Requester: у бота один ключ на всех сотрудников,
+    // и без этого аудит не отвечал на вопрос «кто перевёл сделку».
+    entityLabel: `Сделка: статус изменён через Telegram-бота${requester ? ` (${requester})` : ''}`,
+    changes:     {
+      status: { old: existing.status, new: parsed.data.status },
+      ...(requester ? { requester: { old: null, new: requester } } : {}),
+    },
   })
 
   return NextResponse.json({ data })

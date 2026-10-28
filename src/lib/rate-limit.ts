@@ -118,3 +118,16 @@ export async function rateLimitCreate(userId: string, entity: string): Promise<R
 export async function rateLimitSearch(userId: string): Promise<RateLimitResult> {
   return rateLimit(`search:${userId}`, { limit: 30, windowSeconds: 60 })
 }
+
+/**
+ * Дорогие инструменты бота (генерация поста, веб-поиск, график): 40 в сутки на
+ * пользователя.
+ *
+ * Лимит на ход (`COSTLY_CALLS_PER_TURN` в tools.ts) ловит веер вызовов внутри
+ * одного вопроса, но не систематический расход — «сделай пост» каждые две
+ * минуты весь день. Годовая подписка на OpenRouter и веб-поиск стоят денег,
+ * и у владельца должен быть потолок без похода в дашборд провайдера.
+ */
+export async function rateLimitBotCostly(userId: string): Promise<RateLimitResult> {
+  return rateLimit(`bot-costly:${userId}`, { limit: 40, windowSeconds: 24 * 60 * 60 })
+}

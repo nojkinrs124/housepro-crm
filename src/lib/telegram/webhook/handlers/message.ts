@@ -12,10 +12,8 @@ import { resolveActor } from '@/lib/telegram/webhook/context'
 import { HELP_TEXT } from '@/lib/telegram/webhook/dialog/prompts'
 import { handleUserTurn } from '@/lib/telegram/webhook/dialog/turn'
 import { sendMainMenu } from '@/lib/telegram/webhook/handlers/menu'
-import { tryHandleAddUserInput, tryHandleScheduleOrRubricInput } from '@/lib/telegram/webhook/handlers/text-intents'
-import { tryHandleCrmInput } from '@/lib/telegram/webhook/handlers/crm-actions'
 import { tryHandleChannelInput } from '@/lib/telegram/webhook/handlers/channel-content'
-import { routeIntakeText } from '@/lib/telegram/webhook/handlers/intake-text'
+import { routePendingInput } from '@/lib/telegram/webhook/handlers/pending-input'
 
 async function denyStranger(chatId: number): Promise<void> {
   await sendMessage(chatId, '⛔ Этот аккаунт не имеет доступа к боту.')
@@ -45,10 +43,18 @@ export async function handleMessage(message: NonNullable<TelegramUpdate['message
   if (message.voice) {
     const { base64 } = await downloadTelegramFile(message.voice.file_id)
     const transcript = await transcribeAudio(base64, 'ogg')
+    // Расшифровку показываем всегда: иначе ошибка распознавания (имя, сумма,
+    // номер) уходит дальше молча и всплывает только в подтверждении действия.
     await sendMessage(chatId, `🎤 <i>${transcript}</i>`)
-    if (await routeIntakeText(actor, intake, transcript)) {
-      // забрала сессия «Занести в CRM»
-    } else if (!(await tryHandleCrmInput(actor, transcript)) && !(await tryHandleChannelInput(actor, transcript))) {
+    // Дальше — ровно тот же путь, что у набранного текста: те же формы, та же
+    // сессия «Занести в CRM», тот же диалог. Раньше здесь была отдельная
+    // урезанная копия цепочки, и голосом нельзя было ответить на половину кнопок.
+    const handled = await routePendingInput(actor, transcript, {
+      intake,
+      forwardFromId: message.forward_from?.id,
+      forwardFromName: message.forward_from?.first_name || message.forward_from?.username,
+    })
+    if (!handled && !(await tryHandleChannelInput(actor, transcript, message.reply_to_message?.message_id))) {
       // Голосом отвечают на те же кнопки, что и текстом: «найди Иванова»,
       // «расход пять тысяч бензин».
       await handleUserTurn(actor, transcript)
@@ -114,16 +120,17 @@ export async function handleMessage(message: NonNullable<TelegramUpdate['message
       // тоже нужно — просто в нём меньше разделов.
       if (actor.role === 'admin') await setAwaitingIntent(actor.orgId, null)
       await sendMainMenu(actor)
-    } else if (await tryHandleAddUserInput(actor, text, forwardFrom?.id, forwardFrom?.first_name || forwardFrom?.username)) {
-      // перехвачено — ID добавлен в allowlist
-    } else if (await tryHandleCrmInput(actor, text)) {
-      // перехвачено — поиск, операция или часовой пояс
-    } else if (await tryHandleScheduleOrRubricInput(actor, text)) {
-      // перехвачено — добавлен слот расписания или обновлён промпт рубрики
-    } else if (await routeIntakeText(actor, intake, text)) {
-      // забрала сессия «Занести в CRM»: заметка или поправка к карточке
-    } else if (!(await tryHandleChannelInput(actor, text, message.reply_to_message?.message_id))) {
-      await handleUserTurn(actor, text)
+    } else {
+      // Формы и сессия «Занести в CRM» — в одном месте и в одном порядке,
+      // общем с голосом (pending-input.ts).
+      const handled = await routePendingInput(actor, text, {
+        intake,
+        forwardFromId: forwardFrom?.id,
+        forwardFromName: forwardFrom?.first_name || forwardFrom?.username,
+      })
+      if (!handled && !(await tryHandleChannelInput(actor, text, message.reply_to_message?.message_id))) {
+        await handleUserTurn(actor, text)
+      }
     }
   }
 }

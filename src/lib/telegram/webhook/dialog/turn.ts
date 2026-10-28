@@ -5,8 +5,11 @@
 import { randomUUID } from 'crypto'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { sendMessage, sendChatAction } from '@/lib/telegram/api'
-import { rateLimitMutation } from '@/lib/rate-limit'
-import { TOOL_DEFINITIONS, MUTATING_TOOLS, dispatchReadOnlyTool, describeMutation } from '@/lib/telegram/tools'
+import { rateLimitMutation, rateLimitBotCostly } from '@/lib/rate-limit'
+import {
+  toolDefinitionsFor, MUTATING_TOOLS, COSTLY_TOOLS, COSTLY_CALLS_PER_TURN,
+  dispatchReadOnlyTool, describeMutation,
+} from '@/lib/telegram/tools'
 import { chatCompletion } from '@/lib/telegram/llm'
 import type { BotActor } from '@/features/telegram/services/access'
 import { systemPrompt } from './prompts'
@@ -28,6 +31,10 @@ export async function handleUserTurn(actor: BotActor, content: MessageContent) {
   await sendChatAction(chatId, 'typing')
   const history = await loadConversation(chatIdStr)
   const messages: OpenRouterMessage[] = [...history, { role: 'user', content }]
+  // Дорогие вызовы (генерация поста, веб-поиск, график) считаем на весь ход,
+  // а не на раунд: иначе 4 раунда × parallelToolCalls давали N платных вызовов
+  // на один вопрос пользователя.
+  let costlyCalls = 0
 
   try {
     for (let round = 0; round < 4; round++) {
@@ -35,7 +42,9 @@ export async function handleUserTurn(actor: BotActor, content: MessageContent) {
       const completion = await chatCompletion({
         system: systemPrompt(actor.role),
         messages,
-        tools: TOOL_DEFINITIONS,
+        // Набор инструментов — по роли: сотрудник не видит закрытые схемы вовсе
+        // (см. ADMIN_ONLY_TOOLS). Отказ в dispatch/execute — второй слой.
+        tools: toolDefinitionsFor(actor.role),
         toolChoice: 'auto',
         // Несколько tool_calls в одном ответе — то, что делает пакетные запросы возможными.
         parallelToolCalls: true,
@@ -119,13 +128,42 @@ export async function handleUserTurn(actor: BotActor, content: MessageContent) {
 
       // Все tool calls в этом раунде — read-only, выполняем и продолжаем диалог с моделью
       for (const call of message.tool_calls) {
+        if ((COSTLY_TOOLS as readonly string[]).includes(call.function.name)) {
+          if (costlyCalls >= COSTLY_CALLS_PER_TURN) {
+            messages.push({
+              role: 'tool',
+              tool_call_id: call.id,
+              content: JSON.stringify({
+                error: 'Слишком много дорогих действий за один запрос. Скажи пользователю, что остальное — '
+                  + 'отдельным сообщением, и не пытайся повторить вызов.',
+              }),
+            })
+            continue
+          }
+          // Дневной потолок на пользователя: лимит на ход не мешает жать
+          // «сделай пост» каждые две минуты весь день, а это живые деньги.
+          const budget = await rateLimitBotCostly(telegramUserId)
+          if (!budget.success) {
+            console.warn('[telegram] costly tool budget exhausted:', telegramUserId, call.function.name)
+            messages.push({
+              role: 'tool',
+              tool_call_id: call.id,
+              content: JSON.stringify({
+                error: 'На сегодня лимит дорогих действий исчерпан. Скажи пользователю подождать до завтра '
+                  + 'и не повторяй вызов.',
+              }),
+            })
+            continue
+          }
+          costlyCalls++
+        }
         let args: Record<string, unknown> = {}
         try {
           args = JSON.parse(call.function.arguments)
         } catch {
           // оставляем args пустым — dispatchReadOnlyTool сам вернёт осмысленную ошибку/пустой результат
         }
-        const result = await dispatchReadOnlyTool(call.function.name, args, { chatId })
+        const result = await dispatchReadOnlyTool(call.function.name, args, { actor })
         messages.push({ role: 'tool', tool_call_id: call.id, content: JSON.stringify(result) })
       }
     }

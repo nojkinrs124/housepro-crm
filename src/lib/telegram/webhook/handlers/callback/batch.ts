@@ -2,7 +2,7 @@
 // Вынесено из webhook/route.ts фазой 2 аудита без изменения поведения.
 
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
-import { sendMessage, sendChatAction, sendDocument, editMessageReplyMarkup } from '@/lib/telegram/api'
+import { sendMessage, editMessageReplyMarkup } from '@/lib/telegram/api'
 import { executeConfirmedMutation } from '@/lib/telegram/tools'
 import type { BotActor } from '@/features/telegram/services/access'
 
@@ -49,9 +49,7 @@ export async function handleConfirmOrCancel(
     return
   }
 
-  if (pendingRows.some((r) => r.action_type === 'generate_contract')) {
-    await sendChatAction(chatId, 'upload_document')
-  }
+
 
   // Атомарный захват батча ОДНИМ UPDATE по batch_id — раньше статус 'confirmed'
   // выставлялся отдельным update на каждую строку ПОСЛЕ её исполнения: двойное
@@ -77,10 +75,19 @@ export async function handleConfirmOrCancel(
 
   const results: string[] = []
   for (const row of claimed.sort((a, b) => a.created_at.localeCompare(b.created_at))) {
-    const result = await executeConfirmedMutation(row.action_type, row.payload)
+    // Роль передаём ту, что есть СЕЙЧАС: батч лежит в БД между двумя апдейтами,
+    // и допуск за это время мог измениться (человека убрали из bot_allowed_users).
+    const result = await executeConfirmedMutation(row.action_type, row.payload, actor)
 
     if (result?.error) {
       results.push(`⚠️ Не получилось (${row.action_type}): ${result.error}`)
+      // Строка уже помечена 'confirmed' атомарным захватом выше, но действие НЕ
+      // выполнено. Оставлять 'confirmed' — значит врать в журнале бота: по нему
+      // потом не отличить проведённую операцию от провалившейся.
+      await supabaseAdmin
+        .from('bot_pending_actions')
+        .update({ status: 'failed' })
+        .eq('id', row.id)
     } else if (row.action_type === 'add_meter_readings' && result?.data) {
       // Расход и сумма считаются на сервере — показываем их, а не пересказ запроса.
       const d = result.data as { property: string; reading_date: string; saved: string[]; total_utilities: number; warnings: string[]; errors: string[] }
@@ -91,9 +98,6 @@ export async function handleConfirmOrCancel(
           (d.errors.length ? `\n⚠️ ${d.errors.join('\n⚠️ ')}` : '') +
           (d.warnings.length ? `\nℹ️ ${d.warnings.join('\nℹ️ ')}` : ''),
       )
-    } else if (row.action_type === 'generate_contract' && result?.data?.docxUrl) {
-      await sendDocument(chatId, result.data.docxUrl, row.summary_text)
-      results.push(`✅ ${row.summary_text}`)
     } else {
       results.push(`✅ ${row.summary_text}`)
     }

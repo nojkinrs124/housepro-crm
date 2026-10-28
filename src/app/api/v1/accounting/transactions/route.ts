@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { authenticateApiKey, hasScope } from '@/lib/api-auth'
+import { authenticateApiKey, hasScope, botRequesterLabel } from '@/lib/api-auth'
 import { TransactionCreateSchema } from '@/lib/schemas/accounting-api'
 import { writeAuditLogServiceRole } from '@/lib/audit'
 
@@ -63,13 +63,21 @@ export async function GET(request: Request) {
   const { data, error, count } = await query
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  // Сводка — удобно для finance-summary-сценариев бота без второго запроса
+  // Сводка по СТРАНИЦЕ, а не по периоду: считается по вернувшимся `data`.
+  // Раньше бот брал её как «итоги за период» с limit=200 и на 200+ операциях
+  // молча занижал ответ. Для итогов за период — `/api/v1/accounting/summary`
+  // (постраничный обход всей выборки + деление «выручка/транзит»).
+  // Поле `scope` оставлено намеренно: оно не даёт снова принять страницу за период.
   const income  = (data ?? []).filter((t) => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0)
   const expense = (data ?? []).filter((t) => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
 
   return NextResponse.json({
     data,
-    meta: { total: count, limit, offset, summary: { income, expense, profit: income - expense } },
+    meta: {
+      total: count, limit, offset,
+      summary_scope: 'page',
+      summary: { income, expense, profit: income - expense },
+    },
   })
 }
 
@@ -114,13 +122,21 @@ export async function POST(request: Request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
+  const requester = botRequesterLabel(request)
+
   await writeAuditLogServiceRole(supabaseAdmin, {
     orgId:       auth.orgId!,
     action:      'create',
     entityType:  'accounting_transaction',
     entityId:    data.id,
-    entityLabel: `${parsed.data.type === 'income' ? 'Доход' : 'Расход'}: ${parsed.data.amount} (через Telegram-бота)`,
-    changes:     { amount: { old: null, new: parsed.data.amount }, type: { old: null, new: parsed.data.type } },
+    // Кто именно — из X-Bot-Requester (у бота один ключ на всех): см. botRequesterLabel.
+    entityLabel: `${parsed.data.type === 'income' ? 'Доход' : 'Расход'}: ${parsed.data.amount} `
+      + `(через Telegram-бота${requester ? `, ${requester}` : ''})`,
+    changes:     {
+      amount: { old: null, new: parsed.data.amount },
+      type: { old: null, new: parsed.data.type },
+      ...(requester ? { requester: { old: null, new: requester } } : {}),
+    },
   })
 
   return NextResponse.json({ data }, { status: 201 })
