@@ -49,3 +49,20 @@ Docker-конфиг ветки. Сценарии проверены вручну
 Docker-контейнере `supabase_db_Claude`. Временные триггеры, использованные для
 симуляции сбоев, удалены — проверено запросом к `pg_trigger`. На production
 ничего не создавалось и не изменялось.
+
+---
+
+## BOT-01..07 (аудит Telegram-бота) — 28.10.2026
+
+| Проверка | Результат |
+|---|---|
+| `npx vitest run src/tests/unit/finance-summary.test.ts` | PASS — 9 тестов |
+| `npx vitest run src/tests/unit/telegram-tool-permissions.test.ts` | PASS — 18 тестов |
+| `npx vitest run` (весь набор) | PASS — 47 файлов, 627 тестов |
+| `npx tsc --noEmit` | PASS |
+| `npm run check:boundary` / `check:forms` / `check:server` | PASS |
+| `npm run check` (включая `next build`) | PASS |
+| `npx eslint src/lib/telegram …` | NOT RUN — окружение: typescript-eslint не поддерживает TS 7.0 |
+| Живой прогон бота в Telegram | NOT RUN — требует прод-токена и телеграм-чата; проверено статически + тестами |
+| Запрос `/api/v1/accounting/summary` на проде | NOT RUN — появится после деплоя |
+| `npx vitest run src/tests/unit/telegram-notifications.test.ts` | PASS — 5 тестов (реестр уведомлений) |

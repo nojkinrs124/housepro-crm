@@ -111,3 +111,36 @@ export function canOpenScreen(role: BotRole, screen: string): boolean {
   if (role === 'member') return MEMBER_SCREENS.includes(screen)
   return false
 }
+
+/**
+ * Инструменты ассистента, доступные только владельцу.
+ *
+ * Третья дверь к тем же данным (находка аудита 28.10.2026): экраны меню уже
+ * ролевые, кнопки уже ролевые, а инструменты LLM-диалога не проверяли роль
+ * вовсе — сотрудник, которому экран «Деньги» закрыт намеренно («незачем видеть
+ * оборот агентства целиком»), спрашивал текстом «сколько заработали» и получал
+ * ответ. Это буквально повторение бага 04.09.2026 «две несвязанные системы
+ * допуска», только теперь в роли второй системы — инструменты модели.
+ *
+ * Правило простое: инструмент закрыт, если закрыт экран, ради которого он есть.
+ *  • get_finance_summary / get_finance_chart — экран «Деньги» (нет в MEMBER_SCREENS);
+ *  • create_channel_post / get_channel_stats — раздел «Канал» (админский целиком:
+ *    промпты рубрик правят публичный канал).
+ * Список overdue-начислений сотруднику оставлен: он собирает аренду, это его работа.
+ *
+ * Проверка одна и та же для read-only и мутирующих инструментов — таблица здесь,
+ * чтобы новое действие не могло появиться «вне» ролей (см. canUseTool).
+ */
+export const ADMIN_ONLY_TOOLS: readonly string[] = [
+  'get_finance_summary',
+  'get_finance_chart',
+  'create_channel_post',
+  'get_channel_stats',
+]
+
+/** Можно ли этому актору вызывать этот инструмент ассистента. */
+export function canUseTool(role: BotRole, toolName: string): boolean {
+  if (!isAtLeastMember(role)) return false
+  if (role === 'admin') return true
+  return !ADMIN_ONLY_TOOLS.includes(toolName)
+}

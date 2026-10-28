@@ -10,6 +10,21 @@ import { ALL_STAGE_VALUES, DIRECTION_VALUES } from '@/features/directions/config
 import { todayIso } from '@/lib/timezone'
 import { LEAD_DEAL_TYPES, LEAD_DEAL_TYPE_LABELS } from '@/features/leads/config/lead-deal-types'
 import { money } from '@/features/telegram/services/intake-format'
+import { canUseTool, type BotActor, type BotRole } from '@/features/telegram/services/access'
+
+/**
+ * Инструменты, которые ничего не меняют в CRM, но НЕ бесплатны: платный вызов
+ * модели, веб-поиск или отправка сообщения/картинки в чат.
+ *
+ * Раньше их считали обычными read-only, и модель могла вызывать их несколько раз
+ * за один ход (цикл до 4 раундов, parallelToolCalls: true) — то есть один вопрос
+ * пользователя стоил N генераций постов. Инвариант «read-only = дёшево и без
+ * побочных эффектов» держим явным третьим списком, а не пожеланием в комментарии.
+ */
+export const COSTLY_TOOLS = ['create_channel_post', 'market_research', 'get_finance_chart'] as const
+
+/** Сколько дорогих вызовов разрешено за один ход пользователя. */
+export const COSTLY_CALLS_PER_TURN = 2
 
 // Документы (паспорта, выписки, договоры) сюда не входят: с 17.09.2026 их
 // заводит кнопочный сценарий «Занести в CRM» (src/lib/telegram/intake.ts),
@@ -43,12 +58,27 @@ function botApiKey(): string {
   return key
 }
 
-async function callApi(path: string, init?: RequestInit) {
+/**
+ * Кто именно из людей держит бота — для аудита CRM.
+ *
+ * Ключ `HOUSEPRO_BOT_API_KEY` один на всех и не различает сотрудников: без
+ * этого заголовка запись аудита говорила «изменено через Telegram-бота», и на
+ * вопрос «кто перевёл сделку» ответить было нечем. Заголовок информационный
+ * (не право): доступ решается по API-ключу, роль — в canUseTool.
+ */
+function requesterHeader(actor?: BotActor): Record<string, string> {
+  if (!actor) return {}
+  const who = actor.username ? `@${actor.username}` : actor.telegramUserId
+  return { 'X-Bot-Requester': `tg:${actor.telegramUserId}:${who}` }
+}
+
+async function callApi(path: string, init?: RequestInit, actor?: BotActor) {
   const res = await fetch(`${apiBase()}${path}`, {
     ...init,
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${botApiKey()}`,
+      ...requesterHeader(actor),
       ...(init?.headers ?? {}),
     },
     cache: 'no-store',
@@ -117,7 +147,10 @@ export const TOOL_DEFINITIONS = [
     type: 'function',
     function: {
       name: 'get_finance_summary',
-      description: 'Получить сводку доходов/расходов/прибыли за период.',
+      description:
+        'Сводка за период по всей бухгалтерии (не по странице выборки): реальный доход агентства ' +
+        '(agencyRevenue — без транзита клиентов: аренда жильцов и депозиты это transitIncome, НЕ доход), ' +
+        'расходы агентства, прибыль, неоплаченные начисления и разбивка по месяцам.',
       parameters: {
         type: 'object',
         properties: {
@@ -394,23 +427,64 @@ export const TOOL_DEFINITIONS = [
   },
 ] as const
 
+/**
+ * Набор инструментов, который видит модель в этой роли.
+ *
+ * Отдавать сотруднику всю схему и отказывать уже после вызова — работать «на
+ * вид»: модель добросовестно пытается вызвать закрытое и сообщает «не могу»,
+ * а закрытая информация всё равно попадает к ней в контекст вызова. Поэтому
+ * фильтруем набор, а проверка в dispatch/execute остаётся вторым слоем
+ * (модель получает ровно то, что разрешено, и всё равно не может больше).
+ */
+export function toolDefinitionsFor(role: BotRole) {
+  return TOOL_DEFINITIONS.filter((definition) => canUseTool(role, definition.function.name))
+}
+
 /** Выполняет read-only инструмент. Мутирующие сюда не должны попадать — их перехватывает вебхук.
- * ctx.chatId нужен только инструментам, которые сами шлют сообщение в чат (график, картинки) —
- * их результат для модели это короткое подтверждение, а не данные для пересказа текстом. */
-export async function dispatchReadOnlyTool(name: string, args: Record<string, unknown>, ctx: { chatId: number }) {
+ * ctx.actor нужен и для прав (canUseTool), и для инструментов, которые сами шлют сообщение
+ * в чат (график, картинки) — их результат для модели это короткое подтверждение, а не данные
+ * для пересказа текстом. */
+export async function dispatchReadOnlyTool(
+  name: string,
+  args: Record<string, unknown>,
+  ctx: { actor: BotActor },
+) {
+  if (!canUseTool(ctx.actor.role, name)) {
+    console.warn('[telegram] tool denied by role:', ctx.actor.role, name)
+    return { error: 'Этот инструмент недоступен для твоей роли. Скажи об этом прямо, без подробностей.' }
+  }
+
   switch (name) {
     case 'get_deals': {
       const params = new URLSearchParams()
       if (args.status) params.set('status', String(args.status))
+      // deal_type объявлен в схеме инструмента — значит должен доходить до API.
+      // Раньше параметр терялся по дороге, и «сделки по аренде» приходили все:
+      // модель уверенно пересказывала неотфильтрованное как отфильтрованное.
+      if (args.deal_type) params.set('deal_type', String(args.deal_type))
       if (args.limit) params.set('limit', String(args.limit))
-      return callApi(`/api/v1/deals?${params.toString()}`)
+      return callApi(`/api/v1/deals?${params.toString()}`, undefined, ctx.actor)
     }
     case 'get_finance_summary': {
+      // /accounting/summary, а не страница операций: там постраничный обход и
+      // деление «выручка агентства / транзит клиентов». Раньше здесь бралась
+      // одна страница (limit 200) и суммировалось всё подряд — на периоде в
+      // 200+ операций ответ «сколько заработали» молча занижался, а транзит
+      // (аренда жильцов, депозиты) попадал в доход.
       const params = new URLSearchParams()
       if (args.date_from) params.set('date_from', String(args.date_from))
       if (args.date_to) params.set('date_to', String(args.date_to))
-      params.set('limit', '200')
-      return callApi(`/api/v1/accounting/transactions?${params.toString()}`)
+      const result = await callApi(`/api/v1/accounting/summary?${params.toString()}`, undefined, ctx.actor)
+      if (result?.error) return result
+      const data = result?.data ?? {}
+      return {
+        ...data,
+        // Подсказка модели, что именно называть «доходом» — иначе она берёт
+        // grossIncome и снова смешивает транзит с заработком.
+        note: 'agencyRevenue — доход агентства, называй его «доход»/«заработали». '
+          + 'transitIncome — деньги клиентов через нас, это НЕ доход. '
+          + 'receivable — ещё не оплаченные начисления.',
+      }
     }
     case 'list_properties': {
       const params = new URLSearchParams()
@@ -472,9 +546,13 @@ export async function dispatchReadOnlyTool(name: string, args: Record<string, un
       from.setDate(1)
       const dateFrom = from.toISOString().slice(0, 10)
 
-      const result = await callApi(`/api/v1/accounting/transactions?date_from=${dateFrom}&limit=200`)
+      // График строится по тем же итогам, что и текстовый ответ (/accounting/summary):
+      // реальный доход агентства и расход агентства, без транзита клиентов и без
+      // обрезки по одной странице под 200 строк. Иначе на одном экране были бы
+      // «доход» по одной формуле, а «сколько заработали» текстом — по другой.
+      const result = await callApi(`/api/v1/accounting/summary?date_from=${dateFrom}`, undefined, ctx.actor)
       if (result?.error) return result
-      const transactions = (result?.data ?? []) as Array<{ type: string; amount: number; date: string }>
+      const byMonth = (result?.data?.byMonth ?? []) as Array<{ month: string; agencyRevenue: number; agencyExpense: number }>
 
       const buckets = new Map<string, { income: number; expense: number }>()
       for (let i = 0; i < months; i++) {
@@ -482,12 +560,11 @@ export async function dispatchReadOnlyTool(name: string, args: Record<string, un
         d.setMonth(d.getMonth() + i)
         buckets.set(d.toISOString().slice(0, 7), { income: 0, expense: 0 })
       }
-      for (const t of transactions) {
-        const key = String(t.date).slice(0, 7)
-        const bucket = buckets.get(key)
+      for (const m of byMonth) {
+        const bucket = buckets.get(m.month)
         if (!bucket) continue
-        if (t.type === 'income') bucket.income += Number(t.amount)
-        else bucket.expense += Number(t.amount)
+        bucket.income += Number(m.agencyRevenue) || 0
+        bucket.expense += Number(m.agencyExpense) || 0
       }
 
       const labels = [...buckets.keys()].map((k) => {
@@ -497,9 +574,9 @@ export async function dispatchReadOnlyTool(name: string, args: Record<string, un
       const income = [...buckets.values()].map((b) => Math.round(b.income))
       const expense = [...buckets.values()].map((b) => Math.round(b.expense))
 
-      await sendChatAction(ctx.chatId, 'upload_photo')
+      await sendChatAction(ctx.actor.chatId, 'upload_photo')
       const url = buildFinanceChartUrl(labels, income, expense)
-      await sendPhoto(ctx.chatId, url, `Финансы за последние ${months} мес.`)
+      await sendPhoto(ctx.actor.chatId, url, `Доход и расход агентства за ${months} мес.`)
       return { status: 'График отправлен в чат картинкой, повторно текстом цифры не нужны' }
     }
     case 'market_research': {
@@ -523,37 +600,54 @@ export async function dispatchReadOnlyTool(name: string, args: Record<string, un
   }
 }
 
-/** Реально выполняет мутирующее действие ПОСЛЕ подтверждения пользователем (вызывается из callback_query хендлера). */
-export async function executeConfirmedMutation(actionType: string, payload: Record<string, unknown>) {
+/**
+ * Реально выполняет мутирующее действие ПОСЛЕ подтверждения пользователем
+ * (вызывается из callback_query хендлера).
+ *
+ * Роль проверяется ЗДЕСЬ, а не только при постановке в батч: батч живёт в БД
+ * между двумя апдейтами, и за это время допуск мог измениться (человека убрали
+ * из `bot_allowed_users`). Подтверждать мутацию должен тот, кому она сейчас
+ * разрешена, а не тот, кому была разрешена вчера.
+ */
+export async function executeConfirmedMutation(
+  actionType: string,
+  payload: Record<string, unknown>,
+  actor: BotActor,
+) {
+  if (!canUseTool(actor.role, actionType)) {
+    console.warn('[telegram] mutation denied by role:', actor.role, actionType)
+    return { error: 'Это действие тебе недоступно.' }
+  }
+
   switch (actionType) {
     case 'add_transaction':
-      return callApi('/api/v1/accounting/transactions', { method: 'POST', body: JSON.stringify(payload) })
+      return callApi('/api/v1/accounting/transactions', { method: 'POST', body: JSON.stringify(payload) }, actor)
     case 'update_deal_status':
       return callApi(`/api/v1/deals?id=${encodeURIComponent(String(payload.deal_id))}`, {
         method: 'PATCH',
         body: JSON.stringify({ status: payload.status }),
-      })
+      }, actor)
     case 'create_lead':
       // Источник — Telegram: без явного значения роут ставил 'api', которого нет в справочнике.
-      return callApi('/api/v1/leads', { method: 'POST', body: JSON.stringify({ ...payload, source: 'telegram' }) })
+      return callApi('/api/v1/leads', { method: 'POST', body: JSON.stringify({ ...payload, source: 'telegram' }) }, actor)
     case 'create_property':
-      return callApi('/api/v1/properties', { method: 'POST', body: JSON.stringify(payload) })
+      return callApi('/api/v1/properties', { method: 'POST', body: JSON.stringify(payload) }, actor)
     case 'update_property_status':
       return callApi(`/api/v1/properties?id=${encodeURIComponent(String(payload.property_id))}`, {
         method: 'PATCH',
         body: JSON.stringify({ status: payload.status }),
-      })
+      }, actor)
     case 'create_task':
-      return callApi('/api/v1/tasks', { method: 'POST', body: JSON.stringify(payload) })
+      return callApi('/api/v1/tasks', { method: 'POST', body: JSON.stringify(payload) }, actor)
     case 'complete_task':
       return callApi(`/api/v1/tasks?id=${encodeURIComponent(String(payload.task_id))}`, {
         method: 'PATCH',
         body: JSON.stringify({ status: 'done' }),
-      })
+      }, actor)
     case 'add_meter_readings': {
       // property_title нужен только тексту подтверждения, в API он лишний.
       const { property_title: _title, ...body } = payload
-      return callApi('/api/v1/meters', { method: 'POST', body: JSON.stringify(body) })
+      return callApi('/api/v1/meters', { method: 'POST', body: JSON.stringify(body) }, actor)
     }
     default:
       return { error: `Неизвестное мутирующее действие: ${actionType}` }

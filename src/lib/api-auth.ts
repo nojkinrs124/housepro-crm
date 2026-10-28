@@ -25,6 +25,26 @@ function getSupabaseAdmin() {
   )
 }
 
+/**
+ * Кто из людей дёрнул API через бота — для записи аудита.
+ *
+ * У бота один ключ на всех (`HOUSEPRO_BOT_API_KEY`), поэтому «изменено через
+ * Telegram-бота» не отвечает на вопрос «кто именно». Бот присылает
+ * `X-Bot-Requester: tg:<id>:<@username>`; заголовок ИНФОРМАЦИОННЫЙ — права
+ * по-прежнему даёт только API-ключ и роль внутри бота (canUseTool), поэтому
+ * подделка заголовка ничего не расширяет и не удаляет содержимое.
+ */
+export function botRequesterLabel(request: Request): string | null {
+  const raw = request.headers.get('x-bot-requester')?.trim()
+  if (!raw) return null
+  const parts = raw.split(':')
+  if (parts[0] !== 'tg') return null
+  const id = parts[1]?.trim()
+  const who = parts.slice(2).join(':').trim()
+  if (!id) return null
+  return who ? `Telegram ${who} (id ${id})` : `Telegram id ${id}`
+}
+
 export interface ApiAuthResult {
   orgId?:  string
   scopes?: string[]
