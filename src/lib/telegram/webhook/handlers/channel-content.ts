@@ -22,12 +22,11 @@ import {
 import { generateRubricDraft } from '@/lib/telegram/channel-generate'
 import { parseImageNote } from '@/features/telegram/services/parsing'
 import { showMenuScreen } from '@/lib/telegram/menu'
-import type { BotActor } from '@/features/telegram/services/access'
-import { denyAdmin } from '@/lib/telegram/webhook/context'
+import { canFulfilIntent, type BotActor } from '@/features/telegram/services/access'
 
 export async function handleChatMenuCallback(arg: string, actor: BotActor) {
   const { chatId } = actor
-  if (actor.role !== 'admin') return denyAdmin(chatId)
+  // Роль проверена в диспетчере кнопок (`action:chmenu` — уровень владельца).
   const settings = await getChannelSettings(actor.orgId)
 
   if (arg === 'post') {
@@ -45,8 +44,7 @@ export async function handleChatMenuCallback(arg: string, actor: BotActor) {
 export async function handleChannelCallback(action: string, postId: string, actor: BotActor, messageId: number | undefined) {
   const { chatId } = actor
   // Эти кнопки публикуют в публичный канал и тратят платную генерацию.
-  // Проверки здесь не было вообще — в отличие от соседней handleChannelListAction.
-  if (actor.role !== 'admin') return denyAdmin(chatId)
+  // Роль проверена в диспетчере кнопок (`action:chpub|chregen|...` — владелец).
 
   if (messageId) await editMessageReplyMarkup(chatId, messageId, null)
 
@@ -103,7 +101,7 @@ export async function handleChannelCallback(action: string, postId: string, acto
 
 export async function handleChannelListAction(action: string, postId: string, actor: BotActor, messageId: number | undefined) {
   const { chatId, orgId } = actor
-  if (actor.role !== 'admin') return denyAdmin(chatId)
+  // Роль проверена в диспетчере кнопок (`action:chlist*` — уровень владельца).
 
   if (action === 'chlistpub') {
     const result = await publishPost(postId)
@@ -155,7 +153,9 @@ export async function tryHandleChannelInput(
   replyToMessageId?: number
 ): Promise<boolean> {
   const { chatId, orgId } = actor
-  if (actor.role !== 'admin') return false
+  // Правка черновика канала ответом на сообщение — уровень владельца
+  // (`intent:channel_draft` в таблице прав).
+  if (!canFulfilIntent(actor.role, 'channel_draft')) return false
   const settings = await getChannelSettings(orgId)
 
   // Ответ (reply) на сообщение с черновиком — прямая правка текста без обращения к модели,

@@ -26,7 +26,7 @@ import {
   parseRubricInput,
   parseImageStyle,
 } from '@/features/telegram/services/parsing'
-import { ownsIntent, type BotActor } from '@/features/telegram/services/access'
+import { canFulfilIntentKey, ownsIntent, type BotActor } from '@/features/telegram/services/access'
 import { sendChatAction } from '@/lib/telegram/api'
 
 // Обрабатывает текст, который бот ждёт после "➕ Добавить пользователя": пересланное
@@ -39,8 +39,9 @@ export async function tryHandleAddUserInput(actor: BotActor, text: string, forwa
 
   // Форма выдаёт полный доступ к боту, а её состояние — одно на организацию.
   // Без этих двух проверок текст постороннего разбирался как ответ на неё, и
-  // он мог вписать в допущенные кого угодно, включая себя.
-  if (actor.role !== 'admin') return false
+  // он мог вписать в допущенные кого угодно, включая себя. Право — по таблице
+  // (`intent:add_bot_user` — уровень владельца), владелец формы — ownsIntent.
+  if (!canFulfilIntentKey(actor.role, 'add_bot_user')) return false
   if (!ownsIntent(actor.telegramUserId, settings.awaiting_intent_user_id)) return false
 
   const parsed = parseAddUserInput(text, forwardFromId, forwardFromName)
@@ -79,8 +80,9 @@ export async function tryHandleScheduleOrRubricInput(actor: BotActor, text: stri
 
   // Эти формы правят расписание и промпты, по которым бот пишет в публичный
   // канал, и запускают платный веб-поиск. Состояние одно на организацию,
-  // поэтому чужой текст в него подставляться не должен.
-  if (actor.role !== 'admin') return false
+  // поэтому чужой текст в него подставляться не должен. Право — по таблице
+  // (`intent:add_slot|add_rubric|edit_rubric|edit_rubric_image|input_rubric`).
+  if (!canFulfilIntentKey(actor.role, intent)) return false
   if (!ownsIntent(actor.telegramUserId, settings.awaiting_intent_user_id)) return false
 
   if (intent === 'add_slot') {

@@ -24,7 +24,7 @@ import {
 import { INTAKE_DATA_KINDS, type IntakeKind } from '@/features/telegram/services/intake-format'
 import { setAwaitingIntent } from '@/lib/telegram/channel'
 import { showMenuScreen, setTimezone, type MenuScreen } from '@/lib/telegram/menu'
-import { isAtLeastMember, ownsIntent, type BotActor } from '@/features/telegram/services/access'
+import { canFulfilIntentKey, canRunAction, ownsIntent, type BotActor } from '@/features/telegram/services/access'
 import { parseTimezone } from '@/features/telegram/services/parsing'
 import { denyAdmin } from '@/lib/telegram/webhook/context'
 import { handleUserTurn } from '@/lib/telegram/webhook/dialog/turn'
@@ -34,7 +34,8 @@ import { handleUserTurn } from '@/lib/telegram/webhook/dialog/turn'
  * Тип задаёт пользователь; модель вызывается один раз по «Готово».
  */
 export async function handleIntakeCallback(arg: string, actor: BotActor) {
-  if (!isAtLeastMember(actor.role)) return
+  // Право — из таблицы (`action:intake`): занести в CRM может сотрудник.
+  if (!canRunAction(actor.role, 'intake')) return
   const idx = arg.indexOf(':')
   const verb = idx > 0 ? arg.slice(0, idx) : arg
   const sessionId = idx > 0 ? arg.slice(idx + 1) : ''
@@ -109,11 +110,9 @@ const CRM_ACTION_DONE: Record<string, string> = {
 
 export async function handleCrmQuickAction(action: string, entityId: string, actor: BotActor, messageId: number | undefined) {
   const { chatId, orgId } = actor
-  // Быстрые действия меняют данные CRM — их достаточно уровня сотрудника,
-  // но не постороннего.
-  if (!isAtLeastMember(actor.role)) return
-  // Выплата собственнику — движение живых денег, это раздел владельца.
-  if (action === 'ownerpay' && actor.role !== 'admin') return denyAdmin(chatId)
+  // Быстрые действия меняют данные CRM: уровень сотрудника, кроме выплаты
+  // собственнику (живые деньги, `action:ownerpay` — владелец). Роль проверена
+  // в диспетчере кнопок по таблице прав; здесь второй проверки нет намеренно.
 
   let result: { error?: string } = {}
   if (action === 'leadnext') result = await advanceLeadStatus(orgId, entityId)
@@ -144,7 +143,8 @@ export async function handleCrmQuickAction(action: string, entityId: string, act
  */
 export async function handleCrmSearchAction(action: string, arg: string, actor: BotActor) {
   const { chatId, orgId } = actor
-  if (!isAtLeastMember(actor.role)) return
+  // Поиск объекта/контакта — сотрудник, запись операции и график —
+  // владелец (`action:prop:find` / `action:cont:find` в таблице прав).
 
   if (action === 'prop' && arg === 'find') {
     await setAwaitingIntent(orgId, 'find_property', actor.telegramUserId)
@@ -157,9 +157,7 @@ export async function handleCrmSearchAction(action: string, arg: string, actor: 
     return
   }
 
-  // Деньги — раздел владельца.
-  if (actor.role !== 'admin') return denyAdmin(chatId)
-
+  // Деньги — раздел владельца (право проверено в диспетчере кнопок).
   if (action === 'money' && arg === 'add') {
     await setAwaitingIntent(orgId, 'add_money', actor.telegramUserId)
     await sendMessage(
@@ -205,7 +203,7 @@ export async function tryHandleCrmInput(actor: BotActor, text: string): Promise<
   }
 
   if (intent === 'add_money') {
-    if (actor.role !== 'admin') return false
+    if (!canFulfilIntentKey(actor.role, intent)) return false
     await setAwaitingIntent(orgId, null)
     // В обычный диалог: add_transaction уже умеет разобрать сумму и назначение
     // и показать подтверждение. Своего разбора здесь нет намеренно.
@@ -214,7 +212,7 @@ export async function tryHandleCrmInput(actor: BotActor, text: string): Promise<
   }
 
   if (intent === 'set_timezone') {
-    if (actor.role !== 'admin') return false
+    if (!canFulfilIntentKey(actor.role, intent)) return false
     const parsed = parseTimezone(text)
     if (!parsed.ok) {
       await sendMessage(chatId, `⚠️ ${parsed.error}`)

@@ -5,8 +5,9 @@
 import type { TelegramUpdate } from '@/lib/telegram/api'
 import { answerCallbackQuery, sendMessage } from '@/lib/telegram/api'
 import { parseCallbackData } from '@/features/telegram/services/parsing'
-import { resolveActor } from '@/lib/telegram/webhook/context'
-import { handleNavCallback, handleSettingsAction } from '@/lib/telegram/webhook/handlers/menu'
+import { resolveActor, denyAdmin } from '@/lib/telegram/webhook/context'
+import { canRunCallback, isAtLeastMember } from '@/features/telegram/services/permissions'
+import { handleNavCallback, handleSettingsAction, NAV_SCREENS } from '@/lib/telegram/webhook/handlers/menu'
 import { handleScheduleAction, handleRubricAction } from '@/lib/telegram/webhook/handlers/channel-admin'
 import { handleChatMenuCallback, handleChannelCallback, handleChannelListAction } from '@/lib/telegram/webhook/handlers/channel-content'
 import { handleCrmQuickAction, handleCrmSearchAction, handleIntakeCallback } from '@/lib/telegram/webhook/handlers/crm-actions'
@@ -30,6 +31,19 @@ export async function handleCallbackQuery(update: NonNullable<TelegramUpdate['ca
   if (!actor) return
   if (actor.role === 'stranger') {
     await sendMessage(chatId, '⛔ Этот аккаунт не имеет доступа к боту.')
+    return
+  }
+
+  // Неизвестный экран в nav — не отказ по роли, а мусорная кнопка: молчим, как
+  // и раньше (иначе сотрудник получал бы «только владельцу» на битую ссылку).
+  if (action === 'nav' && !NAV_SCREENS.includes(arg.split(':')[0] as never)) return
+
+  // Роль — ОДИН раз на всё нажатие, по таблице прав (permissions.ts).
+  // Обработчики ниже роль больше не проверяют: иначе получается третья копия
+  // правил, и следующая новая кнопка снова может остаться без проверки.
+  if (!canRunCallback(actor.role, action, arg)) {
+    // Сотруднику говорим почему; посторонний уже отсечён выше.
+    if (isAtLeastMember(actor.role)) await denyAdmin(chatId)
     return
   }
 

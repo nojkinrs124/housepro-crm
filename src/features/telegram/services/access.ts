@@ -17,15 +17,33 @@
  * передаётся обработчикам. Проверка роли — не право отдельного обработчика
  * вспомнить о ней, а условие входа.
  *
+ * 28.10.2026: сами ПРАВА уехали в `permissions.ts` — одна таблица на экраны,
+ * инструменты, кнопки, формы и команды. Этот файл отвечает только за то, КЕМ
+ * является автор апдейта (роль), а не за то, что ему можно.
+ *
  * Файл без 'use client' — он серверный.
  */
 
-/**
- * `admin`   — хозяин бота: настройки, расписание, рубрики, публикация в канал.
- * `member`  — допущенный сотрудник: ассистент и быстрые действия по CRM.
- * `stranger`— никто: бот отвечает отказом и ничего не делает.
- */
-export type BotRole = 'admin' | 'member' | 'stranger'
+import type { BotRole as PermissionsRole } from './permissions'
+
+export type { BotRole, RoleRequirement } from './permissions'
+// Права живут в таблице permissions.ts; здесь — только их ре-экспорт, чтобы
+// обработчики не тянули два импорта на одну проверку.
+export {
+  can,
+  canOpenScreen,
+  canUseTool,
+  canRunAction,
+  canRunCallback,
+  canFulfilIntent,
+  canFulfilIntentKey,
+  canRunCommand,
+  canSeePrompt,
+  KNOWN_CALLBACK_ACTIONS,
+  MEMBER_SCREENS,
+  ADMIN_ONLY_TOOLS,
+  CAPABILITIES,
+} from './permissions'
 
 export interface BotActor {
   /** Telegram user id — ВСЕГДА from.id, а не chat.id: в группе это разные вещи. */
@@ -33,7 +51,7 @@ export interface BotActor {
   chatId: number
   username?: string
   orgId: string
-  role: BotRole
+  role: PermissionsRole
 }
 
 /**
@@ -44,14 +62,14 @@ export function roleOf(
   actorUserId: string,
   adminUserId: string | null | undefined,
   allowedUserIds: readonly string[],
-): BotRole {
+): PermissionsRole {
   if (adminUserId && actorUserId === adminUserId) return 'admin'
   if (allowedUserIds.includes(actorUserId)) return 'member'
   return 'stranger'
 }
 
 /** Админ может всё, что может сотрудник. */
-export function isAtLeastMember(role: BotRole): boolean {
+export function isAtLeastMember(role: PermissionsRole): boolean {
   return role === 'admin' || role === 'member'
 }
 
@@ -84,63 +102,4 @@ export function ownsIntent(
   intentUserId: string | null | undefined,
 ): boolean {
   return !!intentUserId && intentUserId === actorUserId
-}
-
-/**
- * Экраны меню, доступные допущенному сотруднику.
- *
- * Всё остальное — канал, расписание, рубрики, анализ рынка, деньги, настройки —
- * дело владельца: там правятся промпты, по которым бот пишет в публичный канал,
- * видна выручка агентства и список тех, кто вообще имеет доступ.
- *
- * `crm_payments` (экран «Деньги») ушёл из списка 05.09.2026 вместе с появлением
- * там месячного итога: сотруднику незачем видеть оборот агентства целиком.
- *
- * Список ролевой, а не «все экраны для админа и ничего для остальных»: раньше
- * меню целиком было админским, и добавленный кнопкой «Добавить пользователя»
- * сотрудник получал бота, у которого текст работает, а все кнопки молчат.
- */
-export const MEMBER_SCREENS: readonly string[] = [
-  'root', 'today', 'crm', 'crm_leads', 'crm_deals', 'crm_properties', 'crm_contacts', 'crm_tasks',
-  // Завести арендатора или собственника по документам — работа сотрудника.
-  'crm_intake',
-]
-
-export function canOpenScreen(role: BotRole, screen: string): boolean {
-  if (role === 'admin') return true
-  if (role === 'member') return MEMBER_SCREENS.includes(screen)
-  return false
-}
-
-/**
- * Инструменты ассистента, доступные только владельцу.
- *
- * Третья дверь к тем же данным (находка аудита 28.10.2026): экраны меню уже
- * ролевые, кнопки уже ролевые, а инструменты LLM-диалога не проверяли роль
- * вовсе — сотрудник, которому экран «Деньги» закрыт намеренно («незачем видеть
- * оборот агентства целиком»), спрашивал текстом «сколько заработали» и получал
- * ответ. Это буквально повторение бага 04.09.2026 «две несвязанные системы
- * допуска», только теперь в роли второй системы — инструменты модели.
- *
- * Правило простое: инструмент закрыт, если закрыт экран, ради которого он есть.
- *  • get_finance_summary / get_finance_chart — экран «Деньги» (нет в MEMBER_SCREENS);
- *  • create_channel_post / get_channel_stats — раздел «Канал» (админский целиком:
- *    промпты рубрик правят публичный канал).
- * Список overdue-начислений сотруднику оставлен: он собирает аренду, это его работа.
- *
- * Проверка одна и та же для read-only и мутирующих инструментов — таблица здесь,
- * чтобы новое действие не могло появиться «вне» ролей (см. canUseTool).
- */
-export const ADMIN_ONLY_TOOLS: readonly string[] = [
-  'get_finance_summary',
-  'get_finance_chart',
-  'create_channel_post',
-  'get_channel_stats',
-]
-
-/** Можно ли этому актору вызывать этот инструмент ассистента. */
-export function canUseTool(role: BotRole, toolName: string): boolean {
-  if (!isAtLeastMember(role)) return false
-  if (role === 'admin') return true
-  return !ADMIN_ONLY_TOOLS.includes(toolName)
 }
