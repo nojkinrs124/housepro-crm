@@ -1,7 +1,7 @@
 // Промпты и статические тексты CRM-диалога. Вынесено из webhook/route.ts фазой 2
 // аудита без изменения поведения.
 
-import type { BotActor } from '@/features/telegram/services/access'
+import { canSeePrompt, type BotActor } from '@/features/telegram/services/access'
 
 /**
  * Промпт диалога. Короче прежнего вдвое: разбор документов из него ушёл в
@@ -53,7 +53,8 @@ export const CHANNEL_PROMPT = `
 так и скажи. Расписание, рубрики, кейсы — в /menu → 📢 Канал.`
 
 export function systemPrompt(role: BotActor['role']): string {
-  return role === 'admin' ? CRM_PROMPT + CHANNEL_PROMPT : CRM_PROMPT
+  // Блок про канал — только владельцу (`prompt:channel` в таблице прав).
+  return canSeePrompt(role, 'channel') ? CRM_PROMPT + CHANNEL_PROMPT : CRM_PROMPT
 }
 
 export const HELP_TEXT = `<b>HousePro CRM — бот-ассистент</b>

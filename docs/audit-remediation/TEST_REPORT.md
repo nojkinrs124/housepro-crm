@@ -66,3 +66,4 @@ Docker-контейнере `supabase_db_Claude`. Временные тригг�
 | Живой прогон бота в Telegram | NOT RUN — требует прод-токена и телеграм-чата; проверено статически + тестами |
 | Запрос `/api/v1/accounting/summary` на проде | NOT RUN — появится после деплоя |
 | `npx vitest run src/tests/unit/telegram-notifications.test.ts` | PASS — 5 тестов (реестр уведомлений) |
+| `npx vitest run src/tests/unit/telegram-permissions.test.ts` | PASS — 15 тестов (таблица прав: покрытие, производные списки, решения по роли) |

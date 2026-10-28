@@ -14,12 +14,11 @@ import {
   getScheduleWithRubrics,
 } from '@/lib/telegram/channel'
 import type { BotActor } from '@/features/telegram/services/access'
-import { denyAdmin } from '@/lib/telegram/webhook/context'
 
 // Действия в разделе "⏰ Расписание": toggle/delete слота, + запрос на добавление нового.
 export async function handleScheduleAction(action: string, arg: string, actor: BotActor, messageId: number | undefined) {
   const { chatId, orgId } = actor
-  if (actor.role !== 'admin') return denyAdmin(chatId)
+  // Роль проверена в диспетчере кнопок (`action:chsched*` — уровень владельца).
 
   if (action === 'chschedtoggle') {
     // текущее состояние неизвестно без чтения — просто читаем список заново после переключения,
@@ -55,7 +54,7 @@ export async function handleScheduleAction(action: string, arg: string, actor: B
 // Действия в разделе "✍️ Рубрики": показать/начать правку промпта, вкл/выкл рубрику.
 export async function handleRubricAction(action: string, rubricId: string, actor: BotActor, messageId: number | undefined) {
   const { chatId, orgId } = actor
-  if (actor.role !== 'admin') return denyAdmin(chatId)
+  // Роль проверена в диспетчере кнопок (`action:chrub*` — уровень владельца).
 
   if (action === 'chrubtoggle') {
     const rubric = await getRubricById(rubricId)

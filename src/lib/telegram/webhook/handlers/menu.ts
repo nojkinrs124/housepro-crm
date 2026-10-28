@@ -40,7 +40,8 @@ export async function handleNavCallback(arg: string, actor: BotActor, messageId:
 // Действия внутри раздела "Настройки": set:pause / set:resume / set:adduser, а также deluser:<id>.
 export async function handleSettingsAction(action: string, arg: string | undefined, actor: BotActor, messageId: number | undefined) {
   const { chatId, orgId } = actor
-  if (actor.role !== 'admin') return denyAdmin(chatId)
+  // Роль проверена в диспетчере кнопок по таблице прав (`action:set` /
+  // `action:deluser` — уровень владельца): здесь второй проверки нет намеренно.
 
   if (action === 'set' && arg === 'pause') {
     await setSchedulePaused(orgId, true)

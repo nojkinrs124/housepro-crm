@@ -12,7 +12,7 @@ import {
 } from '@/lib/telegram/crm-menu'
 import { collectDigest, isQuiet, renderDigest } from '@/features/telegram/services/digest'
 import { buildChannelPostsScreen, buildChannelScheduleScreen, buildChannelRubricsScreen } from '@/lib/telegram/channel-menu'
-import type { BotRole } from '@/features/telegram/services/access'
+import { canOpenScreen, type BotRole } from '@/features/telegram/services/access'
 
 // Разделы меню. 'crm_payments' — экран «Деньги» (ключ оставлен прежним, чтобы
 // кнопки в уже отправленных сообщениях не превратились в мёртвые).
@@ -49,14 +49,15 @@ const BACK_TO_ROOT: InlineKeyboardButton = { text: '⬅ Главное меню'
 function rootScreen(role: BotRole): ScreenContent {
   const keyboard: InlineKeyboardButton[][] = [[{ text: '⚡ Сегодня', callback_data: 'nav:today' }]]
 
-  if (role === 'admin') {
-    keyboard.push([
-      { text: '📋 CRM', callback_data: 'nav:crm' },
-      { text: '📢 Канал', callback_data: 'nav:channel' },
-    ])
+  // Набор кнопок собирается из ТОЙ ЖЕ таблицы прав, по которой диспетчер
+  // потом проверяет нажатие (permissions.ts): кнопка, которая ответит отказом,
+  // не появляется вовсе, и «показать» не может разойтись с «разрешить».
+  keyboard.push([{ text: '📋 CRM', callback_data: 'nav:crm' }])
+  if (canOpenScreen(role, 'channel')) {
+    keyboard[1].push({ text: '📢 Канал', callback_data: 'nav:channel' })
+  }
+  if (canOpenScreen(role, 'settings')) {
     keyboard.push([{ text: '⚙️ Настройки', callback_data: 'nav:settings' }])
-  } else {
-    keyboard.push([{ text: '📋 CRM', callback_data: 'nav:crm' }])
   }
 
   // Помощь была третьей дверью к одному и тому же тексту (/start, /help, кнопка).
@@ -91,7 +92,7 @@ async function todayScreen(orgId: string, role: BotRole): Promise<ScreenContent>
   if (row.length) keyboard.push(row)
   // Деньги — раздел владельца, сотруднику эту кнопку не показываем (экран ему
   // всё равно не откроется, а кнопка-отказ хуже отсутствующей).
-  if (digest.overduePayments.length && role === 'admin') {
+  if (digest.overduePayments.length && canOpenScreen(role, 'crm_payments')) {
     keyboard.push([{ text: '💰 К деньгам', callback_data: 'nav:crm_payments' }])
   }
   keyboard.push([BACK_TO_ROOT])
@@ -114,7 +115,8 @@ function crmScreen(role: BotRole): ScreenContent {
     [{ text: '✅ Задачи', callback_data: 'nav:crm_tasks' }],
   ]
   // Деньги — владельцу: раздел показывает выручку агентства.
-  if (role === 'admin') {
+  // Право берём из таблицы, а не из имени роли (permissions.ts).
+  if (canOpenScreen(role, 'crm_payments')) {
     keyboard.push([
       { text: '💰 Деньги', callback_data: 'nav:crm_payments' },
       { text: '🏢 Управление', callback_data: 'nav:crm_management' },

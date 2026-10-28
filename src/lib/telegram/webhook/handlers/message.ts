@@ -14,6 +14,7 @@ import { handleUserTurn } from '@/lib/telegram/webhook/dialog/turn'
 import { sendMainMenu } from '@/lib/telegram/webhook/handlers/menu'
 import { tryHandleChannelInput } from '@/lib/telegram/webhook/handlers/channel-content'
 import { routePendingInput } from '@/lib/telegram/webhook/handlers/pending-input'
+import { canRunCommand } from '@/features/telegram/services/access'
 
 async function denyStranger(chatId: number): Promise<void> {
   await sendMessage(chatId, '⛔ Этот аккаунт не имеет доступа к боту.')
@@ -105,7 +106,7 @@ export async function handleMessage(message: NonNullable<TelegramUpdate['message
       await sendMainMenu(actor)
     } else if (text === '/repair_cta') {
       // Разовая починка постов канала, вышедших с тегом <a href> текстом (см. channel.ts).
-      if (actor.role !== 'admin') {
+      if (!canRunCommand(actor.role, 'repair_cta')) {
         const { denyAdmin } = await import('@/lib/telegram/webhook/context')
         await denyAdmin(chatId)
       } else {
