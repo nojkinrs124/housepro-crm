@@ -49,13 +49,24 @@ describe('реестр уведомлений бота', () => {
     expect(text).toContain('/leads/lead-3')
   })
 
-  it('шаблоны не содержат неэкранированных «<», «>», «&» вне разрешённых тегов', () => {
+  it('в шаблонах только разрешённые HTML-теги, без висячих угловых скобок', () => {
     // Telegram parse_mode=HTML молча ломает сообщение на невалидном теге —
     // уведомление теряется целиком, и владелец его просто не видит.
-    const allowed = /<\/?(b|i|code|a)\b[^>]*>/g
+    // Проверяем разбором, а не заменой строки: каждый фрагмент вида <...>
+    // обязан быть разрешённым тегом, а угловые скобки вне тегов запрещены.
+    const allowedTag = /^<\/?(b|i|code|a)(\s[^>]*)?>$/
     for (const event of EVENTS) {
       const text = buildNotification(event, {} as never)
-      expect(text.replace(allowed, ''), event).not.toMatch(/[<>]/)
+      const completeTags = [...text.matchAll(/<[^>]*>/g)].map((match) => match[0])
+      for (const tag of completeTags) {
+        expect(allowedTag.test(tag), `${event}: недопустимый тег ${tag}`).toBe(true)
+      }
+      const angleChars = (text.match(/[<>]/g) ?? []).length
+      const angleCharsInTags = completeTags.reduce(
+        (sum, tag) => sum + (tag.match(/[<>]/g) ?? []).length,
+        0,
+      )
+      expect(angleChars, `${event}: угловая скобка вне тега`).toBe(angleCharsInTags)
     }
   })
 })
