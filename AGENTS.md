@@ -229,7 +229,7 @@ union'ы и хелперы — в `src/types/database.ts`. Тип честно �
 Отдельные шаги: `check:design`, `check:boundary`, `check:cron`, `check:server`,
 `check:stages`, `check:forms`, `check:any`; baseline переснимается после чистки легаси.
 
-## Статус (сверено 29.10.2026, v2.46.2)
+## Статус (сверено 29.10.2026, v2.46.3)
 
 - 662 файла TS/TSX, 88.9k строк, 114 страниц, 46 API-роутов, 34 модуля `features`.
 - Тесты: 49 файлов, 648 тестов, зелёные. `npx tsc --noEmit` — 0 ошибок.
@@ -274,6 +274,8 @@ union'ы и хелперы — в `src/types/database.ts`. Тип честно �
   ломает запросы к GitHub.
 - Секреты не печатать и не класть в командную строку: брать из хранилища по
   имени записи, не значением (как именно — skill `housepro-ops`).
+- Skills видит Hermes из `~/.hermes/skills`: после клонирования или переезда чекаута —
+  `./scripts/link-agent-skills.sh` (детали — `.hermes/README.md`).
 - `~/.hermes/config.yaml` руками не править — только `hermes config set`.
 - Живой прогон важнее зелёного билда: «страница открылась» не равно «функция работает».
 

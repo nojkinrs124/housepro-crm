@@ -18,7 +18,6 @@ metadata:
 - Нужны RLS-политики или проверка изоляции организаций.
 - PostgREST не отдаёт join, или типы разошлись со схемой.
 
-
 Проект: `zwclvcswvhjeqwxrkbte`. Прямые HTTP-запросы к `api.supabase.com` не делаем — только
 коннектор Supabase в Hermes (`connectors__supabase__*`); если его нет в сессии, сказать владельцу,
 а не поднимать MCP руками.

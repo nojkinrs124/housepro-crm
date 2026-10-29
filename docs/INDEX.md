@@ -1,6 +1,6 @@
 # Карта документации HousePro CRM
 
-Сверено 29.10.2026 (v2.46.2). Правила кода — `AGENTS.md` в корне, процедуры —
+Сверено 29.10.2026 (v2.46.3). Правила кода — `AGENTS.md` в корне, процедуры —
 skills `.hermes/skills/housepro-*`, приоритеты — `IMPROVEMENTS.md`.
 
 ## Живые документы (обновляются вместе с кодом)
@@ -24,6 +24,9 @@ skills `.hermes/skills/housepro-*`, приоритеты — `IMPROVEMENTS.md`.
 (в старых сборках — `hermes config set skills.trusted_project_dirs '["<путь>"]'`).
 Машинные доступы (панель, вход в CRM, стенд) — отдельный skill `housepro-ops` в
 `~/.hermes/skills/`: в публичный репозиторий они не попадают.
+
+Симлинки в `~/.hermes/skills` (сборки Hermes до 0.20): `./scripts/link-agent-skills.sh`,
+детали — [`.hermes/README.md`](../.hermes/README.md).
 
 | Skill | Когда |
 |---|---|
