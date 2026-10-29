@@ -58,3 +58,4 @@ docs/qa/.walkthrough/
 playwright-report-smoke/
 test-results-smoke/
 .next-qa/
+docs/qa/runs/*/artifacts-*/
