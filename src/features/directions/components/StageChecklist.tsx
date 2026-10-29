@@ -59,7 +59,7 @@ export function StageChecklist({
   }
 
   return (
-    <div className="hp-block">
+    <div className="hp-block scroll-mt-20" id="stage-checklist">
       <div className="hp-block-header flex items-center justify-between gap-2">
         <span className="flex items-center gap-2">
           Стадия «{stageLabel(direction, stage)}»

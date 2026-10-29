@@ -9,6 +9,7 @@ import { CONTRACT_STATUS_LABELS, CONTRACT_STATUS_DETAIL } from '@/features/contr
 import { deleteDealAction } from '@/features/deals/actions/deals.actions'
 import { DealStageBar } from '@/features/deals/components/DealStageBar'
 import { StageChecklist } from '@/features/directions/components/StageChecklist'
+import { primaryStageAction } from '@/features/deals/config/stage-actions'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 
@@ -196,6 +197,17 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
     ? Math.round((Number(deal.commission) / Number(deal.amount)) * 1000) / 10
     : null
 
+  const stageAction = primaryStageAction({
+    dealId: id,
+    direction: deal.deal_type,
+    stage: deal.status,
+    propertyId: property?.id ?? null,
+    clientContactId: clientContact?.id ?? null,
+    clientIsLegal: clientContact?.client_type === 'legal_entity',
+    contracts,
+    collections,
+  })
+
   const isSale = deal.deal_type === 'sale'
   const bargain = deal.bargain_amount ? Number(deal.bargain_amount) : null
 
@@ -235,42 +247,46 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
         }
         actions={
           <RecordActions
-            /* Оформление — цепочка договор → начисления → задача → статус
-               объекта одним подтверждением. Скрыто только у отменённой сделки:
-               по завершённой договор нередко оформляют задним числом, а этап
-               автоматика назад всё равно не двигает. */
-            primary={deal.status !== 'cancelled' && (
-              <Link href={`/deals/${id}/complete`} className="hp-btn-primary" data-testid="deal-complete">
+            /* Одна главная кнопка — следующий шаг текущей стадии (решение
+               владельца 29.10.2026, QA R8). Остальное — в «…». */
+            primary={stageAction && (
+              <Link href={stageAction.href} className="hp-btn-primary" data-testid={`deal-primary-${stageAction.code}`}>
                 <Zap className="w-4 h-4" />
-                Оформить
+                {stageAction.label}
               </Link>
             )}
-            secondary={
-              <Link href={`/deals/${id}/edit`} className="hp-btn-secondary" data-testid="deal-edit">
-                <Edit className="w-4 h-4" />
-                Редактировать
-              </Link>
-            }
             more={
               <>
-                {/* Показ — стадия воронки, но не главное действие карточки:
-                    главное — «Оформить». Форма показа подставит объект и клиента. */}
-                <Link href={`/showings/new?deal_id=${id}${property?.id ? `&property_id=${property.id}` : ''}${clientContact?.id ? `&contact_id=${clientContact.id}` : ''}`}
-                  className="hp-menu-item" role="menuitem">
-                  <Eye className="w-4 h-4" />
-                  Запланировать показ
+                <Link href={`/deals/${id}/edit`} className="hp-menu-item" role="menuitem" data-testid="deal-edit">
+                  <Edit className="w-4 h-4" />
+                  Редактировать
                 </Link>
+                {/* «Оформить» — договор → начисления → задача одним подтверждением.
+                    По завершённой сделке договор нередко оформляют задним числом. */}
+                {deal.status !== 'cancelled' && stageAction?.code !== 'complete' && (
+                  <Link href={`/deals/${id}/complete`} className="hp-menu-item" role="menuitem" data-testid="deal-complete">
+                    <Zap className="w-4 h-4" />
+                    Оформить договор
+                  </Link>
+                )}
+                {stageAction?.code !== 'showing' && (
+                  <Link href={`/showings/new?deal_id=${id}${property?.id ? `&property_id=${property.id}` : ''}${clientContact?.id ? `&contact_id=${clientContact.id}` : ''}`}
+                    className="hp-menu-item" role="menuitem">
+                    <Eye className="w-4 h-4" />
+                    Запланировать показ
+                  </Link>
+                )}
                 <Link href={`/contracts/new?deal_id=${id}`} className="hp-menu-item" role="menuitem">
                   <FileText className="w-4 h-4" />
                   Договор вручную
                 </Link>
-                {deal.deal_type === 'tenant_search' && (
+                {deal.deal_type === 'tenant_search' && !['collection_create', 'collection_open'].includes(stageAction?.code ?? '') && (
                   <Link href={`/collections/new?deal_id=${id}`} className="hp-menu-item" role="menuitem">
                     <FolderOpen className="w-4 h-4" />
                     Собрать подборку
                   </Link>
                 )}
-                {deal.deal_type === 'management' && property?.id && (
+                {deal.deal_type === 'management' && property?.id && stageAction?.code !== 'engagement' && (
                   <Link href={`/management/new?deal_id=${id}&property_id=${property.id}`} className="hp-menu-item" role="menuitem">
                     <Building2 className="w-4 h-4" />
                     Принять в управление
