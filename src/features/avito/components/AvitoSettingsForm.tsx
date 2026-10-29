@@ -3,6 +3,7 @@
 import { useActionState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { saveAvitoSettingsAction } from '@/features/avito/actions/avito.actions'
+import { useKeepFormOnError } from '@/hooks/useKeepFormOnError'
 
 type State = { error?: string; success?: boolean } | null
 
@@ -16,6 +17,7 @@ interface Props {
 
 export function AvitoSettingsForm({ clientId, maskedSecret, avitoUserId, contactPhone, isEnabled }: Props) {
  const [state, formAction, isPending] = useActionState(saveAvitoSettingsAction, null as State)
+ const { formRef, onSubmit: keepOnSubmit } = useKeepFormOnError(formAction, state, isPending)
 
  useEffect(() => {
  if (state?.error) toast.error(state.error)
@@ -23,7 +25,7 @@ export function AvitoSettingsForm({ clientId, maskedSecret, avitoUserId, contact
  }, [state])
 
  return (
- <form action={formAction} className="hp-card p-5 space-y-4" style={{ }}>
+ <form ref={formRef} onSubmit={keepOnSubmit} className="hp-card p-5 space-y-4" style={{ }}>
  <h2 className="font-bold text-[var(--hp-ink)] text-[15px]">Учётные данные API Авито</h2>
 
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

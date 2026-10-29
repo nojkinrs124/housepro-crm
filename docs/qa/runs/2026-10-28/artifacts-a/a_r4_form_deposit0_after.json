@@ -1,0 +1,290 @@
+[
+ {
+  "name": "",
+  "label": "Поиск: контакт, объект, № сделки",
+  "type": "text",
+  "value": "",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "contract_type",
+  "label": "Аренда квартиры",
+  "type": "radio",
+  "value": "rent_apartment",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "contract_type",
+  "label": "Аренда коммерческой недвижимости",
+  "type": "radio",
+  "value": "rent_commercial",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "contract_type",
+  "label": "Купля-продажа недвижимости",
+  "type": "radio",
+  "value": "sale",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "contract_type",
+  "label": "Агентский договор с собственником",
+  "type": "radio",
+  "value": "agency_owner",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "contract_type",
+  "label": "Агентский договор с заказчиком",
+  "type": "radio",
+  "value": "agency_client",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "contract_type",
+  "label": "Агентский договор с юр. лицом",
+  "type": "radio",
+  "value": "agency_legal_entity",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "contract_type",
+  "label": "Договор управления недвижимостью",
+  "type": "radio",
+  "value": "property_management",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "contract_type",
+  "label": "Договор субаренды",
+  "type": "radio",
+  "value": "sublease",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "owner_contact_id",
+  "label": "",
+  "type": "select-one",
+  "value": "__smoke__ A Собственник Орлов Павел Андр",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "client_contact_id",
+  "label": "",
+  "type": "select-one",
+  "value": "__smoke__ A Арендатор Белова Мария Серге",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "property_id",
+  "label": "",
+  "type": "select-one",
+  "value": "__smoke__ A 2к Мира 10-5 — г. Красноярск",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "amount",
+  "label": "50 000",
+  "type": "number",
+  "value": "35000",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "deposit",
+  "label": "50 000",
+  "type": "number",
+  "value": "",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "start_date",
+  "label": "",
+  "type": "date",
+  "value": "",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "end_date",
+  "label": "",
+  "type": "date",
+  "value": "",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "",
+  "label": "",
+  "type": "number",
+  "value": "",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "",
+  "label": "",
+  "type": "checkbox",
+  "value": "false",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "",
+  "label": "",
+  "type": "number",
+  "value": "1",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "",
+  "label": "",
+  "type": "number",
+  "value": "30",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "",
+  "label": "",
+  "type": "number",
+  "value": "1000",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "",
+  "label": "",
+  "type": "number",
+  "value": "1",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "",
+  "label": "",
+  "type": "checkbox",
+  "value": "false",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "",
+  "label": "",
+  "type": "text",
+  "value": "электроэнергия, холодная и горячая вода",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "",
+  "label": "",
+  "type": "select-one",
+  "value": "Арендатор",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "",
+  "label": "",
+  "type": "number",
+  "value": "2",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "",
+  "label": "",
+  "type": "date",
+  "value": "",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "",
+  "label": "",
+  "type": "number",
+  "value": "2",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "",
+  "label": "",
+  "type": "text",
+  "value": "",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "",
+  "label": "",
+  "type": "text",
+  "value": "",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "",
+  "label": "",
+  "type": "text",
+  "value": "",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "",
+  "label": "",
+  "type": "date",
+  "value": "",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "",
+  "label": "",
+  "type": "number",
+  "value": "",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "",
+  "label": "",
+  "type": "textarea",
+  "value": "",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "deal_id",
+  "label": "",
+  "type": "select-one",
+  "value": "Аренда, тариф «Агент» — __smoke__ A 2к М",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "notes",
+  "label": "Дополнительные условия…",
+  "type": "textarea",
+  "value": "",
+  "req": false,
+  "vis": true
+ }
+]

@@ -4,6 +4,7 @@ import { useActionState } from 'react'
 import { createRecurringRuleAction, updateRecurringRuleAction } from '../actions/recurring.actions'
 import type { AccountingRecurringRule, AccountingCategory, User } from '@/types/database'
 import { todayIso } from '@/lib/timezone'
+import { useKeepFormOnError } from '@/hooks/useKeepFormOnError'
 
 interface Props {
  rule?: AccountingRecurringRule
@@ -23,12 +24,13 @@ export function RecurringRuleForm({ rule, categories, employees }: Props) {
  : createRecurringRuleAction
 
  const [state, formAction, isPending] = useActionState(action, null)
+ const { formRef, onSubmit: keepOnSubmit } = useKeepFormOnError(formAction, state, isPending)
 
  const incomeCategories = categories.filter(c => c.type === 'income')
  const expenseCategories = categories.filter(c => c.type === 'expense')
 
  return (
- <form action={formAction} className="space-y-6">
+ <form ref={formRef} onSubmit={keepOnSubmit} className="space-y-6">
  {state && 'error' in state && state.error && (
  <div className="p-3 bg-[var(--hp-danger-tint)] border border-[var(--hp-border)] text-sm text-[var(--hp-danger)] font-medium">
  {state.error}

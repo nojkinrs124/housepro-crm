@@ -41,7 +41,9 @@
     ".next-regress/types/**/*.ts",
     ".next-regress/dev/types/**/*.ts",
     ".next-walk/types/**/*.ts",
-    ".next-walk/dev/types/**/*.ts"
+    ".next-walk/dev/types/**/*.ts",
+    ".next-qa/types/**/*.ts",
+    ".next-qa/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

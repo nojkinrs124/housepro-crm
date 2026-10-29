@@ -5,6 +5,8 @@ import { AddContractPaymentForm } from '@/features/accounting/components/AddCont
 import { CreditCard, FileText } from 'lucide-react'
 import Link from 'next/link'
 import { PaymentScheduleForm } from '@/features/accounting/components/PaymentScheduleForm'
+import { ChargeAgencyFeeButton } from '@/features/accounting/components/ChargeAgencyFeeButton'
+import { isAgencyContract } from '@/features/deals/services/deal-completion'
 import { PaymentLinkButton } from '@/features/accounting/components/PaymentLinkButton'
 import { formatDateCompact } from '@/lib/utils'
 
@@ -30,18 +32,23 @@ export async function PaymentsSection({ contractId }: { contractId: string }) {
  const [{ data: transactions }, { data: contract }] = await Promise.all([
  supabase
  .from('accounting_transactions')
- .select('id, amount, status, date, due_date, description, schedule_seq, payment_url')
+ .select('id, amount, status, date, due_date, description, schedule_seq, payment_url, category:accounting_categories(code)')
  .eq('contract_id', contractId)
  .eq('type', 'income')
  .order('due_date', { ascending: true, nullsFirst: false }),
  supabase
  .from('contracts')
- .select('start_date, end_date, amount, deposit, indexation_percent, indexation_period_months')
+ .select('contract_type, start_date, end_date, amount, deposit, indexation_percent, indexation_period_months')
  .eq('id', contractId)
  .maybeSingle(),
  ])
 
  const rows = transactions ?? []
+ const isAgency = isAgencyContract(contract?.contract_type ?? '')
+ const feeCharged = rows.some(t => {
+ const cat = t.category as { code: string | null } | null
+ return cat?.code === 'agency_fee' && t.status !== 'cancelled'
+ })
  const scheduledCount = rows.filter(t => t.schedule_seq !== null && t.schedule_seq !== undefined).length
  const totalPaid = rows.filter(t => t.status === 'completed').reduce((s: number, t) => s + Number(t.amount), 0)
  const totalOwed = rows.filter(t => t.status === 'planned').reduce((s: number, t) => s + Number(t.amount), 0)
@@ -61,8 +68,16 @@ export async function PaymentsSection({ contractId }: { contractId: string }) {
  <AddContractPaymentForm contractId={contractId} />
  </div>
 
- {/* Разворачивание договора в график: годовая аренда — это 12 одинаковых
- ручных форм, и любая опечатка в дате всплывала только при разборе просрочек. */}
+ {/* Агентский договор: вознаграждение разовое — графика нет (QA A-08). */}
+ {isAgency ? (
+ <ChargeAgencyFeeButton
+ contractId={contractId}
+ amount={contract?.amount != null ? Number(contract.amount) : null}
+ alreadyCharged={feeCharged}
+ />
+ ) : (
+ /* Разворачивание договора в график: годовая аренда — это 12 одинаковых
+ ручных форм, и любая опечатка в дате всплывала только при разборе просрочек. */
  <PaymentScheduleForm
  contractId={contractId}
  startDate={contract?.start_date ?? null}
@@ -73,6 +88,7 @@ export async function PaymentsSection({ contractId }: { contractId: string }) {
  indexationPeriodMonths={contract?.indexation_period_months ?? null}
  existingCount={scheduledCount}
  />
+ )}
 
  {rows.length > 0 && (
  <div className="grid grid-cols-2 gap-3">

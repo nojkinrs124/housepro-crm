@@ -7,6 +7,7 @@ import {
  regenerateWebhookSecretAction,
  saveChannelIntegrationAction,
 } from '../actions/communications.actions'
+import { useKeepFormOnError } from '@/hooks/useKeepFormOnError'
 
 type State = { error?: string; success?: boolean } | undefined
 
@@ -58,6 +59,7 @@ export function ChannelIntegrationForm({
  async (prev: State, formData: FormData): Promise<State> => (await bound(prev, formData)) as State,
  undefined
  )
+ const { formRef, onSubmit: keepOnSubmit } = useKeepFormOnError(formAction, state, isPending)
 
  useEffect(() => {
  if (state?.success) toast.success('Настройки сохранены')
@@ -91,7 +93,7 @@ export function ChannelIntegrationForm({
  }
 
  return (
- <form action={formAction} className="hp-card p-5 space-y-4">
+ <form ref={formRef} onSubmit={keepOnSubmit} className="hp-card p-5 space-y-4">
  <div>
  <h2 className="font-bold text-[var(--hp-ink)] text-[15px]">{title}</h2>
  <p className="text-sm text-[var(--hp-sub)] mt-1">{description}</p>

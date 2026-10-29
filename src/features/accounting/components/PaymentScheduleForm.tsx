@@ -11,6 +11,7 @@ import {
  PERIODICITY_LABELS,
  type SchedulePeriodicity,
 } from '../services/payment-schedule.service'
+import { useKeepFormOnError } from '@/hooks/useKeepFormOnError'
 
 type State = { error?: string; success?: boolean; message?: string } | undefined
 
@@ -71,6 +72,7 @@ export function PaymentScheduleForm({
  const wrapped = async (_prev: State, formData: FormData): Promise<State> =>
  (await bound(_prev, formData)) as State
  const [state, formAction, isPending] = useActionState(wrapped, undefined)
+ const { formRef, onSubmit: keepOnSubmit } = useKeepFormOnError(formAction, state, isPending)
 
  useEffect(() => {
  if (state?.success) {
@@ -112,7 +114,7 @@ export function PaymentScheduleForm({
  }
 
  return (
- <form action={formAction} className="hp-card p-5 space-y-4">
+ <form ref={formRef} onSubmit={keepOnSubmit} className="hp-card p-5 space-y-4">
  <div className="flex items-center justify-between gap-3">
  <h2 className="font-bold text-[var(--hp-ink)] text-[15px]">График платежей по договору</h2>
  <button

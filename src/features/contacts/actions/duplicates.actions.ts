@@ -25,7 +25,22 @@ const CONTACT_REFERENCES: { table: string; column: string }[] = [
   { table: 'accounting_transactions', column: 'contact_id' },
   { table: 'contact_representatives', column: 'contact_id' },
   { table: 'properties', column: 'owner_id' },
+  // До 29.10.2026 списка ниже не было: при слиянии задачи, переписка, лиды,
+  // заявки и обслуживание оставались на неактивном дубле и пропадали с
+  // основной карточки, а панель дублей показывала «связей: 0» (QA E-12).
+  { table: 'tasks', column: 'contact_id' },
+  { table: 'communications', column: 'contact_id' },
+  { table: 'leads', column: 'contact_id' },
+  { table: 'service_requests', column: 'contact_id' },
+  { table: 'management_engagements', column: 'owner_contact_id' },
 ]
+
+/**
+ * Доступ в личный кабинет уникален по (контакт, объект, роль): если у основной
+ * карточки такой доступ уже есть, перенос дубля нарушил бы индекс. Такие строки
+ * переносим поштучно и пропускаем конфликтные — доступ у основной уже есть.
+ */
+const PORTAL_ACCESS_REF = { table: 'portal_access', column: 'contact_id' } as const
 
 /**
  * Доступ к таблице, имя которой известно только в рантайме (см. CONTACT_REFERENCES).
@@ -93,7 +108,7 @@ async function countLinks(
   if (ids.length === 0) return counts
 
   await Promise.all(
-    CONTACT_REFERENCES.map(async ({ table, column }) => {
+    [...CONTACT_REFERENCES, PORTAL_ACCESS_REF].map(async ({ table, column }) => {
       const { data } = await refTable(supabase, table).select(column).in(column, ids)
       for (const row of data ?? []) {
         const value = row[column]
@@ -319,6 +334,26 @@ export async function mergeContactsAction(
       .update({ [column]: primaryId })
       .in(column, ids)
     if (error) relinkErrors.push(`${table}.${column}: ${error.message}`)
+  }
+
+  // Доступ в кабинет — поштучно, без конфликтов с уже выданным основной карточке.
+  const { data: portalRows } = await supabase
+    .from('portal_access')
+    .select('id, property_id, role, revoked_at')
+    .in('contact_id', [primaryId, ...ids])
+  const primaryKeys = new Set(
+    (portalRows ?? [])
+      .filter((r) => !r.revoked_at)
+      .map((r) => `${r.property_id}|${r.role}`),
+  )
+  const { data: dupPortal } = await supabase
+    .from('portal_access').select('id, property_id, role, revoked_at').in('contact_id', ids)
+  for (const row of dupPortal ?? []) {
+    const key = `${row.property_id}|${row.role}`
+    if (!row.revoked_at && primaryKeys.has(key)) continue
+    const { error } = await supabase.from('portal_access').update({ contact_id: primaryId }).eq('id', row.id)
+    if (error) relinkErrors.push(`${PORTAL_ACCESS_REF.table}: ${error.message}`)
+    else if (!row.revoked_at) primaryKeys.add(key)
   }
 
   if (relinkErrors.length > 0) {

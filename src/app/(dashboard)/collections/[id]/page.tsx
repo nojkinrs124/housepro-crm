@@ -12,6 +12,8 @@ import {
 import { DeleteCollectionButton } from '@/features/collections/components/DeleteCollectionButton'
 import { ServerActionForm } from '@/components/forms/ServerActionForm'
 import { SendByEmailForm } from '@/components/forms/SendByEmailForm'
+import { ShareCollectionLink } from '@/features/collections/components/ShareCollectionLink'
+import { getSiteUrl } from '@/lib/telegram/site-url'
 
 export default async function CollectionDetailPage({ params }: { params: Promise<{ id: string }> }) {
  const { id } = await params
@@ -43,7 +45,7 @@ export default async function CollectionDetailPage({ params }: { params: Promise
  const addedIds = new Set((col.items ?? []).map((i: { property: { id: string } }) => i.property?.id))
  const availableToAdd = (allProperties ?? []).filter(p => !addedIds.has(p.id))
 
- const shareUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/c/${col.share_token}`
+ const shareUrl = `${getSiteUrl()}/c/${col.share_token}`
  const togglePublic = toggleCollectionPublicAction.bind(null, id, !col.is_public)
 
  return (
@@ -98,6 +100,8 @@ export default async function CollectionDetailPage({ params }: { params: Promise
  </a>
  </div>
  )}
+
+ <ShareCollectionLink collectionId={id} shareUrl={shareUrl} sentAt={col.sent_at ?? null} />
 
  {/* Отправка подборки клиенту. Форма доступна и для приватной подборки:
  сам action открывает публичный доступ перед отправкой, иначе клиент

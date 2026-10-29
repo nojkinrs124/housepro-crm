@@ -10,7 +10,9 @@ import { deleteDealAction } from '@/features/deals/actions/deals.actions'
 import { DealStageBar } from '@/features/deals/components/DealStageBar'
 import { StageChecklist } from '@/features/directions/components/StageChecklist'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 import { PageHeader } from '@/components/layout/PageHeader'
 import { RecordActions } from '@/components/layout/RecordActions'
 import { ConfirmDeleteButton } from '@/components/forms/ConfirmDeleteButton'
@@ -93,6 +95,18 @@ function Party({ role, contact, fallbackName, fallbackPhone }: {
 export default async function DealPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
+
+  // В интерфейсе сделка называется по номеру («СД-29»), и ссылку вида
+  // /deals/29 люди собирают руками. Раньше это роняло страницу ошибкой
+  // Postgres «invalid input syntax for type uuid» (QA 28.10.2026, A-17, E-10).
+  if (!UUID_RE.test(id)) {
+    const number = Number(id.replace(/^\D+/, ''))
+    if (!Number.isInteger(number) || number <= 0) notFound()
+    const { data: byNumber } = await supabase.from('deals').select('id').eq('deal_number', number).maybeSingle()
+    if (!byNumber) notFound()
+    redirect(`/deals/${byNumber.id}`)
+  }
+
   const [dealResult, contractsResult, tasksResult, showingsResult, incomeResult, collectionsResult] = await Promise.all([
     supabase
       .from('deals')

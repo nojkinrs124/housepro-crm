@@ -1,0 +1,106 @@
+[
+ {
+  "name": "",
+  "label": "Поиск: контакт, объект, № сделки",
+  "type": "text",
+  "value": "",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "contract_number",
+  "label": "",
+  "type": "text",
+  "value": "АР-2026-023",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "amount",
+  "label": "50000",
+  "type": "text",
+  "value": "35000",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "start_date",
+  "label": "",
+  "type": "date",
+  "value": "2026-10-29",
+  "req": true,
+  "vis": true
+ },
+ {
+  "name": "end_date",
+  "label": "",
+  "type": "date",
+  "value": "2027-09-28",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "deposit",
+  "label": "50000",
+  "type": "text",
+  "value": "",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "with_schedule",
+  "label": "Развернуть договор в плановые начисления",
+  "type": "checkbox",
+  "value": "true",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "periodicity",
+  "label": "",
+  "type": "select-one",
+  "value": "Ежемесячно",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "with_deposit",
+  "label": "Отдельной строкой залог",
+  "type": "checkbox",
+  "value": "false",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "with_task",
+  "label": "Поставить задачу по клиенту __smoke__ A ",
+  "type": "checkbox",
+  "value": "true",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "task_title",
+  "label": "",
+  "type": "text",
+  "value": "Подписать договор и передать ключи",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "task_deadline",
+  "label": "",
+  "type": "date",
+  "value": "2026-11-01",
+  "req": false,
+  "vis": true
+ },
+ {
+  "name": "with_property_status",
+  "label": "Перевести объект «__smoke__ A 2к Мира 10",
+  "type": "checkbox",
+  "value": "true",
+  "req": false,
+  "vis": true
+ }
+]

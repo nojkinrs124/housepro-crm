@@ -24,6 +24,7 @@ import {
 } from '../services/deal-completion'
 import { categoryIdByCode } from '@/features/management/data/settlement.data'
 import { chargeKindFor, insertCharges } from '@/features/accounting/services/charges'
+import { checkContractCompleteness } from '@/features/contracts/config/completeness'
 
 const VALID_PERIODICITY: SchedulePeriodicity[] = ['monthly', 'quarterly', 'semiannual', 'yearly', 'once']
 
@@ -116,6 +117,14 @@ export async function completeDealAction(
   const deposit = num(formData.get('deposit'))
   const contractNumber = str(formData.get('contract_number'))
 
+  const incomplete = checkContractCompleteness({
+    contract_type: contractType,
+    owner_contact_id: deal.owner_contact_id,
+    client_contact_id: deal.client_contact_id,
+    property_id: deal.property_id,
+    amount, deposit, start_date: startDate, end_date: endDate,
+  })
+  if (incomplete) return { error: incomplete.message }
   if (!startDate) return { error: 'Укажите дату начала договора' }
 
   const created: string[] = []

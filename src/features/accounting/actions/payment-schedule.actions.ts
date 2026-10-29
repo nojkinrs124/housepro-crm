@@ -12,6 +12,9 @@ import {
   type SchedulePeriodicity,
 } from '@/features/accounting/services/payment-schedule.service'
 import { chargeKindFor, insertCharges } from '@/features/accounting/services/charges'
+import { isAgencyContract } from '@/features/deals/services/deal-completion'
+import { categoryIdByCode } from '@/features/management/data/settlement.data'
+import { todayIso } from '@/lib/timezone'
 
 const VALID_PERIODICITY: SchedulePeriodicity[] = ['monthly', 'quarterly', 'semiannual', 'yearly', 'once']
 
@@ -59,6 +62,9 @@ export async function generatePaymentScheduleAction(
     .single()
 
   if (contractError || !contract) return { error: 'Договор не найден' }
+  if (isAgencyContract(contract.contract_type)) {
+    return { error: 'По агентскому договору график не строится — вознаграждение начисляется один раз кнопкой «Начислить вознаграждение»' }
+  }
 
   const periodicity = (formData.get('periodicity') as SchedulePeriodicity) ?? 'monthly'
   if (!VALID_PERIODICITY.includes(periodicity)) {
@@ -212,4 +218,87 @@ export async function generatePaymentScheduleAction(
     success: true,
     message: `Создано ${items.length} начислений на ${scheduleTotal(items).toLocaleString('ru-RU')} ₽`,
   }
+}
+
+/**
+ * Агентский договор: одно начисление вознаграждения агентства вместо
+ * помесячного графика. График по агентскому договору создавал 12 строк
+ * «Аренда за …» на сумму вознаграждения (категория «Арендный платёж») —
+ * в отчётах это выглядело как аренда, а ожидаемая сумма по сделке
+ * раздувалась в десятки раз (QA 28.10.2026, A-08, A-20).
+ *
+ * Повторный вызов не создаёт второе начисление: вознаграждение по договору
+ * одно, второе — это двойной доход в аналитике.
+ */
+export async function chargeAgencyFeeAction(
+  contractId: string,
+): Promise<{ error?: string; success?: boolean; message?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Не авторизован' }
+
+  const rl = await rateLimitMutation(user.id, 'payment_schedule')
+  if (!rl.success) return { error: 'Слишком много запросов. Подождите минуту.' }
+
+  const orgId = await requireOrgId().catch(() => null)
+  if (!orgId) return { error: 'Организация не найдена' }
+
+  const permError = await requirePermission(user.id, 'accounting', 'create')
+  if (permError) return permError
+
+  const { data: contract } = await supabase
+    .from('contracts')
+    .select('id, contract_number, contract_type, start_date, amount, deal_id, property_id, owner_contact_id, client_contact_id')
+    .eq('id', contractId)
+    .maybeSingle()
+  if (!contract) return { error: 'Договор не найден' }
+  if (!isAgencyContract(contract.contract_type)) {
+    return { error: 'Разовое вознаграждение начисляется только по агентскому договору' }
+  }
+
+  const amount = Number(contract.amount ?? 0)
+  if (!(amount > 0)) {
+    return { error: 'В договоре не указано вознаграждение — откройте «Редактировать» и заполните сумму' }
+  }
+
+  const feeCategoryId = await categoryIdByCode(supabase, 'agency_fee')
+  const { data: existing } = await supabase
+    .from('accounting_transactions')
+    .select('id')
+    .eq('contract_id', contractId)
+    .eq('type', 'income')
+    .eq('category_id', feeCategoryId ?? '')
+    .neq('status', 'cancelled')
+    .limit(1)
+    .maybeSingle()
+  if (existing) return { error: 'Вознаграждение по этому договору уже начислено — оно в списке платежей ниже' }
+
+  const today = todayIso()
+  const dueDate = contract.start_date && contract.start_date > today ? contract.start_date : today
+  const { error } = await supabase.from('accounting_transactions').insert({
+    type: 'income',
+    status: 'planned',
+    amount,
+    date: dueDate,
+    due_date: dueDate,
+    category_id: feeCategoryId,
+    description: `Вознаграждение агентства по договору ${contract.contract_number ?? ''}`.trim(),
+    contract_id: contractId,
+    deal_id: contract.deal_id,
+    property_id: contract.property_id,
+    contact_id: contract.owner_contact_id ?? contract.client_contact_id,
+    created_by: user.id,
+    organization_id: orgId,
+  })
+  if (error) return { error: 'Не удалось начислить вознаграждение. Обновите страницу и попробуйте ещё раз.' }
+
+  await writeAuditLog({
+    userId: user.id, orgId, action: 'create', entityType: 'contract', entityId: contractId,
+    entityLabel: `Вознаграждение ${amount.toLocaleString('ru-RU')} ₽ — договор ${contract.contract_number ?? ''}`.trim(),
+  })
+
+  revalidatePath(`/contracts/${contractId}`)
+  revalidatePath('/accounting')
+  if (contract.deal_id) revalidatePath(`/deals/${contract.deal_id}`)
+  return { success: true, message: `Начислено вознаграждение ${amount.toLocaleString('ru-RU')} ₽` }
 }

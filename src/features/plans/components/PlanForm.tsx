@@ -4,6 +4,7 @@ import { useActionState, useState } from 'react'
 import Link from 'next/link'
 import { CHARGE_TYPES, getChargeType } from '@/features/plans/config/settlement'
 import { DIRECTIONS } from '@/features/directions/config/directions'
+import { useKeepFormOnError } from '@/hooks/useKeepFormOnError'
 
 type State = { error?: string } | undefined
 type Action = (state: State, formData: FormData) => Promise<State>
@@ -42,6 +43,7 @@ export function PlanForm({
   backHref: string
 }) {
   const [state, formAction, pending] = useActionState(action, undefined)
+  const { formRef, onSubmit: keepOnSubmit } = useKeepFormOnError(formAction, state, pending)
   const [chargeType, setChargeType] = useState(defaults.charge_type ?? 'deal_percent')
 
   const charge = getChargeType(chargeType)
@@ -49,7 +51,7 @@ export function PlanForm({
   const selectedDirections = new Set(defaults.directions ?? [])
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form ref={formRef} onSubmit={keepOnSubmit} className="space-y-4">
       {defaults.id && <input type="hidden" name="id" value={defaults.id} />}
 
       {state?.error && (

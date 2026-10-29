@@ -1,0 +1,1108 @@
+{
+ "sourcing": [
+  "СДЕЛКИ",
+  "Оформить",
+  "Редактировать",
+  "Отменить сделку",
+  "Поиск и контакт",
+  "Встреча",
+  "Договор с собственником",
+  "Подготовка и реклама",
+  "Показы",
+  "Проверка и договор найма",
+  "Заселение",
+  "Завершена",
+  "Указан источник объявления\nПлощадка, где нашли объект — это основа статистики по источникам",
+  "Дозвонились до собственника",
+  "Уточнили параметры объекта",
+  "Карточка объекта",
+  "Задача",
+  "__smoke__ A Собственник Орлов Павел Андреевич",
+  "+7 (999) 100-65-01",
+  "__smoke__ A Арендатор Белова Мария Сергеевна",
+  "+7 (999) 200-65-02",
+  "Договор",
+  "Показ"
+ ],
+ "meeting": [
+  {
+   "t": "СДЕЛКИ",
+   "href": "/deals",
+   "aria": null
+  },
+  {
+   "t": "Оформить",
+   "href": "/deals/9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74/complete",
+   "aria": null
+  },
+  {
+   "t": "Редактировать",
+   "href": "/deals/9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74/edit",
+   "aria": null
+  },
+  {
+   "t": "",
+   "href": null,
+   "aria": "Ещё действия"
+  },
+  {
+   "t": "Отменить сделку",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Поиск и контакт",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Встреча",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Договор с собственником",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Подготовка и реклама",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Показы",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Проверка и договор найма",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Заселение",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Завершена",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Побывали на объектеобязательно",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Рассказали об услугах агентстваобязательно | Тарифы и что входит в каждый",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Собственник согласился на тарифобязательно",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Посмотрели документы на объект",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Карточка объекта",
+   "href": "/properties/9d430d64-1df4-484b-bc13-33ebc27d74c1",
+   "aria": null
+  },
+  {
+   "t": "Задача",
+   "href": "/tasks/new?deal_id=9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74",
+   "aria": null
+  },
+  {
+   "t": "__smoke__ A Собственник Орлов Павел Андреевич",
+   "href": "/contacts/3531dc5b-8400-4a89-bdfc-d27915b131e1",
+   "aria": null
+  },
+  {
+   "t": "+7 (999) 100-65-01",
+   "href": "tel:+79991006501",
+   "aria": null
+  },
+  {
+   "t": "__smoke__ A Арендатор Белова Мария Сергеевна",
+   "href": "/contacts/290e313d-67da-4910-9727-509b3ef36c06",
+   "aria": null
+  },
+  {
+   "t": "+7 (999) 200-65-02",
+   "href": "tel:+79992006502",
+   "aria": null
+  },
+  {
+   "t": "Договор",
+   "href": "/contracts/new?deal_id=9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74",
+   "aria": null
+  },
+  {
+   "t": "Показ",
+   "href": "/showings/new?deal_id=9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74&property_id=9d430d64-1df4-484b-bc13-33ebc27d74c1&contact_id=290e313d-67da-4910-9727-509b3ef36c06",
+   "aria": null
+  }
+ ],
+ "contract": [
+  {
+   "t": "СДЕЛКИ",
+   "href": "/deals",
+   "aria": null
+  },
+  {
+   "t": "Оформить",
+   "href": "/deals/9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74/complete",
+   "aria": null
+  },
+  {
+   "t": "Редактировать",
+   "href": "/deals/9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74/edit",
+   "aria": null
+  },
+  {
+   "t": "",
+   "href": null,
+   "aria": "Ещё действия"
+  },
+  {
+   "t": "Отменить сделку",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Поиск и контакт",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Встреча",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Договор с собственником",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Подготовка и реклама",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Показы",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Проверка и договор найма",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Заселение",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Завершена",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Подготовлен агентский договоробязательно",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Договор подписан обеими сторонамиобязательно",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Карточка объекта",
+   "href": "/properties/9d430d64-1df4-484b-bc13-33ebc27d74c1",
+   "aria": null
+  },
+  {
+   "t": "Задача",
+   "href": "/tasks/new?deal_id=9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74",
+   "aria": null
+  },
+  {
+   "t": "__smoke__ A Собственник Орлов Павел Андреевич",
+   "href": "/contacts/3531dc5b-8400-4a89-bdfc-d27915b131e1",
+   "aria": null
+  },
+  {
+   "t": "+7 (999) 100-65-01",
+   "href": "tel:+79991006501",
+   "aria": null
+  },
+  {
+   "t": "__smoke__ A Арендатор Белова Мария Сергеевна",
+   "href": "/contacts/290e313d-67da-4910-9727-509b3ef36c06",
+   "aria": null
+  },
+  {
+   "t": "+7 (999) 200-65-02",
+   "href": "tel:+79992006502",
+   "aria": null
+  },
+  {
+   "t": "Договор",
+   "href": "/contracts/new?deal_id=9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74",
+   "aria": null
+  },
+  {
+   "t": "Показ",
+   "href": "/showings/new?deal_id=9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74&property_id=9d430d64-1df4-484b-bc13-33ebc27d74c1&contact_id=290e313d-67da-4910-9727-509b3ef36c06",
+   "aria": null
+  }
+ ],
+ "prep": [
+  {
+   "t": "СДЕЛКИ",
+   "href": "/deals",
+   "aria": null
+  },
+  {
+   "t": "Оформить",
+   "href": "/deals/9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74/complete",
+   "aria": null
+  },
+  {
+   "t": "Редактировать",
+   "href": "/deals/9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74/edit",
+   "aria": null
+  },
+  {
+   "t": "",
+   "href": null,
+   "aria": "Ещё действия"
+  },
+  {
+   "t": "Отменить сделку",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Поиск и контакт",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Встреча",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Договор с собственником",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Подготовка и реклама",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Показы",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Проверка и договор найма",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Заселение",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Завершена",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Сделана фотосъёмкаобязательно",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Фотографии загружены в объектобязательно",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Написано описаниеобязательно",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Объект подготовлен к показам | Уборка, мелкие недочёты",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Карточка объекта",
+   "href": "/properties/9d430d64-1df4-484b-bc13-33ebc27d74c1",
+   "aria": null
+  },
+  {
+   "t": "Задача",
+   "href": "/tasks/new?deal_id=9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74",
+   "aria": null
+  },
+  {
+   "t": "__smoke__ A Собственник Орлов Павел Андреевич",
+   "href": "/contacts/3531dc5b-8400-4a89-bdfc-d27915b131e1",
+   "aria": null
+  },
+  {
+   "t": "+7 (999) 100-65-01",
+   "href": "tel:+79991006501",
+   "aria": null
+  },
+  {
+   "t": "__smoke__ A Арендатор Белова Мария Сергеевна",
+   "href": "/contacts/290e313d-67da-4910-9727-509b3ef36c06",
+   "aria": null
+  },
+  {
+   "t": "+7 (999) 200-65-02",
+   "href": "tel:+79992006502",
+   "aria": null
+  },
+  {
+   "t": "Договор",
+   "href": "/contracts/new?deal_id=9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74",
+   "aria": null
+  },
+  {
+   "t": "Агентский (собственник) | подписан",
+   "href": "/contracts/2a645052-ee12-4042-8e7d-854ba6fd1c62",
+   "aria": null
+  },
+  {
+   "t": "Показ",
+   "href": "/showings/new?deal_id=9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74&property_id=9d430d64-1df4-484b-bc13-33ebc27d74c1&contact_id=290e313d-67da-4910-9727-509b3ef36c06",
+   "aria": null
+  }
+ ],
+ "showings": [
+  {
+   "t": "СДЕЛКИ",
+   "href": "/deals",
+   "aria": null
+  },
+  {
+   "t": "Оформить",
+   "href": "/deals/9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74/complete",
+   "aria": null
+  },
+  {
+   "t": "Редактировать",
+   "href": "/deals/9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74/edit",
+   "aria": null
+  },
+  {
+   "t": "",
+   "href": null,
+   "aria": "Ещё действия"
+  },
+  {
+   "t": "Отменить сделку",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Поиск и контакт",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Встреча",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Договор с собственником",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Подготовка и реклама",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Показы",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Проверка и договор найма",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Заселение",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Завершена",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Объявление размещенообязательно",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Проведён хотя бы один показобязательно",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Карточка объекта",
+   "href": "/properties/9d430d64-1df4-484b-bc13-33ebc27d74c1",
+   "aria": null
+  },
+  {
+   "t": "Задача",
+   "href": "/tasks/new?deal_id=9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74",
+   "aria": null
+  },
+  {
+   "t": "__smoke__ A Собственник Орлов Павел Андреевич",
+   "href": "/contacts/3531dc5b-8400-4a89-bdfc-d27915b131e1",
+   "aria": null
+  },
+  {
+   "t": "+7 (999) 100-65-01",
+   "href": "tel:+79991006501",
+   "aria": null
+  },
+  {
+   "t": "__smoke__ A Арендатор Белова Мария Сергеевна",
+   "href": "/contacts/290e313d-67da-4910-9727-509b3ef36c06",
+   "aria": null
+  },
+  {
+   "t": "+7 (999) 200-65-02",
+   "href": "tel:+79992006502",
+   "aria": null
+  },
+  {
+   "t": "Договор",
+   "href": "/contracts/new?deal_id=9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74",
+   "aria": null
+  },
+  {
+   "t": "Агентский (собственник) | подписан",
+   "href": "/contracts/2a645052-ee12-4042-8e7d-854ba6fd1c62",
+   "aria": null
+  },
+  {
+   "t": "Показ",
+   "href": "/showings/new?deal_id=9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74&property_id=9d430d64-1df4-484b-bc13-33ebc27d74c1&contact_id=290e313d-67da-4910-9727-509b3ef36c06",
+   "aria": null
+  }
+ ],
+ "check": [
+  {
+   "t": "СДЕЛКИ",
+   "href": "/deals",
+   "aria": null
+  },
+  {
+   "t": "Оформить",
+   "href": "/deals/9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74/complete",
+   "aria": null
+  },
+  {
+   "t": "Редактировать",
+   "href": "/deals/9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74/edit",
+   "aria": null
+  },
+  {
+   "t": "",
+   "href": null,
+   "aria": "Ещё действия"
+  },
+  {
+   "t": "Отменить сделку",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Поиск и контакт",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Встреча",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Договор с собственником",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Подготовка и реклама",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Показы",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Проверка и договор найма",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Заселение",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Завершена",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Проверен паспорт арендатора",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Проверена платёжеспособность",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Собственник одобрил кандидата",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Подготовлен договор найма",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Карточка объекта",
+   "href": "/properties/9d430d64-1df4-484b-bc13-33ebc27d74c1",
+   "aria": null
+  },
+  {
+   "t": "Задача",
+   "href": "/tasks/new?deal_id=9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74",
+   "aria": null
+  },
+  {
+   "t": "Подписать договор и передать ключи | до 01.11.26",
+   "href": "/tasks/9d121411-21dd-47e5-bbd0-85cb162e97e4",
+   "aria": null
+  },
+  {
+   "t": "__smoke__ A Собственник Орлов Павел Андреевич",
+   "href": "/contacts/3531dc5b-8400-4a89-bdfc-d27915b131e1",
+   "aria": null
+  },
+  {
+   "t": "+7 (999) 100-65-01",
+   "href": "tel:+79991006501",
+   "aria": null
+  },
+  {
+   "t": "__smoke__ A Арендатор Белова Мария Сергеевна",
+   "href": "/contacts/290e313d-67da-4910-9727-509b3ef36c06",
+   "aria": null
+  },
+  {
+   "t": "+7 (999) 200-65-02",
+   "href": "tel:+79992006502",
+   "aria": null
+  },
+  {
+   "t": "Договор",
+   "href": "/contracts/new?deal_id=9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74",
+   "aria": null
+  },
+  {
+   "t": "Аренда квартиры | черновик",
+   "href": "/contracts/2b569965-6fcc-43bd-8fd2-c10b6e1f1114",
+   "aria": null
+  },
+  {
+   "t": "Агентский (собственник) | подписан",
+   "href": "/contracts/2a645052-ee12-4042-8e7d-854ba6fd1c62",
+   "aria": null
+  },
+  {
+   "t": "Показ",
+   "href": "/showings/new?deal_id=9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74&property_id=9d430d64-1df4-484b-bc13-33ebc27d74c1&contact_id=290e313d-67da-4910-9727-509b3ef36c06",
+   "aria": null
+  },
+  {
+   "t": "02.11, 15:00 · __smoke__ A Арендатор Белова Мария Сергеевна | Проведён · Заинтересован",
+   "href": "/showings/21fb7457-3b92-40f0-8990-c06160e20b83",
+   "aria": null
+  }
+ ],
+ "movein": [
+  {
+   "t": "СДЕЛКИ",
+   "href": "/deals",
+   "aria": null
+  },
+  {
+   "t": "Оформить",
+   "href": "/deals/9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74/complete",
+   "aria": null
+  },
+  {
+   "t": "Редактировать",
+   "href": "/deals/9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74/edit",
+   "aria": null
+  },
+  {
+   "t": "",
+   "href": null,
+   "aria": "Ещё действия"
+  },
+  {
+   "t": "Отменить сделку",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Поиск и контакт",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Встреча",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Договор с собственником",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Подготовка и реклама",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Показы",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Проверка и договор найма",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Заселение",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Завершена",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Договор найма подписанобязательно",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Подписан акт приёма-передачиобязательно",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Сняты показания счётчиковобязательно",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Переданы ключиобязательно",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Получена комиссияобязательно",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Начислить комиссию →",
+   "href": "/accounting/transactions/new?deal_id=9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74&type=income",
+   "aria": null
+  },
+  {
+   "t": "Карточка объекта",
+   "href": "/properties/9d430d64-1df4-484b-bc13-33ebc27d74c1",
+   "aria": null
+  },
+  {
+   "t": "Задача",
+   "href": "/tasks/new?deal_id=9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74",
+   "aria": null
+  },
+  {
+   "t": "Подписать договор и передать ключи | до 01.11.26",
+   "href": "/tasks/9d121411-21dd-47e5-bbd0-85cb162e97e4",
+   "aria": null
+  },
+  {
+   "t": "__smoke__ A Собственник Орлов Павел Андреевич",
+   "href": "/contacts/3531dc5b-8400-4a89-bdfc-d27915b131e1",
+   "aria": null
+  },
+  {
+   "t": "+7 (999) 100-65-01",
+   "href": "tel:+79991006501",
+   "aria": null
+  },
+  {
+   "t": "__smoke__ A Арендатор Белова Мария Сергеевна",
+   "href": "/contacts/290e313d-67da-4910-9727-509b3ef36c06",
+   "aria": null
+  },
+  {
+   "t": "+7 (999) 200-65-02",
+   "href": "tel:+79992006502",
+   "aria": null
+  },
+  {
+   "t": "Договор",
+   "href": "/contracts/new?deal_id=9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74",
+   "aria": null
+  },
+  {
+   "t": "Аренда квартиры | подписан",
+   "href": "/contracts/2b569965-6fcc-43bd-8fd2-c10b6e1f1114",
+   "aria": null
+  },
+  {
+   "t": "Агентский (собственник) | подписан",
+   "href": "/contracts/2a645052-ee12-4042-8e7d-854ba6fd1c62",
+   "aria": null
+  },
+  {
+   "t": "Показ",
+   "href": "/showings/new?deal_id=9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74&property_id=9d430d64-1df4-484b-bc13-33ebc27d74c1&contact_id=290e313d-67da-4910-9727-509b3ef36c06",
+   "aria": null
+  },
+  {
+   "t": "02.11, 15:00 · __smoke__ A Арендатор Белова Мария Сергеевна | Проведён · Заинтересован",
+   "href": "/showings/21fb7457-3b92-40f0-8990-c06160e20b83",
+   "aria": null
+  }
+ ],
+ "done": [
+  {
+   "t": "СДЕЛКИ",
+   "href": "/deals",
+   "aria": null
+  },
+  {
+   "t": "Оформить",
+   "href": "/deals/9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74/complete",
+   "aria": null
+  },
+  {
+   "t": "Редактировать",
+   "href": "/deals/9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74/edit",
+   "aria": null
+  },
+  {
+   "t": "",
+   "href": null,
+   "aria": "Ещё действия"
+  },
+  {
+   "t": "Отменить сделку",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Поиск и контакт",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Встреча",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Договор с собственником",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Подготовка и реклама",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Показы",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Проверка и договор найма",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Заселение",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Завершена",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Договор найма подписан",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Подписан акт приёма-передачи",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Сняты показания счётчиков",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Переданы ключи",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Получена комиссия",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Карточка объекта",
+   "href": "/properties/9d430d64-1df4-484b-bc13-33ebc27d74c1",
+   "aria": null
+  },
+  {
+   "t": "Задача",
+   "href": "/tasks/new?deal_id=9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74",
+   "aria": null
+  },
+  {
+   "t": "Подписать договор и передать ключи | до 01.11.26",
+   "href": "/tasks/9d121411-21dd-47e5-bbd0-85cb162e97e4",
+   "aria": null
+  },
+  {
+   "t": "__smoke__ A Собственник Орлов Павел Андреевич",
+   "href": "/contacts/3531dc5b-8400-4a89-bdfc-d27915b131e1",
+   "aria": null
+  },
+  {
+   "t": "+7 (999) 100-65-01",
+   "href": "tel:+79991006501",
+   "aria": null
+  },
+  {
+   "t": "__smoke__ A Арендатор Белова Мария Сергеевна",
+   "href": "/contacts/290e313d-67da-4910-9727-509b3ef36c06",
+   "aria": null
+  },
+  {
+   "t": "+7 (999) 200-65-02",
+   "href": "tel:+79992006502",
+   "aria": null
+  },
+  {
+   "t": "Договор",
+   "href": "/contracts/new?deal_id=9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74",
+   "aria": null
+  },
+  {
+   "t": "Аренда квартиры | подписан",
+   "href": "/contracts/2b569965-6fcc-43bd-8fd2-c10b6e1f1114",
+   "aria": null
+  },
+  {
+   "t": "Агентский (собственник) | подписан",
+   "href": "/contracts/2a645052-ee12-4042-8e7d-854ba6fd1c62",
+   "aria": null
+  },
+  {
+   "t": "Показ",
+   "href": "/showings/new?deal_id=9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74&property_id=9d430d64-1df4-484b-bc13-33ebc27d74c1&contact_id=290e313d-67da-4910-9727-509b3ef36c06",
+   "aria": null
+  },
+  {
+   "t": "02.11, 15:00 · __smoke__ A Арендатор Белова Мария Сергеевна | Проведён · Заинтересован",
+   "href": "/showings/21fb7457-3b92-40f0-8990-c06160e20b83",
+   "aria": null
+  }
+ ],
+ "completed": [
+  {
+   "t": "СДЕЛКИ",
+   "href": "/deals",
+   "aria": null
+  },
+  {
+   "t": "Оформить",
+   "href": "/deals/9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74/complete",
+   "aria": null
+  },
+  {
+   "t": "Редактировать",
+   "href": "/deals/9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74/edit",
+   "aria": null
+  },
+  {
+   "t": "",
+   "href": null,
+   "aria": "Ещё действия"
+  },
+  {
+   "t": "Отменить сделку",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Поиск и контакт",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Встреча",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Договор с собственником",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Подготовка и реклама",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Показы",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Проверка и договор найма",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Заселение",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Завершена",
+   "href": null,
+   "aria": null
+  },
+  {
+   "t": "Карточка объекта",
+   "href": "/properties/9d430d64-1df4-484b-bc13-33ebc27d74c1",
+   "aria": null
+  },
+  {
+   "t": "Задача",
+   "href": "/tasks/new?deal_id=9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74",
+   "aria": null
+  },
+  {
+   "t": "Подписать договор и передать ключи | до 01.11.26",
+   "href": "/tasks/9d121411-21dd-47e5-bbd0-85cb162e97e4",
+   "aria": null
+  },
+  {
+   "t": "__smoke__ A Собственник Орлов Павел Андреевич",
+   "href": "/contacts/3531dc5b-8400-4a89-bdfc-d27915b131e1",
+   "aria": null
+  },
+  {
+   "t": "+7 (999) 100-65-01",
+   "href": "tel:+79991006501",
+   "aria": null
+  },
+  {
+   "t": "__smoke__ A Арендатор Белова Мария Сергеевна",
+   "href": "/contacts/290e313d-67da-4910-9727-509b3ef36c06",
+   "aria": null
+  },
+  {
+   "t": "+7 (999) 200-65-02",
+   "href": "tel:+79992006502",
+   "aria": null
+  },
+  {
+   "t": "Договор",
+   "href": "/contracts/new?deal_id=9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74",
+   "aria": null
+  },
+  {
+   "t": "Аренда квартиры | подписан",
+   "href": "/contracts/2b569965-6fcc-43bd-8fd2-c10b6e1f1114",
+   "aria": null
+  },
+  {
+   "t": "Агентский (собственник) | подписан",
+   "href": "/contracts/2a645052-ee12-4042-8e7d-854ba6fd1c62",
+   "aria": null
+  },
+  {
+   "t": "Показ",
+   "href": "/showings/new?deal_id=9c4f007b-f1f6-4c28-8ef3-3dbfb1710c74&property_id=9d430d64-1df4-484b-bc13-33ebc27d74c1&contact_id=290e313d-67da-4910-9727-509b3ef36c06",
+   "aria": null
+  },
+  {
+   "t": "02.11, 15:00 · __smoke__ A Арендатор Белова Мария Сергеевна | Проведён · Заинтересован",
+   "href": "/showings/21fb7457-3b92-40f0-8990-c06160e20b83",
+   "aria": null
+  }
+ ]
+}

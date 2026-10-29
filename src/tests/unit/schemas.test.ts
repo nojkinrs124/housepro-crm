@@ -278,3 +278,32 @@ describe('RentApartmentDataSchema', () => {
     expect(RentApartmentDataSchema.safeParse({ concierge_internet_payer: 'someone_else' }).success).toBe(false)
   })
 })
+
+describe('ContactSchema — телефон (QA 28.10.2026, E-11)', () => {
+  it('отклоняет телефон без цифр вместо того, чтобы молча стереть', async () => {
+    const { ContactSchema } = await import('@/lib/schemas')
+    const r = ContactSchema.safeParse({ full_name: 'Тест', role: 'client', status: 'new', phone: 'абвгд' })
+    expect(r.success).toBe(false)
+  })
+  it('пустой телефон допустим', async () => {
+    const { ContactSchema } = await import('@/lib/schemas')
+    expect(ContactSchema.safeParse({ full_name: 'Тест', role: 'client', status: 'new', phone: '' }).success).toBe(true)
+  })
+  it('нормальный номер нормализуется', async () => {
+    const { ContactSchema } = await import('@/lib/schemas')
+    const r = ContactSchema.safeParse({ full_name: 'Тест', role: 'client', status: 'new', phone: '8 (900) 123-45-67' })
+    expect(r.success && r.data.phone).toBe('+79001234567')
+  })
+})
+
+describe('ContractSchema — залог (QA 28.10.2026, A-11/B-02)', () => {
+  it('залог 0 допустим', async () => {
+    const { ContractSchema } = await import('@/lib/schemas')
+    const r = ContractSchema.safeParse({ contract_type: 'rent_apartment', deposit: '0' })
+    expect(r.success).toBe(true)
+  })
+  it('отрицательный залог — ошибка', async () => {
+    const { ContractSchema } = await import('@/lib/schemas')
+    expect(ContractSchema.safeParse({ contract_type: 'rent_apartment', deposit: '-5' }).success).toBe(false)
+  })
+})

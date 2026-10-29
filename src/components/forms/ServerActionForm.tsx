@@ -2,10 +2,11 @@
 
 import { useActionState } from 'react'
 import { AlertCircle, CheckCircle2 } from 'lucide-react'
+import { useKeepFormOnError } from '@/hooks/useKeepFormOnError'
 
 type ActionResult = { error?: string; success?: boolean; message?: string; fields?: Record<string, string[] | undefined> } | void | undefined
 
-interface ServerActionFormProps extends Omit<React.FormHTMLAttributes<HTMLFormElement>, 'action' | 'children'> {
+interface ServerActionFormProps extends Omit<React.FormHTMLAttributes<HTMLFormElement>, 'action' | 'children' | 'onSubmit'> {
  /**
  * Любой Server Action (или уже забинженный через .bind), принимающий
  * FormData первым/единственным релевантным аргументом и возвращающий
@@ -30,9 +31,10 @@ export function ServerActionForm({ action, children, ...rest }: ServerActionForm
  return (await action(formData)) as ActionResult
  }
  const [state, formAction, isPending] = useActionState(wrapped, undefined)
+ const { formRef, onSubmit: keepOnSubmit } = useKeepFormOnError(formAction, state, isPending)
 
  return (
- <form action={formAction} {...rest}>
+ <form {...rest} ref={formRef} onSubmit={keepOnSubmit}>
  {state?.success && state.message && (
  <div className="flex items-center gap-2 border border-[var(--hp-border)] bg-[var(--hp-good-tint)] px-4 py-3 text-sm text-[var(--hp-good)] mb-4">
  <CheckCircle2 className="w-4 h-4 shrink-0" />

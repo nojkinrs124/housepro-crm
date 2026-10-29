@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AlertCircle, Mail, Send } from 'lucide-react'
+import { useKeepFormOnError } from '@/hooks/useKeepFormOnError'
 
 type Result = { error?: string; success?: boolean; message?: string } | undefined
 
@@ -36,6 +37,7 @@ export function SendByEmailForm({
  const wrapped = async (_prev: Result, formData: FormData): Promise<Result> =>
  (await action(formData)) as Result
  const [state, formAction, isPending] = useActionState(wrapped, undefined)
+ const { formRef, onSubmit: keepOnSubmit } = useKeepFormOnError(formAction, state, isPending)
 
  useEffect(() => {
  if (state?.success) {
@@ -58,7 +60,7 @@ export function SendByEmailForm({
  }
 
  return (
- <form action={formAction} className="hp-card p-5 space-y-4 w-full">
+ <form ref={formRef} onSubmit={keepOnSubmit} className="hp-card p-5 space-y-4 w-full">
  <h2 className="font-bold text-[var(--hp-ink)] text-[15px]">{title}</h2>
  {hint && <p className="text-[var(--hp-sub)] text-sm">{hint}</p>}
 

@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 export interface KanbanItem {
   id: string
@@ -54,7 +55,18 @@ export function KanbanBoard<T extends KanbanItem>({
   previewLimit,
 }: KanbanBoardProps<T>) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
-  const [items, setItems] = useState(initialItems)
+  // Локально храним только оптимистичные смены статуса (id → статус), а сам
+  // список берём из пропса. Раньше список копировался в state один раз при
+  // монтировании, и фильтры/поиск над доской не меняли карточки вовсе: счётчик
+  // «Найдено: 1», а на доске все лиды (QA 28.10.2026, E-01).
+  const [overrides, setOverrides] = useState<Record<string, string>>({})
+  const items = useMemo(
+    () => initialItems.map(item => (overrides[item.id] && overrides[item.id] !== item.status ? { ...item, status: overrides[item.id] } : item)),
+    [initialItems, overrides],
+  )
+  const setStatus = (id: string, status: string) => setOverrides(current => ({ ...current, [id]: status }))
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [edges, setEdges] = useState({ left: false, right: false })
   const [dragged, setDragged] = useState<T | null>(null)
   const [dragOver, setDragOver] = useState<string | null>(null)
   const draggingRef = useRef(false)
@@ -73,22 +85,92 @@ export function KanbanBoard<T extends KanbanItem>({
     if (!item) { clearDrag(); return }
     if (canDrop && !canDrop(item, status)) { onInvalidDrop?.(item, status); clearDrag(); return }
     if (item.status === status) { clearDrag(); return }
-    setItems(current => current.map(candidate => candidate.id === item.id ? { ...candidate, status } : candidate))
+    setStatus(item.id, status)
     clearDrag()
     try {
       const result = await onStatusChange(item.id, status)
       if (result && 'error' in result && result.error) {
-        setItems(current => current.map(candidate => candidate.id === item.id ? { ...candidate, status: item.status } : candidate))
+        setStatus(item.id, item.status)
         onError?.(result.error)
       }
     } catch {
-      setItems(current => current.map(candidate => candidate.id === item.id ? { ...candidate, status: item.status } : candidate))
+      setStatus(item.id, item.status)
       onError?.('Не удалось изменить статус. Попробуйте ещё раз.')
     }
   }
 
+  // Стрелки прокрутки: доска шире экрана, а горизонтальный бегунок у её нижнего
+  // края — на длинной колонке он уезжает за низ окна (QA 28.10.2026, A-09).
+  const updateEdges = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+    setEdges({ left: el.scrollLeft > 4, right: el.scrollLeft + el.clientWidth < el.scrollWidth - 4 })
+  }, [])
+  useEffect(() => {
+    updateEdges()
+    const el = scrollRef.current
+    if (!el) return
+    const ro = new ResizeObserver(updateEdges)
+    ro.observe(el)
+    if (el.firstElementChild) ro.observe(el.firstElementChild)
+    return () => ro.disconnect()
+  }, [updateEdges, items.length])
+  const scrollByColumn = (direction: 1 | -1) => {
+    stopHoverScroll()
+    const el = scrollRef.current
+    if (!el) return
+    const column = el.querySelector<HTMLElement>('[data-stage]')
+    const step = (column?.offsetWidth ?? 280) + 16
+    el.scrollBy({ left: direction * step, behavior: 'smooth' })
+  }
+  // Наведение на стрелку плавно прокручивает доску, пока курсор на стрелке
+  // (просьба владельца 28.10.2026); клик — шаг на одну колонку.
+  const hoverTimer = useRef<number | null>(null)
+  const stopHoverScroll = () => {
+    if (hoverTimer.current !== null) cancelAnimationFrame(hoverTimer.current)
+    hoverTimer.current = null
+  }
+  const startHoverScroll = (direction: 1 | -1) => {
+    stopHoverScroll()
+    const tick = () => {
+      const el = scrollRef.current
+      if (!el) return
+      el.scrollLeft += direction * 8
+      hoverTimer.current = requestAnimationFrame(tick)
+    }
+    hoverTimer.current = requestAnimationFrame(tick)
+  }
+  useEffect(() => stopHoverScroll, [])
+
+  // При перетаскивании карточки к краю доска прокручивается сама.
+  const autoScrollOnDrag = (event: React.DragEvent) => {
+    const el = scrollRef.current
+    if (!el || !draggingRef.current) return
+    const rect = el.getBoundingClientRect()
+    const zone = 60
+    if (event.clientX < rect.left + zone) el.scrollBy({ left: -24 })
+    else if (event.clientX > rect.right - zone) el.scrollBy({ left: 24 })
+  }
+
   return (
-    <div className="overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0" style={{ scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch' }}>
+    <div className="relative group/kanban">
+    {edges.left && (
+      <button type="button" aria-label="Прокрутить доску влево" onClick={() => scrollByColumn(-1)}
+        onMouseEnter={() => startHoverScroll(-1)} onMouseLeave={stopHoverScroll}
+        onDragEnter={() => startHoverScroll(-1)} onDragLeave={stopHoverScroll}
+        className="hp-kanban-arrow left-0">
+        <ChevronLeft strokeWidth={1.6} className="w-5 h-5" />
+      </button>
+    )}
+    {edges.right && (
+      <button type="button" aria-label="Прокрутить доску вправо" onClick={() => scrollByColumn(1)}
+        onMouseEnter={() => startHoverScroll(1)} onMouseLeave={stopHoverScroll}
+        onDragEnter={() => startHoverScroll(1)} onDragLeave={stopHoverScroll}
+        className="hp-kanban-arrow right-0">
+        <ChevronRight strokeWidth={1.6} className="w-5 h-5" />
+      </button>
+    )}
+    <div ref={scrollRef} onScroll={updateEdges} onDragOver={autoScrollOnDrag} className="overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory md:snap-none" style={{ WebkitOverflowScrolling: 'touch' }}>
       <div className={boardClassName} style={boardStyle}>
         {columns.map(column => {
           const columnItems = items.filter(item => item.status === column.status)
@@ -119,6 +201,7 @@ export function KanbanBoard<T extends KanbanItem>({
           return columnNode
         })}
       </div>
+    </div>
     </div>
   )
 }

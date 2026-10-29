@@ -29,6 +29,7 @@ import {
 } from '@/features/plans/services/plan-terms'
 import { toJson } from '@/lib/json'
 import { friendlyDbError } from '@/lib/errors'
+import { checkContractCompleteness } from '../config/completeness'
 
 // Схема contract_type_data по каждому типу договора (см. config/contract-types.ts).
 const CONTRACT_TYPE_DATA_SCHEMAS: Record<string, z.ZodTypeAny> = {
@@ -166,8 +167,10 @@ export async function createContractAction(_prevState: PrevState, formData: Form
   const parsed = ContractSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
     const first = parsed.error.issues[0]
-    return { error: first.message, fields: parsed.error.flatten().fieldErrors }
+    return { error: first.message, field: String(first.path[0] ?? ''), fields: parsed.error.flatten().fieldErrors }
   }
+  const incomplete = checkContractCompleteness(parsed.data)
+  if (incomplete) return { error: incomplete.message, field: incomplete.field }
 
   const contractTypeDataResult = parseContractTypeData(parsed.data.contract_type, formData)
   if (!contractTypeDataResult.success) return { error: contractTypeDataResult.error }
@@ -230,8 +233,10 @@ export async function updateContractAction(id: string, _prevState: PrevState, fo
   const parsed = ContractSchema.safeParse(Object.fromEntries(formData))
   if (!parsed.success) {
     const first = parsed.error.issues[0]
-    return { error: first.message, fields: parsed.error.flatten().fieldErrors }
+    return { error: first.message, field: String(first.path[0] ?? ''), fields: parsed.error.flatten().fieldErrors }
   }
+  const incomplete = checkContractCompleteness(parsed.data)
+  if (incomplete) return { error: incomplete.message, field: incomplete.field }
 
   const permError = await requirePermission(user.id, 'contracts', 'update')
   if (permError) return permError
