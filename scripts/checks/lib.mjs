@@ -1,7 +1,7 @@
 /**
  * Общие утилиты для проверок из scripts/checks/*.
- * Используются и в `npm run check` (pre-push-check.mjs), и в hooks Claude Code
- * (.claude/hooks/*), поэтому здесь не должно быть ничего, что печатает в stdout.
+ * Используются и в `npm run check` (pre-push-check.mjs), и в хуках Hermes
+ * (scripts/agent-hooks/*), поэтому здесь не должно быть ничего, что печатает в stdout.
  */
 
 import { readdirSync, statSync, readFileSync } from 'node:fs'
@@ -10,7 +10,7 @@ import path from 'node:path'
 export const ROOT = process.cwd()
 
 /** Рекурсивный обход каталога с фильтром по расширениям. */
-export function walk(dir, exts, exclude = ['node_modules', '.next', '.claude']) {
+export function walk(dir, exts, exclude = ['node_modules', '.next', '.hermes']) {
   const out = []
   let entries
   try {

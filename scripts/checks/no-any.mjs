@@ -9,7 +9,7 @@
  * Правило, нарушенное сотню раз, обесценивает и все соседние правила. Поэтому
  * запрет здесь не абсолютный, а ратчетный, как у визуального стандарта:
  *   · новое вхождение any в файле  → блокировка;
- *   · существующие                 → зафиксированы в .claude/any-baseline.json;
+ *   · существующие                 → зафиксированы в scripts/checks/any-baseline.json;
  *   · убрали any из файла          → baseline автоматически опускается, назад
  *                                    дороги нет.
  *
@@ -26,7 +26,7 @@ import { pathToFileURL } from 'node:url'
 import { ROOT, walk, readSafe, rel } from './lib.mjs'
 
 const SRC = path.join(ROOT, 'src')
-const BASELINE_PATH = path.join(ROOT, '.claude', 'any-baseline.json')
+const BASELINE_PATH = path.join(ROOT, 'scripts', 'checks', 'any-baseline.json')
 
 const RULES = [
   { re: /:\s*any\b/, msg: 'аннотация `: any`' },

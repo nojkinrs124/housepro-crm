@@ -6,7 +6,7 @@
  * здесь только машинно проверяемая часть.
  *
  * РАБОТАЕТ ПО BASELINE-РАТЧЕТУ:
- *   .claude/design-baseline.json хранит количество нарушений на файл на момент
+ *   scripts/checks/design-baseline.json хранит количество нарушений на файл на момент
  *   снятия baseline. Проверка падает, только если в файле нарушений стало БОЛЬШЕ.
  *   Легаси (10 файлов с font-mono для API-ключей, градиент поверх фото объекта
  *   и т.п.) не мешает работать, но и вырасти не даёт. Если нарушений стало
@@ -24,7 +24,7 @@ import { pathToFileURL } from 'node:url'
 import { ROOT, walk, readSafe, rel } from './lib.mjs'
 
 const SRC = path.join(ROOT, 'src')
-const BASELINE_PATH = path.join(ROOT, '.claude', 'design-baseline.json')
+const BASELINE_PATH = path.join(ROOT, 'scripts', 'checks', 'design-baseline.json')
 
 const TW_COLORS =
   'slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose'

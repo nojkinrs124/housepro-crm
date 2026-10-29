@@ -346,7 +346,7 @@ if (hasErrors) {
   console.log('\n🚫 Есть ошибки — пуш выполнять НЕЛЬЗЯ, пока всё не исправлено.')
   process.exit(1)
 } else {
-  // Отпечаток кода — hook .claude/hooks/guard-bash.mjs пропустит `git push`
+  // Отпечаток кода — хук scripts/agent-hooks/guard-bash.mjs пропустит `git push`
   // только если проверка гонялась именно на этих файлах.
   const { writeStamp } = await import('./checks/stamp.mjs')
   const { at } = writeStamp()

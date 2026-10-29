@@ -1,0 +1,8 @@
+{
+  "hook_event_name": "pre_tool_call",
+  "tool_name": "connectors__supabase__EXECUTE_SQL",
+  "tool_input": { "query": "select id, status from leads limit 5;" },
+  "session_id": "selftest",
+  "cwd": ".",
+  "extra": {}
+}

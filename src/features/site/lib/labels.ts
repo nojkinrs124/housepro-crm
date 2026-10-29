@@ -81,7 +81,7 @@ export function label(dict: Record<string, string>, key: string | null | undefin
   return dict[key] ?? key
 }
 
-/** «36 000 ₽» — обычным интерфейсным шрифтом, без моно (см. CLAUDE.md). */
+/** «36 000 ₽» — обычным интерфейсным шрифтом, без моно (см. AGENTS.md). */
 export function formatPrice(value: number | string | null | undefined): string | null {
   if (value === null || value === undefined || value === '') return null
   const n = Number(value)

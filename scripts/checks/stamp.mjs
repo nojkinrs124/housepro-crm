@@ -13,7 +13,7 @@ import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'node:fs'
 import path from 'node:path'
 import { ROOT, walk, readSafe } from './lib.mjs'
 
-const STAMP_PATH = path.join(ROOT, '.claude', '.check-stamp.json')
+const STAMP_PATH = path.join(ROOT, 'scripts', 'checks', '.check-stamp.json')
 
 const ROOT_FILES = [
   'package.json',
