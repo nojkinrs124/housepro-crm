@@ -62,6 +62,8 @@ function baseTables(overrides: Record<string, { data?: unknown; error?: { messag
 function formWithBasics(extra: Record<string, string> = {}) {
   const formData = new FormData()
   formData.set('start_date', '2026-10-01')
+  // Окончание обязательно у договора найма — общее правило полноты договора (QA 28.10.2026).
+  formData.set('end_date', '2027-08-31')
   formData.set('amount', '50000')
   for (const [k, v] of Object.entries(extra)) formData.set(k, v)
   return formData
@@ -218,8 +220,9 @@ describe('completeDealAction — первое оформление создаё�
 
     const { completeDealAction } = await import('@/features/deals/actions/complete-deal.actions')
     const formData = new FormData()
+    formData.set('amount', '50000')
     const result = await completeDealAction('deal-1', null, formData)
-    expect(result.error).toContain('дату начала')
+    expect(result.error).toMatch(/дат.*начала/i)
   })
 
   it('сделка не найдена — ошибка', async () => {

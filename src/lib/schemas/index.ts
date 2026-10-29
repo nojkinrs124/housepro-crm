@@ -5,10 +5,16 @@ import { ALL_STAGE_VALUES } from '@/features/directions/config/directions'
 // ─── Общие примитивы ─────────────────────────────────────────────────────────
 
 const optStr = z.string().trim().nullable().optional()
+// Телефон: пусто — нет телефона; что-то введено, но цифр меньше 10 — ошибка.
+// Раньше «абвгд» молча превращалось в пустое поле, и номер терялся (QA E-11).
 const optPhone = z
   .string()
   .nullable()
   .optional()
+  .refine(
+    (v) => !v || !v.trim() || v.replace(/\D/g, '').length >= 10,
+    { message: 'Телефон не похож на номер: нужно минимум 10 цифр, например +7 900 123-45-67' },
+  )
   .transform((v) => normalizePhone(v))
 const optDate = z
   .string()
@@ -20,6 +26,13 @@ const optPositiveNum = z
   .union([z.string(), z.number()])
   .transform((v) => (v === '' || v === null || v === undefined ? null : Number(v)))
   .refine((v) => v === null || (!isNaN(v) && v > 0), { message: 'Укажите положительное число' })
+  .nullable()
+  .optional()
+// Неотрицательное число: залог «0» — нормальное условие «без залога» (QA A-11/B-02).
+const optNonNegNumber = z
+  .union([z.string(), z.number()])
+  .transform((v) => (v === '' || v === null || v === undefined ? null : Number(v)))
+  .refine((v) => v === null || (!isNaN(v) && v >= 0), { message: 'Залог не может быть отрицательным — оставьте 0, если залога нет' })
   .nullable()
   .optional()
 const uuid = z
@@ -212,7 +225,7 @@ export const ContractSchema = z.object({
   base_contract_id: uuid,
   company_profile_id: uuid,
   amount: optPositiveNum,
-  deposit: optPositiveNum,
+  deposit: optNonNegNumber,
   start_date: optDate,
   end_date: optDate,
   notes: optStr,

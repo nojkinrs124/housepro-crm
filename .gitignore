@@ -57,3 +57,5 @@ docs/qa/.walkthrough/
 .next-regress/
 playwright-report-smoke/
 test-results-smoke/
+.next-qa/
+docs/qa/runs/*/artifacts-*/

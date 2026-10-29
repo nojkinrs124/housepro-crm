@@ -10,6 +10,7 @@ import {
  type ParseStatementResult,
 } from '../actions/bank-import.actions'
 import { formatDateCompact } from '@/lib/utils'
+import { useKeepFormOnError } from '@/hooks/useKeepFormOnError'
 
 function fmtMoney(value: number): string {
  return `${value.toLocaleString('ru-RU')} ₽`
@@ -38,6 +39,7 @@ export function BankStatementImport() {
  parseBankStatementAction(_prev, formData),
  null
  )
+ const { formRef, onSubmit: keepOnSubmit } = useKeepFormOnError(formAction, state, isPending)
 
  useEffect(() => {
  if (!state) return
@@ -97,7 +99,7 @@ export function BankStatementImport() {
 
  return (
  <div className="space-y-6">
- <form action={formAction} className="hp-card p-5 space-y-4">
+ <form ref={formRef} onSubmit={keepOnSubmit} className="hp-card p-5 space-y-4">
  <h2 className="font-bold text-[var(--hp-ink)] text-[15px]">Файл выписки</h2>
  <p className="text-sm text-[var(--hp-sub)]">
  В банк-клиенте выберите выгрузку в формате «1С:Предприятие» — получится текстовый файл

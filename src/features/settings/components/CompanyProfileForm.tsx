@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { uploadLogoAction, removeLogoAction } from '@/features/settings/actions/company.actions'
 import { LEGAL_FORM_OPTIONS, getLegalFormOption, type LegalForm } from '@/features/settings/config/legal-forms'
+import { useKeepFormOnError } from '@/hooks/useKeepFormOnError'
 
 export type CompanyProfile = {
  id?: string
@@ -62,6 +63,7 @@ interface CompanyProfileFormProps {
 
 export function CompanyProfileForm({ mode, profile, action, isFirstProfile }: CompanyProfileFormProps) {
  const [state, formAction, isPending] = useActionState(action, { error: undefined })
+ const { formRef, onSubmit: keepOnSubmit } = useKeepFormOnError(formAction, state, isPending)
  const [legalForm, setLegalForm] = useState<string>(profile?.legal_form ?? 'ip')
  const formConfig = getLegalFormOption(legalForm)
 
@@ -116,7 +118,7 @@ export function CompanyProfileForm({ mode, profile, action, isFirstProfile }: Co
  }
 
  return (
- <form action={formAction} className="space-y-5">
+ <form ref={formRef} onSubmit={keepOnSubmit} className="space-y-5">
  {state?.error && (
  <div className="bg-destructive/10 border border-destructive/30 text-destructive px-4 py-3 text-sm">
  {state.error}

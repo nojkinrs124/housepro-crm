@@ -118,7 +118,7 @@ describe('canMoveStage — предусловия по данным', () => {
       'mgmt_contract',
     )
     expect(v.allowed).toBe(false)
-    expect(v.reason).toContain('схему расчёта')
+    expect(v.reason).toContain('схемой расчёта')
   })
 })
 

@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { PageHeader } from '@/components/layout/PageHeader'
 
 import { contractTypeForDeal, isAgencyContract } from '@/features/deals/services/deal-completion'
+import { defaultContractDates } from '@/features/contracts/config/completeness'
 
 export default async function NewContractPage({
   searchParams,
@@ -76,6 +77,9 @@ export default async function NewContractPage({
     }
   }
 
+  const initialType = dealDefaults.contract_type ?? params.type ?? 'rent_apartment'
+  const initialDates = defaultContractDates(initialType)
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <PageHeader
@@ -101,7 +105,7 @@ export default async function NewContractPage({
         submitLabel="Создать договор"
         mode="create"
         defaults={{
-          contract_type: dealDefaults.contract_type ?? params.type,
+          contract_type: initialType,
           owner_contact_id: dealDefaults.owner_contact_id ?? contactOwnerId,
           client_contact_id: dealDefaults.client_contact_id ?? contactClientId,
           owner_representative_id: dealDefaults.owner_representative_id,
@@ -111,6 +115,11 @@ export default async function NewContractPage({
           amount: dealDefaults.amount,
           plan_id: dealDefaults.plan_id,
           company_profile_id: defaultCompanyProfileId,
+          // Даты подставляются так же, как в «Оформить»: начало — сегодня,
+          // окончание — 11 мес. без дня (управление — год). Раньше форма из сделки
+          // открывалась с пустыми датами (QA 28.10.2026, A-03, C-03).
+          start_date: initialDates.start_date,
+          end_date: initialDates.end_date,
         }}
       />
     </div>

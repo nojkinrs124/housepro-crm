@@ -5,6 +5,7 @@ import { createCategoryAction } from '../actions/categories.actions'
 import type { AccountingTransactionType } from '@/types/database'
 import { Plus } from 'lucide-react'
 import { CHART_SERIES } from '@/lib/design/chartColors'
+import { useKeepFormOnError } from '@/hooks/useKeepFormOnError'
 
 type State = { error?: string; success?: boolean } | null
 
@@ -15,9 +16,10 @@ const COLORS = [...CHART_SERIES]
 
 export function AddCategoryForm({ defaultType }: { defaultType?: AccountingTransactionType }) {
  const [state, formAction, isPending] = useActionState(createCategoryAction, null)
+ const { formRef, onSubmit: keepOnSubmit } = useKeepFormOnError(formAction, state, isPending)
 
  return (
- <form action={formAction} className="flex items-end gap-2 flex-wrap">
+ <form ref={formRef} onSubmit={keepOnSubmit} className="flex items-end gap-2 flex-wrap">
  <input type="hidden" name="type" value={defaultType ?? 'income'} />
  <div className="space-y-1 flex-1 min-w-[140px]">
  <label className="block text-xs font-semibold text-muted-foreground">Название</label>

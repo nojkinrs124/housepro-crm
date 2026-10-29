@@ -189,11 +189,25 @@ export async function sendCollectionByEmailAction(collectionId: string, formData
   if (!result.ok) return { error: result.error ?? 'Не удалось отправить письмо' }
   if (result.skipped) return { error: MAIL_NOT_CONFIGURED }
 
-  await supabase.from('property_collections').update({ sent_at: new Date().toISOString() }).eq('id', collectionId)
+  await markCollectionSent(supabase, collection)
 
-  // Отправка подборки — это событие процесса, а не только письмо: в подборе
-  // для арендатора она двигает сделку на стадию «Подборка отправлена».
-  // У остальных направлений такой вехи нет, и автоматика там ничего не делает.
+  revalidatePath(`/collections/${collectionId}`)
+  return { success: true, message: `Подборка отправлена на ${to}` }
+}
+
+type SessionSupabase = Extract<Awaited<ReturnType<typeof getSessionContext>>, { ok: true }>['supabase']
+
+/**
+ * Отметка «подборка отправлена» + веха сделки. Отправка подборки — событие
+ * процесса, а не только письмо: в подборе для арендатора она двигает сделку на
+ * стадию «Подборка отправлена». У остальных направлений такой вехи нет.
+ */
+async function markCollectionSent(
+  supabase: SessionSupabase,
+  collection: { id: string; deal_id: string | null; lead_id: string | null },
+) {
+  await supabase.from('property_collections').update({ sent_at: new Date().toISOString() }).eq('id', collection.id)
+
   let dealId = collection.deal_id
   if (!dealId && collection.lead_id) {
     const { data: deal } = await supabase
@@ -211,7 +225,35 @@ export async function sendCollectionByEmailAction(collectionId: string, formData
     revalidatePath('/deals')
     revalidatePath(`/deals/${dealId}`)
   }
+}
 
+/**
+ * Подборка отправлена клиенту вручную — ссылкой в WhatsApp/Telegram.
+ * Без этого при отключённой почте сделку подбора было не довести до конца:
+ * отметка ставилась только письмом (QA 28.10.2026, D-14, D-17).
+ */
+export async function markCollectionSentManuallyAction(collectionId: string) {
+  const ctx = await getSessionContext()
+  if (!ctx.ok) return { error: ctx.error }
+  const { supabase, user } = ctx
+
+  const permError = await requirePermission(user.id, 'collections', 'update')
+  if (permError) return permError
+
+  const { data: collection } = await supabase
+    .from('property_collections')
+    .select('id, deal_id, lead_id, is_public, items:collection_items(property_id)')
+    .eq('id', collectionId)
+    .maybeSingle()
+  if (!collection) return { error: 'Подборка не найдена' }
+  if ((collection.items ?? []).length === 0) return { error: 'В подборке нет объектов — добавьте хотя бы один' }
+
+  if (!collection.is_public) {
+    const { error } = await supabase.from('property_collections').update({ is_public: true }).eq('id', collectionId)
+    if (error) return { error: 'Не удалось открыть доступ к подборке. Обновите страницу и попробуйте ещё раз.' }
+  }
+
+  await markCollectionSent(supabase, collection)
   revalidatePath(`/collections/${collectionId}`)
-  return { success: true, message: `Подборка отправлена на ${to}` }
+  return { success: true }
 }

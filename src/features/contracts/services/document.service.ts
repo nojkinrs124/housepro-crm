@@ -4,6 +4,7 @@ import PizZip from 'pizzip'
 import Docxtemplater from 'docxtemplater'
 import { createClient } from '@/lib/supabase/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { amountInWords } from '@/lib/invoice-words'
 
 export interface ContractVariables {
   // ── Арендодатель (Сторона 1) ──────────────────────────────
@@ -185,6 +186,12 @@ export interface ContractVariables {
   DEPOSIT_WORDS: string
   AGENCY_NAME: string
   MANAGER_NAME: string
+  // Для документа без шаблона: первая сторона прямого договора и признак юрлица
+  OWNER_NAME: string
+  OWNER_PASSPORT: string
+  OWNER_PHONE: string
+  OWNER_IS_LEGAL: boolean
+  PARTY2_IS_LEGAL: boolean
   DATE_DAY: string
   DATE_MONTH: string
   DATE_YEAR: string
@@ -192,40 +199,24 @@ export interface ContractVariables {
 }
 
 // Числа прописью
+/**
+ * Сумма прописью без копеек: «тридцать пять тысяч рублей». Своя реализация
+ * здесь не умела тысячи больше девяти — 35 000 превращалось в «(тысяч рублей)»
+ * (QA 28.10.2026, B-07). Берём проверенную функцию счёта на оплату.
+ */
 function numberToWords(n: number): string {
-  const units = ['', 'одна', 'две', 'три', 'четыре', 'пять', 'шесть', 'семь', 'восемь', 'девять',
-    'десять', 'одиннадцать', 'двенадцать', 'тринадцать', 'четырнадцать', 'пятнадцать',
-    'шестнадцать', 'семнадцать', 'восемнадцать', 'девятнадцать']
-  const tens = ['', '', 'двадцать', 'тридцать', 'сорок', 'пятьдесят', 'шестьдесят', 'семьдесят', 'восемьдесят', 'девяносто']
-  const hundreds = ['', 'сто', 'двести', 'триста', 'четыреста', 'пятьсот', 'шестьсот', 'семьсот', 'восемьсот', 'девятьсот']
+  const full = amountInWords(Math.round(n))
+  const noKopecks = full.replace(/\s+\d{2}\s+копе\S*$/, '')
+  return noKopecks.charAt(0).toLowerCase() + noKopecks.slice(1)
+}
 
-  if (n === 0) return 'ноль'
-  if (n < 0) return 'минус ' + numberToWords(-n)
-
-  let result = ''
-  const th = Math.floor(n / 1000)
-  const rem = n % 1000
-
-  if (th > 0) {
-    const thWords = ['одна', 'две', 'три', 'четыре', 'пять', 'шесть', 'семь', 'восемь', 'девять']
-    if (th <= 9) result += thWords[th - 1] + ' '
-    result += th === 1 ? 'тысяча ' : th < 5 ? 'тысячи ' : 'тысяч '
-  }
-
-  if (rem > 0) {
-    const h = Math.floor(rem / 100)
-    const t = Math.floor((rem % 100) / 10)
-    const u = rem % 10
-    if (h > 0) result += hundreds[h] + ' '
-    if (t === 1) {
-      result += units[10 + u] + ' '
-    } else {
-      if (t > 0) result += tens[t] + ' '
-      if (u > 0) result += units[u] + ' '
-    }
-  }
-
-  return result.trim() + ' рублей'
+/**
+ * Город для шапки документа — из адреса реквизитов компании. Раньше был
+ * захардкожен «г. Москва» для всех договоров (QA A-07).
+ */
+function cityFromAddress(address: string | null | undefined): string {
+  const m = (address ?? '').match(/(?:^|[\s,])г\.?\s*([А-ЯЁ][а-яё-]+(?:[\s-][А-ЯЁ][а-яё-]+)?)/)
+  return m ? `г. ${m[1]}` : 'г. _______________'
 }
 
 // Формат даты на русском
@@ -660,10 +651,15 @@ export async function buildContractVariables(
     DEPOSIT_WORDS: deposit > 0 ? numberToWords(deposit) : 'ноль рублей',
     AGENCY_NAME: company?.name || 'ИП HousePro',
     MANAGER_NAME: manager?.full_name || '_______________',
+    OWNER_NAME: partyName(owner),
+    OWNER_PASSPORT: buildPassport(owner),
+    OWNER_PHONE: owner?.phone || '_______________',
+    OWNER_IS_LEGAL: owner?.client_type === 'legal_entity',
+    PARTY2_IS_LEGAL: counterparty?.client_type === 'legal_entity',
     DATE_DAY: today.day,
     DATE_MONTH: today.month,
     DATE_YEAR: today.year,
-    CITY: 'г. Москва',
+    CITY: cityFromAddress(company?.address),
   }
 }
 

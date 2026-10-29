@@ -10,6 +10,7 @@ import { FormExtra } from '@/components/forms/FormLayout'
 import { DEAL_TYPE_LABELS } from '@/features/deals/config/deal-stages'
 import { CONTRACT_TYPE_LABELS } from '@/features/contracts/config/contract-types'
 import { todayIso } from '@/lib/timezone'
+import { useKeepFormOnError } from '@/hooks/useKeepFormOnError'
 
 interface Props {
  transaction?: AccountingTransaction
@@ -59,6 +60,7 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
  : createTransactionAction
 
  const [state, formAction, isPending] = useActionState<State, FormData>(action, null)
+ const { formRef, onSubmit: keepOnSubmit } = useKeepFormOnError(formAction, state, isPending)
 
  const [type, setType] = useState<'income' | 'expense'>(transaction?.type ?? 'income')
  const [categoryId, setCategoryId] = useState(transaction?.category_id ?? '')
@@ -91,7 +93,7 @@ export function TransactionForm({ transaction, categories, contracts, deals, emp
  }
 
  return (
- <form action={formAction} className="space-y-6">
+ <form ref={formRef} onSubmit={keepOnSubmit} className="space-y-6">
  {state?.error && (
  <div className="p-3 bg-[var(--hp-danger-tint)] border border-[var(--hp-border)] text-sm text-[var(--hp-danger)] font-medium flex items-center gap-2">
  <CircleAlert className="w-4 h-4 shrink-0" />

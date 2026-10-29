@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 import type { AccountingTransactionType, AccountingFrequency } from '@/types/database'
 import { requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
@@ -80,7 +81,9 @@ export async function createRecurringRuleAction(_prevState: unknown, formData: F
   }
 
   revalidatePath('/accounting/recurring')
-  return { success: true, id: data.id }
+  // После создания — в список правил. Раньше форма оставалась на месте и молча
+  // очищалась: пользователь не видел успеха, жал ещё раз и плодил дубли (QA F-07).
+  redirect('/accounting/recurring')
 }
 
 export async function updateRecurringRuleAction(id: string, _prevState: unknown, formData: FormData) {
@@ -119,7 +122,7 @@ export async function updateRecurringRuleAction(id: string, _prevState: unknown,
   if (error) return { error: friendlyDbError(error, { entity: 'правило' }) }
 
   revalidatePath('/accounting/recurring')
-  return { success: true }
+  redirect('/accounting/recurring')
 }
 
 export async function deleteRecurringRuleAction(id: string) {

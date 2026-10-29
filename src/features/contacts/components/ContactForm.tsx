@@ -7,6 +7,7 @@ import { DadataSuggestInput } from '@/components/forms/DadataSuggestInput'
 import { findContactByPhoneAction } from '../actions/duplicates.actions'
 import { CONTACT_SOURCES, CONTACT_SOURCE_LABELS } from '../config/contact-sources'
 import { Field, FieldGrid, FormExtra, FormSection } from '@/components/forms/FormLayout'
+import { useKeepFormOnError } from '@/hooks/useKeepFormOnError'
 
 const inputCls = "w-full h-10 px-4 rounded-[var(--hp-radius)] border border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-ink)] placeholder:text-[var(--hp-tertiary)] text-sm outline-none focus:border-[var(--hp-ink)] transition-colors"
 const selectCls = "w-full h-10 px-4 rounded-[var(--hp-radius)] border border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-ink)] text-sm outline-none focus:border-[var(--hp-ink)] cursor-pointer transition-colors"
@@ -61,6 +62,7 @@ interface ContactFormProps {
 export function ContactForm({ action, defaults = {}, backHref, submitLabel }: ContactFormProps) {
   const [clientType, setClientType] = useState(defaults.client_type ?? 'individual')
   const [state, formAction, isPending] = useActionState(action, null)
+  const { formRef, onSubmit: keepOnSubmit } = useKeepFormOnError(formAction, state, isPending)
   // Предупреждение о дубле: проверяем телефон, когда пользователь уходит с поля.
   // Именно так дубли и заводятся — тот же клиент звонит второй раз, и его
   // создают заново, не проверив базу.
@@ -68,7 +70,7 @@ export function ContactForm({ action, defaults = {}, backHref, submitLabel }: Co
   const [, startPhoneCheck] = useTransition()
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form ref={formRef} onSubmit={keepOnSubmit} className="space-y-4">
       {state?.error && (
         <div className="flex items-center gap-2 rounded-[var(--hp-radius)] border border-[var(--hp-danger-tint)] bg-[var(--hp-danger-tint)] px-4 py-3 text-sm text-[var(--hp-danger)]">
           <AlertCircle className="w-4 h-4 shrink-0" />

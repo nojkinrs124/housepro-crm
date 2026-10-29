@@ -48,7 +48,7 @@ export function friendlyDbError(error: DbErrorLike | null | undefined, ctx: DbEr
 
   // unique_violation
   if (code === '23505' || msg.includes('duplicate key')) {
-    return 'Такая запись уже есть — проверьте телефон или email. Дубли объединяются в разделе «Контакты → Дубли».'
+    return uniqueViolationMessage(`${error.message ?? ''} ${error.details ?? ''}`)
   }
   // foreign_key_violation
   if (code === '23503' || msg.includes('foreign key')) {
@@ -78,4 +78,29 @@ export function friendlyDbError(error: DbErrorLike | null | undefined, ctx: DbEr
   }
 
   return `${base} ${FALLBACK_SUPPORT}`
+}
+
+/**
+ * Нарушение уникальности — текст по имени ограничения. Раньше любая 23505
+ * объяснялась как «проверьте телефон или email … дубли контактов», хотя у
+ * контактов уникальности нет вовсе; второй договор того же типа по сделке
+ * показывал именно эту фразу (QA 28.10.2026, A-02).
+ */
+const UNIQUE_MESSAGES: Array<[RegExp, string]> = [
+  [/contracts_deal_type_uniq/, 'По этой сделке уже есть договор такого типа. Откройте его в блоке «Договоры» сделки — или выберите другой тип договора.'],
+  [/contracts_contract_number_key/, 'Договор с таким номером уже есть — укажите другой номер или оставьте поле пустым, номер присвоится сам.'],
+  [/idx_deals_number/, 'Сделка с таким номером уже есть. Обновите страницу и сохраните ещё раз.'],
+  [/idx_management_engagements_active_property/, 'Этот объект уже в управлении — открыть его можно в разделе «Объекты в управлении».'],
+  [/idx_property_handovers_engagement/, 'Акт приёма по этому объекту уже составлен — откройте его в карточке управления.'],
+  [/idx_portal_access_unique/, 'У этого контакта уже есть доступ в личный кабинет по этому объекту.'],
+  [/idx_service_plans_code/, 'Тариф с таким кодом уже есть — укажите другой код.'],
+  [/idx_knowledge_articles_slug/, 'Статья с таким адресом уже есть — измените заголовок или адрес статьи.'],
+  [/idx_accounting_categories_code|accounting_categories/, 'Такая категория уже есть.'],
+  [/users_email_key/, 'Сотрудник с таким email уже есть.'],
+  [/employee_targets/, 'План на этот месяц для сотрудника уже задан — измените существующий.'],
+]
+
+export function uniqueViolationMessage(raw: string): string {
+  for (const [re, text] of UNIQUE_MESSAGES) if (re.test(raw)) return text
+  return 'Такая запись уже есть. Найдите её через поиск и измените существующую.'
 }

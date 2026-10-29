@@ -7,7 +7,7 @@ import {
   generateDocxFromTemplate,
   uploadContractFile,
 } from '../services/document.service'
-import { CONTRACT_TYPE_MAP } from '../config/contract-types'
+import { buildBasicContractXml } from '../services/basic-docx'
 import { getSessionContext, requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
 import { writeAuditLog, writeAuditLogServiceRole } from '@/lib/audit'
@@ -221,58 +221,7 @@ async function generateBasicDocx(
   vars: Awaited<ReturnType<typeof buildContractVariables>>,
   contractType: string
 ): Promise<Buffer> {
-  // Функция для экранирования XML спецсимволов
-  const escapeXml = (str: string): string => {
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&apos;')
-  }
-
-  // Используем экранированные переменные
-  const title = CONTRACT_TYPE_MAP[contractType]?.docTitle || 'ДОГОВОР'
-  const xmlContent = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"
-  xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex"
-  xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-  xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-<w:body>
-  <w:p><w:pPr><w:jc w:val="center"/><w:rPr><w:b/><w:sz w:val="28"/></w:rPr></w:pPr>
-    <w:r><w:rPr><w:b/><w:sz w:val="28"/></w:rPr><w:t>${escapeXml(title)}</w:t></w:r>
-  </w:p>
-  <w:p><w:pPr><w:jc w:val="center"/></w:pPr>
-    <w:r><w:t>№ ${escapeXml(vars.CONTRACT_NUMBER)}</w:t></w:r>
-  </w:p>
-  <w:p><w:r><w:t xml:space="preserve">${escapeXml(vars.CITY)}, ${escapeXml(vars.CONTRACT_DATE)}</w:t></w:r></w:p>
-  <w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>
-  <w:p><w:r><w:t xml:space="preserve">Стороны договора:</w:t></w:r></w:p>
-  <w:p><w:r><w:t xml:space="preserve">Сторона договора: ${escapeXml(vars.PARTY2_NAME)}</w:t></w:r></w:p>
-  <w:p><w:r><w:t xml:space="preserve">Паспорт: ${escapeXml(vars.PARTY2_PASSPORT)}</w:t></w:r></w:p>
-  <w:p><w:r><w:t xml:space="preserve">Телефон: ${escapeXml(vars.PARTY2_PHONE)}</w:t></w:r></w:p>
-  <w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>
-  <w:p><w:r><w:t xml:space="preserve">Предмет договора:</w:t></w:r></w:p>
-  <w:p><w:r><w:t xml:space="preserve">Объект: ${escapeXml(vars.PROPERTY_TITLE)}</w:t></w:r></w:p>
-  <w:p><w:r><w:t xml:space="preserve">Адрес: ${escapeXml(vars.PROPERTY_ADDRESS)}</w:t></w:r></w:p>
-  ${vars.PROPERTY_AREA !== '___' ? `<w:p><w:r><w:t xml:space="preserve">Площадь: ${escapeXml(vars.PROPERTY_AREA)}</w:t></w:r></w:p>` : ''}
-  <w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>
-  <w:p><w:r><w:t xml:space="preserve">Сроки аренды:</w:t></w:r></w:p>
-  <w:p><w:r><w:t xml:space="preserve">Начало: ${escapeXml(vars.START_DATE)}</w:t></w:r></w:p>
-  <w:p><w:r><w:t xml:space="preserve">Окончание: ${escapeXml(vars.END_DATE)}</w:t></w:r></w:p>
-  <w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>
-  <w:p><w:r><w:t xml:space="preserve">Финансовые условия:</w:t></w:r></w:p>
-  <w:p><w:r><w:t xml:space="preserve">Стоимость: ${escapeXml(vars.PRICE)} руб. (${escapeXml(vars.PRICE_WORDS)})</w:t></w:r></w:p>
-  ${vars.DEPOSIT !== '0' ? `<w:p><w:r><w:t xml:space="preserve">Залог: ${escapeXml(vars.DEPOSIT)} руб. (${escapeXml(vars.DEPOSIT_WORDS)})</w:t></w:r></w:p>` : ''}
-  <w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>
-  <w:p><w:pPr><w:jc w:val="left"/></w:pPr>
-    <w:r><w:t xml:space="preserve">Исполнитель: ${escapeXml(vars.ИСПОЛНИТЕЛЬ_НАЗВАНИЕ)}                    Подпись: _______________</w:t></w:r>
-  </w:p>
-  <w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>
-  <w:p><w:r><w:t xml:space="preserve">Сторона: ${escapeXml(vars.PARTY2_NAME)}                              Подпись: _______________</w:t></w:r></w:p>
-  <w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="2160" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>
-</w:body>
-</w:document>`
+  const xmlContent = buildBasicContractXml(vars, contractType)
 
   // Создаем минимальный DOCX
   const PizZip = (await import('pizzip')).default

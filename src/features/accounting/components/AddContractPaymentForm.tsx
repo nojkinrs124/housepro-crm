@@ -3,6 +3,7 @@
 import { useState, useActionState } from 'react'
 import { Plus, X, Loader2, AlertCircle } from 'lucide-react'
 import { createContractPaymentAction } from '../actions/accounting.actions'
+import { useKeepFormOnError } from '@/hooks/useKeepFormOnError'
 
 type ActionState = { error?: string; success?: boolean } | null
 
@@ -14,6 +15,7 @@ export function AddContractPaymentForm({ contractId }: { contractId: string }) {
  const [open, setOpen] = useState(false)
  const boundAction = createBound.bind(null, contractId)
  const [state, formAction, isPending] = useActionState(boundAction, null)
+ const { formRef, onSubmit: keepOnSubmit } = useKeepFormOnError(formAction, state, isPending)
 
  if (state?.success && open) {
  setOpen(false)
@@ -41,7 +43,7 @@ export function AddContractPaymentForm({ contractId }: { contractId: string }) {
  </button>
  </div>
 
- <form action={formAction} className="space-y-3">
+ <form ref={formRef} onSubmit={keepOnSubmit} className="space-y-3">
  <div className="grid grid-cols-2 gap-3">
  <div className="space-y-1">
  <label className="text-xs text-muted-foreground">Сумма, ₽ *</label>

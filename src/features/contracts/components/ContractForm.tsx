@@ -1,8 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useActionState } from 'react'
-import { useRef } from 'react'
 import { Building2, User, Home, Briefcase, Link2 } from 'lucide-react'
 import Link from 'next/link'
 import { PartyContactSelect, type PartyContact, type PartyRepresentative } from '@/features/contacts/components/PartyContactSelect'
@@ -16,6 +15,7 @@ import { SETTLEMENT_SCHEMES, getChargeType } from '@/features/plans/config/settl
 import { SubleaseExtraFields } from './SubleaseExtraFields'
 import { Field, FormExtra } from '@/components/forms/FormLayout'
 import { CONTRACT_STATUSES } from '@/features/registry/config/registries'
+import { useKeepFormOnError } from '@/hooks/useKeepFormOnError'
 
 const AGENCY_SERVICE_TYPES = ['agency_owner', 'agency_client', 'agency_legal_entity']
 
@@ -29,7 +29,7 @@ interface DealOption { id: string; label: string }
 interface ContractFormProps {
  // Предыдущее состояние из useActionState форме не нужно — она читает только
  // ошибку из ответа.
- action: (prevState: unknown, formData: FormData) => Promise<{ error?: string }>
+ action: (prevState: unknown, formData: FormData) => Promise<{ error?: string; field?: string }>
  owners: PartyContact[]
  clients: PartyContact[]
  representativesByContact: Record<string, PartyRepresentative[]>
@@ -86,7 +86,37 @@ export function ContractForm({
   plans = [], backHref, submitLabel, mode, defaults = {}
 }: ContractFormProps) {
   const [state, formAction, isPending] = useActionState(action, { error: undefined })
-  const formRef = useRef<HTMLFormElement>(null)
+  const { formRef, onSubmit: keepOnSubmit } = useKeepFormOnError(formAction, state, isPending)
+  const errorField = state && 'field' in state ? state.field : undefined
+
+  // Ошибка сервера показывается у поля, и форма прокручивается к нему: баннер
+  // наверху длинной формы оставался за экраном, и «Укажите положительное число»
+  // никто не видел (QA 28.10.2026, B-03).
+  useEffect(() => {
+    if (!state?.error) return
+    const form = formRef.current
+    const target = (errorField && form?.querySelector<HTMLElement>(`[name="${errorField}"]`)) || form
+    const details = target?.closest('details')
+    if (details && !details.open) details.open = true
+    let hint: HTMLParagraphElement | null = null
+    if (target && target !== form) {
+      target.setAttribute('aria-invalid', 'true')
+      hint = document.createElement('p')
+      hint.className = 'hp-field-error'
+      hint.setAttribute('role', 'alert')
+      hint.textContent = state.error
+      target.insertAdjacentElement('afterend', hint)
+    }
+    requestAnimationFrame(() => {
+      target?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+      if (target && target !== form) target.focus({ preventScroll: true })
+    })
+    // Подсказка снимается, как только пользователь меняет поле или отправляет снова.
+    const clear = () => { target?.removeAttribute('aria-invalid'); hint?.remove() }
+    target?.addEventListener('input', clear, { once: true })
+    target?.addEventListener('change', clear, { once: true })
+    return clear
+  }, [state, errorField, formRef])
 
   // Поля «Условия договора» (количество детей, неустойка и т.п.) лежат внутри
   // свёрнутого <details> (FormExtra). Браузерная проверка type="number"/min/max
@@ -133,7 +163,7 @@ export function ContractForm({
  const h2 = 'hp-h2'
 
  return (
- <form ref={formRef} action={formAction} className="space-y-4">
+ <form ref={formRef} onSubmit={keepOnSubmit} className="space-y-4">
  {state?.error && (
  <div className="bg-[var(--hp-danger-tint)] border border-[var(--hp-danger)] text-[var(--hp-danger)] px-4 py-3 text-sm">
  {state.error}

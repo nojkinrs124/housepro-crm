@@ -10,6 +10,7 @@ import {
 } from '@/features/accounting/services/payment-schedule.service'
 import { needsSchedule, type DealCompletionPlan } from '../services/deal-completion'
 import { completeDealAction, type CompleteDealResult } from '../actions/complete-deal.actions'
+import { useKeepFormOnError } from '@/hooks/useKeepFormOnError'
 
 const input = 'hp-input'
 const label = 'hp-label'
@@ -68,6 +69,7 @@ export function CompleteDealPanel({
     async (prev, formData) => bound(prev, formData),
     {}
   )
+  const { formRef, onSubmit: keepOnSubmit } = useKeepFormOnError(formAction, state, isPending)
 
   const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) =>
     setForm(prev => ({ ...prev, [key]: value }))
@@ -94,7 +96,7 @@ export function CompleteDealPanel({
   }, [form, scheduleAvailable])
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form ref={formRef} onSubmit={keepOnSubmit} className="space-y-4">
       {state?.error && (
         <div className="flex items-start gap-2 border border-[var(--hp-border)] bg-[var(--hp-danger-tint)] px-4 py-3 text-sm text-[var(--hp-danger)]">
           <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />

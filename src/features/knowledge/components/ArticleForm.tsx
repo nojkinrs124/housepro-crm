@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Eye, Pencil } from 'lucide-react'
 import { Markdown } from './Markdown'
 import { KNOWLEDGE_CATEGORIES } from '@/features/knowledge/config/categories'
+import { useKeepFormOnError } from '@/hooks/useKeepFormOnError'
 
 type State = { error?: string } | undefined
 type Action = (state: State, formData: FormData) => Promise<State>
@@ -36,11 +37,12 @@ export function ArticleForm({
   backHref: string
 }) {
   const [state, formAction, pending] = useActionState(action, undefined)
+  const { formRef, onSubmit: keepOnSubmit } = useKeepFormOnError(formAction, state, pending)
   const [body, setBody] = useState(defaults.body ?? '')
   const [tab, setTab] = useState<'edit' | 'preview'>('edit')
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form ref={formRef} onSubmit={keepOnSubmit} className="space-y-4">
       {state?.error && (
         <p className="hp-card p-3 text-sm text-[var(--hp-danger)]">{state.error}</p>
       )}

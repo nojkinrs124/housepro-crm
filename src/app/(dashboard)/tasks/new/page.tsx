@@ -14,6 +14,8 @@ export default async function NewTaskPage({
   searchParams: Promise<{
     lead_id?: string; contact_id?: string; client_id?: string; deal_id?: string;
     property_id?: string; contract_id?: string; payment_id?: string;
+    /** Заголовок по умолчанию — из главной кнопки стадии сделки («Встреча с собственником»). */
+    title?: string
   }>
 }) {
   const params = await searchParams
@@ -52,7 +54,7 @@ export default async function NewTaskPage({
       <ServerActionForm action={createTaskAction} className="space-y-4">
         <FormSection>
           <Field label="Что сделать" required>
-            <input name="title" data-testid="task-title" required placeholder="Позвонить клиенту по договору" className="hp-input" />
+            <input name="title" data-testid="task-title" required defaultValue={params.title?.slice(0, 200)} placeholder="Позвонить клиенту по договору" className="hp-input" />
           </Field>
           <FieldGrid>
             <Field label="Срок">
