@@ -9,8 +9,9 @@
 **смысл**: правильно ли система ведёт по воронке, сходятся ли данные между
 модулями, не даёт ли она сделать невозможное и не мешает ли сделать нужное.
 
-Запуск — командой `/walkthrough` (см. `.claude/commands/walkthrough.md`).
-Исполнитель шагов — агент `crm-walkthrough` (`.claude/agents/crm-walkthrough.md`).
+Запуск — по skill `housepro-audit` (раздел «Живой тест путём пользователя») и
+reference `.hermes/skills/housepro-audit/references/live-ui-qa-team.md`.
+Исполнитель шагов — субагент-тестировщик, запускаемый через `delegate_task`.
 
 ---
 

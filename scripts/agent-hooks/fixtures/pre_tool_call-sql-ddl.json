@@ -1,0 +1,8 @@
+{
+  "hook_event_name": "pre_tool_call",
+  "tool_name": "connectors__supabase__EXECUTE_SQL",
+  "tool_input": { "query": "ALTER TABLE showings ADD COLUMN note text;" },
+  "session_id": "selftest",
+  "cwd": ".",
+  "extra": {}
+}

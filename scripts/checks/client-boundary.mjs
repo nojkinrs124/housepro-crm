@@ -50,7 +50,7 @@ export function checkEventHandlers() {
 
 /** Импорты клиентских функций в серверные файлы. */
 export function checkClientImports() {
-  const allSourceFiles = walk(SRC, ['.ts', '.tsx'], ['node_modules', '.next', '.claude', 'tests'])
+  const allSourceFiles = walk(SRC, ['.ts', '.tsx'], ['node_modules', '.next', '.hermes', 'tests'])
 
   // 1. Функциональные (lowercase-first, то есть не React-компоненты) экспорты 'use client' файлов
   const clientExports = new Map()
@@ -129,7 +129,7 @@ export function checkClientImports() {
  * передавать можно, границу пересекать — нельзя.
  */
 export function checkFunctionProps() {
-  const allSourceFiles = walk(SRC, ['.ts', '.tsx'], ['node_modules', '.next', '.claude', 'tests'])
+  const allSourceFiles = walk(SRC, ['.ts', '.tsx'], ['node_modules', '.next', '.hermes', 'tests'])
   const isClientPath = new Map()
   const clientCheck = file => {
     if (!isClientPath.has(file)) {

@@ -1,0 +1,8 @@
+{
+  "hook_event_name": "pre_tool_call",
+  "tool_name": "connectors__supabase__APPLY_A_MIGRATION",
+  "tool_input": { "query": "CREATE TABLE IF NOT EXISTS public.things (id uuid primary key);" },
+  "session_id": "selftest",
+  "cwd": ".",
+  "extra": {}
+}

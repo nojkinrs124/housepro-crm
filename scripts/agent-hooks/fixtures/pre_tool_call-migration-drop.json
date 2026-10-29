@@ -1,0 +1,8 @@
+{
+  "hook_event_name": "pre_tool_call",
+  "tool_name": "connectors__supabase__APPLY_A_MIGRATION",
+  "tool_input": { "query": "DROP TABLE public.legacy_settings;" },
+  "session_id": "selftest",
+  "cwd": ".",
+  "extra": {}
+}

@@ -45,10 +45,10 @@ next-env.d.ts
 /test-results/
 e2e-results.json
 
-# Claude Code — локальное состояние
-# (отпечаток последней зелёной проверки; design-baseline.json, наоборот, коммитим —
-#  без него CI посчитает легаси-нарушения новыми)
-.claude/.check-stamp.json
+# Состояние агентских проверок
+# (отпечаток последней зелёной проверки; *-baseline.json, наоборот, коммитим —
+#  без них CI посчитает легаси-нарушения новыми)
+scripts/checks/.check-stamp.json
 
 # смоук /simplify-ux: свой distDir и отчёты
 .next-smoke/

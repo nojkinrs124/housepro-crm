@@ -1,0 +1,12 @@
+{
+  "hook_event_name": "pre_verify",
+  "tool_name": null,
+  "session_id": "selftest",
+  "cwd": ".",
+  "extra": {
+    "attempt": 0,
+    "coding": true,
+    "final_response": "done",
+    "changed_paths": ["docs/INDEX.md"]
+  }
+}

@@ -6,7 +6,7 @@ import pkg from '../../package.json'
  * Раньше в футере настроек стояла строка «v1.0.0», зашитая руками, при
  * `"version": "0.1.0"` в package.json: понять по интерфейсу, что именно
  * задеплоено, было нельзя. Поднимается по semver при каждом изменении кода,
- * иначе хук guard-bash не пустит пуш (см. CLAUDE.md, «Версия»).
+ * иначе хук guard-bash не пустит пуш (см. AGENTS.md, «Версия»).
  */
 export const APP_VERSION: string = pkg.version
 
