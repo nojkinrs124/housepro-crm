@@ -16,6 +16,8 @@ import { localDateTimeToIso, formatDateTime } from '@/lib/timezone'
 import { normalizePhone } from '@/lib/utils'
 import { markChecklistItems } from '@/features/directions/services/checklist-sync'
 import { notifyAvitoEscalation } from '@/lib/telegram/notify-lead'
+import { logCommunication } from '@/lib/communications/log'
+import { escalationExternalId } from './avito-takeover'
 
 const MAX_HISTORY_MESSAGES = 20
 const MAX_ROUNDS = 4
@@ -190,19 +192,41 @@ async function createShowingFromBot(
 async function escalate(ctx: AvitoDialogContext, args: { reason?: string }): Promise<{ ok: true }> {
   const supabase = getSupabaseAdmin()
   const reason = args.reason ?? 'не указано'
+  const note = `Бот передал диалог человеку: ${reason}`
+
+  // Комментарий лида — не только заметка: в нём живёт метка avito:<chat_id>,
+  // по которой крон находит лид диалога. Раньше комментарий перезаписывался
+  // целиком, метка терялась и следующий прогон заводил на этот чат второй лид.
+  const { data: lead } = await supabase
+    .from('leads')
+    .select('comment, full_name')
+    .eq('id', ctx.leadId)
+    .maybeSingle()
+
+  const comment = lead?.comment?.includes(note) ? lead.comment : [lead?.comment, note].filter(Boolean).join('\n')
   await supabase
     .from('leads')
-    .update({ comment: `Бот передал диалог человеку: ${reason}`, updated_at: new Date().toISOString() })
+    .update({ comment, updated_at: new Date().toISOString() })
     .eq('id', ctx.leadId)
+
+  // Отметка в ленте общения: после передачи диалога человеку бот молчит, пока
+  // человек не выпадет из окна (см. avito-takeover.ts).
+  await logCommunication({
+    orgId: ctx.orgId,
+    channel: 'avito',
+    direction: 'internal',
+    body: note,
+    occurredAt: new Date().toISOString(),
+    provider: 'avito',
+    externalId: escalationExternalId(ctx.avitoChatId),
+    leadId: ctx.leadId,
+  })
 
   // Уведомление владельцу в Telegram — без него о передаче диалога узнать можно
   // было только зайдя в карточку лида (см. notify-lead.ts).
-  const [{ data: lead }, { data: property }] = await Promise.all([
-    supabase.from('leads').select('full_name').eq('id', ctx.leadId).maybeSingle(),
-    ctx.propertyId
-      ? supabase.from('properties').select('title').eq('id', ctx.propertyId).maybeSingle()
-      : Promise.resolve({ data: null }),
-  ])
+  const { data: property } = ctx.propertyId
+    ? await supabase.from('properties').select('title').eq('id', ctx.propertyId).maybeSingle()
+    : { data: null }
   await notifyAvitoEscalation(ctx.orgId, {
     leadId: ctx.leadId,
     reason,

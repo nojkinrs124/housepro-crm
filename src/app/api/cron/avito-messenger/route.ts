@@ -9,6 +9,14 @@ import {
   AvitoApiError,
 } from '@/features/avito/services/avito-api.service'
 import { runAvitoDialogTurn } from '@/features/avito/services/avito-dialog.service'
+import {
+  botMessageExternalId,
+  buildBotAuthoredIndex,
+  decideTakeover,
+  isBotAuthored,
+  loadBotAuthoredIndex,
+  takeoverWindowMinutes,
+} from '@/features/avito/services/avito-takeover'
 import { logCommunication } from '@/lib/communications/log'
 import { isCronAuthorized } from '@/lib/cron-auth'
 
@@ -30,6 +38,10 @@ export const maxDuration = 60
 // Диалог ведёт бот сам, без подтверждения человеком (решение владельца:
 // единственный агент, редкие конфликты расписания не критичны) — в отличие
 // от Telegram-бота для сотрудников, где мутации всегда через подтверждение.
+//
+// Но как только в чате отвечает человек (из приложения Авито, с того же
+// аккаунта), бот замолкает — см. avito-takeover.ts: Авито не отдаёт признак
+// «это отправил бот», поэтому свои ответы узнаём по собственной ленте общения.
 
 const MAX_CHATS_PER_RUN = 30
 
@@ -98,6 +110,7 @@ export async function GET(request: Request) {
   let leadsCreated = 0
   let repliesSent = 0
   let showingsCreated = 0
+  let silentByHuman = 0
   const errors: string[] = []
 
   for (const settings of accounts) {
@@ -179,6 +192,12 @@ export async function GET(request: Request) {
         continue
       }
 
+      // Кто отправил исходящие сообщения — бот или человек. Авито этот признак
+      // не отдаёт: у обоих author_id = аккаунт агентства. Смотрим по своей ленте.
+      const botIndex = leadId
+        ? await loadBotAuthoredIndex(leadId, chat.id)
+        : buildBotAuthoredIndex([], chat.id)
+
       // Сообщения приходят свежие сверху — для диалога нужен порядок "старое → новое",
       // а в диалог модели отдаём только последнее входящее клиента (остальное уже в истории).
       const chronological = [...messages].reverse()
@@ -186,6 +205,13 @@ export async function GET(request: Request) {
 
       for (const message of chronological) {
         if (!message.text) continue
+        // Ответ бота уже записан в ленту при отправке — с тем же external_id,
+        // поэтому повторная запись здесь не создаёт дубль в журнале.
+        const externalId =
+          message.isOutgoing && isBotAuthored(message, botIndex)
+            ? botMessageExternalId(chat.id, message.id)
+            : message.id
+
         await logCommunication({
           orgId: settings.organization_id,
           channel: 'avito',
@@ -194,16 +220,23 @@ export async function GET(request: Request) {
           subject: chat.itemTitle ? `Авито: ${chat.itemTitle}` : 'Сообщение с Авито',
           occurredAt: message.createdAt,
           provider: 'avito',
-          externalId: message.id,
+          externalId,
           leadId,
         })
         messagesLogged += 1
         if (!message.isOutgoing) lastIncomingText = message.text
       }
 
+      // Человек уже ведёт этот диалог (ответил сам или бот передал его человеку) —
+      // бот не вклинивается и не отвечает поверх живого разговора.
+      const takeover = decideTakeover({ messages, index: botIndex, windowMs: takeoverWindowMinutes() })
+      const humanOwnsDialog = takeover.silent
+
       // Отвечаем только если в этой пачке было хотя бы одно новое входящее
       // сообщение клиента — иначе бот отвечал бы повторно на уже обработанное.
-      if (lastIncomingText && leadId) {
+      if (lastIncomingText && leadId && humanOwnsDialog) {
+        silentByHuman += 1
+      } else if (lastIncomingText && leadId) {
         const contextNote = property
           ? `Объект, по которому обращается клиент: «${property.title}», ${property.address}.`
           : 'Объект по этому чату не определён — объявление либо снято, либо не из автозагрузки CRM.'
@@ -218,7 +251,7 @@ export async function GET(request: Request) {
           if (result.showingCreated) showingsCreated += 1
 
           if (result.replyText) {
-            await sendAvitoMessage(settings.avito_user_id, token, chat.id, result.replyText)
+            const sent = await sendAvitoMessage(settings.avito_user_id, token, chat.id, result.replyText)
             await logCommunication({
               orgId: settings.organization_id,
               channel: 'avito',
@@ -226,7 +259,9 @@ export async function GET(request: Request) {
               body: result.replyText,
               subject: chat.itemTitle ? `Авито: ${chat.itemTitle}` : 'Сообщение с Авито',
               provider: 'avito',
-              externalId: `bot-${chat.id}-${Date.now()}`,
+              // Настоящий id из Авито: по нему следующий прогон отличит ответ
+              // бота от ответа человека в этом же чате (см. avito-takeover.ts).
+              externalId: botMessageExternalId(chat.id, sent.id),
               leadId,
             })
             repliesSent += 1
@@ -252,6 +287,7 @@ export async function GET(request: Request) {
     messagesLogged,
     repliesSent,
     showingsCreated,
+    silentByHuman,
     errors: errors.slice(0, 5),
   })
 }
