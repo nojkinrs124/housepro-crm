@@ -1,6 +1,7 @@
 import type { createClient } from '@/lib/supabase/server'
 import type { ManagementRow } from '@/features/management/components/ManagementView'
 import { RENT_CONTRACT_TYPES } from '@/features/contracts/config/contract-types'
+import { isAgencyExpense, isAgencyRevenue } from '@/features/accounting/utils/money-classification'
 
 type Client = Awaited<ReturnType<typeof createClient>>
 
@@ -70,7 +71,7 @@ export async function collectManagement(supabase: Client): Promise<ManagementRow
   ] = await Promise.all([
     managerIds.length ? supabase.from('users').select('id, full_name').in('id', managerIds) : Promise.resolve({ data: [] }),
     supabase.from('accounting_transactions')
-      .select('id, property_id, contract_id, type, amount, status, date, due_date')
+      .select('id, property_id, contract_id, type, amount, status, date, due_date, borne_by, category:accounting_categories(code)')
       .in('property_id', ids),
     supabase.from('tasks').select('id, property_id, status').in('property_id', ids),
     supabase.from('utility_meters').select('id, property_id').in('property_id', ids).eq('is_active', true),
@@ -121,11 +122,20 @@ export async function collectManagement(supabase: Client): Promise<ManagementRow
     const rent = rentByProperty.get(id) ?? null
 
     const propertyTxns = (txns ?? []).filter(t => t.property_id === id)
+    const categoryCodeOf = (t: (typeof propertyTxns)[number]): string | null => {
+      const c = t.category as { code?: string } | { code?: string }[] | null
+      return (Array.isArray(c) ? c[0]?.code : c?.code) ?? null
+    }
+    // «За месяц» — заработок/траты агентства, а не весь денежный поток через
+    // объект: tenant_payment и deposit — транзит (деньги арендатора), их
+    // суммирование с agency_fee задваивало доход (аудит 05.11.2026).
     const incomeMonth = propertyTxns
-      .filter(t => t.type === 'income' && t.status === 'completed' && t.date >= monthStart)
+      .filter(t => t.type === 'income' && t.status === 'completed' && t.date >= monthStart
+        && isAgencyRevenue(categoryCodeOf(t), 'income'))
       .reduce((sum, t) => sum + Number(t.amount), 0)
     const expenseMonth = propertyTxns
-      .filter(t => t.type === 'expense' && t.status === 'completed' && t.date >= monthStart)
+      .filter(t => t.type === 'expense' && t.status === 'completed' && t.date >= monthStart
+        && isAgencyExpense(categoryCodeOf(t), 'expense', (t.borne_by as 'agency' | 'owner' | null) ?? null))
       .reduce((sum, t) => sum + Number(t.amount), 0)
 
     const planned = propertyTxns.filter(t => t.status === 'planned' && t.due_date)

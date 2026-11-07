@@ -57,8 +57,11 @@ export default async function DashboardLayout({
         <main className="flex-1 overflow-y-auto overflow-x-hidden print:overflow-visible">
           {/* Без mx-auto: контент прижат к сайдбару слева и растёт вправо, а не
               центрируется в остатке ширины — на широких мониторах mx-auto
-              оставлял между сайдбаром и контентом заметный пустой отступ. */}
-          <div className="p-4 md:p-6 lg:p-8 max-w-[1600px] pb-24 md:pb-8 w-full min-w-0 print:p-0 print:max-w-none">
+              оставлял между сайдбаром и контентом заметный пустой отступ.
+              max-w снят (аудит 07.11.2026): на 34" мониторе (ultrawide) контент
+              не растягивался за 1600px, оставляя пустую правую полосу;
+              таблицы/реестры сами ограничивают себя где нужно. */}
+          <div className="p-4 md:p-6 lg:p-8 pb-24 md:pb-8 w-full min-w-0 print:p-0 print:max-w-none">
             {children}
           </div>
         </main>
