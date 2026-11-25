@@ -6,6 +6,33 @@ from unittest.mock import patch
 from housepro_meter_readings import is_target_event, parse_command, parse_submission
 
 
+class ApiKeySourceTests(unittest.TestCase):
+    def test_reads_api_key_from_env_file_when_process_env_is_empty(self):
+        import os
+        import tempfile
+        from pathlib import Path
+        from housepro_meter_readings.integration import _api_key
+
+        with tempfile.TemporaryDirectory() as tmp:
+            Path(tmp, ".env").write_text(
+                "TELEGRAM_BOT_TOKEN=x\nHOUSEPRO_BOT_API_KEY=hp_from_file\n", encoding="utf-8",
+            )
+            with patch.dict(os.environ, {"HERMES_HOME": tmp}, clear=False):
+                os.environ.pop("HOUSEPRO_BOT_API_KEY", None)
+                self.assertEqual(_api_key(), "hp_from_file")
+
+    def test_process_env_wins_over_env_file(self):
+        import os
+        import tempfile
+        from pathlib import Path
+        from housepro_meter_readings.integration import _api_key
+
+        with tempfile.TemporaryDirectory() as tmp:
+            Path(tmp, ".env").write_text("HOUSEPRO_BOT_API_KEY=hp_from_file\n", encoding="utf-8")
+            with patch.dict(os.environ, {"HERMES_HOME": tmp, "HOUSEPRO_BOT_API_KEY": "hp_from_env"}):
+                self.assertEqual(_api_key(), "hp_from_env")
+
+
 class MeterSubmissionTests(unittest.TestCase):
     def test_parses_multiple_readings_with_free_text_contours(self):
         parsed = parse_submission(
