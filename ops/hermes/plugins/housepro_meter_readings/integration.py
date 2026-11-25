@@ -123,8 +123,26 @@ def _clean_text(value: Any, limit: int = 120) -> str:
 def _api_key() -> str:
     key = os.environ.get("HOUSEPRO_BOT_API_KEY", "").strip()
     if not key:
+        # Ключ может появиться в .env уже после старта gateway: читаем файл сами,
+        # иначе перехват молчит до перезапуска сервиса.
+        key = _env_file_value("HOUSEPRO_BOT_API_KEY")
+    if not key:
         raise MeterFlowError("Связь с CRM пока не настроена. Показание не сохранено.")
     return key
+
+
+def _env_file_value(name: str) -> str:
+    """Read one value from $HERMES_HOME/.env without importing Hermes internals."""
+    path = _home() / ".env"
+    try:
+        for line in path.read_text(encoding="utf-8", errors="ignore").splitlines():
+            match = re.match(rf"^\s*(?:export\s+)?{re.escape(name)}\s*=\s*(.*)$", line)
+            if not match:
+                continue
+            return match.group(1).strip().strip('"').strip("'")
+    except OSError:
+        return ""
+    return ""
 
 
 def _open_direct(request: urllib.request.Request, timeout: float = 8.0) -> tuple[int, bytes, str | None]:
