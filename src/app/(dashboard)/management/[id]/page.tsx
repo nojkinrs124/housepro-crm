@@ -109,7 +109,7 @@ export default async function ManagementDetailPage({ params }: { params: Promise
       .select('id, title, status, priority, deadline, due_date, regulation_code')
       .eq('property_id', id).order('created_at', { ascending: false }).limit(50),
     supabase.from('utility_meters')
-      .select('id, kind, title, serial_number, unit, tariff, readings:meter_readings(id, reading_date, value, consumption, amount)')
+      .select('id, kind, title, contour, serial_number, unit, tariff, readings:meter_readings(id, reading_date, value, consumption, amount, source, source_user_name, photo_urls, corrects_reading_id, correction_reason, created_at)')
       .eq('property_id', id).eq('is_active', true).order('created_at', { ascending: true }),
     ownerId
       ? supabase.from('contacts').select('id, full_name, company_name, phone').eq('id', ownerId).maybeSingle()
@@ -127,7 +127,13 @@ export default async function ManagementDetailPage({ params }: { params: Promise
 
   const meters: MeterRow[] = ((metersRaw ?? []) as unknown as MeterRow[]).map(meter => ({
     ...meter,
-    readings: [...(meter.readings ?? [])].sort((a, b) => b.reading_date.localeCompare(a.reading_date)),
+    // Свежие сверху; при одной дате исправление новее исходной строки, поэтому
+    // вторым ключом идёт время записи — иначе «последнее показание» могло
+    // показать исправленную строку вместо исправления.
+    readings: [...(meter.readings ?? [])].sort((a, b) =>
+      b.reading_date.localeCompare(a.reading_date) ||
+      (b.created_at ?? '').localeCompare(a.created_at ?? ''),
+    ),
   }))
 
   const mgmtContract = (contracts ?? []).find(c => c.contract_type === 'property_management') ?? null

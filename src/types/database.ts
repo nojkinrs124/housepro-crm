@@ -52,7 +52,7 @@ export type EngagementStatus = 'onboarding' | 'active' | 'paused' | 'ended'
 export type ExpenseBearer = 'agency' | 'owner'
 
 /** Источник показания счётчика — `meter_readings.source`. */
-export type ReadingSource = 'manager' | 'tenant'
+export type ReadingSource = 'manager' | 'tenant' | 'telegram'
 
 /** Статус заявки на бытовую услугу — `service_requests.status`. */
 export type ServiceRequestStatus = 'new' | 'accepted' | 'in_progress' | 'done' | 'rejected'

@@ -1,0 +1,5 @@
+name: housepro-meter-readings
+version: "1.0.0"
+description: Save confirmed HousePro meter readings from one Telegram forum topic.
+provides_hooks:
+  - pre_gateway_dispatch

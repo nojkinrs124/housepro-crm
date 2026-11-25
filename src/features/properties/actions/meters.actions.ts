@@ -6,9 +6,12 @@ import { requireOrgId } from '@/lib/org'
 import { requirePermission } from '@/lib/permissions'
 import { rateLimitMutation } from '@/lib/rate-limit'
 import { computeConsumption, computeAmount, detectAnomalies } from '@/features/meters/services/anomalies'
+import { logicalReadings } from '@/features/meters/services/telegram-readings'
 import { METER_KINDS } from '@/features/meters/config/meter-kinds'
 import { friendlyDbError } from '@/lib/errors'
+import { parseMeterCorrectionInput, planMeterCorrection } from '@/features/meters/services/meter-correction'
 import { todayIso } from '@/lib/timezone'
+import type { MeterInsert, MeterUpdate } from '@/features/meters/types'
 
 export interface MeterResult {
   error?: string
@@ -52,20 +55,57 @@ export async function createMeterAction(propertyId: string, formData: FormData):
   const kind = String(formData.get('kind') ?? 'electricity')
   if (!METER_KIND_VALUES.includes(kind)) return { error: 'Неизвестный тип счётчика' }
 
-  const { error } = await supabase.from('utility_meters').insert({
+  const payload = {
     organization_id: orgId,
     property_id: propertyId,
     kind,
     title: (formData.get('title') as string)?.trim() || null,
+    // Контур — свободная подпись прибора («ХВС кухня»). По ней Telegram-бот
+    // сопоставляет присланное показание с прибором, не заводя новый.
+    contour: (formData.get('contour') as string)?.trim() || null,
     serial_number: (formData.get('serial_number') as string)?.trim() || null,
     unit: (formData.get('unit') as string)?.trim() || 'кВт·ч',
     tariff: parseNumber(formData.get('tariff')),
-  })
+  } satisfies MeterInsert
+
+  const { error } = await supabase.from('utility_meters').insert(payload)
 
   if (error) return { error: friendlyDbError(error, { entity: 'счётчик' }) }
 
   revalidatePath(`/properties/${propertyId}`)
   return { success: true }
+}
+
+/** Правит контур прибора. Контур — только подпись для сопоставления в Telegram;
+ *  на показания и начисления не влияет. */
+export async function updateMeterContourAction(
+  meterId: string,
+  propertyId: string,
+  formData: FormData
+): Promise<MeterResult> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Не авторизован' }
+
+  const permError = await requirePermission(user.id, 'properties', 'update')
+  if (permError) return { error: permError.error }
+
+  const orgId = await requireOrgId().catch(() => null)
+  if (!orgId) return { error: 'Организация не найдена' }
+
+  const payload: MeterUpdate = {
+    contour: (formData.get('contour') as string)?.trim() || null,
+  }
+  const { error } = await supabase
+    .from('utility_meters')
+    .update(payload)
+    .eq('id', meterId)
+    .eq('organization_id', orgId)
+  if (error) return { error: friendlyDbError(error, { entity: 'счётчик' }) }
+
+  revalidatePath(`/properties/${propertyId}`)
+  revalidatePath(`/management/${propertyId}`)
+  return { success: true, message: 'Контур сохранён' }
 }
 
 /**
@@ -109,17 +149,26 @@ export async function addMeterReadingAction(
 
   // История нужна и для расхода, и для поиска аномалий — забираем разом,
   // а не двумя запросами.
-  const [{ data: meter }, { data: history }] = await Promise.all([
+  const [{ data: meter }, { data: historyRaw }] = await Promise.all([
     supabase.from('utility_meters').select('id, tariff, unit').eq('id', meterId).maybeSingle(),
     supabase
       .from('meter_readings')
-      .select('value, reading_date')
+      .select('id, value, reading_date, corrects_reading_id')
       .eq('meter_id', meterId)
       .order('reading_date', { ascending: false })
       .limit(12),
   ])
 
-  const readings = (history ?? []).map(r => ({ reading_date: r.reading_date, value: Number(r.value) }))
+  // Исправленные показания в расчёт не берём: действует исправление, а не
+  // исходная строка (append-only, см. миграцию telegram_meter_readings).
+  const readings = logicalReadings(
+    ((historyRaw ?? []) as unknown as Array<{ id: string; value: number; reading_date: string; corrects_reading_id: string | null }>).map(r => ({
+      id: r.id,
+      reading_date: r.reading_date,
+      value: Number(r.value),
+      corrects_reading_id: r.corrects_reading_id,
+    })),
+  ).map(r => ({ reading_date: r.reading_date, value: r.value }))
   const earlier = readings.filter(r => r.reading_date <= readingDate)
   const previous = earlier[0] ?? null
 
@@ -164,6 +213,95 @@ export async function addMeterReadingAction(
         ? `Расход ${consumption} ${meter.unit}${amount !== null ? ` на ${amount.toLocaleString('ru-RU')} ₽` : ''}`
         : 'Первое показание сохранено — расход посчитается со следующего',
     warnings: anomalies.map(a => a.message),
+  }
+}
+
+/**
+ * Исправляет показание append-only: исходная строка не меняется, новая
+ * ссылается на неё и требует объяснение.
+ */
+export async function correctMeterReadingAction(
+  meterId: string,
+  propertyId: string,
+  readingId: string,
+  formData: FormData,
+): Promise<MeterResult> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Не авторизован' }
+
+  const rl = await rateLimitMutation(user.id, 'meter_correction')
+  if (!rl.success) return { error: 'Слишком много запросов. Подождите минуту.' }
+
+  const orgId = await requireOrgId().catch(() => null)
+  if (!orgId) return { error: 'Организация не найдена' }
+
+  const permError = await requirePermission(user.id, 'properties', 'update')
+  if (permError) return { error: permError.error }
+
+  const parsed = parseMeterCorrectionInput({
+    value: formData.get('value'),
+    reading_date: formData.get('reading_date'),
+    correction_reason: formData.get('correction_reason'),
+  })
+  if (!parsed.ok) return { error: parsed.error }
+  if (parsed.data.reading_date > todayIso()) return { error: 'Дата показания в будущем' }
+
+  const [{ data: meter, error: meterError }, { data: historyRaw, error: historyError }] = await Promise.all([
+    supabase
+      .from('utility_meters')
+      .select('id, tariff, unit')
+      .eq('id', meterId)
+      .eq('property_id', propertyId)
+      .eq('organization_id', orgId)
+      .maybeSingle(),
+    supabase
+      .from('meter_readings')
+      .select('id, value, reading_date, corrects_reading_id')
+      .eq('meter_id', meterId)
+      .eq('organization_id', orgId)
+      .order('reading_date', { ascending: false }),
+  ])
+
+  if (meterError) return { error: friendlyDbError(meterError, { entity: 'счётчик' }) }
+  if (historyError) return { error: friendlyDbError(historyError, { entity: 'показание' }) }
+  if (!meter) return { error: 'Счётчик не найден на этом объекте' }
+
+  const history = (historyRaw ?? []).map(row => ({
+    id: row.id,
+    reading_date: row.reading_date,
+    value: Number(row.value),
+    corrects_reading_id: row.corrects_reading_id,
+  }))
+  const plan = planMeterCorrection({
+    targetId: readingId,
+    input: parsed.data,
+    tariff: meter.tariff,
+    history,
+  })
+  if (!plan.ok) return { error: plan.error }
+
+  const { error } = await supabase.from('meter_readings').insert({
+    organization_id: orgId,
+    meter_id: meterId,
+    reading_date: plan.data.reading_date,
+    value: plan.data.value,
+    consumption: plan.data.consumption,
+    amount: plan.data.amount,
+    source: 'manager',
+    created_by: user.id,
+    corrects_reading_id: plan.data.target_id,
+    correction_reason: plan.data.correction_reason,
+  })
+  if (error) return { error: friendlyDbError(error, { entity: 'исправление показания' }) }
+
+  revalidatePath(`/properties/${propertyId}`)
+  revalidatePath(`/management/${propertyId}`)
+  return {
+    success: true,
+    message: plan.data.consumption !== null
+      ? `Исправление сохранено. Расход ${plan.data.consumption} ${meter.unit}${plan.data.amount !== null ? ` на ${plan.data.amount.toLocaleString('ru-RU')} ₽` : ''}`
+      : 'Исправление сохранено; расход посчитается со следующего показания',
   }
 }
 

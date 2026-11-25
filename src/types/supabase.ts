@@ -2786,43 +2786,74 @@ export type Database = {
         Row: {
           amount: number | null
           consumption: number | null
+          correction_reason: string | null
+          corrects_reading_id: string | null
           created_at: string
           created_by: string | null
           id: string
           meter_id: string
           note: string | null
           organization_id: string
+          photo_urls: string[] | null
           reading_date: string
           source: string
+          source_chat_id: number | null
+          source_message_id: number | null
+          source_thread_id: number | null
+          source_user_id: number | null
+          source_user_name: string | null
           value: number
         }
         Insert: {
           amount?: number | null
           consumption?: number | null
+          correction_reason?: string | null
+          corrects_reading_id?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
           meter_id: string
           note?: string | null
           organization_id: string
+          photo_urls?: string[] | null
           reading_date?: string
           source?: string
+          source_chat_id?: number | null
+          source_message_id?: number | null
+          source_thread_id?: number | null
+          source_user_id?: number | null
+          source_user_name?: string | null
           value: number
         }
         Update: {
           amount?: number | null
           consumption?: number | null
+          correction_reason?: string | null
+          corrects_reading_id?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
           meter_id?: string
           note?: string | null
           organization_id?: string
+          photo_urls?: string[] | null
           reading_date?: string
           source?: string
+          source_chat_id?: number | null
+          source_message_id?: number | null
+          source_thread_id?: number | null
+          source_user_id?: number | null
+          source_user_name?: string | null
           value?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "meter_readings_corrects_reading_id_fkey"
+            columns: ["corrects_reading_id"]
+            isOneToOne: false
+            referencedRelation: "meter_readings"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "meter_readings_meter_id_fkey"
             columns: ["meter_id"]
@@ -3969,6 +4000,7 @@ export type Database = {
       }
       utility_meters: {
         Row: {
+          contour: string | null
           created_at: string
           id: string
           is_active: boolean
@@ -3981,6 +4013,7 @@ export type Database = {
           unit: string
         }
         Insert: {
+          contour?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
@@ -3993,6 +4026,7 @@ export type Database = {
           unit?: string
         }
         Update: {
+          contour?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
