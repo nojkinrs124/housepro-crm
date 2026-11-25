@@ -2,8 +2,14 @@
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
-import { Gauge, Plus, X } from 'lucide-react'
-import { addMeterReadingAction, createMeterAction, deactivateMeterAction } from '../actions/meters.actions'
+import { Gauge, Plus, X, Pencil, ImageIcon } from 'lucide-react'
+import {
+  addMeterReadingAction,
+  correctMeterReadingAction,
+  createMeterAction,
+  deactivateMeterAction,
+  updateMeterContourAction,
+} from '../actions/meters.actions'
 import { METER_KIND_LABELS, METER_KIND_UNITS } from '@/features/meters/config/meter-kinds'
 import { confirmDialog } from '@/components/forms/ConfirmDialog'
 import { todayIso } from '@/lib/timezone'
@@ -15,14 +21,25 @@ export interface MeterReadingRow {
  value: number
  consumption: number | null
  amount: number | null
- /** Кто внёс: менеджер снял сам или арендатор прислал из кабинета. */
+ /** Кто внёс: менеджер, арендатор или Telegram-бот. */
  source?: string | null
+ /** Имя автора из Telegram (username), если показание пришло оттуда. */
+ source_user_name?: string | null
+ /** Фото прибора из Telegram. */
+ photo_urls?: string[] | null
+ /** Если задано — это append-only исправление показания с этим id. */
+ corrects_reading_id?: string | null
+ correction_reason?: string | null
+ /** Время записи — второй ключ сортировки при одной дате показания. */
+ created_at?: string | null
 }
 
 export interface MeterRow {
  id: string
  kind: string
  title: string | null
+ /** Свободная подпись прибора для сопоставления в Telegram («ХВС кухня»). */
+ contour: string | null
  serial_number: string | null
  unit: string
  tariff: number | null
@@ -38,17 +55,34 @@ function fmtDate(iso: string): string {
  return formatDateCompact(iso)
 }
 
+/** Откуда пришло показание — «менеджер», «арендатор» или автор из Telegram. */
+function sourceLabel(reading: MeterReadingRow): string {
+ if (reading.source === 'telegram') {
+  return reading.source_user_name ? `Telegram · ${reading.source_user_name}` : 'Telegram'
+ }
+ if (reading.source === 'tenant') return 'арендатор'
+ if (reading.source === 'manager') return 'менеджер'
+ return ''
+}
+
 /**
  * Счётчики объекта и показания.
  *
  * До этого коммуналка по счётчикам жила в переписке и таблицах: каждый месяц
  * агент спрашивал показания, считал разницу и сумму в калькуляторе. Здесь
  * расход и сумма считаются при вводе и сохраняются вместе с показанием.
+ *
+ * Контур прибора — подпись, по которой Telegram-бот находит прибор, не заводя
+ * новый. Показания из Telegram видно по автору и фото; исправление не стирает
+ * исходную строку, а ссылается на неё.
  */
 export function MetersPanel({ propertyId, meters }: { propertyId: string; meters: MeterRow[] }) {
  const [addingMeter, setAddingMeter] = useState(false)
  const [kind, setKind] = useState('electricity')
  const [readingFor, setReadingFor] = useState<string | null>(null)
+ const [contourFor, setContourFor] = useState<string | null>(null)
+ // Исправление показания: id строки, а не счётчика — правка привязана к строке.
+ const [correctFor, setCorrectFor] = useState<string | null>(null)
  const [isPending, startTransition] = useTransition()
 
  function submitMeter(formData: FormData) {
@@ -57,6 +91,15 @@ export function MetersPanel({ propertyId, meters }: { propertyId: string; meters
  if (res.error) { toast.error(res.error); return }
  toast.success('Счётчик добавлен')
  setAddingMeter(false)
+ })
+ }
+
+ function submitContour(meterId: string, formData: FormData) {
+ startTransition(async () => {
+ const res = await updateMeterContourAction(meterId, propertyId, formData)
+ if (res.error) { toast.error(res.error); return }
+ toast.success(res.message ?? 'Контур сохранён')
+ setContourFor(null)
  })
  }
 
@@ -69,6 +112,15 @@ export function MetersPanel({ propertyId, meters }: { propertyId: string; meters
  // уже не восстановить, а скачок расхода может быть утечкой.
  for (const w of res.warnings ?? []) toast.warning(w)
  setReadingFor(null)
+ })
+ }
+
+ function submitCorrection(meterId: string, readingId: string, formData: FormData) {
+ startTransition(async () => {
+ const res = await correctMeterReadingAction(meterId, propertyId, readingId, formData)
+ if (res.error) { toast.error(res.error); return }
+ toast.success(res.message ?? 'Исправление сохранено')
+ setCorrectFor(null)
  })
  }
 
@@ -129,6 +181,10 @@ export function MetersPanel({ propertyId, meters }: { propertyId: string; meters
  <input id="m-serial" name="serial_number" placeholder="№ 1234567" className="hp-input" />
  </div>
  <div className="space-y-1.5">
+ <label className="hp-label" htmlFor="m-contour">Контур для Telegram</label>
+ <input id="m-contour" name="contour" placeholder="ХВС кухня" className="hp-input" />
+ </div>
+ <div className="space-y-1.5">
  <label className="hp-label" htmlFor="m-unit">Единица</label>
  <input
  id="m-unit"
@@ -162,6 +218,10 @@ export function MetersPanel({ propertyId, meters }: { propertyId: string; meters
  <div className="space-y-3">
  {meters.map((meter) => {
  const last = meter.readings[0]
+ // Строка исправлена, если на неё ссылается другое показание (append-only).
+ const correctedIds = new Set(
+ meter.readings.map((r) => r.corrects_reading_id).filter((id): id is string => !!id),
+ )
  return (
  <div key={meter.id} className="border border-[var(--hp-border)] p-4 space-y-3">
  <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -178,6 +238,36 @@ export function MetersPanel({ propertyId, meters }: { propertyId: string; meters
  : 'Показаний ещё нет'}
  {meter.tariff ? ` · тариф ${meter.tariff} ₽/${meter.unit}` : ''}
  </p>
+ {contourFor === meter.id ? (
+ <form action={(formData) => submitContour(meter.id, formData)} className="flex items-center gap-2 mt-2 flex-wrap">
+ <input
+ name="contour"
+ defaultValue={meter.contour ?? ''}
+ placeholder="ХВС кухня"
+ aria-label="Контур прибора"
+ className="h-9 px-3 min-w-0 flex-1 rounded-[var(--hp-radius)] border border-[var(--hp-border)] bg-[var(--hp-surface)] text-[var(--hp-ink)] text-sm outline-none focus:border-[var(--hp-ink)] transition-colors"
+ />
+ <button
+ type="submit"
+ disabled={isPending}
+ className="h-9 px-3 text-white rounded-[var(--hp-radius)] text-xs font-semibold transition-colors bg-[var(--hp-accent)] hover:bg-[var(--hp-accent-hover)] disabled:opacity-60"
+ >
+ Сохранить
+ </button>
+ <button type="button" onClick={() => setContourFor(null)} className="h-9 px-3 text-xs font-medium text-[var(--hp-sub)] hover:text-[var(--hp-ink)] transition-colors">
+ Отмена
+ </button>
+ </form>
+ ) : (
+ <button
+ type="button"
+ onClick={() => setContourFor(meter.id)}
+ className="flex items-center gap-1 mt-1.5 text-xs font-medium text-[var(--hp-sub)] hover:text-[var(--hp-ink)] transition-colors"
+ >
+ <Pencil className="w-3 h-3" />
+ {meter.contour ? `Контур: ${meter.contour}` : 'Задать контур для Telegram'}
+ </button>
+ )}
  </div>
  <div className="flex items-center gap-2 shrink-0">
  <button
@@ -237,9 +327,19 @@ export function MetersPanel({ propertyId, meters }: { propertyId: string; meters
 
  {meter.readings.length > 0 && (
  <div className="hp-block">
- {meter.readings.slice(0, 4).map((reading) => (
- <div key={reading.id} className="hp-block-row">
- <span className="label">{fmtDate(reading.reading_date)}</span>
+ {meter.readings.slice(0, 4).map((reading) => {
+ const author = sourceLabel(reading)
+ // Действующее показание — то, которое никто не исправлял. Исправлять
+ // исправленное нельзя: получилась бы ветвящаяся история.
+ const superseded = correctedIds.has(reading.id)
+ const photos = reading.photo_urls ?? []
+ return (
+ <div key={reading.id}>
+ <div className="hp-block-row">
+ <span className="label">
+ {fmtDate(reading.reading_date)}
+ {author && <span className="text-[var(--hp-tertiary)]"> · {author}</span>}
+ </span>
  <span className="value">
  {reading.value} {meter.unit}
  {reading.consumption !== null && (
@@ -248,9 +348,105 @@ export function MetersPanel({ propertyId, meters }: { propertyId: string; meters
  {reading.amount !== null ? ` · ${reading.amount.toLocaleString('ru-RU')} ₽` : ''}
  </span>
  )}
+ {superseded && (
+ <span className="ml-2 text-[var(--hp-tertiary)] font-normal text-xs">исправлено</span>
+ )}
+ {reading.corrects_reading_id && (
+ <span className="ml-2 text-[var(--hp-info)] font-normal text-xs">
+ исправление{reading.correction_reason ? `: ${reading.correction_reason}` : ''}
+ </span>
+ )}
+ {photos.length > 0 && (
+ <span className="ml-2 inline-flex items-center gap-1 align-middle">
+ {photos.map((url, i) => (
+ <a
+ key={url}
+ href={url}
+ target="_blank"
+ rel="noreferrer"
+ className="inline-flex items-center gap-0.5 text-xs font-normal text-[var(--hp-sub)] hover:text-[var(--hp-accent)] transition-colors"
+ title={`Фото ${i + 1}`}
+ >
+ <ImageIcon className="w-3 h-3" />
+ {i + 1}
+ </a>
+ ))}
+ </span>
+ )}
+ {!superseded && !reading.corrects_reading_id && correctFor !== reading.id && (
+ <button
+ type="button"
+ onClick={() => setCorrectFor(reading.id)}
+ className="ml-2 text-xs font-normal text-[var(--hp-sub)] hover:text-[var(--hp-ink)] transition-colors"
+ >
+ исправить
+ </button>
+ )}
  </span>
  </div>
- ))}
+
+ {correctFor === reading.id && (
+ <form
+ action={(formData) => submitCorrection(meter.id, reading.id, formData)}
+ className="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end py-3"
+ >
+ <div className="space-y-1.5">
+ <label className="hp-label" htmlFor={`c-value-${reading.id}`}>
+ Новое показание, {meter.unit}
+ </label>
+ <input
+ id={`c-value-${reading.id}`}
+ name="value"
+ inputMode="decimal"
+ defaultValue={reading.value}
+ required
+ className="hp-input"
+ />
+ </div>
+ <div className="space-y-1.5">
+ <label className="hp-label" htmlFor={`c-date-${reading.id}`}>Дата</label>
+ {/* Дата исходного показания: исправление расхода без неё распадается. */}
+ <input
+ id={`c-date-${reading.id}`}
+ type="date"
+ name="reading_date"
+ defaultValue={reading.reading_date}
+ readOnly
+ className="w-full min-w-0 h-10 px-4 rounded-[var(--hp-radius)] border border-[var(--hp-border)] bg-[var(--hp-neutral-tint)] text-[var(--hp-sub)] text-sm outline-none"
+ />
+ </div>
+ <div className="space-y-1.5">
+ <label className="hp-label" htmlFor={`c-reason-${reading.id}`}>Причина</label>
+ <input
+ id={`c-reason-${reading.id}`}
+ name="correction_reason"
+ maxLength={300}
+ required
+ placeholder="Опечатка в цифре"
+ className="hp-input"
+ />
+ </div>
+ <div className="flex items-center gap-2 flex-wrap">
+ <button
+ type="submit"
+ disabled={isPending}
+ className="h-10 px-5 text-white rounded-[var(--hp-radius)] text-sm font-semibold transition-colors bg-[var(--hp-accent)] hover:bg-[var(--hp-accent-hover)] disabled:opacity-60"
+ >
+ {isPending ? 'Сохраняем…' : 'Сохранить'}
+ </button>
+ <button
+ type="button"
+ onClick={() => setCorrectFor(null)}
+ className="h-10 px-3 text-sm font-medium text-[var(--hp-sub)] hover:text-[var(--hp-ink)] transition-colors"
+ >
+ Отмена
+ </button>
+ </div>
+ </form>
+ )}
+ </div>
+ )
+ })}
  </div>
  )}
  </div>
